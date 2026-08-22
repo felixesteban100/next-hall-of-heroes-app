@@ -10,7 +10,7 @@ type TeamCardProps = {
 
 export default function TeamCard({ team, size }: TeamCardProps) {
     return (
-        <Card size={size} className="h-full justify-between hover:scale-102 transition-transform duration-300 shadow hover:shadow-xl">
+        <Card /* size={size} */ className="h-full justify-between hover:scale-102 transition-transform duration-300 shadow hover:shadow-xl">
             {/* <div className="absolute inset-0 z-30 aspect-video dark:brightness-40" /> */}
             <ViewTransition name={`photo-team-${team.id}`} share="morph">
                 <Image

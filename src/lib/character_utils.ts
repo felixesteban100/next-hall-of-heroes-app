@@ -26,9 +26,10 @@ export function getCharacterAlignmentText(alignment: string) {
     }
 }
 
-export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryOptions, sortBy: string, sortDirection: string, offset: number, howManyPerPage: number, charactersNames: string[]) {
+export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryOptions, sortBy: string, sortDirection: string, offset: number, howManyPerPage: number/* , charactersNames: string[] */) {
     // Implementation for joining team, universe, power, and enemies to a character
     const baseLookups = [
+        { $match: { ...queryOptions } },
         {
             $lookup: {
                 from: "powers",
@@ -65,7 +66,6 @@ export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryO
                 as: "connections.enemies",
             },
         },
-        { $match: { ...queryOptions } },
     ]
 
     // if (sortBy === 'random') {

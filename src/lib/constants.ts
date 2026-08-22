@@ -145,3 +145,5 @@ export const CHARACTER_TIER_COLOR = {
 //     4: { bg: "bg-purple-500 dark:bg-purple-500", text: "text-purple-500 dark:text-purple-500", hoverBg: "hover:bg-purple-100", hoverText: "hover:text-purple-800", solid: "bg-purple-500" },
 //     5: { bg: "bg-red-500 dark:bg-red-500", text: "text-red-500 dark:text-red-500", hoverBg: "hover:bg-red-100", hoverText: "hover:text-red-800", solid: "bg-red-500" },
 // } as const;
+
+export const CHARACTER_TYPES = ["anime", "cartoon", "comic", "game", "movie", "tv show", "real life"] as const;

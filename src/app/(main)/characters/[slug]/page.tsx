@@ -28,7 +28,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                 "desc",
                 0,
                 1,
-                [],
+                // [],
             ),
         )
         .toArray();
@@ -65,6 +65,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                         <div className="space-x-2">
                             <Badge className={`${tierColors.bg} ${tierColors.foreground}`}><TierIcon size={16} /> Tier  {CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER]}</Badge>
                             <Badge className={`${classColors.bg} ${classColors.foreground}`}><ClassIcon size={50} /> Class {CHARACTER_CLASS[character.class as keyof typeof CHARACTER_CLASS]}</Badge>
+                            <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
                         </div>
 
                         {/* <ActiveFiltersBadges
@@ -82,13 +83,16 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                         <h1 className="text-2xl font-bold">{character.name}</h1>
                         <p className="text-sm font-light">{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown name" : character.biography.fullName} · <span className="font-semibold">#{character.id}</span></p>
 
-                        <p className="max-h-md overflow-y-auto">{character.biography.origin?.split(".")[0] + "."}</p>
+                        {/* <p className="max-h-md overflow-y-auto">{character.biography.origin?.split(".")[0] + "."}</p> */}
 
-                        <div className="flex flex-wrap gap-2 items-center">
-                            <div className="flex items-center gap-2">
-                                <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
+                        <div className="flex flex-nowrap gap-2 items-center">
+                            <p className="max-h-md overflow-y-auto">{`${character.biography.origin/* .slice(0, 100) */}`}</p>
+                            <div className="w-40 border-l-4 h-20 flex items-center justify-center p-2 shrink-0">
+                                <Image src={character.biography.publisher.logo} alt={character.name} width={100} height={100}
+                                    className="max-w-full max-h-full object-contain rounded-lg"
+                                // className="rounded-lg h-15 w-auto" 
+                                />
                             </div>
-                            <Image src={character.biography.publisher.logo} alt={character.name} width={100} height={100} className="rounded-lg h-5 w-auto" />
                         </div>
 
                         <div className="flex flex-wrap gap-2">

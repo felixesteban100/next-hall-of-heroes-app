@@ -33,7 +33,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from '@/lib/constants';
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPES } from '@/lib/constants';
 import { CharacterBadgeIcon } from '@/lib/characters_utils';
 
 const sortOptions = [
@@ -74,6 +74,7 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
     const [draftFilters, setDraftFilters] = useState({
         alignment: searchParams.get("alignment") || "",
         universe: searchParams.get("universe") || "",
+        character_type: searchParams.get("character_type") || "",
         tier: searchParams.get("tier") || "",
         class: searchParams.get("class") || "",
         gender: searchParams.get("gender") || "",
@@ -90,6 +91,10 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
         params.delete("universe")
         if (draftFilters.universe != "") {
             params.set("universe", draftFilters.universe);
+        }
+        params.delete("character_type")
+        if (draftFilters.character_type != "") {
+            params.set("character_type", draftFilters.character_type);
         }
         params.delete("tier")
         if (draftFilters.tier != "") {
@@ -309,13 +314,36 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
                                     </MultiSelectContent>
                                 </MultiSelect>
                             </div>
+
+                            <div id="CHARACTER_TYPE">
+                                <div className="flex justify-between">
+                                    <p className="font-light text-muted-foreground">CHARACTER TYPE</p>
+                                    <Button disabled={draftFilters.character_type && draftFilters.character_type != "" ? false : true} variant="link" size="sm" onClick={() => setDraftFilters(prev => ({ ...prev, character_type: "" }))}>Clear</Button>
+                                </div>
+                                <Select value={draftFilters.character_type} /* items={characterTypes} */ onValueChange={(value) => setDraftFilters(prev => ({ ...prev, character_type: value === "unknown" ? "" : value }))}>
+                                    <SelectTrigger className="w-full max-w-100 capitalize">
+                                        <SelectValue placeholder="Select character type..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {CHARACTER_TYPES.map((type) => (
+                                                <SelectItem key={type} value={type} className="capitalize">
+                                                    {type}
+                                                </SelectItem>
+                                            ))}
+                                            <SelectItem key="" value={"unknown"}>Unknown</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                         </div>
                         <DrawerFooter>
                             <Button /*disabled={!hasActiveFilters}*/ onClick={applyFilters}>Show Results</Button>
                             <Button
                                 disabled={!hasActiveFilters}
                                 onClick={() => {
-                                    setDraftFilters(() => ({ alignment: "", gender: "", powers: [], tier: "", universe: "", class: "" }))
+                                    setDraftFilters(() => ({ alignment: "", gender: "", powers: [], tier: "", universe: "", class: "", character_type: "" }));
                                     //applyFilters()
                                 }}
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { GlobeIcon, ShieldHalfIcon, UsersIcon, ZapIcon } from "lucide-react";
+import { GlobeIcon, ShieldHalfIcon, Shuffle, UsersIcon, ZapIcon } from "lucide-react";
 import { ModeToggle } from "./toggle-mode";
 import { usePathname } from 'next/navigation'
 
@@ -11,6 +11,7 @@ const pages = [
     { name: "Teams", href: "/teams", icon: <ShieldHalfIcon /> },
     { name: "Universes", href: "/universes", icon: <GlobeIcon /> },
     { name: "Powers", href: "/powers", icon: <ZapIcon /> },
+    { name: "Random", href: "/characters/random", icon: <Shuffle /> },
 ];
 
 export default function Navbar() {

@@ -52,6 +52,7 @@ export type Character = {
     logo: string;
     tier: number;
     weaknesses: string[];
+    character_type: string; // anime, cartoon, comic, game, movie, novel, real, tv
 }
 
 export type Universe = {
@@ -62,6 +63,7 @@ export type Universe = {
     logo: string;
     id: number;
     description: string;
+    background: string;
 }
 
 export type Enemy = Omit<Character, "biography.publisher" | "connections" | "powers">[]
@@ -84,7 +86,8 @@ export type Team = {
     name: string,
     value: string,
     description: string,
-    universe: { name: string, value: string, logo: string }, // OLD
+    // universe: { name: string, value: string, logo: string }, // OLD
+    universe: number;
     logo: string,
     comics: string[]
     leaders: string[]

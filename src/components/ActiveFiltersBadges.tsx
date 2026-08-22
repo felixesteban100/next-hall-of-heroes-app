@@ -1,7 +1,7 @@
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 import { Power } from "@/types";
-import { Frown, Globe, LetterText, type LucideIcon, Mars, Meh, Smile, Venus, Zap } from "lucide-react";
+import { Frown, Globe, LetterText, type LucideIcon, Mars, Meh, Smile, UserPen, Venus, Zap } from "lucide-react";
 
 type ActiveFilter = {
     label: string;
@@ -19,10 +19,11 @@ type ActiveFiltersBadgesProps = {
     tier: number,
     character_class: number,
     powersParam: string[],
-    powers: Power[]
+    powers: Power[],
+    character_type: string
 }
 
-export default function ActiveFiltersBadges({ name, gender, alignment, universe, tier, character_class, powersParam, powers }: ActiveFiltersBadgesProps) {
+export default function ActiveFiltersBadges({ name, gender, alignment, universe, tier, character_class, powersParam, powers, character_type }: ActiveFiltersBadgesProps) {
     const activeFilters: ActiveFilter[] = [];
 
     if (name) activeFilters.push({ label: "Name", display: name, icon: LetterText });
@@ -74,6 +75,8 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
             .map(p => p.name);
         activeFilters.push({ label: "Powers", display: powerNames.join(", "), icon: Zap });
     }
+
+    if (character_type) activeFilters.push({ label: "Character Type", display: character_type, icon: UserPen });
 
     // console.log("Active Filters:", activeFilters); // Debugging line
 

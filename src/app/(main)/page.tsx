@@ -34,7 +34,8 @@ export default async function Home({
     universe?: string,
     tier?: string,
     class?: string,
-    powers?: string
+    powers?: string;
+    character_type?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -51,6 +52,7 @@ export default async function Home({
   const tier = parseInt(params.tier?.toString() || "");
   const character_class = parseInt(params.class?.toString() || "");
   const powersParam = JSON.parse(params.powers || "[]");
+  const character_type = params.character_type?.toString() || "";
 
   /* make the ones that are undefined or empty string not appear inside the query object */
   const query: Record<string, string | number | object> = {};
@@ -58,6 +60,7 @@ export default async function Home({
   if (gender && gender != "") query["appearance.gender"] = gender;
   if (alignment && alignment != "") query["biography.alignment"] = alignment;
   if (universe) query["biography.publisher"] = universe;
+  if (character_type) query["character_type"] = character_type;
   if (!Number.isNaN(tier)) query.tier = tier;
   if (!Number.isNaN(character_class)) query.class = character_class;
   if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
@@ -70,9 +73,35 @@ export default async function Home({
       sortOrientation,
       (page - 1) * pageSize,
       pageSize,
-      [],
+      // [],
     ),
   ).toArray();
+
+  // const charactersPerPage = await collectionCharacters.find({
+  //   '$expr': {
+  //     '$lte': [
+  //       {
+  //         '$size': {
+  //           '$filter': {
+  //             'input': [
+  //               '$images.xs', '$images.sm', '$images.md', '$images.lg'
+  //             ],
+  //             'as': 'img',
+  //             'cond': {
+  //               '$ne': [
+  //                 '$$img', ''
+  //               ]
+  //             }
+  //           }
+  //         }
+  //       }, 1
+  //     ]
+  //   }
+  // }).skip((page - 1) * pageSize).limit(pageSize)/* .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }) */.toArray();
+
+  // mongodb query for characters with just one valid image url in the images property
+  // {$expr: {$lte: [{$size: {$filter: {input: ["$images.xs","$images.sm","$images.md","$images.lg"],as: "img",cond: { $ne: ["$$img", ""] }}}},1]}}
+
   const totalCharacters = await collectionCharacters.countDocuments(query);
   const universes = await collectionUniverses.find({}).sort({ "id": 1 }).toArray();
   const powers = await collectionPowers.find({}).sort({ "id": -1 }).toArray();
@@ -94,6 +123,7 @@ export default async function Home({
             character_class={character_class}
             powersParam={powersParam}
             powers={powers}
+            character_type={character_type}
           />
         </div>
       </div>
