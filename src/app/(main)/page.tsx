@@ -10,6 +10,15 @@ import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
 import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { unstable_noStore as noStore } from "next/cache";
+
+// how to not cache this page?
+
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+// export const instant = false;
+// export const dynamic = "force-dynamic";
+
 // import CharacterTiersFirstTesting from "../../db/firstTierTesting.json"
 // import CharacterClassFirstTesting from "../../db/firstClassTesting.json"
 
@@ -38,6 +47,7 @@ export default async function Home({
     character_type?: string;
   }>;
 }) {
+  noStore();
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
   const pageSize = 12;
@@ -65,6 +75,13 @@ export default async function Home({
   if (!Number.isNaN(character_class)) query.class = character_class;
   if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
 
+  const testChar = await collectionCharacters
+    .find({})
+    .sort({ id: -1 })
+    .limit(1)
+    .toArray();
+
+  console.log("Latest character in DB:", testChar[0]?.name, testChar[0]?.id);
   // const charactersPerPage = await collectionCharacters.find(query).skip((page - 1) * pageSize).limit(pageSize).sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }).toArray();
   const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
     joinTeam_universe_power_enemies_toCharacter(

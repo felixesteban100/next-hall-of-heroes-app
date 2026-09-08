@@ -18,7 +18,7 @@ export default function Navbar() {
     const pathname = usePathname();
 
     return (
-        <nav className="border-b py-4 px-6 flex justify-between items-center">
+        <nav className="border-b py-4 px-6 flex justify-between items-center" style={{ viewTransitionName: 'site-header' }}>
             <div className="flex space-x-2">
                 {pages.map((page) => (
                     <Link key={page.href} href={page.href}>

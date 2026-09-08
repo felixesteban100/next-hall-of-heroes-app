@@ -298,6 +298,17 @@
   --sidebar-ring: oklch(0.556 0 0);
 } */
 
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
 ::view-transition-group(.morph) {
   animation-duration: 400ms;
 }

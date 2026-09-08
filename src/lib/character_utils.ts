@@ -47,7 +47,7 @@ export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryO
                 as: "biography.publisher",
             },
         },
-        { $unwind: "$biography.publisher" },
+        { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
         {
             $lookup: {
                 from: "teams",

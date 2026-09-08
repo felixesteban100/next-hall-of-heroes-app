@@ -33,7 +33,7 @@ export default function CharacterCard({ character, size = "default" }: Character
 
     return (
         <Card onMouseEnter={getRandomImageIndex} className="group  h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
-            <ViewTransition name={`photo-${character.id}`} share="morph">
+            <ViewTransition name={`photo-${character.id}`}>
                 {/* container ensures skeleton and image occupy same area and stack */}
                 <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-60"} relative rounded-t-xl `}>
                     {/* <Image src={character.biography.publisher.logo} alt={`${character.name}'s image`} className="translate-y-5 group-hover:-translate-y-10 w-auto h-8 object-cover transition-all duration-500 animate-spin" width={800} height={1200} /> */}

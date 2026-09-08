@@ -10,11 +10,15 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Link from "next/link";
 import PowerCard from "@/components/PowerCard";
 import TeamCard from "@/components/TeamCard";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 // import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
 import { CharacterImageCarousel } from "@/components/CharacterImageCarousel";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
+
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
 
 export default async function CharactersPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -54,10 +58,18 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div className="flex flex-col md:flex-row items-center md:items-start gap-4 h-110">
                 {/* border rounded-lg */}
                 <div className="shrink-0 h-full ">
-                    <ViewTransition name={`photo-${character.id}`} share="morph">
-                        {/* <Image src={character.images.md} alt={character.name} width={300} height={500} className="rounded-lg h-full object-cover" /> */}
-                        <CharacterImageCarousel images={Object.values(character.images).filter((image) => image != "" && image != undefined && image != "-")} name={character.name} />
-                    </ViewTransition>
+                    <Suspense
+                        fallback={
+                            <ViewTransition exit="slide-down" default="none">
+                                <div className="h-60 w-40 md:h-80 md:w-60 bg-muted rounded-lg animate-pulse" />
+                            </ViewTransition>
+                        }
+                    >
+                        <ViewTransition name={`photo-${character.id}`} >
+                            {/* <Image src={character.images.md} alt={character.name} width={300} height={500} className="rounded-lg h-full object-cover" /> */}
+                            <CharacterImageCarousel images={Object.values(character.images).filter((image) => image != "" && image != undefined && image != "-")} name={character.name} />
+                        </ViewTransition>
+                    </Suspense>
                 </div>
 
                 <div className="ml-4 w-full h-full flex flex-col justify-center -translate-x-5 gap-2">
