@@ -12,13 +12,6 @@ import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_uti
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { unstable_noStore as noStore } from "next/cache";
 
-// how to not cache this page?
-
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-// export const instant = false;
-// export const dynamic = "force-dynamic";
-
 // import CharacterTiersFirstTesting from "../../db/firstTierTesting.json"
 // import CharacterClassFirstTesting from "../../db/firstClassTesting.json"
 
