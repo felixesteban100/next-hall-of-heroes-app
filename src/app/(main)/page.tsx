@@ -75,13 +75,6 @@ export default async function Home({
   if (!Number.isNaN(character_class)) query.class = character_class;
   if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
 
-  const testChar = await collectionCharacters
-    .find({})
-    .sort({ id: -1 })
-    .limit(1)
-    .toArray();
-
-  console.log("Latest character in DB:", testChar[0]?.name, testChar[0]?.id);
   // const charactersPerPage = await collectionCharacters.find(query).skip((page - 1) * pageSize).limit(pageSize).sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }).toArray();
   const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
     joinTeam_universe_power_enemies_toCharacter(
