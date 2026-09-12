@@ -3,7 +3,6 @@ import CharacterCard from "@/components/CharacterCard";
 import { collectionCharacters } from "@/db/mongodb";
 import Link from "next/link";
 // import { unstable_noStore as noStore } from "next/cache";
-import { connection } from 'next/server'
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -11,7 +10,7 @@ export const instant = false;
 
 export default async function Random() {
     // noStore();
-    await connection()
+    "use cache"
     const randomCharacter = await collectionCharacters.aggregate([{ $sample: { size: 8 } }]).toArray();
 
     return (
