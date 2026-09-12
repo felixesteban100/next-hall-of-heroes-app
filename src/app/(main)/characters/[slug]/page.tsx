@@ -16,10 +16,6 @@ import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER
 import { CharacterImageCarousel } from "@/components/CharacterImageCarousel";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function CharactersPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     // const character = await collectionCharacters.findOne({ slug });
