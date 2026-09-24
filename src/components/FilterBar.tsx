@@ -134,7 +134,7 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
                         placeholder="Search characters by name..."
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="border rounded-sm p-2 pl-10"
+                        className="border rounded-sm p-2 pl-10 bg-muted/30"
                     />
                 </div>
                 <Button onClick={() => updateNameSearchParam(name)}><SearchIcon /></Button>
@@ -336,7 +336,6 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
                                     </SelectContent>
                                 </Select>
                             </div>
-
                         </div>
                         <DrawerFooter>
                             <Button /*disabled={!hasActiveFilters}*/ onClick={applyFilters}>Show Results</Button>
@@ -344,6 +343,7 @@ export const FilterBar = ({ universes, powers }: { universes: Universe[], powers
                                 disabled={!hasActiveFilters}
                                 onClick={() => {
                                     setDraftFilters(() => ({ alignment: "", gender: "", powers: [], tier: "", universe: "", class: "", character_type: "" }));
+                                    localStorage.removeItem("lastParams_characters");
                                     //applyFilters()
                                 }}
 

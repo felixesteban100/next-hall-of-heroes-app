@@ -4,26 +4,40 @@ import { PaginationPages } from "@/components/Pagination";
 import { collectionCharacters, collectionPowers, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 
-// import CharacterWithNoTier from "../../db/test.characters.json"
-// import CharacterTier from "../../db/charactersTier.json"
 import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
 import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
 
-// import CharacterTiersFirstTesting from "../../db/firstTierTesting.json"
-// import CharacterClassFirstTesting from "../../db/firstClassTesting.json"
+export const instant = false;
 
-// https://claude.ai/chat/c0520f08-a4df-4066-90b9-9bc56681d2ac
+type SearchParamsPromise = Promise<{
+  [key: string]: string | string[] | undefined;
+  page?: string;
+  sort?: string;
+  sortOrientation?: string;
+  gender?: string;
+  alignment?: string;
+  universe?: string;
+  tier?: string;
+  class?: string;
+  powers?: string;
+  character_type?: string;
+}>;
 
-// https://ui.shadcn.com/docs/components/radix/card
 
-// https://search.brave.com/search?q=how+to+trigger+the+view+transition+next+js+when+going+back+in+browser&spellcheck=0&source=alteredQuery&conversation=093db314b1127990e73fc3a41d79217c5afa&summary=1
+export default function Home({ searchParams }: { searchParams: SearchParamsPromise }) {
+  return (
+    <div className="min-h-screen">
+      {/* <Suspense fallback={<HomeSkeleton />}> */}
+      <HomeContent searchParams={searchParams} />
+      {/* </Suspense> */}
+    </div>
+  );
+}
 
-// ?gender=male&sortOrientation=desc&sort=name&alignment=neutral&universe=Shueisha&tier=Tier+1
-
-export default async function Home({
+async function HomeContent({
   searchParams
 }: {
   searchParams: Promise<{
@@ -67,7 +81,6 @@ export default async function Home({
   if (!Number.isNaN(character_class)) query.class = character_class;
   if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
 
-  // const charactersPerPage = await collectionCharacters.find(query).skip((page - 1) * pageSize).limit(pageSize).sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }).toArray();
   const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
     joinTeam_universe_power_enemies_toCharacter(
       query,
@@ -79,36 +92,11 @@ export default async function Home({
     ),
   ).toArray();
 
-  // const charactersPerPage = await collectionCharacters.find({
-  //   '$expr': {
-  //     '$lte': [
-  //       {
-  //         '$size': {
-  //           '$filter': {
-  //             'input': [
-  //               '$images.xs', '$images.sm', '$images.md', '$images.lg'
-  //             ],
-  //             'as': 'img',
-  //             'cond': {
-  //               '$ne': [
-  //                 '$$img', ''
-  //               ]
-  //             }
-  //           }
-  //         }
-  //       }, 1
-  //     ]
-  //   }
-  // }).skip((page - 1) * pageSize).limit(pageSize)/* .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }) */.toArray();
 
-  // mongodb query for characters with just one valid image url in the images property
-  // {$expr: {$lte: [{$size: {$filter: {input: ["$images.xs","$images.sm","$images.md","$images.lg"],as: "img",cond: { $ne: ["$$img", ""] }}}},1]}}
 
   const totalCharacters = await collectionCharacters.countDocuments(query);
   const universes = await collectionUniverses.find({}).sort({ "id": 1 }).toArray();
   const powers = await collectionPowers.find({}).sort({ "id": -1 }).toArray();
-
-  // console.log(charactersPerPage)
 
   return (
     <div className="min-h-screen space-y-8">
@@ -163,6 +151,48 @@ export default async function Home({
   );
 }
 
+/* function HomeSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 w-48 bg-muted rounded" />
+      <div className="h-12 w-full bg-muted rounded" />
+    </div>
+  );
+} */
+
+
+// https://claude.ai/chat/c0520f08-a4df-4066-90b9-9bc56681d2ac
+
+// https://ui.shadcn.com/docs/components/radix/card
+
+// https://search.brave.com/search?q=how+to+trigger+the+view+transition+next+js+when+going+back+in+browser&spellcheck=0&source=alteredQuery&conversation=093db314b1127990e73fc3a41d79217c5afa&summary=1
+
+// ?gender=male&sortOrientation=desc&sort=name&alignment=neutral&universe=Shueisha&tier=Tier+1
+
+// const charactersPerPage = await collectionCharacters.find({
+//   '$expr': {
+//     '$lte': [
+//       {
+//         '$size': {
+//           '$filter': {
+//             'input': [
+//               '$images.xs', '$images.sm', '$images.md', '$images.lg'
+//             ],
+//             'as': 'img',
+//             'cond': {
+//               '$ne': [
+//                 '$$img', ''
+//               ]
+//             }
+//           }
+//         }
+//       }, 1
+//     ]
+//   }
+// }).skip((page - 1) * pageSize).limit(pageSize)/* .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }) */.toArray();
+
+// mongodb query for characters with just one valid image url in the images property
+// {$expr: {$lte: [{$size: {$filter: {input: ["$images.xs","$images.sm","$images.md","$images.lg"],as: "img",cond: { $ne: ["$$img", ""] }}}},1]}}
 
 // CharacterTier.forEach(async (character) => {
 //   await collectionCharacters.updateOne({ slug: character.slug }, { $set: { tier: character.tier } })

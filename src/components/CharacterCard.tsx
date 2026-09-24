@@ -66,6 +66,7 @@ export default function CharacterCard({ character, size = "default" }: Character
                     width={800}
                     height={1200}
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    style={{ contain: "layout" }}
                 // onLoad={() => setLoadingImage(false)}
                 />
             </ViewTransition>

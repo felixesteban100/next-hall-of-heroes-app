@@ -10,7 +10,11 @@ export default async function Random() {
     const randomCharacter = await collectionCharacters.aggregate([{ $sample: { size: 8 } }]).toArray();
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
+            <h1 className="text-2xl font-bold">Random Characters</h1>
+            <div className="text-muted-foreground font-light">
+                8 random characters across all universes
+            </div>
             <CacheClearButton path="/characters/random" />
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
                 {randomCharacter.map((character) => (

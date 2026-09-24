@@ -28,7 +28,7 @@ export function CharacterImageCarousel({ images, name }: { images: string[], nam
       <CarouselContent className="w-full h-full ">
         {images.map((image, index) => (
           <CarouselItem key={index} className="w-full h-full ">
-            <Image src={image} alt={`${name}-${index}`} width={300} height={500} className="rounded-lg h-[27rem] w-[50rem] object-cover" />
+            <Image src={image} alt={`${name}-${index}`} width={300} height={500} className="rounded-lg h-[27rem] w-[50rem] object-cover" style={{ contain: "layout" }} />
           </CarouselItem>
         ))}
       </CarouselContent>

@@ -16,6 +16,8 @@ import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER
 import { CharacterImageCarousel } from "@/components/CharacterImageCarousel";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 
+export const instant = false;
+
 export default async function CharactersPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     // const character = await collectionCharacters.findOne({ slug });
@@ -46,6 +48,10 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
     const TierIcon = CHARACTER_TIER_ICON[Number(character.tier)]
     const ClassIcon = CHARACTER_CLASS_ICON[Number(character.class)]
 
+    const characterImages = [character.images.md, ...Object.entries(character.images).filter(([prop, image]) => image != "" && image != undefined && image != "-" && prop != "md").map(([prop, img]) => img.toString())]
+
+    console.log()
+
     // console.log("class", character.class)
     // console.log(character)
 
@@ -57,13 +63,12 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                     <Suspense
                         fallback={
                             <ViewTransition name={`photo-${character.id}`} /* exit="slide-down" default="none" */>
-                                <div className="h-full max-w-50 sm:max-w-xs h-[27rem] w-[50rem] bg-foreground/80 rounded-lg animate-pulse" />
+                                <div className=" max-w-50 sm:max-w-xs h-[27rem] w-[50rem] bg-foreground/80 rounded-lg animate-pulse" style={{ contain: "layout" }} />
                             </ViewTransition>
                         }
                     >
                         <ViewTransition name={`photo-${character.id}`} >
-                            {/* <Image src={character.images.md} alt={character.name} width={300} height={500} className="rounded-lg h-full object-cover" /> */}
-                            <CharacterImageCarousel images={Object.values(character.images).filter((image) => image != "" && image != undefined && image != "-")} name={character.name} />
+                            <CharacterImageCarousel images={characterImages} name={character.name} />
                         </ViewTransition>
                     </Suspense>
                 </div>
@@ -76,31 +81,20 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                             <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
                         </div>
 
-                        {/* <ActiveFiltersBadges
-                            name={character.name}
-                            gender={character.appearance.gender}
-                            alignment={character.biography.alignment}
-                            universe={character.biography.publisher.name}
-                            tier={character.tier}
-                            character_class={character.class}
-                            powersParam={character.powers.map((p) => p.name)}
-                            powers={JSON.parse(JSON.stringify(character.powers))}
-                        /> */}
-
-
                         <h1 className="text-2xl font-bold">{character.name}</h1>
                         <p className="text-sm font-light">{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown name" : character.biography.fullName} · <span className="font-semibold">#{character.id}</span></p>
-
-                        {/* <p className="max-h-md overflow-y-auto">{character.biography.origin?.split(".")[0] + "."}</p> */}
 
                         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                             <p className="text-sm leading-relaxed line-clamp-4">{`${character.biography.origin/* .slice(0, 100) */}`}</p>
                             <div className="w-16 sm:w-24 border-l-0 sm:border-l-4 h-16 flex items-center justify-center p-2 shrink-0">
-                                <Image src={character.biography.publisher.logo} alt={character.name} width={100} height={100}
-                                    className="max-w-full max-h-full object-contain rounded-lg"
-                                    unoptimized
-                                // className="rounded-lg h-15 w-auto" 
-                                />
+                                <Link href={`/universes/${character.biography.publisher.id}`}>
+                                    <ViewTransition name={`photo-universe-${character.biography.publisher.id}`} share="morph">
+                                        <Image src={character.biography.publisher.logo} alt={character.name} width={100} height={100}
+                                            className="max-w-full max-h-full object-contain rounded-lg"
+                                            unoptimized
+                                        />
+                                    </ViewTransition>
+                                </Link>
                             </div>
                         </div>
 

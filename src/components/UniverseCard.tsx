@@ -22,6 +22,7 @@ export default function UniverseCard({ universe, size }: UniverseCardProps) {
                             className={`absolute opacity-0 group-hover:opacity-100 w-full h-full object-cover transition-opacity duration-300`}
                             width={800}
                             height={1200}
+                            style={{ contain: "layout" }}
                         />
                     }
                     <Image

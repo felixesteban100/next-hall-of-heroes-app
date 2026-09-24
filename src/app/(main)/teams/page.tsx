@@ -3,6 +3,8 @@ import TeamCard from "@/components/TeamCard";
 import { collectionTeams, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 
+export const instant = false;
+
 export default async function page({
     searchParams
 }: {

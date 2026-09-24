@@ -26,7 +26,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
         <div className="mx-auto pb-8 max-w-[90vw] space-y-5">
             <div className="flex flex-col md:flex-row items-center md:items-start space-x-5">
                 <ViewTransition name={`photo-universe-${universe.id}`} share="morph">
-                    <Image src={universe.logo} alt={universe.name} className="max-h-40 w-auto rounded-4xl" width={500} height={300} />
+                    <Image src={universe.logo} alt={universe.name} className="max-h-40 w-auto rounded-4xl" width={500} height={300} style={{ contain: "layout" }} />
                 </ViewTransition>
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold">{universe.name}</h1>

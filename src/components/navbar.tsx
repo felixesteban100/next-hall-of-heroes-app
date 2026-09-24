@@ -15,22 +15,25 @@ const pages = [
 export default function Navbar() {
     return (
         <nav
-            className="border-b py-4 px-6 flex justify-between items-center"
+            // flex justify-between items-center
+            className="border-b "
             style={{ viewTransitionName: 'site-header' }}
         >
-            <Suspense fallback={
-                <div className="flex space-x-2">
-                    {pages.map((page) => (
-                        <Button key={page.href} variant="ghost" disabled>
-                            {page.icon}
-                            <span className="ml-2 hidden md:block">{page.name}</span>
-                        </Button>
-                    ))}
-                </div>
-            }>
-                <NavbarActiveLinks />
-            </Suspense>
-            <ModeToggle />
+            <div className="flex justify-between items-center p-4 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+                <Suspense fallback={
+                    <div className="flex space-x-2">
+                        {pages.map((page) => (
+                            <Button key={page.href} variant="ghost" disabled>
+                                {page.icon}
+                                <span className="ml-2 hidden md:block">{page.name}</span>
+                            </Button>
+                        ))}
+                    </div>
+                }>
+                    <NavbarActiveLinks />
+                </Suspense>
+                <ModeToggle />
+            </div>
         </nav>
     )
 }
