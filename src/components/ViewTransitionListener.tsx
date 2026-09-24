@@ -9,11 +9,13 @@ export function ViewTransitionListener() {
 
     useEffect(() => {
         const handlePopState = () => {
-            // Wrap Next.js router restoration inside React 19's transition boundary.
-            // This allows React's root <ViewTransition> component to coordinate 
-            // the DOM update natively without triggering double-startViewTransition conflicts.
             startTransition(() => {
                 router.refresh();
+
+                // Slight frame delay to give Next.js time to commit the un-cached DOM
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => { });
+                });
             });
         };
 

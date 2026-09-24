@@ -48,9 +48,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Suspense fallback={null}>
-            <ViewTransitionListener />
-          </Suspense>
+          {/* <Suspense fallback={null}> */}
+          <ViewTransitionListener />
+          {/* </Suspense> */}
           <ViewTransition>{children}</ViewTransition>
         </ThemeProvider>
       </body>

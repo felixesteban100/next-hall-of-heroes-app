@@ -33,7 +33,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                         <div className="max-h-40 w-auto rounded-4xl" />
                     </ViewTransition>}>
                         <ViewTransition name={`photo-team-${team.id}`} share="morph">
-                            <Image src={team.logo} alt={team.name} className="max-h-40 w-auto rounded-4xl" width={500} height={300} />
+                            <Image src={team.logo} alt={team.name} className="max-h-40 w-auto rounded-4xl" width={500} height={300} style={{ contain: "layout" }} />
                         </ViewTransition>
                     </Suspense>
                     <div className="space-y-2">
