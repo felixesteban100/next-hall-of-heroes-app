@@ -10,7 +10,7 @@ import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
 import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { unstable_noStore as noStore } from "next/cache";
+import { Suspense } from "react";
 
 // import CharacterTiersFirstTesting from "../../db/firstTierTesting.json"
 // import CharacterClassFirstTesting from "../../db/firstClassTesting.json"
@@ -40,7 +40,6 @@ export default async function Home({
     character_type?: string;
   }>;
 }) {
-  noStore();
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
   const pageSize = 12;
@@ -130,7 +129,14 @@ export default async function Home({
           />
         </div>
       </div>
-      <FilterBar universes={JSON.parse(JSON.stringify(universes))} powers={JSON.parse(JSON.stringify(powers))} />
+      <Suspense
+        key={JSON.stringify(params)}
+        fallback={
+          <div className="h-14 w-full animate-pulse rounded-md bg-muted" />
+        }
+      >
+        <FilterBar universes={JSON.parse(JSON.stringify(universes))} powers={JSON.parse(JSON.stringify(powers))} />
+      </Suspense>
       {/*  overflow-y-auto */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
         {charactersPerPage.map((character) => (
@@ -149,7 +155,9 @@ export default async function Home({
       </div>
 
       <div className="flex justify-center mt-4">
-        <PaginationPages currentPage={page} totalPages={Math.ceil(totalCharacters / pageSize)} />
+        <Suspense fallback={null}>
+          <PaginationPages currentPage={page} totalPages={Math.ceil(totalCharacters / pageSize)} />
+        </Suspense>
       </div>
     </div>
   );

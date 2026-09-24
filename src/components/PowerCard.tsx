@@ -19,6 +19,7 @@ export default function PowerCard({ power, size }: PowerCardProps) {
                     className={`w-full object-cover ${size === "sm" ? "h-30" : "h-40"} w-auto rounded-t-xl`}
                     width={800}
                     height={1200}
+                    unoptimized
                 />
             </ViewTransition>
             <CardHeader>

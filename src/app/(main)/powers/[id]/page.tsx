@@ -31,7 +31,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                     <p className="text-muted-foreground font-medium">{power.description || "No description available."}</p>
                 </div>
             </div>
-
+            {/* FilterBar for sorting */}
             <div id="groups-affiliation" className="space-y-2 items-center w-full px-4">
                 <p className="text-sm font-light uppercase text-primary mb-2">MEMBERS</p>
                 {powerCharacters.length > 0 ? (

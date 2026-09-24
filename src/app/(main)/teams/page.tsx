@@ -31,6 +31,7 @@ export default async function page({
             </div>
             {/* <FilterBar universes={JSON.parse(JSON.stringify(universes))} /> */}
             {/*  overflow-y-auto */}
+            {/*  */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
                 {teamsPerPage.map((team) => (
                     <Link key={team.id} href={`/teams/${team.id}`}>

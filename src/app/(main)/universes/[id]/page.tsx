@@ -35,6 +35,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                 </div>
             </div>
 
+            {/* FilterBar for sorting */}
+
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">TEAMS ({universeTeams.length})</p>
                 {universeTeams.length > 0 ? (

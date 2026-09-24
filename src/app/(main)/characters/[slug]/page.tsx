@@ -50,14 +50,14 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
     // console.log(character)
 
     return (
-        <div className="mx-auto pb-8 w-[90vw] space-y-5">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-4 h-110">
+        <div className="pb-8 space-y-5 pt-5">
+            <div className="flex flex-col md:flex-row items-start gap-6">
                 {/* border rounded-lg */}
-                <div className="shrink-0 h-full ">
+                <div className="shrink-0 w-full md:w-auto flex justify-center md:block">
                     <Suspense
                         fallback={
-                            <ViewTransition exit="slide-down" default="none">
-                                <div className="h-60 w-40 md:h-80 md:w-60 bg-muted rounded-lg animate-pulse" />
+                            <ViewTransition name={`photo-${character.id}`} /* exit="slide-down" default="none" */>
+                                <div className="h-full max-w-50 sm:max-w-xs h-[27rem] w-[50rem] bg-foreground/80 rounded-lg animate-pulse" />
                             </ViewTransition>
                         }
                     >
@@ -68,7 +68,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                     </Suspense>
                 </div>
 
-                <div className="ml-4 w-full h-full flex flex-col justify-center -translate-x-5 gap-2">
+                <div className="w-full flex flex-col gap-3">
                     <div className="flex flex-col gap-2">
                         <div className="space-x-2">
                             <Badge className={`${tierColors.bg} ${tierColors.foreground}`}><TierIcon size={16} /> Tier  {CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER]}</Badge>
@@ -93,11 +93,12 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
 
                         {/* <p className="max-h-md overflow-y-auto">{character.biography.origin?.split(".")[0] + "."}</p> */}
 
-                        <div className="flex flex-nowrap gap-2 items-center">
-                            <p className="max-h-md overflow-y-auto">{`${character.biography.origin/* .slice(0, 100) */}`}</p>
-                            <div className="w-40 border-l-4 h-20 flex items-center justify-center p-2 shrink-0">
+                        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                            <p className="text-sm leading-relaxed line-clamp-4">{`${character.biography.origin/* .slice(0, 100) */}`}</p>
+                            <div className="w-16 sm:w-24 border-l-0 sm:border-l-4 h-16 flex items-center justify-center p-2 shrink-0">
                                 <Image src={character.biography.publisher.logo} alt={character.name} width={100} height={100}
                                     className="max-w-full max-h-full object-contain rounded-lg"
+                                    unoptimized
                                 // className="rounded-lg h-15 w-auto" 
                                 />
                             </div>
@@ -114,7 +115,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                         </div>
                     </div>
 
-                    <div className=" grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
                         <div className="flex flex-col gap-1 border p-2 rounded bg-muted">
                             <p className="text-sm font-light">HEIGHT</p>
                             <p className="text-sm font-bold capitalize">
@@ -191,41 +192,41 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id="biography" className="space-y-2">
                 <p className="text-sm font-light uppercase mb-2 text-primary">BIOGRAPHY</p>
                 <div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><MapPinIcon size={16} /> Born in</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><MapPinIcon size={16} /> Born in</span>
                         <p className="text-sm font-bold">{(character.biography?.placeOfBirth === "-" || character.biography?.placeOfBirth === "") ? "An unknown location" : character.biography?.placeOfBirth}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><CalendarIcon size={16} /> Age</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><CalendarIcon size={16} /> Age</span>
                         <p className="text-sm font-bold">{character.appearance?.age || "an unknown age"}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><BookIcon size={16} /> First Appearance</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><BookIcon size={16} /> First Appearance</span>
                         <p className="text-sm font-bold">{character.biography?.firstAppearance === "-" || character.biography?.firstAppearance === "" ? "An unknown date" : character.biography?.firstAppearance}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><LetterTextIcon size={16} /> Aliases</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><LetterTextIcon size={16} /> Aliases</span>
                         <p className="text-sm font-bold">{aliasesAndAlterEgos.join(", ") || "No aliases or alter egos"}</p>
                     </div>
 
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><BookIcon size={16} /> Occupation</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><BookIcon size={16} /> Occupation</span>
                         <p className="text-sm font-bold">{character.work.occupation === "-" || character.work.occupation === "" ? "An unknown occupation" : character.work.occupation}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><HouseIcon size={16} /> Base</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><HouseIcon size={16} /> Base</span>
                         <p className="text-sm font-bold">{character.work.base === "-" || character.work.base === "" ? "An unknown base" : character.work.base}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><Users size={16} /> Relatives</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><Users size={16} /> Relatives</span>
                         <p className="text-sm font-bold capitalize">{character.connections.relatives === "-" || character.connections.relatives === "" ? "no relatives" : character.connections.relatives}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><ShieldOff size={16} /> Weaknesses</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><ShieldOff size={16} /> Weaknesses</span>
                         <p className="text-sm font-bold capitalize">{character.weaknesses || character.weaknesses === "-" ? "no weaknesses" : "an unknown weaknesses"}</p>
                     </div>
-                    <div className="text-sm  flex items-center justify-start gap-10 border-b p-2">
-                        <span className="flex items-center gap-1 min-w-1/4"><Paperclip size={16} /> Origin</span>
+                    <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
+                        <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><Paperclip size={16} /> Origin</span>
                         <p className="text-sm font-bold">{character.biography.origin || "an unknown origin"}</p>
                     </div>
                 </div>
@@ -285,12 +286,21 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                         {Object.entries(character.images).map(([key, value]) => {
                             if (value === undefined || value === null || value === "" || value === "-") return null;
                             return (
-                                <div key={key} className="border rounded-lg overflow-hidden">
-                                    <Image src={value} alt={`${character.name} ${key}`} width={800} height={800} className="rounded-lg h-full object-cover" />
+                                <div key={key} className="border rounded-lg overflow-hidden aspect-square">
+                                    <Image
+                                        unoptimized
+                                        src={value}
+                                        alt={`${character.name} ${key}`}
+                                        width={400}
+                                        height={400}
+                                        className="w-full h-full object-cover"
+                                    /* onError={(e) => {
+                                        e.currentTarget.parentElement!.style.display = "none"
+                                    }} */
+                                    />
                                 </div>
                             );
                         })}
-
                     </div>
                 ) : (
                     <p className="text-sm font-bold">No gallery images listed.</p>

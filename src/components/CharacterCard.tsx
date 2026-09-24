@@ -16,27 +16,26 @@ type CharacterCardProps = {
 }
 
 export default function CharacterCard({ character, size = "default" }: CharacterCardProps) {
-    const [loadingImage, setLoadingImage] = useState(true);
+    // const [loadingImage, setLoadingImage] = useState(true);
 
-    const images = Object.values(character.images).filter((v): v is string => !!v && v !== null && v !== undefined && v !== "" && v !== "-" && v !== character.images.md && !v.includes("/api/images/xs/") && !v.includes("/api/images/sm/"));
+    // const images = Object.values(character.images).filter((v): v is string => !!v && v !== null && v !== undefined && v !== "" && v !== "-" && v !== character.images.md && !v.includes("/api/images/xs/") && !v.includes("/api/images/sm/"));
 
-    const [randomImageIndex, setRandomImageIndex] = useState(0);
+    /* const [randomImageIndex, setRandomImageIndex] = useState(0);
 
     function getRandomImageIndex() {
         if (images.length != 0) {
             const randomIndex = Math.floor(Math.random() * images.length);
             setRandomImageIndex(randomIndex);
         }
-    }
+    } */
 
     // console.log("CharacterCard: character:", character.name, character.biography.publisher);
 
     return (
-        <Card onMouseEnter={getRandomImageIndex} className="group  h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
+        <Card /* onMouseEnter={getRandomImageIndex} */ className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
             <ViewTransition name={`photo-${character.id}`}>
                 {/* container ensures skeleton and image occupy same area and stack */}
-                <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-60"} relative rounded-t-xl `}>
-                    {/* <Image src={character.biography.publisher.logo} alt={`${character.name}'s image`} className="translate-y-5 group-hover:-translate-y-10 w-auto h-8 object-cover transition-all duration-500 animate-spin" width={800} height={1200} /> */}
+                {/* <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-60"} relative rounded-t-xl `}>
                     {loadingImage && <Skeleton className="absolute inset-0 w-full h-full" />}
                     {images.length > 0 && (
                         <Image
@@ -45,6 +44,7 @@ export default function CharacterCard({ character, size = "default" }: Character
                             className={`absolute w-full h-full object-cover transition-opacity duration-700 ${loadingImage ? 'opacity-0' : 'opacity-100'} rounded-t-xl`}
                             width={800}
                             height={1200}
+                            unoptimized
                         />
                     )}
                     <Image
@@ -53,9 +53,21 @@ export default function CharacterCard({ character, size = "default" }: Character
                         className={`${images.length > 0 && "group-hover:opacity-0"} absolute inset-0 w-full h-full object-cover transition-opacity duration-700  rounded-t-xl`}
                         width={800}
                         height={1200}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         onLoad={() => setLoadingImage(false)}
                     />
-                </div>
+                </div> */}
+                <Image
+                    src={`${character.images.md}`}
+                    alt={`${character.name}'s main image`}
+                    unoptimized
+                    // className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-60"} w-full h-full object-cover transition-opacity duration-700  rounded-t-xl`}
+                    className={`h-80 w-full  object-cover transition-opacity duration-700  rounded-t-xl`}
+                    width={800}
+                    height={1200}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                // onLoad={() => setLoadingImage(false)}
+                />
             </ViewTransition>
             <CardHeader>
                 <CardAction>
@@ -72,17 +84,22 @@ export default function CharacterCard({ character, size = "default" }: Character
     )
 }
 
-/* export function CharacterCardSkeleton() {
+/* export function CharacterCardSkeleton({ size = "default" }: { size?: "default" | "sm" | "lg" | undefined }) {
     return (
-        <Card className="relative mx-auto w-full max-w-sm pt-0 h-[300px]">
-            <div className="absolute inset-0 z-30 bg-gray-200" />
+        <Card className="group  h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
+            <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-60"} relative rounded-t-xl `}>
+                <Skeleton className="absolute inset-0 w-full h-full" />
+            </div>
             <CardHeader>
                 <CardAction>
-                    <CharacterBadge icon={<CircleQuestionMark className="text-gray-500" />} text="..." color="bg-gray-200 text-background" />
+                    <Skeleton className="w-20 h-6" />
                 </CardAction>
-                <CardTitle className="bg-gray-200 text-background">Loading...</CardTitle>
-                <CardDescription className="bg-gray-200 text-background">
-                    Loading...
+                <CardTitle className="text-lg font-bold group-hover: transition-all duration-500">
+                    <Skeleton className="w-32 h-6" />
+                </CardTitle>
+                <CardDescription className="flex flex-row justify-between gap-1 w-full">
+                    <Skeleton className="w-24 h-4" />
+                    <Skeleton className="w-16 h-4" />
                 </CardDescription>
             </CardHeader>
         </Card>
