@@ -217,7 +217,8 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                     </div>
                     <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
                         <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><ShieldOff size={16} /> Weaknesses</span>
-                        <p className="text-sm font-bold capitalize">{character.weaknesses || character.weaknesses === "-" ? "no weaknesses" : "an unknown weaknesses"}</p>
+                        {/* <p className="text-sm font-bold capitalize">{character.weaknesses || character.weaknesses === "-" ? "no weaknesses" : "an unknown weaknesses"}</p> */}
+                        <p className="text-sm font-bold capitalize">{(character.weaknesses && character.weaknesses.length > 0) ? `${character.weaknesses.join(",")}` : "an unknown weaknesses"}</p>
                     </div>
                     <div className="text-sm flex items-start sm:items-center gap-4 border-b p-2">
                         <span className="flex items-center gap-1 w-32 sm:w-40 shrink-0"><Paperclip size={16} /> Origin</span>
