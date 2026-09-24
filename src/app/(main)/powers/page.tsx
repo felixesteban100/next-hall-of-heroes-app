@@ -3,6 +3,8 @@ import PowerCard from "@/components/PowerCard";
 import { collectionPowers } from "@/db/mongodb";
 import Link from "next/link";
 
+export const instant = false;
+
 export default async function page({
     searchParams
 }: {

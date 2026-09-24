@@ -5,6 +5,8 @@ import Image from "next/image";
 import { ViewTransition } from "react";
 import TeamCard from "@/components/TeamCard";
 
+export const instant = false;
+
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 

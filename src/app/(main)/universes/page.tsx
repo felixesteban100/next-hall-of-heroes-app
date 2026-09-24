@@ -4,6 +4,8 @@ import UniverseCard from "@/components/UniverseCard";
 import { collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 
+export const instant = false;
+
 export default async function page({
     searchParams
 }: {

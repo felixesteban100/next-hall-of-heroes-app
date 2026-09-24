@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Suspense, ViewTransition } from "react";
 import { cacheLife } from "next/dist/server/use-cache/cache-life"
 
+export const instant = false;
+
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
     "use cache"
     cacheLife("hours") // or "minutes", "days", "weeks"

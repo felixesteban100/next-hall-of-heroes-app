@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ViewTransition } from "react";
 
+export const instant = false;
+
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
