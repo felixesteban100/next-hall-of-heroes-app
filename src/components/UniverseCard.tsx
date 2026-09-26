@@ -39,11 +39,16 @@ export default function UniverseCard({ universe, size }: UniverseCardProps) {
                 {/* <CardAction>
                     <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={CharacterAlignmentText(character.biography.alignment)} color={CharacterAlignmentColor(character.biography.alignment)} />
                 </CardAction> */}
-                <CardTitle className="text-lg font-bold">
-                    {universe.name} <span className="text-xs text-muted-foreground font-medium">#{universe.id}</span>
+                <CardTitle className="text-lg font-bold flex items-center justify-between gap-2 min-w-0">
+                    <span className="truncate" title={universe.name}>
+                        {universe.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                        #{universe.id}
+                    </span>
                 </CardTitle>
-                <CardDescription>
-                    {universe.description ? universe.description.slice(0, 100) + "..." : "No description available."}
+                <CardDescription className="line-clamp-2 text-xs">
+                    {universe.description || "No description available."}
                 </CardDescription>
             </CardHeader>
         </Card>

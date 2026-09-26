@@ -50,8 +50,6 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
 
     const characterImages = [character.images.md, ...Object.entries(character.images).filter(([prop, image]) => image != "" && image != undefined && image != "-" && prop != "md").map(([prop, img]) => img.toString())]
 
-    console.log()
-
     // console.log("class", character.class)
     // console.log(character)
 
@@ -230,7 +228,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id="powers-abilities" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary ">Powers & abilities</p>
                 {character.powers && character.powers.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {character.powers.map((power) => (
                             <Link key={power.name} href={`/powers/${power.id}`} className="flex flex-col gap-2">
                                 <PowerCard power={power} size="sm" />
@@ -245,7 +243,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">GROUPS & AFFILIATIONS</p>
                 {character.connections.groupAffiliation.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {character.connections.groupAffiliation.map((team) => (
                             <Link key={team.id} href={`/teams/${team.id}`}>
                                 <TeamCard team={team} size="sm" />
@@ -262,7 +260,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id="enemies" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">ENEMIES</p>
                 {character.connections.enemies.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {character.connections.enemies.map((enemy) => (
                             <Link key={enemy.id} href={`/characters/${enemy.slug}`}>
                                 <CharacterCard character={JSON.parse(JSON.stringify(enemy))} size="sm" />
@@ -277,7 +275,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id="gallery" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">GALLERY</p>
                 {character.images ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {Object.entries(character.images).map(([key, value]) => {
                             if (value === undefined || value === null || value === "" || value === "-") return null;
                             return (

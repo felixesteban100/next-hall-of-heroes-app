@@ -42,7 +42,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">TEAMS ({universeTeams.length})</p>
                 {universeTeams.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+                    <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch ">
                         {universeTeams.slice(0, 12).map((team) => (
                             <Link key={team.id} href={`/teams/${team.id}`}>
                                 <TeamCard team={JSON.parse(JSON.stringify(team))} />
@@ -57,7 +57,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">CHARACTERS ({universeCharacters.length})</p>
                 {universeCharacters.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+                    <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {universeCharacters.slice(0, 12).map((character) => (
                             <Link key={character.id} href={`/characters/${character.id}`}>
                                 <CharacterCard character={JSON.parse(JSON.stringify(character))} />

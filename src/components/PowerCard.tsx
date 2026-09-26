@@ -26,9 +26,18 @@ export default function PowerCard({ power, size }: PowerCardProps) {
                 {/* <CardAction>
                     <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={CharacterAlignmentText(character.biography.alignment)} color={CharacterAlignmentColor(character.biography.alignment)} />
                 </CardAction> */}
-                <CardTitle>{power.name}</CardTitle>
-                <CardDescription>
-                    {power.description ? `${power.description.slice(0, 100)}...` : "No description available."}
+                <CardTitle className="text-lg font-bold flex items-center justify-between gap-2 min-w-0">
+                    <span className="truncate" title={power.name}>
+                        {power.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                        #{power.id}
+                    </span>
+                </CardTitle>
+
+                {/* Clamp descriptions to max 2 lines for uniform height */}
+                <CardDescription className="line-clamp-2 text-xs">
+                    {power.description || "No description available."}
                 </CardDescription>
             </CardHeader>
         </Card>

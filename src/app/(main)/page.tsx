@@ -4,11 +4,12 @@ import { PaginationPages } from "@/components/Pagination";
 import { collectionCharacters, collectionPowers, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 
-import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
+// import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
 import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
+import { FilterBarSkeleton } from "@/components/FilterBarSkeleton";
 
 export const instant = false;
 
@@ -99,31 +100,27 @@ async function HomeContent({
   const powers = await collectionPowers.find({}).sort({ "id": -1 }).toArray();
 
   return (
-    <div className="min-h-screen space-y-8">
+    <div className="min-h-screen space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Characters</h1>
         <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
           {totalCharacters} characters across all universes
-          <ActiveFiltersBadges
-            name={name}
-            gender={gender}
-            alignment={alignment}
-            universe={universe}
-            tier={tier}
-            character_class={character_class}
-            powersParam={powersParam}
-            powers={powers}
-            character_type={character_type}
-          />
         </div>
       </div>
       <Suspense
         key={JSON.stringify(params)}
-        fallback={
-          <div className="h-14 w-full animate-pulse rounded-md bg-muted" />
-        }
+        fallback={<FilterBarSkeleton />}
       >
-        <FilterBar universes={JSON.parse(JSON.stringify(universes))} powers={JSON.parse(JSON.stringify(powers))} />
+        <FilterBar
+          universes={JSON.parse(JSON.stringify(universes))}
+          powers={JSON.parse(JSON.stringify(powers))}
+          activeFilterProps={{
+            name, gender, alignment, universe,
+            tier, character_class, powersParam,
+            powers: JSON.parse(JSON.stringify(powers)),
+            character_type
+          }}
+        />
       </Suspense>
       {/*  overflow-y-auto */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">

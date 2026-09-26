@@ -25,9 +25,16 @@ export default function TeamCard({ team, size }: TeamCardProps) {
                 {/* <CardAction>
                     <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={CharacterAlignmentText(character.biography.alignment)} color={CharacterAlignmentColor(character.biography.alignment)} />
                 </CardAction> */}
-                <CardTitle>{team.name}</CardTitle>
-                <CardDescription>
-                    {team.description ? team.description.slice(0, 100) + "..." : "No description available."}
+                <CardTitle className="text-lg font-bold flex items-center justify-between gap-2 min-w-0">
+                    <span className="truncate" title={team.name}>
+                        {team.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                        #{team.id}
+                    </span>
+                </CardTitle>
+                <CardDescription className="line-clamp-2 text-xs">
+                    {team.description || "No description available."}
                 </CardDescription>
             </CardHeader>
         </Card>
