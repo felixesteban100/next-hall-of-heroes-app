@@ -1,10 +1,14 @@
 "use client"
 
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
+import {
+    CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON,
+    CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON,
+    CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL,
+    type CharacterType
+} from "@/lib/constants";
 import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 import { Power } from "@/types";
-import { Frown, Globe, LetterText, type LucideIcon, Mars, Meh, Smile, UserPen, Venus, X, Zap } from "lucide-react";
-import { Button } from "./ui/button";
+import { Frown, Globe, type LucideIcon, Mars, Meh, Smile, Venus, X, Zap } from "lucide-react";
 
 type ActiveFilter = {
     label: string;
@@ -28,16 +32,19 @@ export type ActiveFiltersBadgesProps = {
     onRemove?: (key: string) => void;
 }
 
-export default function ActiveFiltersBadges({ name, gender, alignment, universe, tier, character_class, powersParam, powers, character_type, onRemove }: ActiveFiltersBadgesProps) {
+export default function ActiveFiltersBadges({
+    name, gender, alignment, universe, tier,
+    character_class, powersParam, powers, character_type, onRemove
+}: ActiveFiltersBadgesProps) {
     const activeFilters: ActiveFilter[] = [];
-
-    if (name) activeFilters.push({ label: "Name", display: name, icon: LetterText, paramKey: "name" });
 
     if (gender) activeFilters.push({
         label: "Gender",
         display: gender,
         icon: gender === "Male" ? Mars : Venus,
-        paramKey: "gender"
+        paramKey: "gender",
+        colorText: "text-foreground",
+        colorBg: gender === "Female" ? "bg-pink-200 dark:bg-pink-500" : "bg-blue-200 dark:bg-blue-500"
     });
 
     if (alignment) activeFilters.push({
@@ -45,10 +52,25 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
         display: getCharacterAlignmentText(alignment),
         icon: alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh,
         colorText: getCharacterAlignmentText(alignment),
-        colorBg: getCharacterAlignmentColor(alignment), paramKey: "alignment"
+        colorBg: getCharacterAlignmentColor(alignment),
+        paramKey: "alignment"
     });
 
-    if (universe) activeFilters.push({ label: "Universe", display: universe, icon: Globe, paramKey: "universe" });
+    if (character_type) {
+        const typeKey = character_type as CharacterType;
+        const typeColor = CHARACTER_TYPE_COLOR[typeKey];
+        const TypeIcon = CHARACTER_TYPE_ICON[typeKey];
+        const typeLabel = CHARACTER_TYPE_LABEL[typeKey] || character_type;
+
+        activeFilters.push({
+            label: "Character Type",
+            display: typeLabel,
+            icon: TypeIcon,
+            colorText: typeColor?.foreground,
+            colorBg: typeColor?.bg,
+            paramKey: "character_type"
+        });
+    }
 
     if (!Number.isNaN(tier)) {
         const tierKey = tier as keyof typeof CHARACTER_TIER;
@@ -57,7 +79,8 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
             display: CHARACTER_TIER[tierKey],
             icon: CHARACTER_TIER_ICON[tierKey],
             colorText: CHARACTER_TIER_COLOR[tierKey].foreground,
-            colorBg: CHARACTER_TIER_COLOR[tierKey].bg, paramKey: "tier"
+            colorBg: CHARACTER_TIER_COLOR[tierKey].bg,
+            paramKey: "tier"
         });
     }
 
@@ -70,10 +93,13 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
                 display: classLabel,
                 icon: CHARACTER_CLASS_ICON[classKey],
                 colorText: CHARACTER_CLASS_COLOR[classKey].foreground,
-                colorBg: CHARACTER_CLASS_COLOR[classKey].bg, paramKey: "class"
+                colorBg: CHARACTER_CLASS_COLOR[classKey].bg,
+                paramKey: "class"
             });
         }
     }
+
+    if (universe) activeFilters.push({ label: "Universe", display: universe, icon: Globe, paramKey: "universe" });
 
     if (powersParam.length > 0) {
         const powerNames = powers
@@ -81,10 +107,6 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
             .map(p => p.name);
         activeFilters.push({ label: "Powers", display: powerNames.join(", "), icon: Zap, paramKey: "powers" });
     }
-
-    if (character_type) activeFilters.push({ label: "Character Type", display: character_type, icon: UserPen, paramKey: "character_type" });
-
-    // console.log("Active Filters:", activeFilters); // Debugging line
 
     return (
         <div>
@@ -97,7 +119,7 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
                                 key={f.label}
                                 className={`capitalize inline-flex items-center gap-1 text-xs ${f.colorText ?? "text-muted-foreground"} font-bold ${f.colorBg ?? "bg-muted"} rounded-full px-3 py-1`}
                             >
-                                <Icon size={10} />
+                                <Icon size={12} />
                                 {f.display}
                                 {onRemove && (
                                     <button
@@ -114,5 +136,5 @@ export default function ActiveFiltersBadges({ name, gender, alignment, universe,
                 </div>
             )}
         </div>
-    )
+    );
 }

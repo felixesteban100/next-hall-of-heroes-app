@@ -26,7 +26,7 @@ function Progress({
           // Wait 2 seconds (2000ms) after coming into view before starting animation
           timer = setTimeout(() => {
             setCurrentValue(value || 0)
-          }, 2000)
+          }, 500)
 
           observer.disconnect()
         }

@@ -4,14 +4,21 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Input } from "./ui/input";
 import { Button } from './ui/button';
 import { useCallback, useState } from 'react';
-import { ArrowBigDown, Mars, SearchIcon, SlidersHorizontal, Venus } from 'lucide-react';
+import { ArrowBigDown, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Power, Universe } from '@/types';
 import { ButtonGroup } from './ui/button-group';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup } from './ui/dropdown-menu';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPES } from '@/lib/constants';
+import {
+    CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON,
+    CHARACTER_CLASS_ORDER,
+    CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON,
+    CHARACTER_TIER_ORDER,
+    CHARACTER_TYPES, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL,
+    type CharacterType
+} from '@/lib/constants';
 import { CharacterBadgeIcon } from '@/lib/characters_utils';
 import ActiveFiltersBadges, { ActiveFiltersBadgesProps } from './ActiveFiltersBadges';
 
@@ -136,7 +143,6 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
 
     return (
         <div className="flex flex-col gap-3 w-full">
-
             {/* Row 1 — search */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -148,6 +154,7 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
                         className="pl-10 bg-muted/30"
                     />
+                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
                 </div>
                 <Button size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
@@ -177,7 +184,20 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                             </DrawerTitle>
                         </DrawerHeader>
                         <div className="no-scrollbar overflow-y-auto px-4 space-y-4">
-
+                            <FilterSection label="GENDER" active={!!draftFilters.gender} onClear={() => setFilter("gender", "")}>
+                                <Button variant={draftFilters.gender === "Male" ? "outline" : "ghost"}
+                                    className={`text-blue-500 hover:text-blue-800 ${draftFilters.gender === "Male" ? "bg-blue-100" : ""}`}
+                                    onClick={() => setFilter("gender", "Male")}
+                                >
+                                    <Mars /> Male
+                                </Button>
+                                <Button variant={draftFilters.gender === "Female" ? "outline" : "ghost"}
+                                    className="text-pink-500 hover:text-pink-800"
+                                    onClick={() => setFilter("gender", "Female")}
+                                >
+                                    <Venus /> Female
+                                </Button>
+                            </FilterSection>
                             <FilterSection label="ALIGNMENT" active={!!draftFilters.alignment} onClear={() => setFilter("alignment", "")}>
                                 {[
                                     { value: "good", label: "Good", className: "text-green-500 hover:text-green-500" },
@@ -194,52 +214,72 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                                 ))}
                             </FilterSection>
 
-                            <FilterSection label="TIER" active={!!draftFilters.tier} onClear={() => setFilter("tier", "")}>
-                                {Object.entries(CHARACTER_TIER).map(([value, label]) => {
-                                    const color = CHARACTER_TIER_COLOR[Number(value) as keyof typeof CHARACTER_TIER_COLOR];
-                                    const Icon = CHARACTER_TIER_ICON[Number(value) as keyof typeof CHARACTER_TIER_ICON];
+                            <FilterSection label="CHARACTER TYPE" active={!!draftFilters.character_type} onClear={() => setFilter("character_type", "")}>
+                                {CHARACTER_TYPES.map((type) => {
+                                    const color = CHARACTER_TYPE_COLOR[type as CharacterType];
+                                    const Icon = CHARACTER_TYPE_ICON[type as CharacterType];
+                                    const label = CHARACTER_TYPE_LABEL[type as CharacterType] || type;
+                                    const isSelected = draftFilters.character_type === type;
+
                                     return (
-                                        <Button key={value}
+                                        <Button
+                                            key={type}
+                                            variant={isSelected ? "outline" : "ghost"}
+                                            className={`${color.text} hover:${color.text} ${isSelected ? "font-bold border-current bg-muted/50" : "font-medium"}`}
+                                            onClick={() => setFilter("character_type", isSelected ? "" : type)}
+                                        >
+                                            {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
+                                            {label}
+                                        </Button>
+                                    );
+                                })}
+                            </FilterSection>
+
+                            <FilterSection label="TIER" active={!!draftFilters.tier} onClear={() => setFilter("tier", "")}>
+                                {CHARACTER_TIER_ORDER.map((tierKey) => {
+                                    const value = String(tierKey);
+                                    const label = CHARACTER_TIER[tierKey as keyof typeof CHARACTER_TIER];
+
+                                    const color = CHARACTER_TIER_COLOR[tierKey as keyof typeof CHARACTER_TIER_COLOR]
+                                    const Icon = CHARACTER_TIER_ICON[tierKey as keyof typeof CHARACTER_TIER_ICON]
+
+                                    return (
+                                        <Button
+                                            key={value}
                                             variant={draftFilters.tier === value ? "outline" : "ghost"}
-                                            className={`${color.text} hover:${color.text} ${draftFilters.tier === value ? "font-bold" : "font-medium"}`}
+                                            className={`${color.text} hover:${color.text} ${draftFilters.tier === value ? "font-bold border-current bg-muted/50" : "font-medium"}`}
                                             onClick={() => setFilter("tier", value)}
                                         >
-                                            <Icon /> {label}
+                                            {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
+                                            {label}
                                         </Button>
                                     );
                                 })}
                             </FilterSection>
 
                             <FilterSection label="CLASS" active={!!draftFilters.class} onClear={() => setFilter("class", "")}>
-                                {Object.entries(CHARACTER_CLASS).map(([value, label]) => {
-                                    const color = CHARACTER_CLASS_COLOR[Number(value) as keyof typeof CHARACTER_CLASS_COLOR];
-                                    const Icon = CHARACTER_CLASS_ICON[Number(value) as keyof typeof CHARACTER_CLASS_ICON];
+                                {CHARACTER_CLASS_ORDER.map((classKey) => {
+                                    const value = String(classKey);
+                                    const label = CHARACTER_CLASS[classKey as keyof typeof CHARACTER_CLASS];
+
+                                    const color = CHARACTER_CLASS_COLOR[classKey as keyof typeof CHARACTER_CLASS_COLOR]
+                                    const Icon = CHARACTER_CLASS_ICON[classKey as keyof typeof CHARACTER_CLASS_ICON]
+
                                     return (
-                                        <Button key={value}
+                                        <Button
+                                            key={value}
                                             variant={draftFilters.class === value ? "outline" : "ghost"}
-                                            className={`${color.text} hover:${color.text} ${draftFilters.class === value ? "font-bold" : "font-medium"}`}
+                                            className={`${color.text} hover:${color.text} ${draftFilters.class === value ? "font-bold border-current bg-muted/50" : "font-medium"}`}
                                             onClick={() => setFilter("class", value)}
                                         >
-                                            <Icon /> {label}
+                                            {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
+                                            {label}
                                         </Button>
                                     );
                                 })}
                             </FilterSection>
 
-                            <FilterSection label="GENDER" active={!!draftFilters.gender} onClear={() => setFilter("gender", "")}>
-                                <Button variant={draftFilters.gender === "Male" ? "outline" : "ghost"}
-                                    className={`text-blue-500 hover:text-blue-800 ${draftFilters.gender === "Male" ? "bg-blue-100" : ""}`}
-                                    onClick={() => setFilter("gender", "Male")}
-                                >
-                                    <Mars /> Male
-                                </Button>
-                                <Button variant={draftFilters.gender === "Female" ? "outline" : "ghost"}
-                                    className="text-pink-500 hover:text-pink-800"
-                                    onClick={() => setFilter("gender", "Female")}
-                                >
-                                    <Venus /> Female
-                                </Button>
-                            </FilterSection>
+
 
                             <FilterSection label="UNIVERSE" active={!!draftFilters.universe} onClear={() => setFilter("universe", "")}>
                                 <Select value={draftFilters.universe} onValueChange={(v) => setFilter("universe", v)}>
@@ -267,19 +307,6 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                                     </MultiSelectContent>
                                 </MultiSelect>
                             </FilterSection>
-
-                            <FilterSection label="CHARACTER TYPE" active={!!draftFilters.character_type} onClear={() => setFilter("character_type", "")}>
-                                <Select value={draftFilters.character_type} onValueChange={(v) => setFilter("character_type", v === "unknown" ? "" : v)}>
-                                    <SelectTrigger className="w-full capitalize"><SelectValue placeholder="Select character type..." /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {CHARACTER_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}
-                                            <SelectItem value="unknown">Unknown</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </FilterSection>
-
                         </div>
                         <DrawerFooter>
                             <Button onClick={applyFilters}>Show Results</Button>

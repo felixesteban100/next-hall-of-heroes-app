@@ -81,6 +81,8 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
         { icon: Paperclip, label: "Origin", val: val(biography.origin, "An unknown origin") },
     ];
 
+    console.log("enemies", connections.enemies)
+
     return (
         <div className="pb-8 space-y-6 pt-5">
             {/* Header Section */}
@@ -89,7 +91,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                     <Suspense
                         fallback={
                             <ViewTransition name={`photo-${character.id}`}>
-                                <div className="w-full max-w-xs sm:max-w-sm aspect-[3/4] bg-muted rounded-lg animate-pulse" />
+                                <div className="w-80 h-[24rem] bg-muted/60 rounded-lg animate-pulse shrink-0" />
                             </ViewTransition>
                         }
                     >

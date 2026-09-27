@@ -19,7 +19,14 @@ import {
     Globe,
     Sun,
     Infinity,
+    Tv,
+    Gamepad2,
+    Film,
+    BookOpen,
+    User,
+    Clapperboard,
     type LucideIcon,
+    FileQuestionMark,
 } from "lucide-react";
 
 export const CHARACTER_CLASS_ICON: Record<number, LucideIcon> = {
@@ -55,25 +62,28 @@ export const POWER_TIER_ICON: Record<number, LucideIcon> = {
 };
 
 export const CHARACTER_CLASS = {
-    0: "Unassigned",
     1: "Mutant/Powered", // (born with abilities — X-Men, most DBZ Saiyans)
     2: "Tech/Gadget-based", // (Iron Man, Batman, Batwing — no innate powers, all engineering)
     3: "Trained Discipline / Mystic Arts", // (Doctor Strange, Scarlet Witch)
     4: "Skill/Peak Human", // (Akashi, Black Widow — no superpowers, pure trained ability)
     5: "Cosmic/God-tier", // (Thanos, Goku at his strongest, Superman)
+    0: "Unassigned",
 } as const;
 
+export const CHARACTER_CLASS_ORDER = [1, 2, 3, 4, 5, 0] as const;
+
 export const CHARACTER_TIER = {
-    0: "Unranked",
     1: "Street level",
     2: "Skilled / Enhanced",
     3: "Superhuman",
     4: "Powerhouse",
     5: "Cosmic / World-ending",
+    0: "Unranked",
 } as const;
 
+export const CHARACTER_TIER_ORDER = [1, 2, 3, 4, 5, 0] as const;
+
 export const POWER_TIER = {
-    0: "Unrated",
     1: "Minor / Latent",
     2: "Tactical / Basic",
     3: "Enhanced / Substantial",
@@ -84,6 +94,7 @@ export const POWER_TIER = {
     8: "Stellar / Cosmic",
     9: "Universal / Transcendent",
     10: "Absolute / Omnipotent",
+    0: "Unrated",
 } as const;
 
 export const CHARACTER_CLASS_COLOR = {
@@ -170,67 +181,160 @@ export const POWER_TIER_COLOR = {
         bg: "bg-slate-200 dark:bg-slate-800",
         text: "text-slate-500 dark:text-slate-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-slate-500"
     },
     // Minor / Latent — subtle gray-green
     1: {
         bg: "bg-zinc-300 dark:bg-zinc-700",
         text: "text-zinc-600 dark:text-zinc-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-zinc-500"
     },
     // Tactical / Basic — cool blue
     2: {
         bg: "bg-blue-400 dark:bg-blue-800",
         text: "text-blue-600 dark:text-blue-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-blue-500"
+
     },
     // Enhanced / Substantial — cyan/teal
     3: {
         bg: "bg-cyan-500 dark:bg-cyan-700",
         text: "text-cyan-600 dark:text-cyan-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-cyan-500"
+
     },
     // Advanced / Potent — emerald
     4: {
         bg: "bg-emerald-500 dark:bg-emerald-700",
         text: "text-emerald-600 dark:text-emerald-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-emerald-500"
+
     },
     // High Tier / Disaster — yellow/amber
     5: {
         bg: "bg-yellow-500 dark:bg-yellow-700",
         text: "text-yellow-600 dark:text-yellow-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-yellow-500"
+
     },
     // Supreme / Calamity — orange
     6: {
         bg: "bg-orange-500 dark:bg-orange-700",
         text: "text-orange-600 dark:text-orange-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-orange-500"
+
     },
     // Planetary / World Breaker — intense red
     7: {
         bg: "bg-red-600 dark:bg-red-800",
         text: "text-red-600 dark:text-red-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-red-500"
+
     },
     // Stellar / Cosmic — deep purple
     8: {
         bg: "bg-purple-600 dark:bg-purple-800",
         text: "text-purple-600 dark:text-purple-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-purple-500"
+
     },
     // Universal / Transcendent — dark violet/indigo
     9: {
         bg: "bg-indigo-600 dark:bg-indigo-900",
         text: "text-indigo-600 dark:text-indigo-400",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-indigo-500"
     },
     // Absolute / Omnipotent — golden amber/fuchsia gradient feel
     10: {
         bg: "bg-amber-500 dark:bg-amber-700",
         text: "text-amber-500 dark:text-amber-300",
         foreground: "text-white dark:text-white",
+        progress: "[&>div]:bg-amber-500"
+
     },
 } as const;
 
-export const CHARACTER_TYPES = ["anime", "cartoon", "comic", "game", "movie", "tv show", "real life"] as const;
+export const CHARACTER_TYPES = ["anime", "cartoon", "comic", "game", "movie", "tv show", "real life", "unknown"] as const;
+
+export type CharacterType = (typeof CHARACTER_TYPES)[number];
+
+export const CHARACTER_TYPE_LABEL: Record<CharacterType, string> = {
+    anime: "Anime",
+    cartoon: "Cartoon",
+    comic: "Comic Book",
+    game: "Video Game",
+    movie: "Movie",
+    "tv show": "TV Show",
+    "real life": "Real Life",
+    "unknown": "Unknown"
+};
+
+export const CHARACTER_TYPE_ICON: Record<CharacterType, LucideIcon> = {
+    anime: Sparkles,       // Japanese animation / stylised art
+    cartoon: Clapperboard, // Western animated series
+    comic: BookOpen,       // Graphic novels / comic books
+    game: Gamepad2,        // Video game characters
+    movie: Film,           // Feature films / cinematic
+    "tv show": Tv,         // Live-action TV series
+    "real life": User,     // Historical & real-world figures
+    "unknown": FileQuestionMark, // "" empty string or unknown
+};
+
+export const CHARACTER_TYPE_COLOR = {
+    // Anime — vibrant rose/pink
+    anime: {
+        bg: "bg-rose-500 dark:bg-rose-700",
+        text: "text-rose-600 dark:text-rose-400",
+        foreground: "text-white dark:text-white",
+    },
+    // Cartoon — energetic amber/yellow
+    cartoon: {
+        bg: "bg-amber-500 dark:bg-amber-700",
+        text: "text-amber-600 dark:text-amber-400",
+        foreground: "text-white dark:text-white",
+    },
+    // Comic — primary blue
+    comic: {
+        bg: "bg-blue-600 dark:bg-blue-800",
+        text: "text-blue-600 dark:text-blue-400",
+        foreground: "text-white dark:text-white",
+    },
+    // Game — electric violet/purple
+    game: {
+        bg: "bg-violet-600 dark:bg-violet-800",
+        text: "text-violet-600 dark:text-violet-400",
+        foreground: "text-white dark:text-white",
+    },
+    // Movie — sleek red/crimson
+    movie: {
+        bg: "bg-red-600 dark:bg-red-800",
+        text: "text-red-600 dark:text-red-400",
+        foreground: "text-white dark:text-white",
+    },
+    // TV Show — indigo/teal accent
+    "tv show": {
+        bg: "bg-indigo-500 dark:bg-indigo-700",
+        text: "text-indigo-600 dark:text-indigo-400",
+        foreground: "text-white dark:text-white",
+    },
+    // Real Life — grounded slate/emerald
+    "real life": {
+        bg: "bg-emerald-600 dark:bg-emerald-800",
+        text: "text-emerald-600 dark:text-emerald-400",
+        foreground: "text-white dark:text-white",
+    },
+    "unknown": {
+        bg: "bg-slate-600 dark:bg-slate-800",
+        text: "text-slate-600 dark:text-slate-400",
+        foreground: "text-white dark:text-white",
+    },
+} as const;

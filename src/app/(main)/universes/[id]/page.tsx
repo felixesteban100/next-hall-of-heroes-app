@@ -1,9 +1,9 @@
-import CharacterCard from "@/components/CharacterCard";
 import { collectionCharacters, collectionTeams, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 import Image from "next/image";
 import { ViewTransition } from "react";
 import TeamCard from "@/components/TeamCard";
+import { CharacterAccordionList } from "@/components/CharacterAccordionList";
 
 export const instant = false;
 
@@ -21,8 +21,14 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     }
 
     const universeTeams = await collectionTeams.find({ "universe": universe.id }).sort({ rand: 1 }).toArray();
-    const universeCharacters = await collectionCharacters.find({ "biography.publisher": universe.name }).sort({ rand: 1 }).toArray();
+    const universeCharacters = await collectionCharacters.find({ "biography.publisher": universe.name }).sort({ name: 1 }).toArray();
 
+
+    /* Quick Stats Bar: Total Characters count, Teams count, and Primary Media (Anime, Cartoon, Comic).
+
+Teams Row: A compact horizontal row or carousel showing teams from that universe (Plumbers, Alien Force). 
+add properties: type of characters of the universe = universe type (comic, anime...)
+*/
 
     return (
         <div className="mx-auto pb-8 max-w-[90vw] space-y-5">
@@ -56,7 +62,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">CHARACTERS ({universeCharacters.length})</p>
-                {universeCharacters.length > 0 ? (
+                <CharacterAccordionList characters={universeCharacters} />
+                {/* {universeCharacters.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {universeCharacters.slice(0, 12).map((character) => (
                             <Link key={character.id} href={`/characters/${character.id}`}>
@@ -66,7 +73,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                     </div>
                 ) : (
                     <p className="text-sm font-bold">No characters listed.</p>
-                )}
+                )} */}
             </div>
         </div>
     )

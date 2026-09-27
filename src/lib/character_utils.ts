@@ -59,7 +59,7 @@ export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryO
         },
         {
             $lookup: {
-                from: "enemies",
+                from: "characters",
                 localField: "connections.enemies",
                 foreignField: "id",
                 pipeline: [{ $project: { characters: 0 } }],

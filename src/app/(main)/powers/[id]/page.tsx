@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
 import { Zap } from "lucide-react";
+import { CharacterAccordionList } from "@/components/CharacterAccordionList";
 
 export const instant = false;
 
@@ -26,7 +27,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     const powerCharacters = await collectionCharacters
         .find({ "powers": { $in: [power.id] } })
-        .sort({ "powerstats.total": -1 }) // strongest first
+        // .sort({ "powerstats.total": -1 }) // strongest first
+        .sort({ name: 1 }) // name
         .toArray();
 
     const tierKey = power.tier as keyof typeof POWER_TIER;
@@ -34,6 +36,11 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     const TierIcon = POWER_TIER_ICON[tierKey];
 
     const normalizedScore = power.score ? Math.min(Math.round(power.score / 1000), 100) : null;
+
+
+    /* Power Tier Badge: Show where this power sits on your tier scale (e.g., Tier 2: Tactical / Basic).
+
+Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 strongest characters who possess this ability before listing everyone else. */
 
     return (
         <div className="pb-8 space-y-8">
@@ -77,7 +84,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                                     </span>
                                 </span>
                             </div>
-                            <Progress value={normalizedScore} className="h-2" />
+                            <Progress value={normalizedScore} className={`h-2 ${tierColors.progress}`} />
                         </div>
                     )}
 
@@ -133,17 +140,18 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                         {powerCharacters.length} characters with this power
                     </p>
                 </div>
-                {powerCharacters.length > 0 ? (
+                <CharacterAccordionList characters={powerCharacters} />
+                {/* {powerCharacters.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
                         {powerCharacters.map((character) => (
                             <Link key={character.id} href={`/characters/${character.slug}`}>
-                                <CharacterCard character={JSON.parse(JSON.stringify(character))} />
+                                <CharacterCard character={JSON.parse(JSON.stringify(character))} size="sm" />
                             </Link>
                         ))}
                     </div>
                 ) : (
                     <p className="text-sm text-muted-foreground">No members listed.</p>
-                )}
+                )} */}
             </div>
         </div>
     )

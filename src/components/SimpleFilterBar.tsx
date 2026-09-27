@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { SearchIcon, ArrowBigDown } from "lucide-react";
+import { SearchIcon, ArrowBigDown, X } from "lucide-react";
 import { ButtonGroup } from "./ui/button-group";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
@@ -31,14 +31,14 @@ export default function SimpleFilterBar({
     const updateParam = useCallback((key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
         params.delete("page");
+
         if (value) params.set(key, value);
-        else params.delete(key);
+        else params.delete(key); setName("");
         push(`${pathname}?${params.toString()}`, { scroll: false });
     }, [searchParams, pathname, push]);
 
     return (
         <div className="flex flex-col gap-3 w-full">
-
             {/* Row 1 — search only */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -50,6 +50,7 @@ export default function SimpleFilterBar({
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
                         className="pl-10 bg-muted/30"
                     />
+                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
                 </div>
                 <Button size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />

@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { SearchIcon, ArrowBigDown, Filter, SlidersHorizontal } from "lucide-react";
+import { SearchIcon, ArrowBigDown, Filter, SlidersHorizontal, X } from "lucide-react";
 import { ButtonGroup } from "./ui/button-group";
 import {
     DropdownMenu,
@@ -59,6 +59,7 @@ export default function PowersFilterBar() {
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
                         className="pl-10 bg-muted/30"
                     />
+                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
                 </div>
                 <Button size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />

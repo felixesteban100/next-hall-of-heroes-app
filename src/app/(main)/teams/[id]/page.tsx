@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Suspense, ViewTransition } from "react";
 import { cacheLife } from "next/dist/server/use-cache/cache-life"
+import { CharacterMiniCardGrid } from "@/components/CharacterMiniCardGrid";
 
 export const instant = false;
 
@@ -23,7 +24,11 @@ export default async function page({ params }: { params: Promise<{ id: string }>
         )
     }
 
-    const teamCharacters = await collectionCharacters.find({ "connections.groupAffiliation": { $in: [team.id] } }).sort({ rand: 1 }).toArray();
+    const teamCharacters = await collectionCharacters.find({ "connections.groupAffiliation": { $in: [team.id] } }).sort({ name: 1 }).toArray();
+
+    /* Team Metadata: Base of operations, team leader, and alignment.
+
+Average Powerstat: A combined team score (e.g., Average Combat or Overall Team Rank). */
 
     return (
         <div className="mx-auto pb-8 max-w-[90vw] space-y-5">
@@ -49,17 +54,18 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">MEMBERS</p>
-                {teamCharacters.length > 0 ? (
+                <CharacterMiniCardGrid characters={teamCharacters} />
+                {/* {teamCharacters.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 ">
                         {teamCharacters.map((character) => (
                             <Link key={character.id} href={`/characters/${character.id}`}>
-                                <CharacterCard character={JSON.parse(JSON.stringify(character))} />
+                                <CharacterCard character={JSON.parse(JSON.stringify(character))} size="sm" />
                             </Link>
                         ))}
                     </div>
                 ) : (
                     <p className="text-sm font-bold">No members listed.</p>
-                )}
+                )} */}
             </div>
         </div>
     )
