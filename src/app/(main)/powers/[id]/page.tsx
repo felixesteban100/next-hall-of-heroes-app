@@ -46,7 +46,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
         <div className="pb-8 space-y-8">
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="flex flex-col md:flex-row gap-6 items-center w-full md:items-start">
                 <ViewTransition name={`photo-power-${power.id}`}>
                     <Image
                         unoptimized
