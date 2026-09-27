@@ -1,7 +1,6 @@
 "use client"
 
 import Autoplay from "embla-carousel-autoplay"
-
 import {
   Carousel,
   CarouselContent,
@@ -10,53 +9,37 @@ import {
 import Image from "next/image"
 
 export function CharacterImageCarousel({ images, name }: { images: string[], name: string }) {
-
   return (
     <Carousel
-      className="h-full max-w-50 sm:max-w-xs"
+      className="w-80 sm:w-80 rounded-lg overflow-hidden shrink-0"
       plugins={[
         Autoplay({
-          delay: 2000,
+          delay: 2500,
         }),
       ]}
       opts={{
         loop: true,
         align: "start",
-        containScroll: "trimSnaps",
       }}
     >
-      <CarouselContent className="w-full h-full ">
+      <CarouselContent className="-ml-0">
         {images.map((image, index) => (
-          <CarouselItem key={index} className="w-full h-full ">
-            <Image src={image} alt={`${name}-${index}`} width={300} height={500} className="rounded-lg h-[27rem] w-[50rem] object-cover" style={{ contain: "layout" }} />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
-
-  )
-}
-
-
-{/* <Carousel
-      plugins={[plugin.current]}
-      className="w-full max-w-[10rem] sm:max-w-xs"
-      onMouseEnter={plugin.current.stop}
-      onMouseLeave={plugin.current.reset}
-    >
-      <CarouselContent>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <CarouselItem key={index}>
-            <div className="p-1">
-              <Card>
-                <CardContent className="flex aspect-square items-center justify-center p-6">
-                  <span className="text-4xl font-semibold">{index + 1}</span>
-                </CardContent>
-              </Card>
+          <CarouselItem key={index} className="pl-0">
+            {/* Giving this wrapper an explicit height/width + relative fixes `fill` */}
+            <div className="relative h-[24rem] w-full bg-muted rounded-lg overflow-hidden">
+              <Image
+                src={image}
+                alt={`${name}-${index}`}
+                fill
+                sizes="(max-width: 640px) 100vw, 320px"
+                className="object-cover rounded-lg"
+                priority={index === 0}
+                unoptimized
+              />
             </div>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel> */}
+    </Carousel>
+  )
+}

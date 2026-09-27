@@ -53,12 +53,6 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
                 <div className="flex-1 space-y-3">
                     {/* Tier badge */}
-                    {/* {tierColors && TierIcon && (
-                        <Badge className={`${tierColors.bg} ${tierColors.foreground}`}>
-                            <TierIcon size={12} />
-                            {CHARACTER_TIER[tierKey]}
-                        </Badge>
-                    )} */}
                     <Badge className={`${tierColors.bg} ${tierColors.foreground}`}>
                         <TierIcon size={12} />
                         {POWER_TIER[tierKey]}{" "}
