@@ -46,13 +46,14 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
         <div className="pb-8 space-y-8">
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row gap-6 items-center w-full md:items-start">
+            {/* this one doesn't look good on mobile it looks shinked */}
+            <div className="flex flex-col md:flex-row gap-6 items-center w-full">
                 <ViewTransition name={`photo-power-${power.id}`}>
                     <Image
                         unoptimized
                         src={power.img}
                         alt={power.name}
-                        className="h-52 w-52 rounded-lg object-cover shrink-0"
+                        className="h-52 w-full md:w-52 rounded-lg object-cover shrink-0"
                         width={500}
                         height={500}
                     />
@@ -72,7 +73,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
 
                     {/* Score bar */}
                     {normalizedScore !== null && (
-                        <div className="space-y-1 max-w-sm">
+                        <div className="space-y-1 ">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="flex items-center gap-1 text-muted-foreground">
                                     <Zap size={14} /> Power score
@@ -102,32 +103,6 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                         </div>
                     )}
                 </div>
-
-                {/* Stats card — right side */}
-                {/* <div className="shrink-0 border rounded-lg bg-muted/30 p-4 space-y-3 min-w-40">
-                    <p className="text-xs text-muted-foreground uppercase font-medium">Quick info</p>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-muted-foreground text-xs">Members</span>
-                            <span className="font-semibold">{powerCharacters.length} characters</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-muted-foreground text-xs">Score</span>
-                            <span className="font-semibold">{power.score?.toLocaleString() ?? "—"}</span>
-                            <span className="text-muted-foreground text-xs">{normalizedScore}% of max</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                            <span className="text-muted-foreground text-xs">Tier</span>
-                            {tierColors && TierIcon ? (
-                                <span className={`inline-flex items-center gap-1 text-xs font-semibold ${tierColors.text}`}>
-                                    <TierIcon size={12} /> {CHARACTER_TIER[tierKey]}
-                                </span>
-                            ) : (
-                                <span className="font-semibold">—</span>
-                            )}
-                        </div>
-                    </div>
-                </div> */}
             </div>
 
             {/* Members */}

@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { useCallback, useState } from 'react';
 import { ArrowBigDown, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { Power, Universe } from '@/types';
+import { Power, Team, Universe } from '@/types';
 import { ButtonGroup } from './ui/button-group';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup } from './ui/dropdown-menu';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"
@@ -50,6 +50,7 @@ export function FilterSection({ label, active, onClear, children }: {
 type DraftFilters = {
     alignment: string;
     universe: string;
+    team: string;
     character_type: string;
     tier: string;
     class: string;
@@ -58,12 +59,13 @@ type DraftFilters = {
 }
 
 const EMPTY_FILTERS: DraftFilters = {
-    alignment: "", universe: "", character_type: "",
+    alignment: "", universe: "", team: "", character_type: "",
     tier: "", class: "", gender: "", powers: [],
 };
 
-export const FilterBar = ({ universes, powers, activeFilterProps }: {
+export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
     universes: Universe[];
+    teams: Team[];
     powers: Power[];
     activeFilterProps: ActiveFiltersBadgesProps;
 }) => {
@@ -78,12 +80,20 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
     const [draftFilters, setDraftFilters] = useState<DraftFilters>({
         alignment: searchParams.get("alignment") || "",
         universe: searchParams.get("universe") || "",
+        team: searchParams.get("team") || "",
         character_type: searchParams.get("character_type") || "",
         tier: searchParams.get("tier") || "",
         class: searchParams.get("class") || "",
         gender: searchParams.get("gender") || "",
         powers: JSON.parse(searchParams.get("powers") || "[]") as number[],
     });
+
+    // Filter teams by selected universe if a universe filter is active
+    const selectedUniverseObj = universes.find(u => u.name === draftFilters.universe || u.value === draftFilters.universe);
+
+    const filteredTeams = selectedUniverseObj
+        ? teams.filter(t => String(t.universe) === String(selectedUniverseObj.id ?? selectedUniverseObj.value))
+        : [];
 
     // Generic setter — eliminates all the setDraftFilters(prev => ({ ...prev, X: Y })) repetition
     const setFilter = <K extends keyof DraftFilters>(key: K, value: DraftFilters[K]) =>
@@ -103,10 +113,11 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
         const params = new URLSearchParams(searchParams);
         params.delete("page");
 
-        // Collapse 7 near-identical blocks into a loop
+        // Loop over string filters
         const stringFilters: [string, string][] = [
             ["alignment", draftFilters.alignment],
             ["universe", draftFilters.universe],
+            ["team", draftFilters.team],
             ["character_type", draftFilters.character_type],
             ["tier", draftFilters.tier],
             ["class", draftFilters.class],
@@ -133,12 +144,12 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
 
     const hasActiveFilters =
         !!draftFilters.alignment || !!draftFilters.gender ||
-        !!draftFilters.tier || !!draftFilters.universe ||
+        !!draftFilters.tier || !!draftFilters.universe || !!draftFilters.team ||
         draftFilters.powers.length > 0;
 
     const activeFilterCount = [
         draftFilters.alignment, draftFilters.gender, draftFilters.tier,
-        draftFilters.universe, draftFilters.class, draftFilters.character_type,
+        draftFilters.universe, draftFilters.team, draftFilters.class, draftFilters.character_type,
     ].filter(Boolean).length + (draftFilters.powers.length > 0 ? 1 : 0);
 
     return (
@@ -154,7 +165,7 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
                         className="pl-10 bg-muted/30"
                     />
-                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
+                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer" onClick={() => setName("")} />
                 </div>
                 <Button size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
@@ -279,18 +290,50 @@ export const FilterBar = ({ universes, powers, activeFilterProps }: {
                                 })}
                             </FilterSection>
 
-
-
-                            <FilterSection label="UNIVERSE" active={!!draftFilters.universe} onClear={() => setFilter("universe", "")}>
-                                <Select value={draftFilters.universe} onValueChange={(v) => setFilter("universe", v)}>
-                                    <SelectTrigger className="w-full"><SelectValue placeholder="Select universe..." /></SelectTrigger>
+                            <FilterSection
+                                label="UNIVERSE"
+                                active={!!draftFilters.universe}
+                                onClear={() => {
+                                    setFilter("universe", "");
+                                    setFilter("team", ""); // Clear team when universe is cleared
+                                }}
+                            >
+                                <Select
+                                    value={draftFilters.universe}
+                                    onValueChange={(v) => {
+                                        setFilter("universe", v);
+                                        setFilter("team", ""); // Reset selected team when universe changes
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select universe..." />
+                                    </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {universes.map(u => <SelectItem key={u.value} value={u.value}>{u.name}</SelectItem>)}
+                                            {universes.map(u => (
+                                                <SelectItem key={u.value} value={u.value}>{u.name}</SelectItem>
+                                            ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                             </FilterSection>
+
+                            {filteredTeams.length > 0 &&
+                                <FilterSection label="TEAM" active={!!draftFilters.team} onClear={() => setFilter("team", "")}>
+                                    <Select value={draftFilters.team} onValueChange={(v) => setFilter("team", v)}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder={draftFilters.universe ? "Select team from universe..." : "Select team..."} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {filteredTeams.map(t => (
+                                                    <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </FilterSection>
+                            }
 
                             <FilterSection label="POWERS" active={draftFilters.powers.length > 0} onClear={() => setFilter("powers", [])}>
                                 <MultiSelect

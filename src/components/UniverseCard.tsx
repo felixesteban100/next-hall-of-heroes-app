@@ -29,7 +29,7 @@ export default function UniverseCard({ universe, size }: UniverseCardProps) {
                         src={`${universe.logo}`}
                         alt={`${universe.name}'s image`}
                         // className={`w-full object-cover ${size === "sm" ? "h-30" : "h-40"} w-auto rounded-t-xl`}
-                        className={`${universe.background !== "" && "group-hover:opacity-0"} absolute inset-0 w-full h-full object-cover transition-opacity duration-800`}
+                        className={`${universe.background !== "" && "group-hover:opacity-0"} absolute inset-0 w-full h-full object-contain transition-opacity duration-800`}
                         width={800}
                         height={1200}
                     />

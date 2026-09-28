@@ -27,7 +27,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     const teamCharacters = await collectionCharacters.find({ "connections.groupAffiliation": { $in: [team.id] } }).sort({ name: 1 }).toArray();
 
     /* Team Metadata: Base of operations, team leader, and alignment.
-
+add its universe
+team enemies
 Average Powerstat: A combined team score (e.g., Average Combat or Overall Team Rank). */
 
     return (
@@ -48,9 +49,6 @@ Average Powerstat: A combined team score (e.g., Average Combat or Overall Team R
                     </div>
                 </div>
             </Suspense>
-
-            {/* FilterBar for sorting */}
-
 
             <div id="groups-affiliation" className="space-y-2">
                 <p className="text-sm font-light uppercase text-primary mb-2">MEMBERS</p>

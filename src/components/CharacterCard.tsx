@@ -27,8 +27,6 @@ export default function CharacterCard({ character, size = "default" }: Character
     const TypeIcon = CHARACTER_TYPE_ICON[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
-    console.log(character.character_type)
-
     return (
         <Card className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
             <div className="relative">
@@ -66,23 +64,11 @@ export default function CharacterCard({ character, size = "default" }: Character
                     </span>
                 </div>}
             </div>
-            {/* <ViewTransition name={`photo-${character.id}`}>
-                <Image
-                    src={`${character.images.md}`}
-                    alt={`${character.name}'s main image`}
-                    unoptimized
-                    className={`h-80 w-full  object-cover transition-opacity duration-700  rounded-t-xl`}
-                    width={800}
-                    height={1200}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    style={{ contain: "layout" }}
-                />
-            </ViewTransition> */}
             <CardHeader>
                 <CardAction>
                     <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
                 </CardAction>
-                <CardTitle className="text-lg font-bold group-hover:text-primary transition-all duration-500">{character.name}</CardTitle>
+                <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
             </CardHeader>
             {size !== "sm" && <CardDescription className="flex flex-row justify-between gap-1 w-full px-5">
                 {/* {character.biography.origin} */}

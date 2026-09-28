@@ -12,7 +12,7 @@ import { CharacterImageCarousel } from "@/components/CharacterImageCarousel";
 import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES } from "@/lib/constants";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent } from "lucide-react";
@@ -57,8 +57,10 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
 
     const TierIcon = CHARACTER_TIER_ICON[Number(character.tier)];
     const ClassIcon = CHARACTER_CLASS_ICON[Number(character.class)];
+    const TypeIcon = CHARACTER_TYPE_ICON[character.character_type as keyof typeof CHARACTER_TYPE_ICON];
     const tierColors = CHARACTER_TIER_COLOR[character.tier as keyof typeof CHARACTER_TIER_COLOR];
     const classColors = CHARACTER_CLASS_COLOR[character.class as keyof typeof CHARACTER_CLASS_COLOR];
+    const typeColors = CHARACTER_TYPE_COLOR[character.character_type as keyof typeof CHARACTER_TYPE_COLOR];
 
     const appearanceFields = [
         { label: "HEIGHT", value: appearance.height?.filter(h => h && h !== "-").join(" / ") || "Unknown" },
@@ -81,8 +83,6 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
         { icon: Paperclip, label: "Origin", val: val(biography.origin, "An unknown origin") },
     ];
 
-    console.log("enemies", connections.enemies)
-
     return (
         <div className="pb-8 space-y-6 pt-5">
             {/* Header Section */}
@@ -104,9 +104,10 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                 <div className="w-full flex flex-col gap-4">
                     <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
+                            <CharacterBadge icon={CharacterBadgeIcon(biography.alignment)} text={getCharacterAlignmentText(biography.alignment)} color={getCharacterAlignmentColor(biography.alignment)} />
+                            <Badge className={`${typeColors.bg} ${typeColors.foreground}`}><TypeIcon size={16} className="mr-1" /> Type {CHARACTER_TYPE_LABEL[character.character_type as keyof typeof CHARACTER_TYPE_LABEL]}</Badge>
                             <Badge className={`${tierColors.bg} ${tierColors.foreground}`}><TierIcon size={16} className="mr-1" /> Tier {CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER]}</Badge>
                             <Badge className={`${classColors.bg} ${classColors.foreground}`}><ClassIcon size={16} className="mr-1" /> Class {CHARACTER_CLASS[character.class as keyof typeof CHARACTER_CLASS]}</Badge>
-                            <CharacterBadge icon={CharacterBadgeIcon(biography.alignment)} text={getCharacterAlignmentText(biography.alignment)} color={getCharacterAlignmentColor(biography.alignment)} />
                         </div>
 
                         <h1 className="text-2xl font-bold">{character.name}</h1>
@@ -114,7 +115,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
 
                         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                             <p className="text-sm leading-relaxed line-clamp-4">{biography.origin}</p>
-                            <div className="w-16 sm:w-24 border-l-0 sm:border-l-4 h-16 flex items-center justify-center p-2 shrink-0">
+                            <div className="w-full sm:w-24 h-auto md:h-16 border-l-0 sm:border-l-4 flex items-center justify-center p-2 shrink-0">
                                 <Link href={`/universes/${biography.publisher.id}`}>
                                     <ViewTransition name={`photo-universe-${biography.publisher.id}`} share="morph">
                                         <Image src={biography.publisher.logo} alt={character.name} width={100} height={100} className="max-w-full max-h-full object-contain rounded-lg" unoptimized />

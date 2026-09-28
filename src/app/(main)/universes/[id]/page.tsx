@@ -49,7 +49,7 @@ add properties: type of characters of the universe = universe type (comic, anime
                 <p className="text-sm font-light uppercase text-primary mb-2">TEAMS ({universeTeams.length})</p>
                 {universeTeams.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch ">
-                        {universeTeams.slice(0, 12).map((team) => (
+                        {universeTeams/* .slice(0, 12) */.map((team) => (
                             <Link key={team.id} href={`/teams/${team.id}`}>
                                 <TeamCard team={JSON.parse(JSON.stringify(team))} />
                             </Link>

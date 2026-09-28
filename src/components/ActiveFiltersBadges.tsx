@@ -7,8 +7,8 @@ import {
     type CharacterType
 } from "@/lib/constants";
 import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
-import { Power } from "@/types";
-import { Frown, Globe, type LucideIcon, Mars, Meh, Smile, Venus, X, Zap } from "lucide-react";
+import { Power, Team } from "@/types";
+import { Frown, Globe, GroupIcon, type LucideIcon, Mars, Meh, Smile, Venus, X, Zap } from "lucide-react";
 
 type ActiveFilter = {
     label: string;
@@ -25,16 +25,18 @@ export type ActiveFiltersBadgesProps = {
     alignment: string,
     universe: string,
     tier: number,
+    team: number,
     character_class: number,
     powersParam: string[],
     powers: Power[],
     character_type: string,
     onRemove?: (key: string) => void;
+    teams: Team[]
 }
 
 export default function ActiveFiltersBadges({
     name, gender, alignment, universe, tier,
-    character_class, powersParam, powers, character_type, onRemove
+    character_class, powersParam, powers, character_type, team, onRemove, teams
 }: ActiveFiltersBadgesProps) {
     const activeFilters: ActiveFilter[] = [];
 
@@ -100,6 +102,12 @@ export default function ActiveFiltersBadges({
     }
 
     if (universe) activeFilters.push({ label: "Universe", display: universe, icon: Globe, paramKey: "universe" });
+    if (!Number.isNaN(team)) {
+        const selectedTeam = teams.find(t => t.id === team);
+        if (selectedTeam) {
+            activeFilters.push({ label: "Team", display: selectedTeam.name, icon: GroupIcon, paramKey: "team" });
+        }
+    }
 
     if (powersParam.length > 0) {
         const powerNames = powers

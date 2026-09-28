@@ -1,7 +1,7 @@
 import CharacterCard from "@/components/CharacterCard";
 import { FilterBar } from "@/components/FilterBar";
 import { PaginationPages } from "@/components/Pagination";
-import { collectionCharacters, collectionPowers, collectionUniverses } from "@/db/mongodb";
+import { collectionCharacters, collectionPowers, collectionTeams, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
 
 // import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
@@ -66,6 +66,7 @@ async function HomeContent({
   const gender = params.gender?.toString() || "";
   const alignment = params.alignment?.toString() || "";
   const universe = params.universe?.toString() || "";
+  const team = parseInt(params.team?.toString() || "");
   const tier = parseInt(params.tier?.toString() || "");
   const character_class = parseInt(params.class?.toString() || "");
   const powersParam = JSON.parse(params.powers || "[]");
@@ -79,6 +80,7 @@ async function HomeContent({
   if (universe) query["biography.publisher"] = universe;
   if (character_type) query["character_type"] = character_type;
   if (!Number.isNaN(tier)) query.tier = tier;
+  if (!Number.isNaN(team)) query["connections.groupAffiliation"] = team;
   if (!Number.isNaN(character_class)) query.class = character_class;
   if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
 
@@ -97,7 +99,8 @@ async function HomeContent({
 
   const totalCharacters = await collectionCharacters.countDocuments(query);
   const universes = await collectionUniverses.find({}).sort({ "id": 1 }).toArray();
-  const powers = await collectionPowers.find({}).sort({ "id": -1 }).toArray();
+  const teams = await collectionTeams.find({}).sort({ "id": 1 }).toArray();
+  const powers = await collectionPowers.find({}).sort({ "name": 1 }).toArray();
 
   return (
     <div className="min-h-screen space-y-4">
@@ -113,12 +116,14 @@ async function HomeContent({
       >
         <FilterBar
           universes={JSON.parse(JSON.stringify(universes))}
+          teams={JSON.parse(JSON.stringify(teams))}
           powers={JSON.parse(JSON.stringify(powers))}
           activeFilterProps={{
             name, gender, alignment, universe,
-            tier, character_class, powersParam,
+            tier, character_class, powersParam, team,
             powers: JSON.parse(JSON.stringify(powers)),
-            character_type
+            character_type,
+            teams: JSON.parse(JSON.stringify(teams))
           }}
         />
       </Suspense>
