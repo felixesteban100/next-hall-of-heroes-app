@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useTransition, ReactNode } from "react";
+import { createContext, useContext, useTransition, ReactNode, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -28,12 +28,15 @@ export function ParamLoadingProvider({ children }: { children: ReactNode }) {
     return (
         <ParamLoadingContext.Provider value={{ isPending, pushParams }}>
             {/* Top Banner / Spinner overlay when pending */}
-            {isPending && (
-                <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center p-2 bg-primary text-primary-foreground text-xs font-semibold shadow-md animate-in fade-in slide-in-from-top-2">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
-                    Updating characters...
-                </div>
-            )}
+            {/* ⚡ Wrap dynamic URL features inside a Suspense boundary */}
+            <Suspense fallback={null}>
+                {isPending && (
+                    <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center p-2 bg-primary text-primary-foreground text-xs font-semibold shadow-md animate-in fade-in slide-in-from-top-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                        Updating characters...
+                    </div>
+                )}
+            </Suspense>
             {children}
         </ParamLoadingContext.Provider>
     );
