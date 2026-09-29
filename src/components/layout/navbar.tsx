@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-    Home,
+    // Home,
     Users,
     Shield,
     Globe2,
