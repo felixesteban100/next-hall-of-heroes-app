@@ -31,18 +31,29 @@ export function getCharacterAligmentIcon(alignment: string) {
     return alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh
 }
 
-/* green lantern doesn't match green lantern II and all the others just one it should add all of the ones that coincide not just the first one*/
 export function joinTeam_universe_power_enemies_toCharacter(
-    queryOptions: QueryOptions,
+    queryOptions: Record<string, any>,
     sortBy: string,
     sortDirection: string,
     offset: number,
     howManyPerPage: number
 ) {
-    const baseLookups = [
+    return [
         { $match: { ...queryOptions } },
+        ...buildPowersLookup(),
+        ...buildUniverseLookup(), // Note: Universe runs before Enemies so publisher is resolved
+        ...buildTeamsLookup(),
+        ...buildEnemiesLookup(),
+        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
+        { $skip: offset },
+        { $limit: howManyPerPage }
+    ];
+}
 
-        // 1. Powers Lookup (Handles Numeric IDs & Partial/Sub-string Matches for Names)
+
+// 1. Powers Pipeline Stage
+export function buildPowersLookup() {
+    return [
         {
             $lookup: {
                 from: "powers",
@@ -52,10 +63,7 @@ export function joinTeam_universe_power_enemies_toCharacter(
                         $match: {
                             $expr: {
                                 $or: [
-                                    // Match by ID
                                     { $in: ["$id", "$$rawPowers"] },
-
-                                    // Match if DB $name contains any string in$$rawPowers (or vice-versa)
                                     {
                                         $gt: [
                                             {
@@ -68,30 +76,8 @@ export function joinTeam_universe_power_enemies_toCharacter(
                                                                 { $eq: [{ $type: "$$p" }, "string"] },
                                                                 {
                                                                     $or: [
-                                                                        // DB name contains raw power string (e.g. "Elasticity / Superhuman Flexibility" contains "Elasticity")
-                                                                        {
-                                                                            $ne: [
-                                                                                {
-                                                                                    $indexOfCP: [
-                                                                                        { $toLower: "$name" },
-                                                                                        { $toLower: "$$p" }
-                                                                                    ]
-                                                                                },
-                                                                                -1
-                                                                            ]
-                                                                        },
-                                                                        // Raw power string contains DB name
-                                                                        {
-                                                                            $ne: [
-                                                                                {
-                                                                                    $indexOfCP: [
-                                                                                        { $toLower: "$$p" },
-                                                                                        { $toLower: "$name" }
-                                                                                    ]
-                                                                                },
-                                                                                -1
-                                                                            ]
-                                                                        }
+                                                                        { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$p" }] }, -1] },
+                                                                        { $ne: [{ $indexOfCP: [{ $toLower: "$$p" }, { $toLower: "$name" }] }, -1] }
                                                                     ]
                                                                 }
                                                             ]
@@ -125,7 +111,6 @@ export function joinTeam_universe_power_enemies_toCharacter(
                                             $and: [
                                                 { $eq: [{ $type: "$$item" }, "string"] },
                                                 {
-                                                    // Ensure we don't output a fallback string if it partially matched a DB power
                                                     $not: {
                                                         $gt: [
                                                             {
@@ -135,43 +120,36 @@ export function joinTeam_universe_power_enemies_toCharacter(
                                                                         as: "mpName",
                                                                         cond: {
                                                                             $or: [
-                                                                                {
-                                                                                    $ne: [
-                                                                                        {
-                                                                                            $indexOfCP: [
-                                                                                                { $toLower: "$$mpName" },
-                                                                                                { $toLower: "$$item" }
-                                                                                            ]
-                                                                                        },
-                                                                                        -1
-                                                                                    ]
-                                                                                },
-                                                                                {
-                                                                                    $ne: [
-                                                                                        {
-                                                                                            $indexOfCP: [
-                                                                                                { $toLower: "$$item" },
-                                                                                                { $toLower: "$$mpName" }]
-                                                                                        }, -1]
-                                                                                }]
+                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$mpName" }, { $toLower: "$$item" }] }, -1] },
+                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$item" }, { $toLower: "$$mpName" }] }, -1] }
+                                                                            ]
                                                                         }
                                                                     }
                                                                 }
-                                                            }, 0]
+                                                            },
+                                                            0
+                                                        ]
                                                     }
-                                                }]
+                                                }
+                                            ]
                                         }
                                     }
-                                }, as: "str", in: { name: "$$str", isFallback: true }
+                                },
+                                as: "str",
+                                in: { name: "$$str", isFallback: true }
                             }
                         }
                     ]
                 }
             }
         },
-        { $project: { matchedPowers: 0 } },
+        { $project: { matchedPowers: 0 } }
+    ];
+}
 
-        // 2. Universe Lookup
+// 2. Universe Lookup Stage
+export function buildUniverseLookup() {
+    return [
         {
             $lookup: {
                 from: "universes",
@@ -193,9 +171,13 @@ export function joinTeam_universe_power_enemies_toCharacter(
                 as: "biography.publisher"
             }
         },
-        { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } }
+    ];
+}
 
-        // 3. Teams / Group Affiliations Lookup
+// 3. Teams Lookup Stage
+export function buildTeamsLookup() {
+    return [
         {
             $lookup: {
                 from: "teams",
@@ -230,31 +212,89 @@ export function joinTeam_universe_power_enemies_toCharacter(
                                         cond: {
                                             $and: [
                                                 { $eq: [{ $type: "$$item" }, "string"] },
-                                                { $not: { $in: ["$$item", "$matchedTeams.name"] } }]
+                                                { $not: { $in: ["$$item", "$matchedTeams.name"] } }
+                                            ]
                                         }
                                     }
-                                }, as: "strName", in: { name: "$$strName", isFallback: true }
+                                },
+                                as: "strName",
+                                in: { name: "$$strName", isFallback: true }
                             }
                         }
                     ]
                 }
             }
         },
-        { $project: { matchedTeams: 0 } },
+        { $project: { matchedTeams: 0 } }
+    ];
+}
 
-        // 4. Enemies Lookup (Matches ID, Name, or Full Name)
+// 4. Enemies Lookup Stage (Fixed Universe Scope)
+export function buildEnemiesLookup() {
+    return [
         {
             $lookup: {
                 from: "characters",
-                let: { rawEnemies: "$connections.enemies" },
+                let: {
+                    rawEnemies: { $ifNull: ["$connections.enemies", []] },
+                    // Normalizes universe name whether biography.publisher is an object, string, or ID
+                    charUniverse: {
+                        $cond: {
+                            if: { $eq: [{ $type: "$biography.publisher" }, "object"] },
+                            then: { $ifNull: ["$biography.publisher.name", "$biography.publisher.value"] },
+                            else: "$biography.publisher"
+                        }
+                    }
+                },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
-                                $or: [
-                                    { $in: ["$id", { $ifNull: ["$$rawEnemies", []] }] },
-                                    { $in: ["$name", { $ifNull: ["$$rawEnemies", []] }] },
-                                    { $in: ["$biography.fullName", { $ifNull: ["$$rawEnemies", []] }] }
+                                $and: [
+                                    // ⚡ Safe Universe Check: Accepts matches if universe is omitted, or if names match
+                                    {
+                                        $or: [
+                                            { $eq: ["$$charUniverse", null] },
+                                            { $eq: ["$$charUniverse", ""] },
+                                            { $eq: ["$biography.publisher", "$$charUniverse"] },
+                                            { $eq: ["$biography.publisher.name", "$$charUniverse"] },
+                                            { $eq: ["$biography.publisher.value", "$$charUniverse"] }
+                                        ]
+                                    },
+                                    {
+                                        $or: [
+                                            // 1. Exact ID match
+                                            { $in: ["$id", "$$rawEnemies"] },
+                                            // 2. Exact Name or Full Name match
+                                            { $in: ["$name", "$$rawEnemies"] },
+                                            { $in: ["$biography.fullName", "$$rawEnemies"] },
+                                            // 3. Substring coincidence match
+                                            {
+                                                $gt: [
+                                                    {
+                                                        $size: {
+                                                            $filter: {
+                                                                input: "$$rawEnemies",
+                                                                as: "e",
+                                                                cond: {
+                                                                    $and: [
+                                                                        { $eq: [{ $type: "$$e" }, "string"] },
+                                                                        {
+                                                                            $or: [
+                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] },
+                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$e" }, { $toLower: "$name" }] }, -1] }
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            }
+                                        ]
+                                    }
                                 ]
                             }
                         }
@@ -278,8 +318,27 @@ export function joinTeam_universe_power_enemies_toCharacter(
                                         cond: {
                                             $and: [
                                                 { $eq: [{ $type: "$$item" }, "string"] },
-                                                { $not: { $in: ["$$item", "$matchedEnemies.name"] } },
-                                                { $not: { $in: ["$$item", "$matchedEnemies.biography.fullName"] } }
+                                                {
+                                                    $not: {
+                                                        $gt: [
+                                                            {
+                                                                $size: {
+                                                                    $filter: {
+                                                                        input: "$matchedEnemies.name",
+                                                                        as: "meName",
+                                                                        cond: {
+                                                                            $ne: [
+                                                                                { $indexOfCP: [{ $toLower: "$$meName" }, { $toLower: "$$item" }] },
+                                                                                -1
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            0
+                                                        ]
+                                                    }
+                                                }
                                             ]
                                         }
                                     }
@@ -294,11 +353,6 @@ export function joinTeam_universe_power_enemies_toCharacter(
         },
         { $project: { matchedEnemies: 0 } }
     ];
-
-    return [
-        ...baseLookups,
-        { $sort: { [`${sortBy}`]: sortDirection === "desc" ? -1 : 1 } },
-        { $skip: offset },
-        { $limit: howManyPerPage }
-    ];
 }
+
+
