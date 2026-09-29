@@ -1,7 +1,7 @@
 "use client"
 
 import { /* Character, */ CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
 import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 import CharacterBadge from "./CharacterBadge";
@@ -30,7 +30,7 @@ export default function CharacterCard({ character, size = "default" }: Character
     return (
         <Card className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
             <div className="relative">
-                <ViewTransition name={`photo-${character.id}`}>
+                <ViewTransition name={`character-${character.id}`}>
                     <Image
                         src={`${character.images.md}`}
                         alt={`${character.name}'s main image`}
@@ -72,10 +72,13 @@ export default function CharacterCard({ character, size = "default" }: Character
             </CardHeader>
             {size !== "sm" && <CardDescription className="flex flex-row justify-between gap-1 w-full px-5">
                 {/* {character.biography.origin} */}
-                <p>{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown" : character.biography.fullName}</p>
-                <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
-                    #{character.id}
-                </span>
+                <div>
+                    <p>{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown" : character.biography.fullName}</p>
+                    <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                        #{character.id}
+                    </span>
+                </div>
+                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-6 w-auto" />
             </CardDescription>}
             {size !== "sm" && <CardFooter className="p-0 border-t bg-muted/30 rounded-b-xl overflow-hidden">
                 <div className="grid grid-cols-4 w-full divide-x text-center py-2 text-xs">

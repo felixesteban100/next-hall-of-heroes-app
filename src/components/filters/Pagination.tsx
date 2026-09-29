@@ -27,7 +27,7 @@ export function PaginationPages({ currentPage, totalPages }: { currentPage: numb
     )
 
     return (
-        <Pagination>
+        <Pagination className="mb-4">
             <PaginationContent>
                 {/* previous page */}
                 {currentPage > 1 && (

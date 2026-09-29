@@ -15,7 +15,7 @@ export function CharacterAccordionList({ characters }: { characters: CharacterWi
     ].filter(g => g.data.length > 0);
 
     return (
-        <Accordion type="single" collapsible defaultValue={groups[0]?.label} className="w-full space-y-2">
+        <Accordion type="single" collapsible /* defaultValue={groups[0]?.label} */ className="w-full space-y-2">
             {groups.map(({ label, data, color }) => (
                 <AccordionItem key={label} value={label} className="border rounded-lg px-4 bg-card">
                     <AccordionTrigger className="hover:no-underline py-3">

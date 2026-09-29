@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { cn } from "@/lib/utils"
-import { ViewTransitionListener } from "@/components/ViewTransitionListener";
+import { ViewTransitionListener } from "@/components/layout/ViewTransitionListener";
 import { Suspense, ViewTransition } from "react"; // or 'next/view-transition'
 
 // import { Open_Sans, Georgia, Meddon } from "next/font/google";

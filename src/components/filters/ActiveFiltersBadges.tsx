@@ -6,9 +6,9 @@ import {
     CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL,
     type CharacterType
 } from "@/lib/constants";
-import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
+import { getCharacterAligmentIcon, getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 import { Power, Team } from "@/types";
-import { Frown, Globe, GroupIcon, type LucideIcon, Mars, Meh, Smile, Venus, X, Zap } from "lucide-react";
+import { Globe, GroupIcon, type LucideIcon, Mars, Venus, X, Zap } from "lucide-react";
 
 type ActiveFilter = {
     label: string;
@@ -52,7 +52,7 @@ export default function ActiveFiltersBadges({
     if (alignment) activeFilters.push({
         label: "Alignment",
         display: getCharacterAlignmentText(alignment),
-        icon: alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh,
+        icon: getCharacterAligmentIcon(alignment),
         colorText: getCharacterAlignmentText(alignment),
         colorBg: getCharacterAlignmentColor(alignment),
         paramKey: "alignment"

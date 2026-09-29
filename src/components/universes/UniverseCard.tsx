@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Universe } from "@/types";
 import { ViewTransition } from "react";
 
@@ -12,7 +12,7 @@ export default function UniverseCard({ universe, size }: UniverseCardProps) {
     return (
         <Card /* size={size} */ className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow hover:shadow-xl pt-0">
             {/* <div className="absolute inset-0 z-30 aspect-video dark:brightness-40" /> */}
-            <ViewTransition name={`photo-universe-${universe.id}`} share="morph">
+            <ViewTransition name={`universe-${universe.id}`} share="morph">
                 <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-40"} relative rounded-t-xl `}>
                     {/* <Image src={character.biography.publisher.logo} alt={`${character.name}'s image`} className="translate-y-5 group-hover:-translate-y-10 w-auto h-8 object-cover transition-all duration-500 animate-spin" width={800} height={1200} /> */}
                     {universe.background !== "" &&

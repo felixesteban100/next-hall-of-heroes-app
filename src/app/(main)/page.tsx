@@ -1,205 +1,152 @@
-import CharacterCard from "@/components/CharacterCard";
-import { FilterBar } from "@/components/FilterBar";
-import { PaginationPages } from "@/components/Pagination";
-import { collectionCharacters, collectionPowers, collectionTeams, collectionUniverses } from "@/db/mongodb";
 import Link from "next/link";
+import {
+  Users,
+  Shield,
+  Globe2,
+  Zap,
+  Search,
+  ArrowRight,
+  Sparkles,
+  Flame
+} from "lucide-react";
+import { Navbar } from "@/components/layout/navbar";
 
-// import ActiveFiltersBadges from "@/components/ActiveFiltersBadges";
-import { BrushCleaning } from "lucide-react";
-import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
-import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { Suspense } from "react";
-import { FilterBarSkeleton } from "@/components/FilterBarSkeleton";
-
-export const instant = false;
-
-type SearchParamsPromise = Promise<{
-  [key: string]: string | string[] | undefined;
-  page?: string;
-  sort?: string;
-  sortOrientation?: string;
-  gender?: string;
-  alignment?: string;
-  universe?: string;
-  tier?: string;
-  class?: string;
-  powers?: string;
-  character_type?: string;
-}>;
-
-
-export default function Home({ searchParams }: { searchParams: SearchParamsPromise }) {
-  return (
-    <div className="min-h-screen">
-      {/* <Suspense fallback={<HomeSkeleton />}> */}
-      <HomeContent searchParams={searchParams} />
-      {/* </Suspense> */}
-    </div>
-  );
-}
-
-async function HomeContent({
-  searchParams
-}: {
-  searchParams: Promise<{
-    [key: string]: string | string[] | undefined,
-    page?: string,
-    sort?: string,
-    sortOrientation?: string,
-    gender?: string;
-    alignment?: string,
-    universe?: string,
-    tier?: string,
-    class?: string,
-    powers?: string;
-    character_type?: string;
-  }>;
-}) {
-  const params = await searchParams;
-  const page = params.page ? parseInt(params.page) : 1;
-  const pageSize = 12;
-
-  const sortProperty = params.sort?.toString() || "id";
-  const sortOrientation = params.sortOrientation?.toString() || "desc";
-
-  const name = params.name?.toString() || "";
-  const gender = params.gender?.toString() || "";
-  const alignment = params.alignment?.toString() || "";
-  const universe = params.universe?.toString() || "";
-  const team = parseInt(params.team?.toString() || "");
-  const tier = parseInt(params.tier?.toString() || "");
-  const character_class = parseInt(params.class?.toString() || "");
-  const powersParam = JSON.parse(params.powers || "[]");
-  const character_type = params.character_type?.toString() || "";
-
-  /* make the ones that are undefined or empty string not appear inside the query object */
-  const query: Record<string, string | number | object> = {};
-  if (name && name != "") query.name = { $regex: name, $options: "i" };
-  if (gender && gender != "") query["appearance.gender"] = gender;
-  if (alignment && alignment != "") query["biography.alignment"] = alignment;
-  if (universe) query["biography.publisher"] = universe;
-  if (character_type) query["character_type"] = character_type;
-  if (!Number.isNaN(tier)) query.tier = tier;
-  if (!Number.isNaN(team)) query["connections.groupAffiliation"] = team;
-  if (!Number.isNaN(character_class)) query.class = character_class;
-  if (powersParam.length > 0) query.powers = { $in: powersParam.map((c: string) => Number(c)) }
-
-  const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-    joinTeam_universe_power_enemies_toCharacter(
-      query,
-      sortProperty,
-      sortOrientation,
-      (page - 1) * pageSize,
-      pageSize,
-      // [],
-    ),
-  ).toArray();
-
-
-
-  const totalCharacters = await collectionCharacters.countDocuments(query);
-  const universes = await collectionUniverses.find({}).sort({ "id": 1 }).toArray();
-  const teams = await collectionTeams.find({}).sort({ "id": 1 }).toArray();
-  const powers = await collectionPowers.find({}).sort({ "name": 1 }).toArray();
+export default function StartPage() {
+  const entityCategories = [
+    {
+      title: "Characters",
+      description: "Explore heroes, anti-heroes, and villains with full powerstats and bios.",
+      href: "/characters",
+      icon: Users,
+      badge: "Primary Roster",
+      color: "from-blue-500/20 via-cyan-500/10 to-transparent border-blue-500/30 hover:border-blue-500/60 text-blue-500",
+    },
+    {
+      title: "Teams & Factions",
+      description: "Discover alliances, leader rosters, and multi-universe squads.",
+      href: "/teams",
+      icon: Shield,
+      badge: "Alliances",
+      color: "from-emerald-500/20 via-teal-500/10 to-transparent border-emerald-500/30 hover:border-emerald-500/60 text-emerald-500",
+    },
+    {
+      title: "Universes",
+      description: "Browse multiverse dimensions from comics, cartoons, and anime.",
+      href: "/universes",
+      icon: Globe2,
+      badge: "Multiverse",
+      color: "from-purple-500/20 via-indigo-500/10 to-transparent border-purple-500/30 hover:border-purple-500/60 text-purple-500",
+    },
+    {
+      title: "Powers & Abilities",
+      description: "Filter characters by meta-abilities, elements, and power levels.",
+      href: "/powers",
+      icon: Zap,
+      badge: "Abilities",
+      color: "from-amber-500/20 via-yellow-500/10 to-transparent border-amber-500/30 hover:border-amber-500/60 text-amber-500",
+    },
+  ];
 
   return (
-    <div className="min-h-screen space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">Characters</h1>
-        <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
-          {totalCharacters} characters across all universes
+    <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-hidden">
+      {/* Hero Header Section */}
+      <section className="pt-12 pb-8 px-4 text-center max-w-4xl mx-auto space-y-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-semibold tracking-wide uppercase">
+          <Sparkles className="w-3.5 h-3.5" />
+          Multiverse Database
         </div>
-      </div>
-      <Suspense
-        key={JSON.stringify(params)}
-        fallback={<FilterBarSkeleton />}
-      >
-        <FilterBar
-          universes={JSON.parse(JSON.stringify(universes))}
-          teams={JSON.parse(JSON.stringify(teams))}
-          powers={JSON.parse(JSON.stringify(powers))}
-          activeFilterProps={{
-            name, gender, alignment, universe,
-            tier, character_class, powersParam, team,
-            powers: JSON.parse(JSON.stringify(powers)),
-            character_type,
-            teams: JSON.parse(JSON.stringify(teams))
-          }}
-        />
-      </Suspense>
-      {/*  overflow-y-auto */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
-        {charactersPerPage.map((character) => (
-          <Link key={character.id} href={`/characters/${character.slug}`}>
-            <CharacterCard character={JSON.parse(JSON.stringify(character))} />
-          </Link>
-        ))}
-        {charactersPerPage.length === 0 && (
-          <div className="col-span-full text-center text-muted-foreground font-bold mt-5">
-            <div className="flex flex-col items-center justify-center gap-2">
-              <BrushCleaning />
-              No characters found.
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div className="flex justify-center mt-4">
-        <Suspense fallback={null}>
-          <PaginationPages currentPage={page} totalPages={Math.ceil(totalCharacters / pageSize)} />
-        </Suspense>
-      </div>
+        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-tight">
+          Explore the Ultimate <br className="hidden sm:inline" />
+          <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
+            Hall of Heroes & Villains
+          </span>
+        </h1>
+
+        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto font-light">
+          Dive into relational intelligence across universes. Compare team leaders, track power levels, and trace connections across factions.
+        </p>
+
+        {/* Global Quick Search Anchor */}
+        <div className="pt-2 max-w-xl mx-auto">
+          <Link
+            href="/characters"
+            className="group flex items-center justify-between w-full px-4 py-3 rounded-xl border border-border bg-card/80 backdrop-blur-md shadow-sm hover:border-primary/50 transition-all text-muted-foreground hover:text-foreground"
+          >
+            <div className="flex items-center gap-3">
+              <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="text-sm">Search characters, teams, or powers...</span>
+            </div>
+            <kbd className="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground">
+              ⌘K
+            </kbd>
+          </Link>
+        </div>
+      </section>
+
+      {/* Main Grid Category Cards */}
+      <section className="px-4 py-8 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {entityCategories.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <Link
+                key={cat.title}
+                href={cat.href}
+                className={`group relative flex flex-col justify-between p-5 rounded-2xl border bg-gradient-to-b ${cat.color} transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-2.5 rounded-xl bg-background/80 border border-border shadow-xs">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded-full bg-background/60 border border-border text-muted-foreground">
+                      {cat.badge}
+                    </span>
+                  </div>
+
+                  <h2 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors mb-1">
+                    {cat.title}
+                  </h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {cat.description}
+                  </p>
+                </div>
+
+                <div className="mt-6 flex items-center gap-1 text-xs font-semibold group-hover:translate-x-1 transition-transform">
+                  <span>Browse Database</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Bottom Featured Highlight / Quick Links Bar */}
+      <footer className="border-t border-border/50  backdrop-blur-xs py-6 px-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-secondary shrink-0" />
+            <span>Featured Spotlight: <strong>The Avengers Leadership Roster</strong> & <strong>Mutant Factions</strong></span>
+          </div>
+
+          <div className="flex items-center gap-4 font-medium">
+            <Link href="/characters" className="hover:text-foreground transition-colors">
+              All Characters
+            </Link>
+            <span>•</span>
+            <Link href="/teams" className="hover:text-foreground transition-colors">
+              Teams
+            </Link>
+            <span>•</span>
+            <Link href="/powers" className="hover:text-foreground transition-colors">
+              Power Matrix
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
+
   );
 }
-
-/* function HomeSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 w-48 bg-muted rounded" />
-      <div className="h-12 w-full bg-muted rounded" />
-    </div>
-  );
-} */
-
-
-// https://claude.ai/chat/c0520f08-a4df-4066-90b9-9bc56681d2ac
-
-// https://ui.shadcn.com/docs/components/radix/card
-
-// https://search.brave.com/search?q=how+to+trigger+the+view+transition+next+js+when+going+back+in+browser&spellcheck=0&source=alteredQuery&conversation=093db314b1127990e73fc3a41d79217c5afa&summary=1
-
-// ?gender=male&sortOrientation=desc&sort=name&alignment=neutral&universe=Shueisha&tier=Tier+1
-
-// const charactersPerPage = await collectionCharacters.find({
-//   '$expr': {
-//     '$lte': [
-//       {
-//         '$size': {
-//           '$filter': {
-//             'input': [
-//               '$images.xs', '$images.sm', '$images.md', '$images.lg'
-//             ],
-//             'as': 'img',
-//             'cond': {
-//               '$ne': [
-//                 '$$img', ''
-//               ]
-//             }
-//           }
-//         }
-//       }, 1
-//     ]
-//   }
-// }).skip((page - 1) * pageSize).limit(pageSize)/* .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 }) */.toArray();
-
-// mongodb query for characters with just one valid image url in the images property
-// {$expr: {$lte: [{$size: {$filter: {input: ["$images.xs","$images.sm","$images.md","$images.lg"],as: "img",cond: { $ne: ["$$img", ""] }}}},1]}}
-
-// CharacterTier.forEach(async (character) => {
-//   await collectionCharacters.updateOne({ slug: character.slug }, { $set: { tier: character.tier } })
-// })
-
-// CharacterClassFirstTesting.forEach(async (character) => {
-//   await collectionCharacters.updateOne({ slug: character.slug }, { $set: { class: character.character_class } })
-// })

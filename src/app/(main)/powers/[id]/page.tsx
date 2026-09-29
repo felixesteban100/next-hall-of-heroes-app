@@ -1,13 +1,12 @@
-import CharacterCard from "@/components/CharacterCard";
 import { collectionCharacters, collectionPowers } from "@/db/mongodb";
-import Link from "next/link";
 import Image from "next/image";
 import { ViewTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
 import { Zap } from "lucide-react";
-import { CharacterAccordionList } from "@/components/CharacterAccordionList";
+import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
+import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 
 export const instant = false;
 
@@ -37,18 +36,19 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     const normalizedScore = power.score ? Math.min(Math.round(power.score / 1000), 100) : null;
 
-
     /* Power Tier Badge: Show where this power sits on your tier scale (e.g., Tier 2: Tactical / Basic).
 
 Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 strongest characters who possess this ability before listing everyone else. */
 
-    return (
-        <div className="pb-8 space-y-8">
+    // console.log((await collectionPowers.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
+    // update tiers with a seedFunction (function to be create it)
 
+    return (
+        <div className="pb-8 space-y-8 mt-4">
             {/* Header */}
             {/* this one doesn't look good on mobile it looks shinked */}
             <div className="flex flex-col md:flex-row gap-6 items-center w-full">
-                <ViewTransition name={`photo-power-${power.id}`}>
+                <ViewTransition name={`power-${power.id}`}>
                     <Image
                         unoptimized
                         src={power.img}
@@ -109,25 +109,24 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <p className="text-sm font-light uppercase text-primary">
-                        Members
+                        Users
                     </p>
                     <p className="text-sm text-muted-foreground">
                         {powerCharacters.length} characters with this power
                     </p>
                 </div>
                 <CharacterAccordionList characters={powerCharacters} />
-                {/* {powerCharacters.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
-                        {powerCharacters.map((character) => (
-                            <Link key={character.id} href={`/characters/${character.slug}`}>
-                                <CharacterCard character={JSON.parse(JSON.stringify(character))} size="sm" />
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">No members listed.</p>
-                )} */}
             </div>
+
+            <MiniEntityGrid
+                entityType="character"
+                items={powerCharacters.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                    image: c.images?.md,
+                    alignment: c.biography.alignment,
+                }))}
+            />
         </div>
     )
 }

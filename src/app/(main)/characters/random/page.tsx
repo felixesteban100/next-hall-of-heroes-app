@@ -1,13 +1,37 @@
-import { CacheClearButton } from "@/components/CacheClearButton";
-import CharacterCard from "@/components/CharacterCard";
+import { CacheClearButton } from "@/components/filters/CacheClearButton";
+import CharacterCard from "@/components/characters/CharacterCard";
 import { collectionCharacters } from "@/db/mongodb";
+import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Link from "next/link";
 // import { unstable_noStore as noStore } from "next/cache";
 
 export default async function Random() {
     // noStore();
     "use cache"
-    const randomCharacter = await collectionCharacters.aggregate([{ $sample: { size: 8 } }]).toArray();
+    const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+        /* joinTeam_universe_power_enemies_toCharacter(
+            {},
+            "id",
+            "desc",
+            0,
+            8,
+            // [],
+        ), */
+        [
+            {
+                $lookup: {
+                    from: "universes",
+                    localField: "biography.publisher",
+                    foreignField: "value",
+                    pipeline: [{ $project: { teams: 0 } }],
+                    as: "biography.publisher",
+                },
+            },
+            { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
+            { $sample: { size: 8 } }
+        ]
+    ).toArray();
 
     return (
         <div className="flex flex-col">
@@ -17,7 +41,7 @@ export default async function Random() {
             </div>
             <CacheClearButton path="/characters/random" />
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
-                {randomCharacter.map((character) => (
+                {charactersPerPage.map((character) => (
                     <Link key={character.id} href={`/characters/${character.slug}`}>
                         <CharacterCard character={JSON.parse(JSON.stringify(character))} />
                     </Link>

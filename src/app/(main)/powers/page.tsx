@@ -1,10 +1,10 @@
-import { PaginationPages } from "@/components/Pagination";
-import PowerCard from "@/components/PowerCard";
+import { PaginationPages } from "@/components/filters/Pagination";
+import PowerCard from "@/components/powers/PowerCard";
 import { collectionPowers } from "@/db/mongodb";
 import Link from "next/link";
 import { Suspense } from "react";
-import PowersFilterBar from "@/components/PowersFilterBar"; // we'll create this
-import { FilterBarSkeleton } from "@/components/FilterBarSkeleton";
+import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
+import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 
 export const instant = false;
 
@@ -43,7 +43,7 @@ export default async function page({
     const totalPowers = await collectionPowers.countDocuments(query);
 
     return (
-        <div className="min-h-screen space-y-4">
+        <div className="min-h-screen space-y-4 mt-4">
             <div>
                 <h1 className="text-2xl font-bold">Powers</h1>
                 <p className="text-muted-foreground font-light">

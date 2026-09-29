@@ -1,4 +1,5 @@
 import { QueryOptions } from "@/types";
+import { Frown, Meh, Smile } from "lucide-react";
 
 export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
@@ -24,6 +25,10 @@ export function getCharacterAlignmentText(alignment: string) {
         default:
             return "Unknown";
     }
+}
+
+export function getCharacterAligmentIcon(alignment: string) {
+    return alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh
 }
 
 export function joinTeam_universe_power_enemies_toCharacter(queryOptions: QueryOptions, sortBy: string, sortDirection: string, offset: number, howManyPerPage: number/* , charactersNames: string[] */) {

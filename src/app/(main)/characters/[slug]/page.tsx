@@ -3,19 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import CharacterBadge from "@/components/CharacterBadge";
-import CharacterCard from "@/components/CharacterCard";
-import PowerCard from "@/components/PowerCard";
-import TeamCard from "@/components/TeamCard";
-import { CharacterImageCarousel } from "@/components/CharacterImageCarousel";
+import CharacterBadge from "@/components/characters/CharacterBadge";
+import { CharacterImageCarousel } from "@/components/characters/CharacterImageCarousel";
 
 import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES } from "@/lib/constants";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES, POWER_TIER } from "@/lib/constants";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent } from "lucide-react";
+import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
+import { MasonryGallery } from "@/components/shared/MasonryGallery";
 
 export const instant = false;
 
@@ -63,12 +62,12 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
     const typeColors = CHARACTER_TYPE_COLOR[character.character_type as keyof typeof CHARACTER_TYPE_COLOR];
 
     const appearanceFields = [
-        { label: "HEIGHT", value: appearance.height?.filter(h => h && h !== "-").join(" / ") || "Unknown" },
-        { label: "WEIGHT", value: appearance.weight?.filter(w => w && !w.includes("-")).join(" / ") || "Unknown" },
-        { label: "EYE COLOR", value: val(appearance.eyeColor) },
-        { label: "HAIR COLOR", value: val(appearance.hairColor) },
-        { label: "RACE", value: val(appearance.race) },
-        { label: "GENDER", value: val(appearance.gender) },
+        { label: "HEIGHT", /* icon: , */ value: appearance.height?.filter(h => h && h !== "-").join(" / ") || "Unknown" },
+        { label: "WEIGHT", /* icon: , */ value: appearance.weight?.filter(w => w && !w.includes("-")).join(" / ") || "Unknown" },
+        { label: "EYE COLOR", /* icon: , */ value: val(appearance.eyeColor) },
+        { label: "HAIR COLOR", /* icon: , */ value: val(appearance.hairColor) },
+        { label: "RACE", /* icon: , */ value: val(appearance.race) },
+        { label: "GENDER", /* icon: , */ value: val(appearance.gender) },
     ];
 
     const bioFields = [
@@ -90,12 +89,12 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                 <div className="shrink-0 w-full md:w-auto flex justify-center">
                     <Suspense
                         fallback={
-                            <ViewTransition name={`photo-${character.id}`}>
+                            <ViewTransition name={`character-${character.id}`}>
                                 <div className="w-80 h-[24rem] bg-muted/60 rounded-lg animate-pulse shrink-0" />
                             </ViewTransition>
                         }
                     >
-                        <ViewTransition name={`photo-${character.id}`}>
+                        <ViewTransition name={`character-${character.id}`}>
                             <CharacterImageCarousel images={characterImages} name={character.name} />
                         </ViewTransition>
                     </Suspense>
@@ -117,7 +116,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                             <p className="text-sm leading-relaxed line-clamp-4">{biography.origin}</p>
                             <div className="w-full sm:w-24 h-auto md:h-16 border-l-0 sm:border-l-4 flex items-center justify-center p-2 shrink-0">
                                 <Link href={`/universes/${biography.publisher.id}`}>
-                                    <ViewTransition name={`photo-universe-${biography.publisher.id}`} share="morph">
+                                    <ViewTransition name={`universe-${biography.publisher.id}`} share="morph">
                                         <Image src={biography.publisher.logo} alt={character.name} width={100} height={100} className="max-w-full max-h-full object-contain rounded-lg" unoptimized />
                                     </ViewTransition>
                                 </Link>
@@ -125,7 +124,7 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-1">
-                            {aliases.length ? aliases.slice(0, 3).map((a, i) => (
+                            {aliases.length ? aliases.join(",").split(",").slice(0, 3).map((a, i) => (
                                 <Badge variant="secondary" key={a + i}>{a}</Badge>
                             )) : <p className="text-sm text-muted-foreground">No aliases or alter egos listed.</p>}
                         </div>
@@ -174,73 +173,61 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             </div>
 
             {/* Powers & Abilities */}
-            <SectionGrid title="Powers & Abilities" items={character.powers} emptyMsg="No powers or abilities listed.">
-                {(power) => (
-                    <Link key={power.name} href={`/powers/${power.id}`}>
-                        <PowerCard power={power} size="sm" />
-                    </Link>
-                )}
-            </SectionGrid>
+            <div id={"Powers & Abilities"} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Powers & Abilities</p>
+                <MiniEntityGrid
+                    entityType="power"
+                    items={character.powers.map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        image: p.img,
+                        category: POWER_TIER[p.tier as keyof typeof POWER_TIER],             // e.g. "Elemental"
+                        // characterCount: p.usersCount, // e.g. Renders subtext: "14 Users"
+                    }))}
+                    emptyMessage="No powers found."
+                />
+            </div>
 
             {/* Groups & Affiliations */}
-            <SectionGrid title="Groups & Affiliations" items={connections.groupAffiliation} emptyMsg="No group affiliations listed.">
-                {(team) => (
-                    <Link key={team.id} href={`/teams/${team.id}`}>
-                        <TeamCard team={team} size="sm" />
-                    </Link>
-                )}
-            </SectionGrid>
+            <div id={"Groups & Affiliations"} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Groups & Affiliations</p>
+                <MiniEntityGrid
+                    items={connections.groupAffiliation}
+                    entityType="team"
+                    emptyMessage="No teams found."
+                    showAlignment={true}
+                />
+            </div>
 
             {/* Enemies */}
-            <SectionGrid title="Enemies" items={connections.enemies} emptyMsg="No enemies listed.">
-                {(enemy) => (
-                    <Link key={enemy.id} href={`/characters/${enemy.slug}`}>
-                        <CharacterCard character={JSON.parse(JSON.stringify(enemy))} size="sm" />
-                    </Link>
-                )}
-            </SectionGrid>
+            <div id={"Enemies"} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Enemies</p>
+                <MiniEntityGrid
+                    entityType="character"
+                    showAlignment={true}
+                    items={connections.enemies.map((c) => ({
+                        id: c.id,
+                        name: c.name,
+                        image: c.images.md,
+                        alignment: c.biography?.alignment,
+                        // primaryPower: c.powers?.[0] || c.biography?.alterEgos, // or main power field
+                        // powerstatTotal: c.powerstats?.total,
+                    }))}
+                    emptyMessage="No enemies found."
+
+                />
+            </div>
 
             {/* Gallery */}
-            <div id="gallery" className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Gallery</p>
-                {Object.values(images).some(Boolean) ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
-                        {Object.entries(images).map(([key, value]) => {
-                            if (!value || value === "-") return null;
-                            return (
-                                <div key={key} className="border rounded-lg overflow-hidden aspect-square">
-                                    <Image unoptimized src={value} alt={`${character.name} ${key}`} width={400} height={400} className="w-full h-full object-cover" />
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : <p className="text-sm font-bold">No gallery images listed.</p>}
+            <div id="gallery" className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                    Gallery
+                </p>
+                <MasonryGallery images={character.images} characterName={character.name} />
             </div>
         </div>
     );
 }
-
-// Sub-component for repeated grid sections
-function SectionGrid<T>({ title, items, emptyMsg, children }: { title: string; items?: T[]; emptyMsg: string; children: (item: T) => React.ReactNode }) {
-    return (
-        <div id={title.toLowerCase().replace(/\s+/g, "-")} className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">{title}</p>
-            {items && items.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
-                    {items.map(children)}
-                </div>
-            ) : (
-                <p className="text-sm font-bold">{emptyMsg}</p>
-            )}
-        </div>
-    );
-}
-
-{/* {Object.entries(character.biography.publisher.comics).map(([key, value]) => (
-                            <div key={key} className="border rounded-lg overflow-hidden">
-                                <Image src={value} alt={`${character.name} ${key}`} width={800} height={800} className="rounded-lg h-full object-cover" />
-                            </div>
-                        ))} */}
 
 /* 
     - hermana Elba (consolacion para la familia de la perdida de su sobrino)

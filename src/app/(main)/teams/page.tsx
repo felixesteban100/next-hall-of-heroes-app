@@ -1,11 +1,11 @@
-import { PaginationPages } from "@/components/Pagination";
-import TeamCard from "@/components/TeamCard";
+import { PaginationPages } from "@/components/filters/Pagination";
 import { collectionTeams } from "@/db/mongodb";
 import Link from "next/link";
 import { Suspense } from "react";
-import SimpleFilterBar from "@/components/SimpleFilterBar";
+import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
 import { BrushCleaning } from "lucide-react";
-import { FilterBarSkeleton } from "@/components/FilterBarSkeleton";
+import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
+import TeamCard from "@/components/teams/TeamCard";
 
 export const instant = false;
 
@@ -41,8 +41,13 @@ export default async function page({
 
     const totalTeams = await collectionTeams.countDocuments(query);
 
+    // console.log((await collectionTeams.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
+    // I must populate the db with leaders maybe using the name because they are too much to give them to the AI 
+
+
+
     return (
-        <div className="min-h-screen space-y-4">
+        <div className="min-h-screen space-y-4 mt-4">
             <div>
                 <h1 className="text-2xl font-bold">Teams</h1>
                 <p className="text-muted-foreground font-light">

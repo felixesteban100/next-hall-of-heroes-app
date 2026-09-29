@@ -2,10 +2,10 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { SearchIcon, ArrowBigDown, Filter, SlidersHorizontal, X } from "lucide-react";
-import { ButtonGroup } from "./ui/button-group";
+import { ButtonGroup } from "../ui/button-group";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,9 +13,9 @@ import {
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuTrigger
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import { POWER_TIER, POWER_TIER_ICON, POWER_TIER_COLOR } from "@/lib/constants"; // Adjust path to your constants file
-import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "./ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer";
 
 const sortOptions = [
     { value: "score", label: "Score" },

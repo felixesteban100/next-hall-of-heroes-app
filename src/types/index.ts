@@ -64,6 +64,7 @@ export type Universe = {
     id: number;
     description: string;
     background: string;
+    type: string;
 }
 
 export type Enemy = Omit<Character, "biography.publisher" | "connections" | "powers">[]
@@ -90,7 +91,16 @@ export type Team = {
     universe: number;
     logo: string,
     comics: string[]
-    leaders: string[]
+
+    // Base Metadata
+    leaders: (number | string)[]
+    baseOfOperations?: string;
+    alignment: "good" | "bad" | "neutral";
+    status?: "active" | "disbanded" | "reformed";
+    firstAppearance?: string; // e.g. "The Avengers #1 (Sept. 1963)" or "Ben 10: Alien Force S1E1"
+
+    // Leadership & Relationships
+    enemyTeamIds?: number[];
 }
 
 export type Power = {

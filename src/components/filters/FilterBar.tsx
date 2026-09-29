@@ -1,14 +1,14 @@
 "use client"
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Input } from "./ui/input";
-import { Button } from './ui/button';
+import { Input } from "../ui/input";
+import { Button } from '../ui/button';
 import { useCallback, useState } from 'react';
 import { ArrowBigDown, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Power, Team, Universe } from '@/types';
-import { ButtonGroup } from './ui/button-group';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup } from './ui/dropdown-menu';
+import { ButtonGroup } from '../ui/button-group';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -105,6 +105,7 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
 
     const updateParam = useCallback((key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
+        params.delete("page");
         params.set(key, value);
         pushParams(params);
     }, [searchParams, pushParams]);

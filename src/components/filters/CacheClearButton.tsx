@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { clearDataCache } from '@/app/actions';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
 export function CacheClearButton({ path }: { path: string }) {
     const router = useRouter();

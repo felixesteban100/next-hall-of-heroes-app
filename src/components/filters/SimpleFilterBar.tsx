@@ -2,14 +2,14 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { SearchIcon, ArrowBigDown, X } from "lucide-react";
-import { ButtonGroup } from "./ui/button-group";
+import { ButtonGroup } from "../ui/button-group";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
     DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 
 type SortOption = { value: string; label: string };
 

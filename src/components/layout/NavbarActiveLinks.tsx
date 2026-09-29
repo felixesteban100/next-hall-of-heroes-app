@@ -1,20 +1,20 @@
 "use client"
 
 import Link from "next/link";
-import { Button } from "./ui/button";
 import { usePathname, useSearchParams } from 'next/navigation'
 import { GlobeIcon, ShieldHalfIcon, Shuffle, UsersIcon, ZapIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 
 const ROUTE_KEYS: Record<string, string> = {
-    "/": "lastParams_characters",
+    "/characters": "lastParams_characters",
     "/teams": "lastParams_teams",
     "/universes": "lastParams_universes",
     "/powers": "lastParams_powers",
 };
 
 const pages = [
-    { name: "Characters", href: "/", icon: <UsersIcon /> },
+    { name: "Characters", href: "/characters", icon: <UsersIcon /> },
     { name: "Teams", href: "/teams", icon: <ShieldHalfIcon /> },
     { name: "Universes", href: "/universes", icon: <GlobeIcon /> },
     { name: "Powers", href: "/powers", icon: <ZapIcon /> },
@@ -67,7 +67,7 @@ export function NavbarActiveLinks() {
         <div className="flex space-x-2">
             {pages.map((page) => (
                 <Link key={page.href} href={buildHref(page.href)}>
-                    <Button variant={pathname === page.href ? "default" : "ghost"}>
+                    <Button variant={pathname.includes(page.href) ? "default" : "ghost"}>
                         {page.icon}
                         <span className="ml-2 hidden md:block">{page.name}</span>
                     </Button>
