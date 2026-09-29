@@ -1,18 +1,16 @@
 "use client"
 
-import { /* Character, */ CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
 import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 import CharacterBadge from "./CharacterBadge";
 import { ViewTransition } from 'react'
-// import { Skeleton } from "@/components/ui/skeleton"
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
-import { CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
 import { Mars, Venus } from "lucide-react";
 
 type CharacterCardProps = {
-    // character: Character;
     character: CharacterWithJoinTeamUniversePowerEnemies;
     size?: "default" | "sm" | "lg" | undefined;
 }
@@ -23,16 +21,19 @@ export default function CharacterCard({ character, size = "default" }: Character
 
     const ClassIcon = CHARACTER_CLASS_ICON[character.class] ?? CHARACTER_CLASS_ICON[0];
     const classColor = CHARACTER_CLASS_COLOR[character.class as keyof typeof CHARACTER_CLASS_COLOR] ?? CHARACTER_CLASS_COLOR[0];
+    const characterClass = CHARACTER_CLASS[character.class as keyof typeof CHARACTER_CLASS]
 
     const TypeIcon = CHARACTER_TYPE_ICON[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
+    console.log(characterClass)
+
     return (
-        <Card className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
+        <Card className="group h-full justify-between hover:scale-102 hover:shadow-xl transition-all duration-300 pt-0 overflow-visible">
             <div className="relative">
                 <ViewTransition name={`character-${character.id}`}>
-                    {/* this image doesn't look full in mobile as in desktop */}
-                    <Image
+                    {/* this image doesn't look full in mobile as in desktop, because the images are vertical not horizontal, and the face of the characters mostly are high in the picture */}
+                    {/* <Image
                         src={`${character.images.md}`}
                         alt={`${character.name}'s main image`}
                         unoptimized
@@ -41,10 +42,20 @@ export default function CharacterCard({ character, size = "default" }: Character
                         height={1200}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         style={{ contain: "layout" }}
+                    /> */}
+                    <Image
+                        src={`${character.images.md}`}
+                        alt={`${character.name}'s main image`}
+                        unoptimized
+                        className="w-full aspect-[3/4] sm:h-80 object-cover object-top transition-opacity duration-700 rounded-t-xl"
+                        width={800}
+                        height={1200}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        style={{ contain: "layout" }}
                     />
                 </ViewTransition>
 
-                {size === "sm" && <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+                {/* {size === "sm" && <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
                     <span className={`p-1.5 rounded-full backdrop-blur-md bg-background `} title={`Gender: ${character.appearance.gender}`}>
                         {character.appearance.gender === "Female" ? (
                             <Venus className="w-3.5 h-3.5 text-pink-500" />
@@ -63,26 +74,25 @@ export default function CharacterCard({ character, size = "default" }: Character
                     <span className={`p-1.5 rounded-full backdrop-blur-md bg-background ${classColor.text}`} title={`Class ${character.class}`}>
                         <ClassIcon size={14} />
                     </span>
-                </div>}
+                </div>} */}
             </div>
-            <CardHeader>
+            <CardHeader className="border-t- border-foreground/50">
                 <CardAction>
                     <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
                 </CardAction>
                 <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
             </CardHeader>
-            {size !== "sm" && <CardDescription className="flex flex-row justify-between gap-1 w-full px-5">
-                {/* {character.biography.origin} */}
-                <div>
+            {size !== "sm" && <CardDescription className="flex flex-row justify-between items-center gap-1 w-full px-5">
+                <div className="flex  items-center">
                     <p>{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown" : character.biography.fullName}</p>
-                    <span className="text-xs text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                    <span className="text-xs h-5 self-center text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
                         #{character.id}
                     </span>
                 </div>
-                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-6 w-auto" />
+                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-10 w-auto" />
             </CardDescription>}
-            {size !== "sm" && <CardFooter className="p-0 border-t bg-muted/30 rounded-b-xl overflow-hidden">
-                <div className="grid grid-cols-4 w-full divide-x text-center py-2 text-xs">
+            {size !== "sm" && <CardFooter className="p-0 border border-foreground/10 rounded-b-xl overflow-hidden ">
+                <div className="grid grid-cols-4 w-full divide-x divide-foreground/50 text-center py-2 text-xs">
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Gender">
                         {character.appearance.gender === "Female" ? (
                             <Venus className="w-3.5 h-3.5 text-pink-500" />
@@ -101,7 +111,7 @@ export default function CharacterCard({ character, size = "default" }: Character
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Class">
                         <ClassIcon className={`w-3.5 h-3.5 ${classColor.text}`} />
-                        <span className="text-[10px] font-medium text-muted-foreground">Class</span>
+                        <span className="text-[10px] font-medium text-muted-foreground">{characterClass?.split("/")[0] ?? "?"}</span>
                     </div>
                 </div>
             </CardFooter>}

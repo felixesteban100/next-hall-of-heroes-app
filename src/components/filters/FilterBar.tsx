@@ -137,7 +137,7 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10 bg-muted/30"
+                        className="pl-10 "
                     />
                     {name && (
                         <X

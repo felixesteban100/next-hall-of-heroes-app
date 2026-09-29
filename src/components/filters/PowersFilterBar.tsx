@@ -57,7 +57,7 @@ export default function PowersFilterBar() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10 bg-muted/30"
+                        className="pl-10 "
                     />
                     <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
                 </div>
