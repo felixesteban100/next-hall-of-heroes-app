@@ -23,9 +23,9 @@ export function Navbar() {
                     </Link>
 
                     {/* Render Active Links here inside Suspense */}
-                    {/* <Suspense fallback={<div className="h-8 w-64 bg-accent/20 animate-pulse rounded-lg" />}> */}
-                    <NavbarActiveLinks />
-                    {/* </Suspense> */}
+                    <Suspense fallback={<div className="h-8 w-64 bg-accent/20 animate-pulse rounded-lg" />}>
+                        <NavbarActiveLinks />
+                    </Suspense>
                 </div>
 
                 {/* Right Actions / Theme Toggle */}
