@@ -1,22 +1,15 @@
 import { collectionCharacters, collectionTeams, collectionUniverses } from "@/db/mongodb";
-import Image from "next/image";
-import Link from "next/link";
-import { Suspense, ViewTransition } from "react";
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
-import { Badge } from "@/components/ui/badge";
-import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
-import { MapPin, Globe, Calendar, Award, Globe2, Gauge } from "lucide-react";
-import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
-import { EntityMetadataGrid } from "@/components/shared/EntityMetadataGrid";
 import { TeamHeroHeader } from "@/components/teams/TeamHeroHeader";
+import { Filter } from "mongodb";
+import { Character } from "@/types";
 
 export const instant = false;
 
 export default async function page({ params }: { params: Promise<{ id: string }> }) {
-    "use cache"
-    cacheLife("hours")
+    /* "use cache"
+    cacheLife("hours") */
 
     const { id } = await params;
     const teamId = parseInt(id);
@@ -40,19 +33,57 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     // 2. Fetch Universe
     const universe = await collectionUniverses.findOne({ id: team.universe })!
 
-    // 3. Fetch Leaders (if leaders array exists)
-    // 1. Separate numeric IDs from fallback strings
-    const leaderIds = (team.leaders || [])
-        .filter((id): id is number => typeof id === "number" || (!isNaN(Number(id)) && typeof id !== "string"));
+    const rawLeaders = (team.leaders || []) as Array<number | string>;
 
-    const stringLeaderNames = (team.leaders || []) as Array<number | string>;
-    const externalLeaderNames = stringLeaderNames
-        .filter((item): item is string => typeof item === "string" && isNaN(Number(item)));
+    const leaderIds: number[] = [];
+    const leaderStringTerms: string[] = [];
 
-    // 2. Fetch matched characters from DB
-    const leaderCharacters = leaderIds.length > 0
-        ? await collectionCharacters.find({ id: { $in: leaderIds } }).toArray()
+    // a. Separate numeric IDs from string search terms
+    for (const item of rawLeaders) {
+        if (typeof item === "number") {
+            leaderIds.push(item);
+        } else if (typeof item === "string" && item.trim() !== "") {
+            const parsedNum = Number(item);
+            if (!isNaN(parsedNum)) {
+                leaderIds.push(parsedNum);
+            } else {
+                leaderStringTerms.push(item);
+            }
+        }
+    }
+
+    // b. Construct type-safe $or query
+    const orConditions: Filter<Character>[] = [];
+
+    if (leaderIds.length > 0) {
+        orConditions.push({ id: { $in: leaderIds } });
+    }
+    if (leaderStringTerms.length > 0) {
+        orConditions.push({ name: { $in: leaderStringTerms } });
+        orConditions.push({ "biography.fullName": { $in: leaderStringTerms } });
+    }
+
+    // c. Execute Query
+    const filter: Filter<Character> = {
+        ...(orConditions.length > 0 ? { $or: orConditions } : {}),
+        ...(universe?.name ? { "biography.publisher": universe.name } : {}),
+    };
+
+    const dbLeaderCharacters = orConditions.length > 0
+        ? await collectionCharacters.find(filter).toArray()
         : [];
+
+    // d. Identify remaining string leaders that were NOT found in DB
+    const matchedNames = new Set([
+        ...dbLeaderCharacters.map((c) => c.name.toLowerCase()),
+        ...dbLeaderCharacters
+            .map((c) => c.biography?.fullName?.toLowerCase())
+            .filter((name): name is string => Boolean(name)),
+    ]);
+
+    const externalLeaders = leaderStringTerms
+        .filter((term) => !matchedNames.has(term.toLowerCase()))
+        .map((name) => ({ name, isFallback: true as const }));
 
     // 4. Fetch Enemy Teams (if enemyTeamIds array exists)
     // Separate numeric DB IDs from string-only external factions
@@ -67,7 +98,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     // Fetch DB enemy teams
     const enemyTeams = numericEnemyIds.length > 0
-        ? await collectionTeams.find({ id: { $in: numericEnemyIds } }).toArray()
+        ? await collectionTeams.find({ id: { $in: numericEnemyIds }, universe: universe?.id }).toArray()
         : [];
 
     // 5. Compute Average Powerstats via MongoDB Aggregation
@@ -88,81 +119,14 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     return (
         <div className="mx-auto pb-8 max-w-[90vw] space-y-6 mt-4">
-            <TeamHeroHeader team={{ ...team, universe: { id: universe!.id, name: universe!.name, logo: universe?.logo } }} />
-            {/* <Suspense fallback={<>Loading team...</>}>
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b pb-6">
-                    <ViewTransition name={`team-${team.id}`} share="morph">
-                        <div className="bg-muted/30 p-4 rounded-3xl border flex items-center justify-center shrink-0">
-                            <Image
-                                src={team.logo}
-                                alt={team.name}
-                                className="max-w-[20rem] max-h-[10rem] object-contain"
-                                width={500}
-                                height={300}
-                                style={{ contain: "layout" }}
-                            />
-                        </div>
-                    </ViewTransition>
-
-                    <div className="space-y-3 flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <h1 className="text-3xl font-bold">{team.name}</h1>
-                            <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
-                                #{team.id}
-                            </span>
-
-                            {team.alignment && (
-                                <Badge className={`${getCharacterAlignmentColor(team.alignment)} gap-1 capitalize text-xs`}>
-                                    {CharacterBadgeIcon(team.alignment)} {getCharacterAlignmentText(team.alignment)}
-                                </Badge>
-                            )}
-
-                            {team.status && (
-                                <Badge variant="outline" className="capitalize text-xs">
-                                    {team.status}
-                                </Badge>
-                            )}
-                        </div>
-
-                        <p className="text-muted-foreground text-sm font-normal">
-                            {team.description || "No description available."}
-                        </p>
-
-                        <EntityMetadataGrid
-                            items={[
-                                {
-                                    icon: Globe2,
-                                    label: "Universe",
-                                    value: universe?.name || "Unknown",
-                                    href: `/universes/${team.universe}`,
-                                },
-                                {
-                                    icon: MapPin,
-                                    label: "Base of Operations",
-                                    value: team.baseOfOperations || "Arkham Asylum / Gotham Underground",
-                                },
-                                {
-                                    icon: Calendar,
-                                    label: "Debut / First Appearance",
-                                    value: team.firstAppearance || "Detective Comics #27 (May 1939)",
-                                },
-                                {
-                                    icon: Gauge,
-                                    label: "Avg Power Score",
-                                    value: (
-                                        <span>
-                                            <strong className="text-secondary">52</strong>{" "}
-                                            <span className="text-xs font-normal text-muted-foreground">
-                                                ({teamCharacters.length} members)
-                                            </span>
-                                        </span>
-                                    ),
-                                },
-                            ]}
-                        />
-                    </div>
-                </div>
-            </Suspense> */}
+            <TeamHeroHeader
+                team={{
+                    ...team,
+                    universe: { id: universe!.id, name: universe!.name, logo: universe?.logo },
+                    avgPowerScore: stats[0],
+                    membersCount: teamCharacters.length
+                }}
+            />
 
             <div id="members" className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -175,19 +139,19 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             <div id="leaders" className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                    Team Leaders ({leaderCharacters.length + externalLeaderNames.length})
+                    Team Leaders ({dbLeaderCharacters.length + externalLeaders.length})
                 </h3>
                 <MiniEntityGrid
                     entityType="character"
                     showAlignment={true}
                     avatarShape="circle"
-                    items={leaderCharacters.map((c) => ({
+                    items={dbLeaderCharacters.map((c) => ({
                         id: c.id,
                         name: c.name,
                         image: c.images?.md,
                         alignment: c.biography?.alignment,
                     }))}
-                    externalNames={externalLeaderNames} // Renders missing characters as external badges
+                    externalNames={externalLeaders.map(c => c.name)} // Renders missing characters as external badges
                     emptyMessage="No team leaders specified."
                 />
             </div>

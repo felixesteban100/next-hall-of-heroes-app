@@ -26,7 +26,7 @@ export default async function page({
     const params = await searchParams;
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
-    const sortProperty = params.sort?.toString() || "name";
+    const sortProperty = params.sort?.toString() || "id";
     const sortOrientation = params.sortOrientation?.toString() || "asc";
     const name = params.name?.toString() || "";
 
@@ -34,9 +34,9 @@ export default async function page({
 
     const universesPerPage = await collectionUniverses
         .find(query)
+        .sort({ [sortProperty]: sortOrientation === "asc" ? -1 : 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
-        .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 })
         .toArray();
 
     const totalUniverses = await collectionUniverses.countDocuments(query);

@@ -24,8 +24,8 @@ export default async function page({
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
 
-    const sortProperty = params.sort?.toString() || "score";  // default to score not id
-    const sortOrientation = params.sortOrientation?.toString() || "desc";
+    const sortProperty = params.sort?.toString() || "id";  // default to score not id
+    const sortOrientation = params.sortOrientation?.toString() || "asc";
     const name = params.name?.toString() || "";
     const tier = parseInt(params.tier?.toString() || "");
 
@@ -35,12 +35,14 @@ export default async function page({
 
     const powersPerPage = await collectionPowers
         .find(query)
+        .sort({ [sortProperty]: sortOrientation === "asc" ? -1 : 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
-        .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 })
         .toArray();
 
     const totalPowers = await collectionPowers.countDocuments(query);
+
+    // console.log((await collectionPowers.find({}).toArray()).map(c => ({ value: c.value, name: c.name, id: c.id })))
 
     return (
         <div className="min-h-screen space-y-4 mt-4">

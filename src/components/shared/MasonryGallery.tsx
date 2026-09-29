@@ -11,6 +11,8 @@ interface MasonryGalleryProps {
   characterName?: string;
 }
 
+/* zoom is terrible and the dialog is too big in mobile */
+
 export function MasonryGallery({ images, characterName = "Character" }: MasonryGalleryProps) {
   // Filter valid image entries while preserving keys (e.g. ['md', 'https://...'])
   const validEntries = Object.entries(images).filter(
@@ -56,7 +58,7 @@ export function MasonryGallery({ images, characterName = "Character" }: MasonryG
 
             {/* Top Key Badge */}
             <div className="absolute top-3 left-3 z-10">
-              <Badge variant="secondary" className="text-[10px] uppercase font-mono tracking-wider bg-background/80 backdrop-blur-md border border-border">
+              <Badge variant="secondary" className="text-[10px] uppercase font-mono tracking-wider bg-background/80 text-foreground backdrop-blur-md border border-border">
                 {key}
               </Badge>
             </div>

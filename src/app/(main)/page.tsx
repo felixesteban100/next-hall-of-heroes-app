@@ -105,7 +105,8 @@ export default function StartPage() {
                     </span>
                   </div>
 
-                  <h2 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors mb-1">
+                  {/* group-hover:text-primary */}
+                  <h2 className="text-lg font-bold text-foreground  transition-colors mb-1">
                     {cat.title}
                   </h2>
                   <p className="text-xs text-muted-foreground leading-relaxed">

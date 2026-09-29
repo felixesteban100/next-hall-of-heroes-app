@@ -1,23 +1,12 @@
 import { CacheClearButton } from "@/components/filters/CacheClearButton";
 import CharacterCard from "@/components/characters/CharacterCard";
 import { collectionCharacters } from "@/db/mongodb";
-import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Link from "next/link";
-// import { unstable_noStore as noStore } from "next/cache";
 
 export default async function Random() {
-    // noStore();
     "use cache"
     const charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-        /* joinTeam_universe_power_enemies_toCharacter(
-            {},
-            "id",
-            "desc",
-            0,
-            8,
-            // [],
-        ), */
         [
             {
                 $lookup: {

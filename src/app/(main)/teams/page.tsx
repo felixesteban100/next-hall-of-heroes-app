@@ -10,8 +10,8 @@ import TeamCard from "@/components/teams/TeamCard";
 export const instant = false;
 
 const sortOptions = [
-    { value: "name", label: "Name" },
     { value: "id", label: "Id" },
+    { value: "name", label: "Name" },
 ];
 
 export default async function page({
@@ -26,7 +26,7 @@ export default async function page({
     const params = await searchParams;
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
-    const sortProperty = params.sort?.toString() || "name";
+    const sortProperty = params.sort?.toString() || "id";
     const sortOrientation = params.sortOrientation?.toString() || "asc";
     const name = params.name?.toString() || "";
 
@@ -34,17 +34,14 @@ export default async function page({
 
     const teamsPerPage = await collectionTeams
         .find(query)
+        .sort({ [sortProperty]: sortOrientation === "asc" ? -1 : 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
-        .sort({ [sortProperty]: sortOrientation === "asc" ? 1 : -1 })
         .toArray();
 
     const totalTeams = await collectionTeams.countDocuments(query);
 
     // console.log((await collectionTeams.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
-    // I must populate the db with leaders maybe using the name because they are too much to give them to the AI 
-
-
 
     return (
         <div className="min-h-screen space-y-4 mt-4">

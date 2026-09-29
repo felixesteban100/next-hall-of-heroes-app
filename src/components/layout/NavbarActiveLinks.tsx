@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from 'next/navigation'
-import { GlobeIcon, ShieldHalfIcon, Shuffle, UsersIcon, ZapIcon } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { Users, Shield, Globe2, Zap } from "lucide-react";
 
 const ROUTE_KEYS: Record<string, string> = {
     "/characters": "lastParams_characters",
@@ -13,12 +12,12 @@ const ROUTE_KEYS: Record<string, string> = {
     "/powers": "lastParams_powers",
 };
 
-const pages = [
-    { name: "Characters", href: "/characters", icon: <UsersIcon /> },
-    { name: "Teams", href: "/teams", icon: <ShieldHalfIcon /> },
-    { name: "Universes", href: "/universes", icon: <GlobeIcon /> },
-    { name: "Powers", href: "/powers", icon: <ZapIcon /> },
-    { name: "Random", href: "/characters/random", icon: <Shuffle /> },
+const navLinks = [
+    { name: "Characters", href: "/characters", icon: Users },
+    { name: "Teams", href: "/teams", icon: Shield },
+    { name: "Universes", href: "/universes", icon: Globe2 },
+    { name: "Powers", href: "/powers", icon: Zap },
+    { name: "Random", href: "/random", icon: Users },
 ];
 
 export function NavbarActiveLinks() {
@@ -26,7 +25,7 @@ export function NavbarActiveLinks() {
     const searchParams = useSearchParams();
     const [savedParams, setSavedParams] = useState<Record<string, string>>({});
 
-    // Load initial values from localStorage on mount
+    // 1. Load initial values from localStorage on mount
     useEffect(() => {
         const loaded: Record<string, string> = {};
         for (const [route, key] of Object.entries(ROUTE_KEYS)) {
@@ -36,22 +35,32 @@ export function NavbarActiveLinks() {
         setSavedParams(loaded);
     }, []);
 
-    // Synchronize current route params to localStorage AND React state
+    // 2. Synchronize current route params to localStorage AND state (Handles Clearing)
     useEffect(() => {
-        const key = ROUTE_KEYS[pathname];
-        if (!key) return;
+        const matchedBaseRoute = Object.keys(ROUTE_KEYS).find((route) =>
+            // pathname.startsWith(route)
+            pathname === route
+        );
 
-        const qs = searchParams.toString();
+        if (!matchedBaseRoute) return;
 
-        if (qs) {
-            localStorage.setItem(key, qs);
-            setSavedParams((prev) => ({ ...prev, [pathname]: qs }));
+        const key = ROUTE_KEYS[matchedBaseRoute];
+        const currentQuery = searchParams.toString();
+
+        if (currentQuery) {
+            // Save active filters
+            localStorage.setItem(key, currentQuery);
+            setSavedParams((prev) => {
+                if (prev[matchedBaseRoute] === currentQuery) return prev;
+                return { ...prev, [matchedBaseRoute]: currentQuery };
+            });
         } else {
-            // Optional: remove stored params if user cleared filters
+            // ⚡ CLEAR STORAGE & STATE when searchParams are cleared (e.g. Clear All button)
             localStorage.removeItem(key);
             setSavedParams((prev) => {
+                if (!prev[matchedBaseRoute]) return prev;
                 const next = { ...prev };
-                delete next[pathname];
+                delete next[matchedBaseRoute];
                 return next;
             });
         }
@@ -59,20 +68,37 @@ export function NavbarActiveLinks() {
 
     function buildHref(href: string) {
         const stored = savedParams[href];
-        if (!stored) return href;
-        return `${href}?${stored}`;
+        return stored ? `${href}?${stored}` : href;
     }
 
     return (
-        <div className="flex space-x-2">
-            {pages.map((page) => (
-                <Link key={page.href} href={buildHref(page.href)}>
-                    <Button variant={pathname.includes(page.href) ? "default" : "ghost"}>
-                        {page.icon}
-                        <span className="ml-2 hidden md:block">{page.name}</span>
-                    </Button>
-                </Link>
-            ))}
-        </div>
+        <nav className="flex items-center gap-1 sm:gap-2">
+            {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = pathname.startsWith(link.href);
+
+                return (
+                    <Link
+                        key={link.href}
+                        href={buildHref(link.href)}
+                        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${isActive
+                            ? "text-primary bg-primary/0 font-semibold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                            }`}
+                    >
+                        <Icon
+                            className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"
+                                }`}
+                        />
+                        <span className="hidden sm:inline">{link.name}</span>
+
+                        {/* Active Indicator Bar */}
+                        {isActive && (
+                            <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full" />
+                        )}
+                    </Link>
+                );
+            })}
+        </nav>
     );
 }

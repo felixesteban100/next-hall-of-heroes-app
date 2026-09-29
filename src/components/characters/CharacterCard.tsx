@@ -31,6 +31,7 @@ export default function CharacterCard({ character, size = "default" }: Character
         <Card className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow-foreground shadow-2xl pt-0 overflow-visible">
             <div className="relative">
                 <ViewTransition name={`character-${character.id}`}>
+                    {/* this image doesn't look full in mobile as in desktop */}
                     <Image
                         src={`${character.images.md}`}
                         alt={`${character.name}'s main image`}

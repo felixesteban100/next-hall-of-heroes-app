@@ -10,7 +10,7 @@ import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES, POWER_TIER } from "@/lib/constants";
-import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { Character, CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power, Team } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent } from "lucide-react";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
@@ -30,7 +30,7 @@ const POWERSTATS_CFG = [
     { key: "power", label: "Power", icon: Zap, color: "[&>div]:bg-cyan-500" },
 ] as const;
 
-export default async function CharactersPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CharacterPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const [character] = await collectionCharacters
         .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
@@ -81,6 +81,30 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
         { icon: ShieldOff, label: "Weaknesses", val: character.weaknesses?.length ? character.weaknesses.join(", ") : "An unknown weakness" },
         { icon: Paperclip, label: "Origin", val: val(biography.origin, "An unknown origin") },
     ];
+
+    // Powers
+    const externalPowers = character.powers.filter(
+        (c): c is FallbackItem => "isFallback" in c && c.isFallback === true
+    );
+    const characterPowersDB = character.powers.filter(
+        (c): c is Power => !("isFallback" in c)
+    );
+
+    // Enemies
+    const externalEnemies = character.connections.enemies.filter(
+        (c): c is FallbackItem => "isFallback" in c && c.isFallback === true
+    );
+    const characterEnemiesDB = character.connections.enemies.filter(
+        (c): c is Character => !("isFallback" in c)
+    );
+
+    // Teams / Group Affiliations
+    const externalTeams = connections.groupAffiliation.filter(
+        (c): c is FallbackItem => "isFallback" in c && c.isFallback === true
+    );
+    const characterTeamsDB = connections.groupAffiliation.filter(
+        (c): c is Team => !("isFallback" in c)
+    );
 
     return (
         <div className="pb-8 space-y-6 pt-5">
@@ -177,13 +201,14 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Powers & Abilities</p>
                 <MiniEntityGrid
                     entityType="power"
-                    items={character.powers.map((p) => ({
+                    items={characterPowersDB.map((p) => ({
                         id: p.id,
                         name: p.name,
                         image: p.img,
                         category: POWER_TIER[p.tier as keyof typeof POWER_TIER],             // e.g. "Elemental"
                         // characterCount: p.usersCount, // e.g. Renders subtext: "14 Users"
                     }))}
+                    externalNames={externalPowers.map(c => c.name)}
                     emptyMessage="No powers found."
                 />
             </div>
@@ -192,9 +217,10 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
             <div id={"Groups & Affiliations"} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Groups & Affiliations</p>
                 <MiniEntityGrid
-                    items={connections.groupAffiliation}
+                    items={characterTeamsDB}
                     entityType="team"
                     emptyMessage="No teams found."
+                    externalNames={externalTeams.map(c => c.name)}
                     showAlignment={true}
                 />
             </div>
@@ -205,16 +231,14 @@ export default async function CharactersPage({ params }: { params: Promise<{ slu
                 <MiniEntityGrid
                     entityType="character"
                     showAlignment={true}
-                    items={connections.enemies.map((c) => ({
+                    items={characterEnemiesDB.map((c) => ({
                         id: c.id,
                         name: c.name,
                         image: c.images.md,
                         alignment: c.biography?.alignment,
-                        // primaryPower: c.powers?.[0] || c.biography?.alterEgos, // or main power field
-                        // powerstatTotal: c.powerstats?.total,
                     }))}
+                    externalNames={externalEnemies.map(c => c.name)}
                     emptyMessage="No enemies found."
-
                 />
             </div>
 

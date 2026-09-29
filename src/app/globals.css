@@ -484,14 +484,12 @@
 }
 
 @supports (view-transition-name: root) {
-  /* Prevent root page opacity fade from blocking element morphing */
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
   }
 
-  /* Set morph timing across back/forward navigation */
   ::view-transition-group(*) {
     animation-duration: 0.3s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

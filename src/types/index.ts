@@ -74,11 +74,11 @@ export type CharacterWithJoinTeamUniversePowerEnemies = Omit<Character, "biograp
         publisher: Omit<Universe, "teams">;
     };
     connections: {
-        groupAffiliation: /* TeamWithJoinCharacterUniverse[] */ Omit<Team, "universe">[];
+        groupAffiliation: /* TeamWithJoinCharacterUniverse[] */ (Omit<Team, "universe"> | FallbackItem)[];
         relatives: string;
-        enemies: Character[]/* Enemy */;
+        enemies: (Character | FallbackItem)[]/* Enemy */;
     };
-    powers: Power[],
+    powers: (Power | FallbackItem)[],
 }
 
 export type Team = {
@@ -113,6 +113,11 @@ export type Power = {
     score: number
     tier: number
     logo: string
+}
+
+export interface FallbackItem {
+    name: string;
+    isFallback: true;
 }
 
 export type QueryOptions = {

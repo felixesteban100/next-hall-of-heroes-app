@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-import { cn } from "@/lib/utils"
-import { ViewTransitionListener } from "@/components/layout/ViewTransitionListener";
-import { Suspense, ViewTransition } from "react"; // or 'next/view-transition'
+// import { ViewTransitionListener } from "@/components/layout/ViewTransitionListener";
+import { ViewTransition } from "react"; // or 'next/view-transition'
+import { ParamLoadingProvider } from "@/components/layout/ParamLoadingContext";
 
 // import { Open_Sans, Georgia, Meddon } from "next/font/google";
 
@@ -49,9 +49,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* <Suspense fallback={null}> */}
-          <ViewTransitionListener />
+          {/* <ViewTransitionListener /> */}
           {/* </Suspense> */}
-          <ViewTransition>{children}</ViewTransition>
+          {/* <ViewTransition> */}
+          <ParamLoadingProvider>
+            {children}
+          </ParamLoadingProvider>
+          {/* </ViewTransition> */}
         </ThemeProvider>
       </body>
     </html>

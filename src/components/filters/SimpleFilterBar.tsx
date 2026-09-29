@@ -26,7 +26,7 @@ export default function SimpleFilterBar({
 
     const [name, setName] = useState(searchParams.get("name") || "");
     const sort = searchParams.get("sort") || sortOptions[0].value;
-    const sortOrientation = searchParams.get("sortOrientation") || "desc";
+    const sortOrientation = searchParams.get("sortOrientation") || "asc";
 
     const updateParam = useCallback((key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
@@ -66,7 +66,7 @@ export default function SimpleFilterBar({
                         aria-label="Toggle sort direction"
                         onClick={() => updateParam("sortOrientation", sortOrientation === "asc" ? "desc" : "asc")}
                     >
-                        <ArrowBigDown className={`${sortOrientation === "asc" ? "rotate-180" : ""} transition-all`} />
+                        <ArrowBigDown className={`${sortOrientation === "asc" ? "rotate-180" : ""} transition-transform duration-200`} />
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
