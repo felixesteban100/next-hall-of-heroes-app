@@ -1,31 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { NavbarActiveLinks } from "./NavbarActiveLinks";
 import { Sparkles } from "lucide-react";
 import { ModeToggle } from "./toggle-mode";
 
 export function Navbar() {
-    useEffect(() => {
-        console.log("Touched element:");
-
-        const handleTouch = (e: TouchEvent) => {
-            const target = e.target as HTMLElement;
-            console.log("Touched element:", target.tagName, target.className, target);
-        };
-
-        window.addEventListener("touchstart", handleTouch, { capture: true });
-        return () => window.removeEventListener("touchstart", handleTouch, { capture: true });
-    }, []);
-
-    if (typeof window !== "undefined") {
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
-            alert("Mobile JS Crash: " + msg + " at line " + lineNo);
-            return false;
-        };
-    }
-
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md touch-manipulation">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

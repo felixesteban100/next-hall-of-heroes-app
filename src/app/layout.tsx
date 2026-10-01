@@ -48,12 +48,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {/* <Suspense fallback={null}> */}
-            <ViewTransitionListener />
-            <ViewTransition>
-              {children}
-            </ViewTransition>
-            {/* </Suspense> */}
+            <Suspense fallback={null}>
+              <ViewTransitionListener />
+              <ViewTransition>
+                {children}
+              </ViewTransition>
+            </Suspense>
           </ThemeProvider>
         </ParamLoadingProvider>
       </body>
