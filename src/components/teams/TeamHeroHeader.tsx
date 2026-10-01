@@ -14,7 +14,7 @@ interface TeamHeroHeaderProps {
     baseOfOperations?: string;
     firstAppearance?: string;
     membersCount?: number;
-    avgPowerScore?: number;
+    avgPowerScore: number;
   };
 }
 
@@ -27,7 +27,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
       label: "AVG POWER SCORE",
       value: (
         <span>
-          {team.avgPowerScore ?? 52}{" "}
+          {Math.round(team.avgPowerScore)}%{" "}
           <span className="text-xs font-normal text-muted-foreground">
             ({team.membersCount ?? 0} members)
           </span>

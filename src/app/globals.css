@@ -522,14 +522,6 @@
 }
 
 @layer base {
-  html,
-  body {
-    min-height: 100%;
-    width: 100%;
-    overflow-x: hidden;
-    /* 🛑 Remove any overflow: hidden or height: 100vh on body */
-    touch-action: manipulation;
-  }
   * {
     @apply border-border outline-ring/50;
   }

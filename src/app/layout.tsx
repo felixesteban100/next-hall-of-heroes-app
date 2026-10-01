@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { ViewTransitionListener } from "@/components/layout/ViewTransitionListener";
-import { Suspense, ViewTransition } from "react"; // or 'next/view-transition'
 import { ParamLoadingProvider } from "@/components/layout/ParamLoadingContext";
 
 // import { Open_Sans, Georgia, Meddon } from "next/font/google";
@@ -41,21 +40,17 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body>
-        <ParamLoadingProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Suspense fallback={null}>
-              <ViewTransitionListener />
-              <ViewTransition>
-                {children}
-              </ViewTransition>
-            </Suspense>
-          </ThemeProvider>
-        </ParamLoadingProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ViewTransitionListener />
+          <ParamLoadingProvider>
+            {children}
+          </ParamLoadingProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

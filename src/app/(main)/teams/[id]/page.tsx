@@ -123,7 +123,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                 team={{
                     ...team,
                     universe: { id: universe!.id, name: universe!.name, logo: universe?.logo },
-                    avgPowerScore: stats[0],
+                    avgPowerScore: stats.avgTotal,
                     membersCount: teamCharacters.length
                 }}
             />

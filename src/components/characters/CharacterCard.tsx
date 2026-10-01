@@ -66,7 +66,7 @@ export default function CharacterCard({ character, size = "default" }: Character
                         #{character.id}
                     </span>
                 </div>
-                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-10 w-auto" />
+                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-10 w-auto rounded-md" />
             </CardDescription>}
             {size !== "sm" && <CardFooter className="p-0 border border-foreground/10 rounded-b-xl overflow-hidden ">
                 <div className="grid grid-cols-4 w-full divide-x divide-foreground/50 text-center py-2 text-xs">

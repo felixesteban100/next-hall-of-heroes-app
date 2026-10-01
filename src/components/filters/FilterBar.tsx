@@ -4,9 +4,9 @@ import { useSearchParams } from 'next/navigation'
 import { Input } from "../ui/input";
 import { Button } from '../ui/button';
 import { useCallback, useMemo, useState } from 'react';
-import { Loader2, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
+import { Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { Power, Team, Universe } from '@/types';
+// import { Power, Team, Universe } from '@/types';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -51,14 +51,17 @@ type DraftFilters = {
 };
 
 const EMPTY_FILTERS: DraftFilters = {
-    alignment: "", universe: "", team: "", character_type: "",
-    tier: "", class: "", gender: "", powers: [],
+    alignment: "", universe: "", team: "", character_type: "", tier: "", class: "", gender: "", powers: [],
 };
 
+type DropdownValue = { id: number, name: string }
+
 export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
-    universes: Universe[];
-    teams: Team[];
-    powers: Power[];
+    universes: DropdownValue[];
+    teams: (DropdownValue & {
+        universe: number
+    })[];
+    powers: DropdownValue[];
     activeFilterProps: ActiveFiltersBadgesProps;
 }) => {
     // const { push } = useRouter();
@@ -194,9 +197,11 @@ function FilterDrawerBody({
     pushParams,
     onClose,
 }: {
-    universes: Universe[];
-    teams: Team[];
-    powers: Power[];
+    universes: DropdownValue[];
+    teams: (DropdownValue & {
+        universe: number
+    })[];
+    powers: DropdownValue[];
     draftFilters: DraftFilters;
     setDraftFilters: React.Dispatch<React.SetStateAction<DraftFilters>>;
     searchParams: ReturnType<typeof useSearchParams>;
@@ -207,13 +212,13 @@ function FilterDrawerBody({
         setDraftFilters(prev => ({ ...prev, [key]: value }));
 
     const selectedUniverseObj = useMemo(() =>
-        universes.find(u => u.name === draftFilters.universe || u.value === draftFilters.universe),
+        universes.find(u => u.name === draftFilters.universe || u.name === draftFilters.universe),
         [universes, draftFilters.universe]
     );
 
     const filteredTeams = useMemo(() =>
         selectedUniverseObj
-            ? teams.filter(t => String(t.universe) === String(selectedUniverseObj.id ?? selectedUniverseObj.value))
+            ? teams.filter(t => String(t.universe) === String(selectedUniverseObj.id))
             : [],
         [selectedUniverseObj, teams]
     );
@@ -373,7 +378,7 @@ function FilterDrawerBody({
                         <SelectContent>
                             <SelectGroup>
                                 {universes.map(u => (
-                                    <SelectItem key={u.value} value={u.value}>{u.name}</SelectItem>
+                                    <SelectItem key={u.name} value={String(u.name)}>{u.id}.{u.name}</SelectItem>
                                 ))}
                             </SelectGroup>
                         </SelectContent>
@@ -389,7 +394,7 @@ function FilterDrawerBody({
                             <SelectContent>
                                 <SelectGroup>
                                     {filteredTeams.map(t => (
-                                        <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
+                                        <SelectItem key={t.id} value={String(t.id)}>{String(t.id)}. {t.name}</SelectItem>
                                     ))}
                                 </SelectGroup>
                             </SelectContent>

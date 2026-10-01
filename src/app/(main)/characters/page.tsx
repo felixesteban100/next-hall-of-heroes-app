@@ -12,7 +12,6 @@ import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
 
 export const instant = false;
 
@@ -90,9 +89,20 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
             )
             .toArray(),
         collectionCharacters.countDocuments(query),
-        collectionUniverses.find({}).sort({ id: 1 }).toArray(),
-        collectionTeams.find({}).sort({ id: 1 }).toArray(),
-        collectionPowers.find({}).sort({ name: 1 }).toArray(),
+        collectionUniverses
+            .find({}, { projection: { id: 1, name: 1, _id: 0 } })
+            .sort({ id: 1 })
+            .toArray(),
+
+        collectionTeams
+            .find({}, { projection: { id: 1, name: 1, universe: 1, _id: 0 } })
+            .sort({ id: 1 })
+            .toArray(),
+
+        collectionPowers
+            .find({}, { projection: { id: 1, name: 1, _id: 0 } })
+            .sort({ name: 1 })
+            .toArray(),
     ]);
 
     // Fast helper to sanitize BSON ObjectIDs without expensive JSON.parse(JSON.stringify())
@@ -103,7 +113,6 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
     const sanitizedUniverses = sanitize(universes);
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
-
 
     return (
         <div className="min-h-screen space-y-4 mt-4">

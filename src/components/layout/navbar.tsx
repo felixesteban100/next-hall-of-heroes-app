@@ -9,7 +9,7 @@ import { ModeToggle } from "./toggle-mode";
 export function Navbar() {
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md touch-manipulation">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
 
                     {/* Brand / Logo Link */}
@@ -20,9 +20,9 @@ export function Navbar() {
                         <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
                             <Sparkles className="w-5 h-5" />
                         </div>
-                        {/* <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden min-[380px]:inline">
+                        <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden lg:inline">
                             Hall of Heroes
-                        </span> */}
+                        </span>
                     </Link>
 
                     {/* Navigation Links Scroll Container */}

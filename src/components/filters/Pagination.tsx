@@ -10,9 +10,11 @@ import {
 import { ChevronLeft } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { useParamLoading } from "../layout/ParamLoadingContext";
 
 export function PaginationPages({ currentPage, totalPages }: { currentPage: number; totalPages: number }) {
     // change the search parameter using the nextjs hooks when a page is clicked
+    const { pushParams } = useParamLoading()
     const pathname = usePathname();
     const { push } = useRouter();
     const searchParams = useSearchParams();
@@ -21,7 +23,8 @@ export function PaginationPages({ currentPage, totalPages }: { currentPage: numb
         (page: string, value: string) => {
             const params = new URLSearchParams(searchParams)
             params.set(page, value)
-            push(`${pathname}?${params.toString()}`, { scroll: false });
+            // push(`${pathname}?${params.toString()}`, { scroll: false });
+            pushParams(params)
         },
         [searchParams, pathname, push]
     )
