@@ -9,7 +9,6 @@ import {
   Sparkles,
   Flame
 } from "lucide-react";
-import { Navbar } from "@/components/layout/navbar";
 
 export default function StartPage() {
   const entityCategories = [
@@ -58,7 +57,7 @@ export default function StartPage() {
 
         <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-tight">
           Explore the Ultimate <br className="hidden sm:inline" />
-          <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
             Hall of Heroes & Villains
           </span>
         </h1>
@@ -93,7 +92,7 @@ export default function StartPage() {
               <Link
                 key={cat.title}
                 href={cat.href}
-                className={`group relative flex flex-col justify-between p-5 rounded-2xl border bg-gradient-to-b ${cat.color} transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md`}
+                className={`group relative flex flex-col justify-between p-5 rounded-2xl border bg-linear-to-b ${cat.color} transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

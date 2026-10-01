@@ -4,24 +4,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { SearchIcon, ArrowBigDown, Filter, SlidersHorizontal, X } from "lucide-react";
-import { ButtonGroup } from "../ui/button-group";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuTrigger
-} from "../ui/dropdown-menu";
+import { SearchIcon, SlidersHorizontal, X } from "lucide-react";
 import { POWER_TIER, POWER_TIER_ICON, POWER_TIER_COLOR } from "@/lib/constants"; // Adjust path to your constants file
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer";
-
-const sortOptions = [
-    { value: "score", label: "Score" },
-    { value: "name", label: "Name" },
-    { value: "id", label: "Id" },
-];
+import SortButton from "./SortButton";
 
 export default function PowersFilterBar() {
     const { push } = useRouter();
@@ -117,52 +103,22 @@ export default function PowersFilterBar() {
 
                                         </Button>
                                     </DrawerClose>
-
                                 );
                             })}
-                            {/* <FilterSection label="TIER" active={!!draftFilters.tier} onClear={() => updateParam("tier", "")}>
-                                {Object.entries(POWER_TIER).map(([value, label]) => {
-                                    const color = POWER_TIER_COLOR[Number(value) as keyof typeof POWER_TIER_COLOR];
-                                    const Icon = POWER_TIER_ICON[Number(value) as keyof typeof POWER_TIER_ICON];
-                                    return (
-                                        <Button key={value}
-                                            variant={draftFilters.tier === value ? "outline" : "ghost"}
-                                            className={`${color.text} hover:${color.text} ${draftFilters.tier === value ? "font-bold" : "font-medium"}`}
-                                            onClick={() => setFilter("tier", value)}
-                                        >
-                                            <Icon /> {label}
-                                        </Button>
-                                    );
-                                })}
-                            </FilterSection> */}
                         </div>
                     </DrawerContent>
                 </Drawer>
 
-                {/* Sort controls */}
-                <ButtonGroup>
-                    <Button size="sm" variant="outline" onClick={() => updateParam("sortOrientation", sortOrientation === "asc" ? "desc" : "asc")}>
-                        <ArrowBigDown className={`${sortOrientation === "asc" ? "rotate-180" : ""} transition-all`} />
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline">
-                                Sort: {sortOptions.find(o => o.value === sort)?.label}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuGroup>
-                                <DropdownMenuRadioGroup value={sort} onValueChange={(v) => updateParam("sort", v)}>
-                                    {sortOptions.map(o => (
-                                        <DropdownMenuRadioItem key={o.value} value={o.value}>
-                                            {o.label}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </ButtonGroup>
+                <SortButton
+                    sort={sort}
+                    sortOrientation={sortOrientation}
+                    updateParam={updateParam}
+                    sortOptions={[
+                        { value: "score", label: "Score" },
+                        { value: "name", label: "Name" },
+                        { value: "id", label: "Id" },
+                    ]}
+                />
             </div>
         </div>
     );

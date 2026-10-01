@@ -130,10 +130,8 @@ export function MiniEntityGrid({
             {items.map((item) => {
                 const effectiveAlignment = variant === "villain" ? "bad" : item.alignment;
                 const theme = getAlignmentTheme(effectiveAlignment);
-                const AlignmentIcon = theme.icon;
                 const imgSrc = item.image || item.logo;
 
-                // Subtext resolution hierarchy
                 const displaySubtext =
                     item.subtext ||
                     item.category ||
@@ -143,57 +141,59 @@ export function MiniEntityGrid({
                     `#${item.id}`;
 
                 return (
-                    <ViewTransition key={item.id} name={`${entityType}-${item.id}`} >
+                    <ViewTransition key={item.id} name={`${entityType}-${item.id}`}>
                         <Link
-
                             href={getHref(item)}
-                            className={`group relative flex flex-col items-center justify-between p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
-                                ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
-                                : theme.border
+                            className={`group relative flex flex-col items-center justify-between h-28 p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
+                                    ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
+                                    : theme.border
                                 }`}
                         >
                             {/* Optional Alignment Badge */}
                             {showAlignment && theme.label && (
                                 <span
-                                    className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${theme.badge}`}
+                                    className={`absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full border z-10 ${theme.badge}`}
                                 >
                                     {theme.label}
                                 </span>
                             )}
 
                             {/* Media Avatar / Logo / Power Icon */}
-                            <div className="w-full h-12 relative flex items-center justify-center mb-2 mt-1">
+                            <div className="w-full h-10 relative flex items-center justify-center mt-1">
                                 {imgSrc ? (
                                     <Image
                                         src={imgSrc}
                                         alt={item.name}
                                         className={`${getImageStyle()} transition-transform duration-300 group-hover:scale-105`}
-                                        width={entityType === "character" ? 48 : 100}
-                                        height={entityType === "character" ? 48 : 60}
+                                        width={entityType === "character" ? 40 : 100}
+                                        height={entityType === "character" ? 40 : 50}
                                     />
                                 ) : (
-                                    <DefaultIcon className={`w-6 h-6 ${entityType === "power"
-                                        ? "text-primary/70 group-hover:text-primary"
-                                        : "text-muted-foreground/50"
-                                        } transition-colors`} />
+                                    <DefaultIcon
+                                        className={`w-5 h-5 ${entityType === "power"
+                                                ? "text-primary/70 group-hover:text-primary"
+                                                : "text-muted-foreground/50"
+                                            } transition-colors`}
+                                    />
                                 )}
                             </div>
 
-                            {/* Name */}
-                            <span
-                                className={`text-xs font-bold line-clamp-1 transition-colors text-foreground ${entityType === "power" && !item.alignment
-                                    ? "group-hover:text-primary"
-                                    : theme.text
-                                    }`}
-                                title={item.name}
-                            >
-                                {item.name}
-                            </span>
+                            {/* Text Container */}
+                            <div className="flex flex-col items-center justify-center w-full">
+                                <span
+                                    className={`text-xs font-bold line-clamp-1 transition-colors text-foreground ${entityType === "power" && !item.alignment
+                                            ? "group-hover:text-primary"
+                                            : theme.text
+                                        }`}
+                                    title={item.name}
+                                >
+                                    {item.name}
+                                </span>
 
-                            {/* Subtext */}
-                            <span className="text-[10px] text-muted-foreground font-mono line-clamp-1">
-                                {displaySubtext}
-                            </span>
+                                <span className="text-[10px] text-muted-foreground font-mono line-clamp-1">
+                                    {displaySubtext}
+                                </span>
+                            </div>
                         </Link>
                     </ViewTransition>
                 );
@@ -203,18 +203,23 @@ export function MiniEntityGrid({
             {externalNames.map((name, idx) => (
                 <div
                     key={`ext-${idx}`}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl border border-border bg-muted/40 text-center"
+                    className="flex flex-col items-center justify-between h-28 p-3 rounded-xl border border-border bg-muted/40 text-center"
                 >
-                    <ShieldAlert className="w-5 h-5 text-muted-foreground/60 mb-1" />
-                    <span
-                        className="text-xs font-semibold text-muted-foreground line-clamp-2"
-                        title={name}
-                    >
-                        {name}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/60 italic">
-                        External
-                    </span>
+                    <div className="w-full h-10 relative flex items-center justify-center mt-1">
+                        <ShieldAlert className="w-5 h-5 text-muted-foreground/60" />
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center w-full">
+                        <span
+                            className="text-xs font-semibold text-muted-foreground line-clamp-1"
+                            title={name}
+                        >
+                            {name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/60 italic font-mono">
+                            External
+                        </span>
+                    </div>
                 </div>
             ))}
         </div>

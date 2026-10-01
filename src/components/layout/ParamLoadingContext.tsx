@@ -7,11 +7,13 @@ import { Loader2 } from "lucide-react";
 interface ParamLoadingContextType {
     isPending: boolean;
     pushParams: (newParams: URLSearchParams) => void;
+    navigateRoute: (href: string) => void;
 }
 
 const ParamLoadingContext = createContext<ParamLoadingContextType>({
     isPending: false,
     pushParams: () => { },
+    navigateRoute: () => { },
 });
 
 export function ParamLoadingProvider({ children }: { children: ReactNode }) {
@@ -25,15 +27,24 @@ export function ParamLoadingProvider({ children }: { children: ReactNode }) {
         });
     };
 
+    const navigateRoute = (href: string) => {
+        startTransition(() => {
+            push(href);
+        });
+    };
+
     return (
-        <ParamLoadingContext.Provider value={{ isPending, pushParams }}>
-            {/* Top Banner / Spinner overlay when pending */}
-            {/* ⚡ Wrap dynamic URL features inside a Suspense boundary */}
+        <ParamLoadingContext.Provider value={{ isPending, pushParams, navigateRoute }}>
+            {/* ⚡ Full-App Screen Overlay (z-[100] covers sticky navbars) */}
             <Suspense fallback={null}>
                 {isPending && (
-                    <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center p-2 bg-primary text-primary-foreground text-xs font-semibold shadow-md animate-in fade-in slide-in-from-top-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
-                        Updating characters...
+                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md animate-in fade-in duration-200 pointer-events-auto cursor-wait">
+                        <div className="flex items-center gap-3 p-4 px-6 rounded-2xl bg-card border border-border shadow-2xl">
+                            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            <span className="text-sm font-semibold text-foreground">
+                                Loading...
+                            </span>
+                        </div>
                     </div>
                 )}
             </Suspense>

@@ -1,4 +1,3 @@
-import { QueryOptions } from "@/types";
 import { Frown, Meh, Smile } from "lucide-react";
 
 export function getCharacterAlignmentColor(alignment: string) {
@@ -11,6 +10,19 @@ export function getCharacterAlignmentColor(alignment: string) {
             return "bg-red-500 text-white";
         default:
             return "bg-gray-500 text-foreground";
+    }
+}
+
+export function getCharacterAlignmentTextColor(alignment: string) {
+    switch (alignment) {
+        case "good":
+            return "text-green-500";
+        case "neutral":
+            return "text-yellow-500";
+        case "bad":
+            return "text-red-500";
+        default:
+            return "text-gray-500";
     }
 }
 
@@ -44,7 +56,7 @@ export function joinTeam_universe_power_enemies_toCharacter(
         ...buildUniverseLookup(), // Note: Universe runs before Enemies so publisher is resolved
         ...buildTeamsLookup(),
         ...buildEnemiesLookup(),
-        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
+        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1/* , _id: 1 */ } },
         { $skip: offset },
         { $limit: howManyPerPage }
     ];
@@ -236,64 +248,36 @@ export function buildEnemiesLookup() {
             $lookup: {
                 from: "characters",
                 let: {
-                    rawEnemies: { $ifNull: ["$connections.enemies", []] },
-                    // Normalizes universe name whether biography.publisher is an object, string, or ID
-                    charUniverse: {
-                        $cond: {
-                            if: { $eq: [{ $type: "$biography.publisher" }, "object"] },
-                            then: { $ifNull: ["$biography.publisher.name", "$biography.publisher.value"] },
-                            else: "$biography.publisher"
-                        }
-                    }
+                    enemies: { $ifNull: ["$connections.enemies", []] },
                 },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
-                                $and: [
-                                    // ⚡ Safe Universe Check: Accepts matches if universe is omitted, or if names match
+                                $or: [
+                                    // Strategy 1 — numeric ID
+                                    { $in: ["$id", "$$enemies"] },
+                                    // Strategy 2 — exact name or full name
+                                    { $in: ["$name", "$$enemies"] },
+                                    { $in: ["$biography.fullName", "$$enemies"] },
+                                    // Strategy 3 — substring (direction 1 only, min length 5)
                                     {
-                                        $or: [
-                                            { $eq: ["$$charUniverse", null] },
-                                            { $eq: ["$$charUniverse", ""] },
-                                            { $eq: ["$biography.publisher", "$$charUniverse"] },
-                                            { $eq: ["$biography.publisher.name", "$$charUniverse"] },
-                                            { $eq: ["$biography.publisher.value", "$$charUniverse"] }
-                                        ]
-                                    },
-                                    {
-                                        $or: [
-                                            // 1. Exact ID match
-                                            { $in: ["$id", "$$rawEnemies"] },
-                                            // 2. Exact Name or Full Name match
-                                            { $in: ["$name", "$$rawEnemies"] },
-                                            { $in: ["$biography.fullName", "$$rawEnemies"] },
-                                            // 3. Substring coincidence match
-                                            {
-                                                $gt: [
-                                                    {
-                                                        $size: {
-                                                            $filter: {
-                                                                input: "$$rawEnemies",
-                                                                as: "e",
-                                                                cond: {
-                                                                    $and: [
-                                                                        { $eq: [{ $type: "$$e" }, "string"] },
-                                                                        {
-                                                                            $or: [
-                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] },
-                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$e" }, { $toLower: "$name" }] }, -1] }
-                                                                            ]
-                                                                        }
-                                                                    ]
-                                                                }
-                                                            }
-                                                        }
-                                                    },
-                                                    0
-                                                ]
+                                        $gt: [{
+                                            $size: {
+                                                $filter: {
+                                                    input: "$$enemies",
+                                                    as: "e",
+                                                    cond: {
+                                                        $and: [
+                                                            { $eq: [{ $type: "$$e" }, "string"] },
+                                                            { $gte: [{ $strLenCP: "$$e" }, 5] },
+                                                            { $gte: [{ $strLenCP: "$name" }, 5] },
+                                                            { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] }
+                                                        ]
+                                                    }
+                                                }
                                             }
-                                        ]
+                                        }, 0]
                                     }
                                 ]
                             }
@@ -301,58 +285,37 @@ export function buildEnemiesLookup() {
                     },
                     { $project: { characters: 0 } }
                 ],
-                as: "matchedEnemies"
+                as: "resolvedEnemies"
             }
         },
+        // Merge resolved docs + unmatched strings as fallbacks
         {
             $addFields: {
                 "connections.enemies": {
                     $concatArrays: [
-                        "$matchedEnemies",
+                        "$resolvedEnemies",
                         {
                             $map: {
                                 input: {
                                     $filter: {
                                         input: { $ifNull: ["$connections.enemies", []] },
-                                        as: "item",
+                                        as: "e",
                                         cond: {
                                             $and: [
-                                                { $eq: [{ $type: "$$item" }, "string"] },
-                                                {
-                                                    $not: {
-                                                        $gt: [
-                                                            {
-                                                                $size: {
-                                                                    $filter: {
-                                                                        input: "$matchedEnemies.name",
-                                                                        as: "meName",
-                                                                        cond: {
-                                                                            $ne: [
-                                                                                { $indexOfCP: [{ $toLower: "$$meName" }, { $toLower: "$$item" }] },
-                                                                                -1
-                                                                            ]
-                                                                        }
-                                                                    }
-                                                                }
-                                                            },
-                                                            0
-                                                        ]
-                                                    }
-                                                }
+                                                { $eq: [{ $type: "$$e" }, "string"] },
+                                                { $not: { $in: ["$$e", "$resolvedEnemies.name"] } }
                                             ]
                                         }
                                     }
                                 },
-                                as: "strName",
-                                in: { name: "$$strName", isFallback: true }
+                                as: "unmatched",
+                                in: { name: "$$unmatched", isFallback: true }
                             }
                         }
                     ]
                 }
             }
         },
-        { $project: { matchedEnemies: 0 } }
+        { $project: { resolvedEnemies: 0 } }
     ];
 }
-
-

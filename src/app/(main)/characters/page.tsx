@@ -12,6 +12,7 @@ import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
 
 export const instant = false;
 
@@ -40,6 +41,8 @@ export default function Home({ searchParams }: { searchParams: SearchParamsPromi
         </div>
     );
 }
+
+/* on mobile I must show a loading state when getting to this page from anyother page to this one on the webapp */
 
 async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
@@ -101,6 +104,7 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
 
+
     return (
         <div className="min-h-screen space-y-4 mt-4">
             <div>
@@ -129,7 +133,9 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
                 }}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* make each card stickable like shorts or tiktoks where each card stisk while scrolling/swiping down on mobile and maybe even grow fullscreen with transition animations between cards */}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {sanitizedCharacters.map((character) => (
                     <Link key={character.id} href={`/characters/${character.slug}`}>
                         <CharacterCard character={character} />

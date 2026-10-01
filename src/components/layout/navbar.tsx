@@ -1,36 +1,60 @@
+"use client";
+
 import Link from "next/link";
-import { Suspense } from "react";
-import { Sparkles } from "lucide-react";
-import { ModeToggle } from "@/components/layout/toggle-mode";
+import { Suspense, useEffect } from "react";
 import { NavbarActiveLinks } from "./NavbarActiveLinks";
+import { Sparkles } from "lucide-react";
+import { ModeToggle } from "./toggle-mode";
 
 export function Navbar() {
+    useEffect(() => {
+        console.log("Touched element:");
+
+        const handleTouch = (e: TouchEvent) => {
+            const target = e.target as HTMLElement;
+            console.log("Touched element:", target.tagName, target.className, target);
+        };
+
+        window.addEventListener("touchstart", handleTouch, { capture: true });
+        return () => window.removeEventListener("touchstart", handleTouch, { capture: true });
+    }, []);
+
+    if (typeof window !== "undefined") {
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            alert("Mobile JS Crash: " + msg + " at line " + lineNo);
+            return false;
+        };
+    }
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md transition-all">
-            <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
-                <div className="flex items-center justify-start gap-5">
-                    {/* Brand / Logo */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md touch-manipulation">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+
+                    {/* Brand / Logo Link */}
                     <Link
-                        href="/"
-                        className="flex items-center gap-2 font-extrabold text-base sm:text-lg tracking-tight hover:opacity-90 transition-opacity"
+                        href="/characters"
+                        className="flex items-center gap-2 shrink-0 font-bold text-base sm:text-lg hover:opacity-90 transition-opacity"
                     >
-                        <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                            <Sparkles className="w-4 h-4" />
+                        <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                            <Sparkles className="w-5 h-5" />
                         </div>
-                        <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
+                        {/* <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden min-[380px]:inline">
                             Hall of Heroes
-                        </span>
+                        </span> */}
                     </Link>
 
-                    {/* Render Active Links here inside Suspense */}
-                    <Suspense fallback={<div className="h-8 w-64 bg-accent/20 animate-pulse rounded-lg" />}>
-                        <NavbarActiveLinks />
-                    </Suspense>
-                </div>
+                    {/* Navigation Links Scroll Container */}
+                    <div className="flex-1 overflow-x-auto no-scrollbar py-1 min-w-0">
+                        <Suspense fallback={<div className="h-8 w-full bg-muted/40 animate-pulse rounded-lg" />}>
+                            <NavbarActiveLinks />
+                        </Suspense>
+                    </div>
 
-                {/* Right Actions / Theme Toggle */}
-                <div className="flex items-center gap-2">
-                    <ModeToggle />
+                    {/* Action Tools: Mode Toggle */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <ModeToggle />
+                    </div>
                 </div>
             </div>
         </header>

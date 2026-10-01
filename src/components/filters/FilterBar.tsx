@@ -4,11 +4,9 @@ import { useSearchParams } from 'next/navigation'
 import { Input } from "../ui/input";
 import { Button } from '../ui/button';
 import { useCallback, useMemo, useState } from 'react';
-import { ArrowBigDown, Loader2, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
+import { Loader2, Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Power, Team, Universe } from '@/types';
-import { ButtonGroup } from '../ui/button-group';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup } from '../ui/dropdown-menu';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -22,13 +20,7 @@ import {
 import { CharacterBadgeIcon } from '@/lib/characters_utils';
 import ActiveFiltersBadges, { ActiveFiltersBadgesProps } from './ActiveFiltersBadges';
 import { useParamLoading } from '../layout/ParamLoadingContext';
-
-const sortOptions = [
-    { value: "id", label: "Id" },
-    { value: "powerstats.total", label: "Power total" },
-    { value: "name", label: "Name" },
-    { value: "appearance.age", label: "Age" },
-];
+import SortButton from './SortButton';
 
 export function FilterSection({ label, active, onClear, children }: {
     label: string;
@@ -70,14 +62,14 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
     activeFilterProps: ActiveFiltersBadgesProps;
 }) => {
     // const { push } = useRouter();
-    const { pushParams, isPending } = useParamLoading();
+    const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();
 
     const [name, setName] = useState(searchParams.get("name") || "");
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const sort = searchParams.get("sort") || "id";
-    const sortOrientation = searchParams.get("sortOrientation") || "desc";
+    const sortOrientation = searchParams.get("sortOrientation") || "asc";
 
     const [draftFilters, setDraftFilters] = useState<DraftFilters>(() => ({
         alignment: searchParams.get("alignment") || "",
@@ -93,6 +85,7 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
     const updateParam = useCallback((key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
         params.delete("page");
+        console.log(key, value)
         if (value) {
             params.set(key, value);
         } else {
@@ -118,16 +111,6 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
 
     return (
         <div className="relative flex flex-col gap-3 w-full">
-            {/* Optional Global Loading Overlay across the whole filter section */}
-            {isPending && (
-                <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-lg">
-                    <div className="flex items-center gap-2 bg-card px-3 py-1.5 rounded-md shadow border text-xs font-medium">
-                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        <span>Updating results...</span>
-                    </div>
-                </div>
-            )}
-
             {/* Row 1 — Search input */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -184,29 +167,17 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
                     )}
                 </Drawer>
 
-                <ButtonGroup>
-                    <Button size="sm" variant="outline" aria-label="Toggle sort direction"
-                        onClick={() => updateParam("sortOrientation", sortOrientation === "asc" ? "desc" : "asc")}
-                    >
-                        <ArrowBigDown className={`${sortOrientation === "asc" ? "rotate-180" : ""} transition-all`} />
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline">
-                                Sort: {sortOptions.find(o => o.value === sort)?.label}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-32">
-                            <DropdownMenuGroup>
-                                <DropdownMenuRadioGroup value={sort} onValueChange={(v) => updateParam("sort", v)}>
-                                    {sortOptions.map(o => (
-                                        <DropdownMenuRadioItem key={o.value} value={o.value}>{o.label}</DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </ButtonGroup>
+                <SortButton
+                    sort={sort}
+                    sortOrientation={sortOrientation}
+                    updateParam={updateParam}
+                    sortOptions={[
+                        { value: "id", label: "Id" },
+                        { value: "powerstats.total", label: "Power total" },
+                        { value: "name", label: "Name" },
+                        { value: "appearance.age", label: "Age" },
+                    ]}
+                />
             </div>
         </div>
     );

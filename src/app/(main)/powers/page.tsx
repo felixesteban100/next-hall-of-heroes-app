@@ -35,7 +35,7 @@ export default async function page({
 
     const powersPerPage = await collectionPowers
         .find(query)
-        .sort({ [sortProperty]: sortOrientation === "asc" ? -1 : 1 })
+        .sort({ [sortProperty]: sortOrientation === "desc" ? -1 : 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .toArray();
@@ -57,7 +57,7 @@ export default async function page({
                 <PowersFilterBar />
             </Suspense>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {powersPerPage.map((power) => (
                     <Link key={power.id} href={`/powers/${power.id}`}>
                         <PowerCard power={power} size="default" />

@@ -4,14 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { SearchIcon, ArrowBigDown, X } from "lucide-react";
-import { ButtonGroup } from "../ui/button-group";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
-    DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger
-} from "../ui/dropdown-menu";
-
-type SortOption = { value: string; label: string };
+import { SearchIcon, X } from "lucide-react";
+import SortButton, { SortOption } from "./SortButton";
 
 export default function SimpleFilterBar({
     placeholder = "Search...",
@@ -59,34 +53,12 @@ export default function SimpleFilterBar({
 
             {/* Row 2 — sort (no filter drawer needed for simple pages) */}
             <div className="flex items-center justify-end gap-2">
-                <ButtonGroup>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        aria-label="Toggle sort direction"
-                        onClick={() => updateParam("sortOrientation", sortOrientation === "asc" ? "desc" : "asc")}
-                    >
-                        <ArrowBigDown className={`${sortOrientation === "asc" ? "rotate-180" : ""} transition-transform duration-200`} />
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline">
-                                Sort: {sortOptions.find(o => o.value === sort)?.label}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-36">
-                            <DropdownMenuGroup>
-                                <DropdownMenuRadioGroup value={sort} onValueChange={(v) => updateParam("sort", v)}>
-                                    {sortOptions.map(o => (
-                                        <DropdownMenuRadioItem key={o.value} value={o.value}>
-                                            {o.label}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </ButtonGroup>
+                <SortButton
+                    sort={sort}
+                    sortOrientation={sortOrientation}
+                    updateParam={updateParam}
+                    sortOptions={sortOptions}
+                />
             </div>
         </div>
     );

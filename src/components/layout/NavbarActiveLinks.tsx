@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Users, Shield, Globe2, Zap } from "lucide-react";
+import { useParamLoading } from "./ParamLoadingContext";
 
 const ROUTE_KEYS: Record<string, string> = {
     "/characters": "lastParams_characters",
@@ -24,8 +25,9 @@ export function NavbarActiveLinks() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [savedParams, setSavedParams] = useState<Record<string, string>>({});
+    const { navigateRoute } = useParamLoading();
 
-    // 1. Load initial values from localStorage on mount
+    // Sync localStorage
     useEffect(() => {
         const loaded: Record<string, string> = {};
         for (const [route, key] of Object.entries(ROUTE_KEYS)) {
@@ -35,11 +37,9 @@ export function NavbarActiveLinks() {
         setSavedParams(loaded);
     }, []);
 
-    // 2. Synchronize current route params to localStorage AND state (Handles Clearing)
     useEffect(() => {
         const matchedBaseRoute = Object.keys(ROUTE_KEYS).find((route) =>
-            // pathname.startsWith(route)
-            pathname === route
+            pathname == route
         );
 
         if (!matchedBaseRoute) return;
@@ -48,14 +48,12 @@ export function NavbarActiveLinks() {
         const currentQuery = searchParams.toString();
 
         if (currentQuery) {
-            // Save active filters
             localStorage.setItem(key, currentQuery);
             setSavedParams((prev) => {
                 if (prev[matchedBaseRoute] === currentQuery) return prev;
                 return { ...prev, [matchedBaseRoute]: currentQuery };
             });
         } else {
-            // ⚡ CLEAR STORAGE & STATE when searchParams are cleared (e.g. Clear All button)
             localStorage.removeItem(key);
             setSavedParams((prev) => {
                 if (!prev[matchedBaseRoute]) return prev;
@@ -71,34 +69,52 @@ export function NavbarActiveLinks() {
         return stored ? `${href}?${stored}` : href;
     }
 
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, targetHref: string) => {
+        const fullHref = buildHref(targetHref);
+        const currentFull = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+
+        if (currentFull === fullHref) {
+            e.preventDefault();
+            return;
+        }
+
+        // Trigger the loading overlay via navigateRoute
+        e.preventDefault();
+        navigateRoute(fullHref);
+    };
+
     return (
-        <nav className="flex items-center gap-1 sm:gap-2">
-            {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = pathname.startsWith(link.href);
+        /* ⚡ overflow-x-auto allows smooth horizontal swipe scrolling on mobile without pushing layout */
+        <div className="w-full overflow-x-auto no-scrollbar py-1">
+            <nav className="flex items-center gap-1 sm:gap-2 min-w-max">
+                {navLinks.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = pathname.startsWith(link.href);
+                    const fullHref = buildHref(link.href);
 
-                return (
-                    <Link
-                        key={link.href}
-                        href={buildHref(link.href)}
-                        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${isActive
-                            ? "text-primary bg-primary/0 font-semibold"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                            }`}
-                    >
-                        <Icon
-                            className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"
+                    return (
+                        <Link
+                            key={link.href}
+                            href={fullHref}
+                            onClick={(e) => handleLinkClick(e, link.href)}
+                            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all touch-manipulation select-none shrink-0 ${isActive
+                                ? "text-primary bg-primary/10 sm:bg-transparent font-semibold"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
                                 }`}
-                        />
-                        <span className="hidden sm:inline">{link.name}</span>
+                        >
+                            <Icon
+                                className={`w-4 h-4 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"
+                                    }`}
+                            />
+                            <span className="whitespace-nowrap hidden md:block">{link.name}</span>
 
-                        {/* Active Indicator Bar */}
-                        {isActive && (
-                            <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full" />
-                        )}
-                    </Link>
-                );
-            })}
-        </nav>
+                            {isActive && (
+                                <span className="hidden sm:block absolute bottom-0 left-2 right-2 h-[2px] bg-primary rounded-full" />
+                            )}
+                        </Link>
+                    );
+                })}
+            </nav>
+        </div>
     );
 }

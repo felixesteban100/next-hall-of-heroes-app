@@ -18,18 +18,18 @@ export default async function Random() {
                 },
             },
             { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
-            { $sample: { size: 8 } }
+            { $sample: { size: 12 } }
         ]
     ).toArray();
 
     return (
-        <div className="flex flex-col">
+        <div className="min-h-screen flex flex-col mt-4">
             <h1 className="text-2xl font-bold">Random Characters</h1>
             <div className="text-muted-foreground font-light">
                 8 random characters across all universes
             </div>
             <CacheClearButton path="/characters/random" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 ">
                 {charactersPerPage.map((character) => (
                     <Link key={character.id} href={`/characters/${character.slug}`}>
                         <CharacterCard character={JSON.parse(JSON.stringify(character))} />

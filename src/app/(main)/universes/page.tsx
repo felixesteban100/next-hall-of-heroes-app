@@ -34,7 +34,7 @@ export default async function page({
 
     const universesPerPage = await collectionUniverses
         .find(query)
-        .sort({ [sortProperty]: sortOrientation === "asc" ? -1 : 1 })
+        .sort({ [sortProperty]: sortOrientation === "desc" ? -1 : 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .toArray();
@@ -57,7 +57,7 @@ export default async function page({
                     sortOptions={sortOptions}
                 />
             </Suspense>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {universesPerPage.map((universe) => (
                     <Link key={universe.id} href={`/universes/${universe.id}`}>
                         <UniverseCard universe={universe} size="default" />

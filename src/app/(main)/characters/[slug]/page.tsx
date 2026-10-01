@@ -22,12 +22,12 @@ export const instant = false;
 const val = (v?: string | null, fallback = "Unknown") => (!v || v === "-" || v === "" ? fallback : v);
 
 const POWERSTATS_CFG = [
-    { key: "intelligence", label: "Intelligence", icon: Brain, color: "[&>div]:bg-green-500" },
-    { key: "strength", label: "Strength", icon: HandFist, color: "[&>div]:bg-yellow-500" },
-    { key: "speed", label: "Speed", icon: Gauge, color: "[&>div]:bg-purple-500" },
-    { key: "durability", label: "Durability", icon: Shield, color: "[&>div]:bg-red-500" },
-    { key: "combat", label: "Combat", icon: Swords, color: "[&>div]:bg-orange-500" },
-    { key: "power", label: "Power", icon: Zap, color: "[&>div]:bg-cyan-500" },
+    { key: "intelligence", label: "Intelligence", icon: Brain, color: "bg-green-500" },
+    { key: "strength", label: "Strength", icon: HandFist, color: "bg-yellow-500" },
+    { key: "speed", label: "Speed", icon: Gauge, color: "bg-purple-500" },
+    { key: "durability", label: "Durability", icon: Shield, color: "bg-red-500" },
+    { key: "combat", label: "Combat", icon: Swords, color: "bg-orange-500" },
+    { key: "power", label: "Power", icon: Zap, color: "bg-cyan-500" },
 ] as const;
 
 export default async function CharacterPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -167,19 +167,24 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
             </div>
 
             {/* Powerstats */}
+            {/* Powerstats JSX rendering */}
             <div id="powerstats" className="space-y-2">
                 <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
                 <div className="grid grid-cols-2 gap-2">
                     {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (
                         <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
-                            <p className="text-sm font-light flex gap-1.5 items-center"><Icon size={16} /> {label}: {powerstats[key]}</p>
-                            <Progress value={powerstats[key]} className={color} />
+                            <p className="text-sm font-light flex gap-1.5 items-center">
+                                <Icon size={16} /> {label}: {powerstats[key]}
+                            </p>
+                            <Progress value={powerstats[key]} indicatorClassName={color} />
                         </div>
                     ))}
                 </div>
                 <div className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
-                    <p className="text-sm font-light flex gap-1.5 items-center"><Percent size={16} /> Overall score: {powerstats.total}</p>
-                    <Progress value={powerstats.total} />
+                    <p className="text-sm font-light flex gap-1.5 items-center">
+                        <Percent size={16} /> Overall score: {powerstats.total}
+                    </p>
+                    <Progress value={powerstats.total} indicatorClassName="bg-primary" />
                 </div>
             </div>
 

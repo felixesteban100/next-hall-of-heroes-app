@@ -12,3 +12,16 @@ export function CharacterBadgeIcon(Alignment: string) {
             return <CircleQuestionMark className="" />;
     }
 }
+
+export function getAligmentIcon(Alignment: string) {
+    switch (Alignment) {
+        case "good":
+            Smile;
+        case "neutral":
+            Meh;
+        case "bad":
+            Frown
+        default:
+            return CircleQuestionMark;
+    }
+}

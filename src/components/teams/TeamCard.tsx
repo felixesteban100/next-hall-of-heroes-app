@@ -16,7 +16,7 @@ export default function TeamCard({ team, size }: TeamCardProps) {
                 <Image
                     src={`${team.logo}`}
                     alt={`${team.name}'s image`}
-                    className={`w-full object-contain ${size === "sm" ? "h-30" : "h-40"} w-auto rounded-t-xl`}
+                    className={`w-full object-contain ${size === "sm" ? "h-30" : "h-40"} w-auto rounded-xl`}
                     width={800}
                     height={1200}
                 />
