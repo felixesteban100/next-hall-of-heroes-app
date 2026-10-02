@@ -26,7 +26,7 @@ export default async function page({
     const pageSize = 12;
 
     const sortProperty = params.sort?.toString() || "id";  // default to score not id
-    const sortOrientation = params.sortOrientation?.toString() || "asc";
+    const sortOrientation = params.sortOrientation?.toString() || "desc";
     const name = params.name?.toString() || "";
     const tier = parseInt(params.tier?.toString() || "");
 
@@ -48,7 +48,7 @@ export default async function page({
     // console.log((await collectionPowers.find({}).toArray()).map(c => ({ value: c.value, name: c.name, id: c.id })))
 
     return (
-        <div className="min-h-screen space-y-4 mt-4">
+        <div className="space-y-4 mt-4">
             <div>
                 <h1 className="text-2xl font-bold">Powers</h1>
                 <p className="text-muted-foreground font-light">

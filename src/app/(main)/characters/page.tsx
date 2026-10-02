@@ -28,21 +28,7 @@ type SearchParamsPromise = Promise<{
     character_type?: string;
 }>;
 
-export default function Home({ searchParams }: { searchParams: SearchParamsPromise }) {
-    return (
-        <div className="min-h-screen">
-            {/* 
-        Keeping Suspense localized inside HomeContent rather than wrapping 
-        the whole page preserves View Transitions between character cards.
-      */}
-            <HomeContent searchParams={searchParams} />
-        </div>
-    );
-}
-
-/* on mobile I must show a loading state when getting to this page from anyother page to this one on the webapp */
-
-async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise }) {
+export default async function CharactersPage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
@@ -113,7 +99,7 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
     const sanitizedPowers = sanitize(powers);
 
     return (
-        <div className="min-h-screen space-y-4 mt-4">
+        <div className="space-y-4 mt-4">
             <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">

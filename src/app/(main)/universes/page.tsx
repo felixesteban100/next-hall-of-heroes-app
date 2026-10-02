@@ -47,7 +47,7 @@ export default async function page({
     // console.log((await collectionUniverses.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
 
     return (
-        <div className="min-h-screen space-y-4 mt-4">
+        <div className="space-y-4 mt-4">
             <div>
                 <h1 className="text-2xl font-bold">Universes</h1>
                 <p className="text-muted-foreground font-light">

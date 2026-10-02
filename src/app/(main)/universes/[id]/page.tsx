@@ -19,7 +19,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     if (universe === null) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-[90vh] flex items-center justify-center">
                 <h1 className="text-2xl font-bold">Universe not found</h1>
             </div>
         );

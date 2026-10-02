@@ -20,7 +20,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     if (power === null) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-[90vh] flex items-center justify-center">
                 <h1 className="text-2xl font-bold">Power not found</h1>
             </div>
         )

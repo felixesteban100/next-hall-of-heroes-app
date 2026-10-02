@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NavbarActiveLinks } from "./NavbarActiveLinks";
 import { ModeToggle } from "./toggle-mode";
 
+/* the navbar is not sticking  */
 export function Navbar() {
     return (
         <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md touch-manipulation">
