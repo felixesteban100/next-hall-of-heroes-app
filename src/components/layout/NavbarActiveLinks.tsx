@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Shield, Globe2, Zap } from "lucide-react";
+import { Users, Shield, Globe2, Zap, Sparkles } from "lucide-react";
 import { useParamLoading } from "./ParamLoadingContext";
 
 const ROUTE_KEYS: Record<string, string> = {
@@ -86,7 +86,20 @@ export function NavbarActiveLinks() {
     return (
         /* ⚡ overflow-x-auto allows smooth horizontal swipe scrolling on mobile without pushing layout */
         <div className="w-full overflow-x-auto no-scrollbar py-1">
+            {/* Brand / Logo Link */}
             <nav className="flex items-center gap-1 sm:gap-2 min-w-max">
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 shrink-0 font-bold text-base sm:text-lg hover:opacity-90 transition-opacity"
+                    onClick={(e) => handleLinkClick(e, "/")}
+                >
+                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                        <Sparkles className="w-5 h-5" />
+                    </div>
+                    <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden lg:inline">
+                        Hall of Heroes
+                    </span>
+                </Link>
                 {navLinks.map((link) => {
                     const Icon = link.icon;
                     const isActive = pathname.startsWith(link.href);

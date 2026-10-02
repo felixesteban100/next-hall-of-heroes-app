@@ -15,6 +15,7 @@ import { Character, CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Pow
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent } from "lucide-react";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -139,11 +140,11 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
                         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                             <p className="text-sm leading-relaxed line-clamp-4">{biography.origin}</p>
                             <div className="w-full sm:w-24 h-auto md:h-16 border-l-0 sm:border-l-4 flex items-center justify-center p-2 shrink-0">
-                                <Link href={`/universes/${biography.publisher.id}`}>
+                                <LoadingLink href={`/universes/${biography.publisher.id}`}>
                                     <ViewTransition name={`universe-${biography.publisher.id}`} share="morph">
                                         <Image src={biography.publisher.logo} alt={character.name} width={100} height={100} className="max-w-full max-h-full object-contain rounded-lg" unoptimized />
                                     </ViewTransition>
-                                </Link>
+                                </LoadingLink>
                             </div>
                         </div>
 

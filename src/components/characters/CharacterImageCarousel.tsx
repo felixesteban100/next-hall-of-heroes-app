@@ -31,7 +31,7 @@ export function CharacterImageCarousel({ images, name }: { images: string[], nam
                 alt={`${name}-${index}`}
                 fill
                 sizes="320px"
-                className="object-cover rounded-lg"
+                className="object-cover rounded-lg transition-opacity duration-700"
                 priority={index === 0}
                 unoptimized
               />

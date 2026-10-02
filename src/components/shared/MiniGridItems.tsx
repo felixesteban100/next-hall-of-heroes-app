@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Shield, ShieldAlert, ShieldCheck, Globe, User, Zap, LucideIcon } from "lucide-react";
 import { ViewTransition } from "react";
+import { LoadingLink } from "./LoadingLink";
 
 export type MiniGridItem = {
     id: number | string;
@@ -142,11 +143,11 @@ export function MiniEntityGrid({
 
                 return (
                     <ViewTransition key={item.id} name={`${entityType}-${item.id}`}>
-                        <Link
+                        <LoadingLink
                             href={getHref(item)}
                             className={`group relative flex flex-col items-center justify-between h-28 p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
-                                    ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
-                                    : theme.border
+                                ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
+                                : theme.border
                                 }`}
                         >
                             {/* Optional Alignment Badge */}
@@ -171,8 +172,8 @@ export function MiniEntityGrid({
                                 ) : (
                                     <DefaultIcon
                                         className={`w-5 h-5 ${entityType === "power"
-                                                ? "text-primary/70 group-hover:text-primary"
-                                                : "text-muted-foreground/50"
+                                            ? "text-primary/70 group-hover:text-primary"
+                                            : "text-muted-foreground/50"
                                             } transition-colors`}
                                     />
                                 )}
@@ -182,8 +183,8 @@ export function MiniEntityGrid({
                             <div className="flex flex-col items-center justify-center w-full">
                                 <span
                                     className={`text-xs font-bold line-clamp-1 transition-colors text-foreground ${entityType === "power" && !item.alignment
-                                            ? "group-hover:text-primary"
-                                            : theme.text
+                                        ? "group-hover:text-primary"
+                                        : theme.text
                                         }`}
                                     title={item.name}
                                 >
@@ -194,7 +195,7 @@ export function MiniEntityGrid({
                                     {displaySubtext}
                                 </span>
                             </div>
-                        </Link>
+                        </LoadingLink>
                     </ViewTransition>
                 );
             })}

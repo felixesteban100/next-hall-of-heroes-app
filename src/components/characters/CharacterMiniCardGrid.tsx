@@ -1,6 +1,6 @@
 import { CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import Link from "next/link";
+import { LoadingLink } from "../shared/LoadingLink";
 
 export function CharacterMiniCardGrid({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] | Character[] }) {
     return (
@@ -10,7 +10,7 @@ export function CharacterMiniCardGrid({ characters }: { characters: CharacterWit
                 const tierColor = CHARACTER_TIER_COLOR[char.tier as keyof typeof CHARACTER_TIER_COLOR] ?? CHARACTER_TIER_COLOR[0];
 
                 return (
-                    <Link
+                    <LoadingLink
                         key={char.id}
                         href={`/characters/${char.slug}`}
                         className="border rounded-lg p-3 bg-muted/20 hover:bg-muted/60 transition-all hover:border-primary/50 flex flex-col justify-between gap-2 group"
@@ -38,7 +38,7 @@ export function CharacterMiniCardGrid({ characters }: { characters: CharacterWit
                                 {char.character_type || "Standard"}
                             </span>
                         </div>
-                    </Link>
+                    </LoadingLink>
                 );
             })}
         </div>

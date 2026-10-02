@@ -1,11 +1,11 @@
 import { PaginationPages } from "@/components/filters/Pagination";
 import { collectionTeams } from "@/db/mongodb";
-import Link from "next/link";
 import { Suspense } from "react";
 import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
 import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import TeamCard from "@/components/teams/TeamCard";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -59,9 +59,9 @@ export default async function page({
             </Suspense>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {teamsPerPage.map((team) => (
-                    <Link key={team.id} href={`/teams/${team.id}`}>
+                    <LoadingLink key={team.id} href={`/teams/${team.id}`}>
                         <TeamCard team={team} size="default" />
-                    </Link>
+                    </LoadingLink>
                 ))}
                 {teamsPerPage.length === 0 && (
                     <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">

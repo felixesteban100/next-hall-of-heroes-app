@@ -1,6 +1,7 @@
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Link from "next/link";
+import { LoadingLink } from "../shared/LoadingLink";
 
 export function CharacterAccordionList({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] | Character[] }) {
     // Group characters by alignment
@@ -26,14 +27,14 @@ export function CharacterAccordionList({ characters }: { characters: CharacterWi
                     <AccordionContent className="pb-3">
                         <div className="flex flex-wrap gap-2 pt-2">
                             {data.map((char) => (
-                                <Link
+                                <LoadingLink
                                     key={char.id}
                                     href={`/characters/${char.slug}`}
                                     className="px-2.5 py-1.5 rounded-md border bg-muted/40 hover:bg-primary/10 hover:border-primary text-xs font-medium transition-colors flex items-center gap-1.5"
                                 >
                                     <span>{char.name}</span>
                                     <span className="text-[10px] text-muted-foreground">#{char.id}</span>
-                                </Link>
+                                </LoadingLink>
                             ))}
                         </div>
                     </AccordionContent>

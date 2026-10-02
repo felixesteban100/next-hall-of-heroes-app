@@ -7,11 +7,11 @@ import {
     collectionTeams,
     collectionUniverses,
 } from "@/db/mongodb";
-import Link from "next/link";
 import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -146,9 +146,9 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {sanitizedCharacters.map((character) => (
-                    <Link key={character.id} href={`/characters/${character.slug}`}>
+                    <LoadingLink key={character.id} href={`/characters/${character.slug}`}>
                         <CharacterCard character={character} />
-                    </Link>
+                    </LoadingLink>
                 ))}
                 {sanitizedCharacters.length === 0 && (
                     <div className="col-span-full text-center text-muted-foreground font-bold mt-5">

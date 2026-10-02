@@ -1,10 +1,10 @@
 import { PaginationPages } from "@/components/filters/Pagination";
 import PowerCard from "@/components/powers/PowerCard";
 import { collectionPowers } from "@/db/mongodb";
-import Link from "next/link";
 import { Suspense } from "react";
 import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -59,9 +59,9 @@ export default async function page({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {powersPerPage.map((power) => (
-                    <Link key={power.id} href={`/powers/${power.id}`}>
+                    <LoadingLink key={power.id} href={`/powers/${power.id}`}>
                         <PowerCard power={power} size="default" />
-                    </Link>
+                    </LoadingLink>
                 ))}
                 {powersPerPage.length === 0 && (
                     <div className="col-span-full text-center text-muted-foreground py-12">

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Globe2 } from "lucide-react";
+import { LoadingLink } from "../shared/LoadingLink";
 
 interface TeamHeroHeaderProps {
   team: {
@@ -81,7 +82,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
 
             {team.universe?.logo && (
               <div className="w-full sm:w-24 h-auto md:h-16 border-l-0 sm:border-l-4 flex items-center justify-center p-2 shrink-0">
-                <Link href={`/universes/${team.universe.id}`}>
+                <LoadingLink href={`/universes/${team.universe.id}`}>
                   <Image
                     src={team.universe.logo}
                     alt={team.universe.name}
@@ -90,7 +91,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
                     className="max-w-full max-h-full object-contain rounded-lg"
                     unoptimized
                   />
-                </Link>
+                </LoadingLink>
               </div>
             )}
           </div>
