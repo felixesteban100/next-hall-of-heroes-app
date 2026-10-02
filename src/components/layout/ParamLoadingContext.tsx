@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useTransition, ReactNode, Suspense, useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 interface ParamLoadingContextType {
@@ -21,24 +21,26 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
     const [isPopLoading, setIsPopLoading] = useState(false);
     const { push } = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-    // Derive early so all effects can use it
     const isLoading = isPending || isPopLoading;
 
+    // 1. Listen for browser back/forward buttons
     useEffect(() => {
         const handlePopState = () => {
-            if (window.location.pathname !== pathname) {
-                setIsPopLoading(true);
-            }
+            setIsPopLoading(true);
         };
+
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
-    }, [pathname]);
+    }, []);
 
+    // 2. Clear loading state once route OR search params finish changing
     useEffect(() => {
         setIsPopLoading(false);
-    }, [pathname]);
+    }, [pathname, searchParams]);
 
+    // 3. Handle document scroll lock
     useEffect(() => {
         if (isLoading) {
             document.body.style.overflow = "hidden";

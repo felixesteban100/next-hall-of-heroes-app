@@ -36,7 +36,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
             {/* Header with Quick Stats Bar */}
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6  pb-6">
                 <ViewTransition name={`universe-${universe.id}`} share="morph">
-                    <div className="bg-muted/30 p-4 rounded-3xl  flex items-center justify-center shrink-0">
+                    <div className=" p-4 rounded-3xl  flex items-center justify-center shrink-0">
                         <Image
                             src={universe.logo}
                             alt={universe.name}

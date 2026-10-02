@@ -140,25 +140,7 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
                 }}
             />
 
-            {/*on mobile and when width is less than sm: make each card stickable like shorts or tiktoks where each card stisk while scrolling/swiping down  and maybe even grow fullscreen with transition animations between cards */}
-
             <CharacterGrid characters={sanitizedCharacters} />
-
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
-                {sanitizedCharacters.map((character) => (
-                    <LoadingLink key={character.id} href={`/characters/${character.slug}`}>
-                        <CharacterCard character={character} />
-                    </LoadingLink>
-                ))}
-                {sanitizedCharacters.length === 0 && (
-                    <div className="col-span-full text-center text-muted-foreground font-bold mt-5">
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <BrushCleaning />
-                            No characters found.
-                        </div>
-                    </div>
-                )}
-            </div> */}
 
             <div className="flex justify-center mt-4">
                 <Suspense fallback={null}>

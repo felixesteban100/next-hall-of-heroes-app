@@ -9,7 +9,7 @@ import { BrushCleaning } from "lucide-react";
 
 import { useSyncExternalStore } from "react";
 
-function useIsMobile() {
+export function useIsMobile() {
     return useSyncExternalStore(
         (callback) => {
             window.addEventListener("resize", callback);
@@ -22,7 +22,21 @@ function useIsMobile() {
 
 export function CharacterGrid({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] }) {
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const isMobile = useIsMobile();
+
+    // Instant reset on characters/page change without visible scrolling animation
+    useEffect(() => {
+        setFocusedIndex(0);
+
+        if (containerRef.current) {
+            // Instantly jump to top bypassing smooth animation
+            containerRef.current.scrollTo({
+                top: 0,
+                behavior: "instant"
+            });
+        }
+    }, [characters]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -55,24 +69,23 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
         );
     }
 
-    {/* Mobile — snap scroll like TikTok/Shorts */ }
     if (isMobile) {
         return (
-            <div className="sm:hidden flex flex-col h-[calc(100svh-8rem)] overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+            <div
+                ref={containerRef}
+                className="sm:hidden flex flex-col h-[calc(100svh-4rem)] overflow-y-scroll snap-y snap-mandatory scroll-smooth px-1 mb-0"
+            >
                 {characters.map((character, i) => (
                     <div
                         key={character.id}
-                        className="snap-start snap-always shrink-0 h-[calc(100svh-8rem)] flex items-center justify-center px-4 py-2"
+                        className="snap-center snap-always shrink-0 h-full w-full flex items-center justify-center py-2"
                         onFocus={() => setFocusedIndex(i)}
                     >
                         <LoadingLink
                             href={`/characters/${character.slug}`}
-                            className="w-full h-full max-w-sm mx-auto"
+                            className="w-full h-full mx-auto"
                         >
-                            <CharacterCard
-                                character={character}
-                                size="lg"
-                            />
+                            <CharacterCard character={character} />
                         </LoadingLink>
                     </div>
                 ))}
