@@ -6,6 +6,7 @@ import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
 import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -39,6 +40,8 @@ export default async function page({
         .limit(pageSize)
         .toArray();
 
+    const sanitizedUniverses = sanitize(universesPerPage);
+
     const totalUniverses = await collectionUniverses.countDocuments(query);
 
     // console.log((await collectionUniverses.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
@@ -58,12 +61,12 @@ export default async function page({
                 />
             </Suspense>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {universesPerPage.map((universe) => (
+                {sanitizedUniverses.map((universe) => (
                     <LoadingLink key={universe.id} href={`/universes/${universe.id}`}>
                         <UniverseCard universe={universe} size="default" />
                     </LoadingLink>
                 ))}
-                {universesPerPage.length === 0 && (
+                {sanitizedUniverses.length === 0 && (
                     <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
                         <BrushCleaning />
                         <p className="font-medium">No universes found.</p>

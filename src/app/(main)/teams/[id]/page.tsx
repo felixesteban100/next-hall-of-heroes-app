@@ -4,6 +4,7 @@ import { CharacterAccordionList } from "@/components/characters/CharacterAccordi
 import { TeamHeroHeader } from "@/components/teams/TeamHeroHeader";
 import { Filter } from "mongodb";
 import { Character } from "@/types";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -130,15 +131,15 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             <div id="members" className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <p className="text-sm font-light uppercase text-primary tracking-wider">
+                    <LoadingLink href={`/characters?universe=${universe?.value}&team=${team.id}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
                         MEMBERS ({teamCharacters.length})
-                    </p>
+                    </LoadingLink>
                 </div>
                 <CharacterAccordionList characters={teamCharacters} />
             </div>
 
             <div id="leaders" className="space-y-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
+                <h3 className="text-sm font-medium uppercase tracking-wider text-primary">
                     Team Leaders ({dbLeaderCharacters.length + externalLeaders.length})
                 </h3>
                 <MiniEntityGrid
@@ -158,7 +159,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             <div id="enemies" className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <p className="text-sm font-light uppercase text-primary tracking-wider">
+                    <p className="text-sm font-medium uppercase text-primary tracking-wider">
                         ENEMIES ({team.enemyTeamIds?.length})
                     </p>
                 </div>

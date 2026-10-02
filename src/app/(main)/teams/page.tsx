@@ -6,6 +6,7 @@ import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import TeamCard from "@/components/teams/TeamCard";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -39,6 +40,8 @@ export default async function page({
         .limit(pageSize)
         .toArray();
 
+    const sanitizedTeams = sanitize(teamsPerPage);
+
     const totalTeams = await collectionTeams.countDocuments(query);
 
     // console.log((await collectionTeams.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
@@ -58,12 +61,12 @@ export default async function page({
                 />
             </Suspense>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {teamsPerPage.map((team) => (
+                {sanitizedTeams.map((team) => (
                     <LoadingLink key={team.id} href={`/teams/${team.id}`}>
                         <TeamCard team={team} size="default" />
                     </LoadingLink>
                 ))}
-                {teamsPerPage.length === 0 && (
+                {sanitizedTeams.length === 0 && (
                     <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
                         <BrushCleaning />
                         <p className="font-medium">No teams found.</p>

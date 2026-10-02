@@ -40,7 +40,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row items-start gap-6">
       {/* Left: Team Image / Logo (Matching Character Carousel Dimensions) */}
-      <div className="shrink-0 w-full md:w-80 h-80 md:h-[22rem] rounded-2xl border bg-muted/30 p-6 flex items-center justify-center relative overflow-hidden">
+      <div className="shrink-0 w-full md:w-80 h-80 md:h-[22rem] rounded-2xl  bg-muted/30 p-6 flex items-center justify-center relative overflow-hidden">
         {team.logo ? (
           <Image
             src={team.logo}

@@ -47,7 +47,7 @@ export type Character = {
         md: string;
         lg: string;
     };
-    powers: number[];
+    powers: (number | string | { id?: number; name?: string })[];
     class: number;
     logo: string;
     tier: number;

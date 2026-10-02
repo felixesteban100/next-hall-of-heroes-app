@@ -1,4 +1,3 @@
-import CharacterCard from "@/components/characters/CharacterCard";
 import { FilterBar } from "@/components/filters/FilterBar";
 import { PaginationPages } from "@/components/filters/Pagination";
 import {
@@ -7,11 +6,11 @@ import {
     collectionTeams,
     collectionUniverses,
 } from "@/db/mongodb";
-import { BrushCleaning } from "lucide-react";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
-import { LoadingLink } from "@/components/shared/LoadingLink";
+import { CharacterGrid } from "@/components/characters/CharacterGrid";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -107,7 +106,6 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
 
     // Fast helper to sanitize BSON ObjectIDs without expensive JSON.parse(JSON.stringify())
     // Fast and safe serialization for nested MongoDB documents
-    const sanitize = <T,>(docs: T[]): T[] => JSON.parse(JSON.stringify(docs));
 
     const sanitizedCharacters = sanitize(charactersPerPage);
     const sanitizedUniverses = sanitize(universes);
@@ -142,9 +140,11 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
                 }}
             />
 
-            {/* make each card stickable like shorts or tiktoks where each card stisk while scrolling/swiping down on mobile and maybe even grow fullscreen with transition animations between cards */}
+            {/*on mobile and when width is less than sm: make each card stickable like shorts or tiktoks where each card stisk while scrolling/swiping down  and maybe even grow fullscreen with transition animations between cards */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
+            <CharacterGrid characters={sanitizedCharacters} />
+
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {sanitizedCharacters.map((character) => (
                     <LoadingLink key={character.id} href={`/characters/${character.slug}`}>
                         <CharacterCard character={character} />
@@ -158,7 +158,7 @@ async function HomeContent({ searchParams }: { searchParams: SearchParamsPromise
                         </div>
                     </div>
                 )}
-            </div>
+            </div> */}
 
             <div className="flex justify-center mt-4">
                 <Suspense fallback={null}>

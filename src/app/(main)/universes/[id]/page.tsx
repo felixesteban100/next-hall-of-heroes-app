@@ -8,6 +8,7 @@ import { Users, Shield, Tv, BookOpen, Film } from "lucide-react";
 import { CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL } from "@/lib/constants";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -33,9 +34,9 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     return (
         <div className="mx-auto pb-8 max-w-[90vw] space-y-6 mt-4">
             {/* Header with Quick Stats Bar */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 border-b pb-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6  pb-6">
                 <ViewTransition name={`universe-${universe.id}`} share="morph">
-                    <div className="bg-muted/30 p-4 rounded-3xl border flex items-center justify-center shrink-0">
+                    <div className="bg-muted/30 p-4 rounded-3xl  flex items-center justify-center shrink-0">
                         <Image
                             src={universe.logo}
                             alt={universe.name}
@@ -77,15 +78,15 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
             {/* Characters Section */}
             <div id="universe-characters" className="space-y-3 ">
-                <p className="text-sm font-light uppercase text-primary tracking-wider">
+                <LoadingLink href={`/characters?universe=${universe.name}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
                     CHARACTERS ({universeCharacters.length})
-                </p>
+                </LoadingLink>
                 <CharacterAccordionList characters={universeCharacters} />
             </div>
 
             {/* Compact Grid for Teams */}
             <div id="universe-teams" className="space-y-3">
-                <p className="text-sm font-light uppercase text-primary tracking-wider">
+                <p className="text-sm font-medium uppercase text-primary tracking-wider">
                     TEAMS ({universeTeams.length})
                 </p>
                 <MiniEntityGrid

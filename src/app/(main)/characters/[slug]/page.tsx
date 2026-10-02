@@ -149,7 +149,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-1">
-                            {aliases.length ? aliases.join(",").split(",").slice(0, 3).map((a, i) => (
+                            {aliases.length ? aliases.join(",").split(",").map((a, i) => (
                                 <Badge variant="secondary" key={a + i}>{a}</Badge>
                             )) : <p className="text-sm text-muted-foreground">No aliases or alter egos listed.</p>}
                         </div>

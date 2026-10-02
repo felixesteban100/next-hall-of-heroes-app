@@ -7,6 +7,8 @@ import { POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
 import { Zap } from "lucide-react";
 import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
+import { Character } from "@/types";
+import { LoadingLink } from "@/components/shared/LoadingLink";
 
 export const instant = false;
 
@@ -24,10 +26,53 @@ export default async function page({ params }: { params: Promise<{ id: string }>
         )
     }
 
+    const cleanPowerName = power.name
+        .replace(/[^\p{L}\s]/gu, "")
+        .trim();
+
     const powerCharacters = await collectionCharacters
-        .find({ "powers": { $in: [power.id] } })
-        // .sort({ "powerstats.total": -1 }) // strongest first
-        .sort({ name: 1 }) // name
+        .aggregate<Character>([
+            {
+                $match: {
+                    $expr: {
+                        $or: [
+                            // 1. Direct ID match (number or string)
+                            { $in: [power.id, { $ifNull: ["$powers", []] }] },
+                            { $in: [Number(power.id), { $ifNull: ["$powers", []] }] },
+
+                            // 2. Two-Way Case-Insensitive Substring Match
+                            {
+                                $gt: [
+                                    {
+                                        $size: {
+                                            $filter: {
+                                                input: { $ifNull: ["$powers", []] },
+                                                as: "p",
+                                                cond: {
+                                                    $and: [
+                                                        { $eq: [{ $type: "$$p" }, "string"] },
+                                                        {
+                                                            $or: [
+                                                                // Character item contains target power name
+                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$p" }, cleanPowerName.toLowerCase()] }, -1] },
+                                                                // Target power name contains character item
+                                                                { $ne: [{ $indexOfCP: [cleanPowerName.toLowerCase(), { $toLower: "$$p" }] }, -1] }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                    0
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            { $sort: { name: 1 } }
+        ])
         .toArray();
 
     const tierKey = power.tier as keyof typeof POWER_TIER;
@@ -53,7 +98,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                         unoptimized
                         src={power.img}
                         alt={power.name}
-                        className="h-52 w-full md:w-52 rounded-lg object-cover shrink-0"
+                        className="h-52 w-auto rounded-lg object-cover shrink-0"
                         width={500}
                         height={500}
                     />
@@ -107,13 +152,11 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
 
             {/* Members */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-light uppercase text-primary">
+                <div className="flex items-center justify-between text-sm font-light">
+                    <LoadingLink href={`/characters?powers=[${power.id}]`} className="font-medium uppercase text-primary">
                         Users
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        {powerCharacters.length} characters with this power
-                    </p>
+                    </LoadingLink>
+                    {powerCharacters.length} characters with this power
                 </div>
                 <CharacterAccordionList characters={powerCharacters} />
             </div>

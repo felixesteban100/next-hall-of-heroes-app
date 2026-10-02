@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -40,6 +41,8 @@ export default async function page({
         .limit(pageSize)
         .toArray();
 
+    const sanitizedPowers = sanitize(powersPerPage);
+
     const totalPowers = await collectionPowers.countDocuments(query);
 
     // console.log((await collectionPowers.find({}).toArray()).map(c => ({ value: c.value, name: c.name, id: c.id })))
@@ -58,12 +61,12 @@ export default async function page({
             </Suspense>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {powersPerPage.map((power) => (
+                {sanitizedPowers.map((power) => (
                     <LoadingLink key={power.id} href={`/powers/${power.id}`}>
                         <PowerCard power={power} size="default" />
                     </LoadingLink>
                 ))}
-                {powersPerPage.length === 0 && (
+                {sanitizedPowers.length === 0 && (
                     <div className="col-span-full text-center text-muted-foreground py-12">
                         No powers found.
                     </div>

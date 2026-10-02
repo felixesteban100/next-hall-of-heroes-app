@@ -27,7 +27,7 @@ export default function CharacterCard({ character, size = "default" }: Character
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
     return (
-        <Card className="group h-full justify-between hover:scale-102 hover:shadow-xl transition-all duration-300 pt-0 overflow-visible">
+        <Card className={`group h-full w-full justify-between hover:scale-102 hover:shadow-xl transition-all duration-300 pt-0 overflow-visible`}>
             <div className="relative">
                 <ViewTransition name={`character-${character.id}`}>
                     {/* this image doesn't look full in mobile as in desktop, because the images are vertical not horizontal, and the face of the characters mostly are high in the picture */}
