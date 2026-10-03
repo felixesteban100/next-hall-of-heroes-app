@@ -249,35 +249,48 @@ export function buildEnemiesLookup() {
                 from: "characters",
                 let: {
                     enemies: { $ifNull: ["$connections.enemies", []] },
+                    publisher: { $ifNull: ["$biography.publisher", ""] }, // ← plain string now
                 },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
-                                $or: [
-                                    // Strategy 1 — numeric ID
-                                    { $in: ["$id", "$$enemies"] },
-                                    // Strategy 2 — exact name or full name
-                                    { $in: ["$name", "$$enemies"] },
-                                    { $in: ["$biography.fullName", "$$enemies"] },
-                                    // Strategy 3 — substring (direction 1 only, min length 5)
+                                $and: [
+                                    // Universe guard — same publisher string
                                     {
-                                        $gt: [{
-                                            $size: {
-                                                $filter: {
-                                                    input: "$$enemies",
-                                                    as: "e",
-                                                    cond: {
-                                                        $and: [
-                                                            { $eq: [{ $type: "$$e" }, "string"] },
-                                                            { $gte: [{ $strLenCP: "$$e" }, 5] },
-                                                            { $gte: [{ $strLenCP: "$name" }, 5] },
-                                                            { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] }
-                                                        ]
+                                        $or: [
+                                            { $eq: ["$$publisher", ""] },
+                                            { $eq: ["$biography.publisher", "$$publisher"] },
+                                        ]
+                                    },
+                                    // Match strategies
+                                    {
+                                        $or: [
+                                            // Strategy 1 — numeric ID
+                                            { $in: ["$id", "$$enemies"] },
+                                            // Strategy 2 — exact name or full name
+                                            { $in: ["$name", "$$enemies"] },
+                                            { $in: ["$biography.fullName", "$$enemies"] },
+                                            // Strategy 3 — substring direction 1 only, min length 5
+                                            {
+                                                $gt: [{
+                                                    $size: {
+                                                        $filter: {
+                                                            input: "$$enemies",
+                                                            as: "e",
+                                                            cond: {
+                                                                $and: [
+                                                                    { $eq: [{ $type: "$$e" }, "string"] },
+                                                                    { $gte: [{ $strLenCP: "$$e" }, 5] },
+                                                                    { $gte: [{ $strLenCP: "$name" }, 5] },
+                                                                    { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] }
+                                                                ]
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                }, 0]
                                             }
-                                        }, 0]
+                                        ]
                                     }
                                 ]
                             }
@@ -288,7 +301,6 @@ export function buildEnemiesLookup() {
                 as: "resolvedEnemies"
             }
         },
-        // Merge resolved docs + unmatched strings as fallbacks
         {
             $addFields: {
                 "connections.enemies": {

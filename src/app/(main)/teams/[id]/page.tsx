@@ -71,7 +71,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     };
 
     const dbLeaderCharacters = orConditions.length > 0
-        ? await collectionCharacters.find(filter).toArray()
+        ? await collectionCharacters.find(filter).sort({ name: 1 }).toArray()
         : [];
 
     // d. Identify remaining string leaders that were NOT found in DB
