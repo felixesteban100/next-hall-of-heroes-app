@@ -29,6 +29,8 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
     return (
+
+        /* when the pages load I can see the character cards border from squared to rounded ❌ */
         <Card
             className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl rounded-2xl"
         >

@@ -67,6 +67,7 @@ export function MasonryGallery({ images, characterName = "Character" }: MasonryG
         ))}
       </div>
 
+      {/* this modal is not completed ❌  */}
       {/* Optimized Mobile-First Lightbox Modal */}
       <Dialog open={!!activeImage} onOpenChange={() => setActiveImage(null)}>
         <DialogContent className="max-w-4xl w-[92vw] sm:w-[85vw] max-h-[90vh] p-0 border-0 bg-background/95 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col">

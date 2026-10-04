@@ -25,7 +25,8 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
 
     const isLoading = isPending || isPopLoading;
 
-    // 1. Listen for browser back/forward buttons
+    // 1. Listen for browser back/forward buttons ❌
+    // THIS IS NOT READING THE BACK/FORWARD BUTTONS AND TRIGGERIG LOADING STATE
     useEffect(() => {
         const handlePopState = () => {
             setIsPopLoading(true);

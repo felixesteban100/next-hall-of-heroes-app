@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Globe2 } from "lucide-react";
 import { LoadingLink } from "../shared/LoadingLink";
+import { ViewTransition } from "react";
 
 interface TeamHeroHeaderProps {
   team: {
@@ -40,24 +40,25 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row items-start gap-6">
       {/* Left: Team Image / Logo (Matching Character Carousel Dimensions) */}
-      <div className="shrink-0 w-full md:w-80 h-80 rounded-2xl  p-6 flex items-center justify-center relative overflow-hidden">
-        {team.logo ? (
-          <Image
-            src={team.logo}
-            alt={team.name}
-            width={300}
-            height={300}
-            className="max-w-full max-h-full object-contain"
-            unoptimized
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <Globe2 className="w-12 h-12 stroke-1" />
-            <span className="text-xs">No Logo Available</span>
-          </div>
-        )}
-      </div>
-
+      <ViewTransition name={`team-${team.id}`} share="morph">
+        <div className="shrink-0 w-full md:w-80 h-80 rounded-2xl  p-6 flex items-center justify-center relative overflow-hidden">
+          {team.logo ? (
+            <Image
+              src={team.logo}
+              alt={team.name}
+              width={300}
+              height={300}
+              className="max-w-full max-h-full object-contain"
+              unoptimized
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
+              <Globe2 className="w-12 h-12 stroke-1" />
+              <span className="text-xs">No Logo Available</span>
+            </div>
+          )}
+        </div>
+      </ViewTransition>
       {/* Right: Info & Metadata Grid */}
       <div className="w-full flex flex-col justify-between gap-4">
         <div className="space-y-2">

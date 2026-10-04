@@ -12,7 +12,7 @@ import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES, POWER_TIER } from "@/lib/constants";
 import { Character, CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power, Team } from "@/types";
 
-import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent } from "lucide-react";
+import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent, ScanFace } from "lucide-react";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
@@ -73,6 +73,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
 
     const bioFields = [
         { icon: MapPinIcon, label: "Born in", val: val(biography.placeOfBirth, "An unknown location") },
+        { icon: ScanFace, label: "Physical description", val: val(appearance.description, "An unknown description") },
         { icon: CalendarIcon, label: "Age", val: val(appearance.age, "An unknown age") },
         { icon: BookIcon, label: "First Appearance", val: val(biography.firstAppearance, "An unknown date") },
         { icon: LetterTextIcon, label: "Aliases", val: aliases.join(", ") || "No aliases listed" },
