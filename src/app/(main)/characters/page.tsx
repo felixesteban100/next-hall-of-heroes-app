@@ -98,6 +98,8 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
 
+
+
     return (
         <div className="space-y-4 mt-4">
             <div>

@@ -51,14 +51,19 @@ export function joinTeam_universe_power_enemies_toCharacter(
     howManyPerPage: number
 ) {
     return [
+        // 1. Filter documents based on query options
         { $match: { ...queryOptions } },
-        ...buildPowersLookup(),
-        ...buildUniverseLookup(), // Note: Universe runs before Enemies so publisher is resolved
-        ...buildTeamsLookup(),
-        ...buildEnemiesLookup(),
-        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1/* , _id: 1 */ } },
+
+        // 2. Sort, Skip, Limit FIRST (Only process the 10-20 items for the current page)
+        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
         { $skip: offset },
-        { $limit: howManyPerPage }
+        { $limit: howManyPerPage },
+
+        // 3. Perform expensive lookups ONLY on the paginated subset
+        ...buildPowersLookup(),
+        ...buildUniverseLookup(),
+        ...buildTeamsLookup(),
+        ...buildEnemiesLookup()
     ];
 }
 

@@ -73,7 +73,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ slug
 
     const bioFields = [
         { icon: MapPinIcon, label: "Born in", val: val(biography.placeOfBirth, "An unknown location") },
-        { icon: ScanFace, label: "Physical description", val: val(appearance.description, "An unknown description") },
+        { icon: ScanFace, label: "Description", val: val(appearance.description, "An unknown description") },
         { icon: CalendarIcon, label: "Age", val: val(appearance.age, "An unknown age") },
         { icon: BookIcon, label: "First Appearance", val: val(biography.firstAppearance, "An unknown date") },
         { icon: LetterTextIcon, label: "Aliases", val: aliases.join(", ") || "No aliases listed" },
