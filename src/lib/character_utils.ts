@@ -48,22 +48,20 @@ export function joinTeam_universe_power_enemies_toCharacter(
     sortBy: string,
     sortDirection: string,
     offset: number,
-    howManyPerPage: number
+    howManyPerPage: number,
+    options: { includeEnemies?: boolean } = {}  // ← add this
 ) {
-    return [
-        // 1. Filter documents based on query options
-        { $match: { ...queryOptions } },
+    const { includeEnemies = true } = options;
 
-        // 2. Sort, Skip, Limit FIRST (Only process the 10-20 items for the current page)
+    return [
+        { $match: { ...queryOptions } },
         { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
         { $skip: offset },
         { $limit: howManyPerPage },
-
-        // 3. Perform expensive lookups ONLY on the paginated subset
         ...buildPowersLookup(),
         ...buildUniverseLookup(),
         ...buildTeamsLookup(),
-        ...buildEnemiesLookup()
+        ...(includeEnemies ? buildEnemiesLookup() : []),  // ← skip on list page
     ];
 }
 

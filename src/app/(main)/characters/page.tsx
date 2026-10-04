@@ -69,7 +69,8 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                     sortProperty,
                     sortOrientation,
                     (page - 1) * pageSize,
-                    pageSize
+                    pageSize,
+                    { includeEnemies: false }
                 )
             )
             .toArray(),
