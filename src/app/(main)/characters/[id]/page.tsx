@@ -9,12 +9,13 @@ import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, POWER_TIER } from "@/lib/constants";
-import { Character, CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power, Team } from "@/types";
+import { Character, CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Power, Team } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent, ScanFace } from "lucide-react";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -96,7 +97,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
         (c): c is FallbackItem => "isFallback" in c && c.isFallback === true
     );
     const characterEnemiesDB = character.connections.enemies.filter(
-        (c): c is Character => !("isFallback" in c)
+        (c): c is Enemy => !("isFallback" in c)
     );
 
     // Teams / Group Affiliations
@@ -170,7 +171,12 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             {/* Powerstats */}
             {/* Powerstats JSX rendering */}
             <div id="powerstats" className="space-y-2">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
+                <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
+                    <LoadingLink href={`/compare?id1=${character.id}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                        Compare with another character
+                    </LoadingLink>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                     {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (
                         <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
@@ -240,8 +246,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     items={characterEnemiesDB.map((c) => ({
                         id: c.id,
                         name: c.name,
-                        image: c.images.md,
-                        alignment: c.biography?.alignment,
+                        image: c.image,
+                        alignment: c.alignment,
                     }))}
                     externalNames={externalEnemies.map(c => c.name)}
                     emptyMessage="No enemies found."
@@ -266,3 +272,5 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
     - por bigin y su proceso
     - conversion de manito
 */
+
+

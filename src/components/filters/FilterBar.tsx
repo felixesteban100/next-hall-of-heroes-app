@@ -88,7 +88,7 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
     const updateParam = useCallback((key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
         params.delete("page");
-        console.log(key, value)
+        // console.log(key, value)
         if (value) {
             params.set(key, value);
         } else {

@@ -67,7 +67,8 @@ export type Universe = {
     type: string;
 }
 
-export type Enemy = Omit<Character, "biography.publisher" | "connections" | "powers">[]
+// export type Enemy = Omit<Character, "biography.publisher" | "connections" | "powers">[]
+export type Enemy = { name: string, id: string, image: string, alignment: string }
 
 export type CharacterWithJoinTeamUniversePowerEnemies = Omit<Character, "biography.publisher" | "connections" | "powers"> & {
     biography: {
@@ -76,7 +77,7 @@ export type CharacterWithJoinTeamUniversePowerEnemies = Omit<Character, "biograp
     connections: {
         groupAffiliation: /* TeamWithJoinCharacterUniverse[] */ (Omit<Team, "universe"> | FallbackItem)[];
         relatives: string;
-        enemies: (Character | FallbackItem)[]/* Enemy */;
+        enemies: (Enemy | FallbackItem)[]/* Enemy */;
     };
     powers: (Power | FallbackItem)[],
 }

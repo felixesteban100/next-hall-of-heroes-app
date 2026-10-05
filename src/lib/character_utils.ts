@@ -302,7 +302,16 @@ export function buildEnemiesLookup() {
                             }
                         }
                     },
-                    { $project: { characters: 0 } } // keep this only if you really need it
+                    // Project only the required fields: name, id, images.md
+                    {
+                        $project: {
+                            _id: 0,
+                            id: 1,
+                            name: 1,
+                            image: "$images.md",
+                            alignment: "$biography.alignment"
+                        }
+                    }
                 ],
                 as: "resolvedEnemies"
             }
@@ -321,7 +330,7 @@ export function buildEnemiesLookup() {
                                         cond: {
                                             $not: {
                                                 $or: [
-                                                    // already resolved by ID
+                                                    // Already resolved by ID
                                                     {
                                                         $in: [
                                                             { $toString: "$$e" },
@@ -334,7 +343,7 @@ export function buildEnemiesLookup() {
                                                             }
                                                         ]
                                                     },
-                                                    // already resolved by name
+                                                    // Already resolved by name
                                                     {
                                                         $in: [
                                                             { $toLower: { $toString: "$$e" } },

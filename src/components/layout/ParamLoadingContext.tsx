@@ -1,6 +1,15 @@
 "use client";
 
-import { createContext, useContext, useTransition, ReactNode, Suspense, useState, useEffect } from "react";
+import {
+    createContext,
+    useContext,
+    useTransition,
+    ReactNode,
+    Suspense,
+    useState,
+    useEffect,
+    useRef,
+} from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -23,25 +32,63 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
+    const currentUrl = `${pathname}?${searchParams.toString()}`;
+    // true only while we're in a back/forward navigation
+    const isPopNavigation = useRef(false);
+    const urlAtPop = useRef<string | null>(null);
+
     const isLoading = isPending || isPopLoading;
 
-    // 1. Listen for browser back/forward buttons ❌
-    // THIS IS NOT READING THE BACK/FORWARD BUTTONS AND TRIGGERIG LOADING STATE
+    // 1. Browser back / forward
     useEffect(() => {
         const handlePopState = () => {
+            // At popstate time, React hooks often still have the OLD url
+            isPopNavigation.current = true;
+            urlAtPop.current = currentUrl; // snapshot of what React still sees
             setIsPopLoading(true);
         };
 
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
-    }, []);
+    }, [currentUrl]);
 
-    // 2. Clear loading state once route OR search params finish changing
+    // 2. After React receives the new URL, keep the overlay visible briefly, then clear
     useEffect(() => {
-        setIsPopLoading(false);
-    }, [pathname, searchParams]);
+        if (!isPopNavigation.current) return;
 
-    // 3. Handle document scroll lock
+        // Wait until hooks have moved past the URL we snapped at pop time
+        const urlChanged =
+            urlAtPop.current !== null && currentUrl !== urlAtPop.current;
+
+        // If Next is very fast, url might already match window.location —
+        // still treat any pop as "in progress" until min time elapses
+        if (!urlChanged && urlAtPop.current === currentUrl) {
+            // hooks not updated yet — stay loading
+            return;
+        }
+
+        const MIN_MS = 280; // long enough to actually see the spinner
+        const t = setTimeout(() => {
+            isPopNavigation.current = false;
+            urlAtPop.current = null;
+            setIsPopLoading(false);
+        }, MIN_MS);
+
+        return () => clearTimeout(t);
+    }, [currentUrl]);
+
+    // Safety net: never leave the overlay stuck
+    useEffect(() => {
+        if (!isPopLoading) return;
+        const t = setTimeout(() => {
+            isPopNavigation.current = false;
+            urlAtPop.current = null;
+            setIsPopLoading(false);
+        }, 2500);
+        return () => clearTimeout(t);
+    }, [isPopLoading]);
+
+    // Scroll lock
     useEffect(() => {
         if (isLoading) {
             document.body.style.overflow = "hidden";
@@ -66,7 +113,9 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
     };
 
     return (
-        <ParamLoadingContext.Provider value={{ isPending: isLoading, pushParams, navigateRoute }}>
+        <ParamLoadingContext.Provider
+            value={{ isPending: isLoading, pushParams, navigateRoute }}
+        >
             {isLoading && (
                 <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md animate-in fade-in duration-200 pointer-events-auto cursor-wait">
                     <div className="flex items-center gap-3 p-4 px-6 rounded-2xl bg-card border border-border shadow-2xl">
@@ -77,9 +126,7 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
                     </div>
                 </div>
             )}
-            <div inert={isLoading || undefined}>
-                {children}
-            </div>
+            <div inert={isLoading || undefined}>{children}</div>
         </ParamLoadingContext.Provider>
     );
 }

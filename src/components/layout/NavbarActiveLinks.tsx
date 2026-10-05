@@ -19,6 +19,7 @@ const navLinks = [
     { name: "Universes", href: "/universes", icon: Globe2 },
     { name: "Powers", href: "/powers", icon: Zap },
     { name: "Random", href: "/random", icon: Users },
+    { name: "Compare", href: "/compare", icon: Sparkles },
 ];
 
 export function NavbarActiveLinks() {
