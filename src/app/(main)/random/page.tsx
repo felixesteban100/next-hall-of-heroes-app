@@ -32,13 +32,6 @@ export default async function Random() {
             </div>
             <CacheClearButton path="/characters/random" />
             <CharacterGrid characters={sanitizedCharacters} />
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 ">
-                {charactersPerPage.map((character) => (
-                    <LoadingLink key={character.id} href={`/characters/${character.slug}`}>
-                        <CharacterCard character={JSON.parse(JSON.stringify(character))} />
-                    </LoadingLink>
-                ))}
-            </div> */}
         </div>
     )
 }

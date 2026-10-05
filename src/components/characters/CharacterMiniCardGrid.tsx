@@ -12,7 +12,7 @@ export function CharacterMiniCardGrid({ characters }: { characters: CharacterWit
                 return (
                     <LoadingLink
                         key={char.id}
-                        href={`/characters/${char.slug}`}
+                        href={`/characters/${char.id}`}
                         className="border rounded-lg p-3 bg-muted/20 hover:bg-muted/60 transition-all hover:border-primary/50 flex flex-col justify-between gap-2 group"
                     >
                         <div className="flex justify-between items-start gap-2">

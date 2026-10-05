@@ -1,6 +1,5 @@
 import { Suspense, ViewTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import CharacterBadge from "@/components/characters/CharacterBadge";
@@ -9,7 +8,7 @@ import { CharacterImageCarousel } from "@/components/characters/CharacterImageCa
 import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, CHARACTER_TYPES, POWER_TIER } from "@/lib/constants";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, POWER_TIER } from "@/lib/constants";
 import { Character, CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power, Team } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent, ScanFace } from "lucide-react";
@@ -31,11 +30,11 @@ const POWERSTATS_CFG = [
     { key: "power", label: "Power", icon: Zap, color: "bg-cyan-500" },
 ] as const;
 
-export default async function CharacterPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params;
+export default async function CharacterPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const [character] = await collectionCharacters
         .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-            joinTeam_universe_power_enemies_toCharacter({ id: parseInt(slug.split("-")[0] ?? "") }, "id", "desc", 0, 1)
+            joinTeam_universe_power_enemies_toCharacter({ id: parseInt(id) }, "id", "desc", 0, 1, { includeEnemies: true })
         )
         .toArray();
 

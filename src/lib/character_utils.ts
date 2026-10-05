@@ -58,10 +58,26 @@ export function joinTeam_universe_power_enemies_toCharacter(
         { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
         { $skip: offset },
         { $limit: howManyPerPage },
-        ...buildPowersLookup(),
         ...buildUniverseLookup(),
-        ...buildTeamsLookup(),
-        ...(includeEnemies ? buildEnemiesLookup() : []),  // ← skip on list page
+        ...(includeEnemies ? buildPowersLookup() : []),
+        ...(includeEnemies ? buildTeamsLookup() : []),
+        ...(includeEnemies ? buildEnemiesLookup() : []),
+        ...(includeEnemies === false ?
+            [{
+                $project: {
+                    id: 1,
+                    name: 1,
+                    images: 1,
+                    tier: 1,
+                    class: 1,
+                    character_type: 1,
+                    "biography.alignment": 1,
+                    "biography.publisher.logo": 1,  // or just .logo if that's all CardFooter uses
+                    "appearance.gender": 1,
+                    "powerstats.total": 1,     // if you show the score
+                }
+            }] : []
+        )
     ];
 }
 
@@ -244,54 +260,41 @@ export function buildTeamsLookup() {
     ];
 }
 
-// 4. Enemies Lookup Stage (Fixed Universe Scope)
+// 4. Enemies Lookup Stage
 export function buildEnemiesLookup() {
     return [
         {
             $lookup: {
                 from: "characters",
-                let: {
-                    enemies: { $ifNull: ["$connections.enemies", []] },
-                    publisher: { $ifNull: ["$biography.publisher", ""] }, // ← plain string now
-                },
+                let: { enemies: { $ifNull: ["$connections.enemies", []] } },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
-                                $and: [
-                                    // Universe guard — same publisher string
+                                $or: [
+                                    // Match by ID (coerce both sides to string)
                                     {
-                                        $or: [
-                                            { $eq: ["$$publisher", ""] },
-                                            { $eq: ["$biography.publisher", "$$publisher"] },
+                                        $in: [
+                                            { $toString: "$id" },
+                                            {
+                                                $map: {
+                                                    input: "$$enemies",
+                                                    as: "e",
+                                                    in: { $toString: "$$e" }
+                                                }
+                                            }
                                         ]
                                     },
-                                    // Match strategies
+                                    // Match by name (case-insensitive)
                                     {
-                                        $or: [
-                                            // Strategy 1 — numeric ID
-                                            { $in: ["$id", "$$enemies"] },
-                                            // Strategy 2 — exact name or full name
-                                            { $in: ["$name", "$$enemies"] },
-                                            { $in: ["$biography.fullName", "$$enemies"] },
-                                            // Strategy 3 — substring direction 1 only, min length 5
+                                        $in: [
+                                            { $toLower: { $ifNull: ["$name", ""] } },
                                             {
-                                                $gt: [{
-                                                    $size: {
-                                                        $filter: {
-                                                            input: "$$enemies",
-                                                            as: "e",
-                                                            cond: {
-                                                                $and: [
-                                                                    { $eq: [{ $type: "$$e" }, "string"] },
-                                                                    { $gte: [{ $strLenCP: "$$e" }, 5] },
-                                                                    { $gte: [{ $strLenCP: "$name" }, 5] },
-                                                                    { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$e" }] }, -1] }
-                                                                ]
-                                                            }
-                                                        }
-                                                    }
-                                                }, 0]
+                                                $map: {
+                                                    input: "$$enemies",
+                                                    as: "e",
+                                                    in: { $toLower: { $toString: "$$e" } }
+                                                }
                                             }
                                         ]
                                     }
@@ -299,7 +302,7 @@ export function buildEnemiesLookup() {
                             }
                         }
                     },
-                    { $project: { characters: 0 } }
+                    { $project: { characters: 0 } } // keep this only if you really need it
                 ],
                 as: "resolvedEnemies"
             }
@@ -316,10 +319,36 @@ export function buildEnemiesLookup() {
                                         input: { $ifNull: ["$connections.enemies", []] },
                                         as: "e",
                                         cond: {
-                                            $and: [
-                                                { $eq: [{ $type: "$$e" }, "string"] },
-                                                { $not: { $in: ["$$e", "$resolvedEnemies.name"] } }
-                                            ]
+                                            $not: {
+                                                $or: [
+                                                    // already resolved by ID
+                                                    {
+                                                        $in: [
+                                                            { $toString: "$$e" },
+                                                            {
+                                                                $map: {
+                                                                    input: "$resolvedEnemies",
+                                                                    as: "r",
+                                                                    in: { $toString: "$$r.id" }
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    // already resolved by name
+                                                    {
+                                                        $in: [
+                                                            { $toLower: { $toString: "$$e" } },
+                                                            {
+                                                                $map: {
+                                                                    input: "$resolvedEnemies",
+                                                                    as: "r",
+                                                                    in: { $toLower: { $ifNull: ["$$r.name", ""] } }
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
                                         }
                                     }
                                 },
@@ -334,3 +363,4 @@ export function buildEnemiesLookup() {
         { $project: { resolvedEnemies: 0 } }
     ];
 }
+

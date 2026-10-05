@@ -32,7 +32,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
 
         /* when the pages load I can see the character cards border from squared to rounded ❌ */
         <Card
-            className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl rounded-2xl"
+            className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl "
         >
             <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-[4/4]"} bg-muted/20 overflow-hidden`}>
                 <ViewTransition name={`character-${character.id}`}>
@@ -41,7 +41,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                         alt={`${character.name}'s main image`}
                         unoptimized
                         fill
-                        className="object-cover object-top transition-transform duration-500 group-hover:scale-110"
+                        className="object-cover object-top duration-500 group-hover:scale-110 rounded-t-2xl"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         style={{ contain: "layout" }}
                     />

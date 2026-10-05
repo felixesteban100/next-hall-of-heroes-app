@@ -82,7 +82,7 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
                         onFocus={() => setFocusedIndex(i)}
                     >
                         <LoadingLink
-                            href={`/characters/${character.slug}`}
+                            href={`/characters/${character.id}`}
                             className="w-full h-full mx-auto"
                         >
                             <CharacterCard character={character} />
@@ -98,7 +98,7 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
             {/* Desktop — regular grid */}
             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4">
                 {characters.map((character) => (
-                    <LoadingLink key={character.id} href={`/characters/${character.slug}`}>
+                    <LoadingLink key={character.id} href={`/characters/${character.id}`}>
                         <CharacterCard character={character} />
                     </LoadingLink>
                 ))}

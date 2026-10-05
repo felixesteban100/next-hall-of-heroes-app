@@ -138,3 +138,38 @@ export async function seedTeamLeadersHybrid(leaderMap: Record<string, string[]>)
     }
 }
 
+export async function seedCharactersEnemies(characterEnemiesData: { slug: string; enemies: (number | string)[] }[]) {
+    try {
+        console.log("Starting enemies database seed...");
+
+        // Build a bulk write operation array for max performance
+        const bulkOps = characterEnemiesData.map((item) => {
+            // Extract numeric ID from slug prefix (e.g. "1-a-bomb/Marvel Comics" -> 1)
+            const characterId = parseInt(item.slug.split("-")[0], 10);
+
+            return {
+                updateOne: {
+                    filter: { id: characterId },
+                    update: {
+                        $set: {
+                            "connections.enemies": item.enemies
+                        }
+                    }
+                }
+            };
+        });
+
+        if (bulkOps.length === 0) {
+            console.log("No enemy seed data found.");
+            return;
+        }
+
+        const result = await collectionCharacters.bulkWrite(bulkOps);
+
+        console.log(`Successfully updated ${result.modifiedCount} characters with enemy data.`);
+        return result;
+    } catch (error) {
+        console.error("Failed to seed character enemies:", error);
+        throw error;
+    }
+}

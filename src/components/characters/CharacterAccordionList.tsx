@@ -29,7 +29,7 @@ export function CharacterAccordionList({ characters }: { characters: CharacterWi
                             {data.map((char) => (
                                 <LoadingLink
                                     key={char.id}
-                                    href={`/characters/${char.slug}`}
+                                    href={`/characters/${char.id}`}
                                     className="px-2.5 py-1.5 rounded-md border bg-muted/40 hover:bg-primary/10 hover:border-primary text-xs font-medium transition-colors flex items-center gap-1.5"
                                 >
                                     <span>{char.name}</span>

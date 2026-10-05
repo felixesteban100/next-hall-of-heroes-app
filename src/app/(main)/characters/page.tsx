@@ -91,15 +91,10 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
             .toArray(),
     ]);
 
-    // Fast helper to sanitize BSON ObjectIDs without expensive JSON.parse(JSON.stringify())
-    // Fast and safe serialization for nested MongoDB documents
-
     const sanitizedCharacters = sanitize(charactersPerPage);
     const sanitizedUniverses = sanitize(universes);
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
-
-
 
     return (
         <div className="space-y-4 mt-4">
