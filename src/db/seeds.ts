@@ -138,38 +138,125 @@ export async function seedTeamLeadersHybrid(leaderMap: Record<string, string[]>)
     }
 }
 
-export async function seedCharactersEnemies(characterEnemiesData: { slug: string; enemies: (number | string)[] }[]) {
-    try {
-        console.log("Starting enemies database seed...");
+// db/seed/seedCharacters.ts
+/** Extract numeric id from slug like "982-mary-marvel/DC Comics" → 982 */
+export function idFromSlug(slug: string): number {
+    const n = parseInt(slug.split("-")[0], 10);
+    if (Number.isNaN(n)) {
+        throw new Error(`Invalid slug (no leading id): ${slug}`);
+    }
+    return n;
+}
 
-        // Build a bulk write operation array for max performance
-        const bulkOps = characterEnemiesData.map((item) => {
-            // Extract numeric ID from slug prefix (e.g. "1-a-bomb/Marvel Comics" -> 1)
-            const characterId = parseInt(item.slug.split("-")[0], 10);
+type SeedItem = {
+    slug: string;
+    /** Any fields to $set on the character doc (dot-paths allowed) */
+    data: Record<string, unknown>;
+};
+
+/**
+ * Generic bulk update by slug → id.
+ * Example data:
+ * [
+ *   { slug: "982-mary-marvel/DC Comics", data: { powerstats: { ... }, tier: 5 } },
+ *   { slug: "989-ares/DC Comics", data: { "connections.enemies": [720] } },
+ * ]
+ */
+export async function seedCharacters(items: SeedItem[]) {
+    try {
+        console.log("Starting characters seed...");
+
+        const bulkOps: Parameters<typeof collectionCharacters.bulkWrite>[0] = items.map((item) => {
+            const characterId = idFromSlug(item.slug);
 
             return {
                 updateOne: {
                     filter: { id: characterId },
                     update: {
-                        $set: {
-                            "connections.enemies": item.enemies
-                        }
-                    }
-                }
+                        $set: item.data,
+                    },
+                },
             };
         });
 
         if (bulkOps.length === 0) {
-            console.log("No enemy seed data found.");
+            console.log("No character seed data found.");
             return;
         }
 
-        const result = await collectionCharacters.bulkWrite(bulkOps);
+        const result = await collectionCharacters.bulkWrite(bulkOps, {
+            ordered: false, // keep going if one id is missing
+        });
 
-        console.log(`Successfully updated ${result.modifiedCount} characters with enemy data.`);
+        console.log(
+            `Characters seed: matched=${result.matchedCount}, modified=${result.modifiedCount}`
+        );
         return result;
     } catch (error) {
-        console.error("Failed to seed character enemies:", error);
+        console.error("Failed to seed characters:", error);
         throw error;
     }
+}
+
+export async function seedCharactersPowerstats(
+    rows: { slug: string; powerstats: Record<string, number> }[]
+) {
+    return seedCharacters(
+        rows.map(({ slug, powerstats }) => ({
+            slug,
+            data: { powerstats },
+        }))
+    );
+}
+
+export async function seedCharactersEnemies(
+    characterEnemiesData: { slug: string; enemies: (number | string)[] }[]
+) {
+    return seedCharacters(
+        characterEnemiesData.map(({ slug, enemies }) => ({
+            slug,
+            data: { "connections.enemies": enemies },
+        }))
+    );
+}
+
+export async function seedCharactersTier(
+    rows: { slug: string; tier: number; class?: number }[]
+) {
+    return seedCharacters(
+        rows.map(({ slug, tier, class: cls }) => ({
+            slug,
+            data: {
+                tier,
+                ...(cls != null ? { class: cls } : {}),
+            },
+        }))
+    );
+}
+
+export async function seedCharactersRelativesList(
+    data: { slug: string; relatives: string }[]
+) {
+    return seedCharacters(
+        data.map(({ slug, relatives }) => ({
+            slug,
+            data: {
+                // join to match current schema
+                "connections.relatives": relatives,
+            },
+        }))
+    );
+}
+
+export async function seedCharactersDescription(
+    data: { slug: string; description: string }[]
+) {
+    return seedCharacters(
+        data.map(({ slug, description }) => ({
+            slug,
+            data: {
+                "appearance.description": description,
+            },
+        }))
+    );
 }

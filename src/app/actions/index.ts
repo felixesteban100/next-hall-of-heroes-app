@@ -1,5 +1,6 @@
 "use server";
 
+import { CharacterOption } from "@/components/compare/CharacterCombobox";
 import { collectionCharacters } from "@/db/mongodb";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -9,28 +10,39 @@ export async function clearDataCache(path?: string, tag?: string) {
 }
 
 export async function searchCharacters(query: string, excludeId?: number) {
-    if (!query || query.trim().length === 0) {
-        return [];
-    }
+    const q = query.trim();
+    const filter: Record<string, unknown> = {};
 
-    // Escape regex special characters to prevent invalid regex errors
-    const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-    const filter: Record<string, unknown> = { name: { $regex: sanitizedQuery, $options: "i" } };
     if (excludeId != null && !Number.isNaN(Number(excludeId))) {
         filter.id = { $ne: Number(excludeId) };
     }
 
-    const characters = await collectionCharacters
-        .find(filter)
-        .project<{ id: number; name: string; slug: string }>({
-            _id: 0,
-            id: 1,
-            name: 1,
-            slug: 1,
-        })
-        .limit(15)
-        .toArray();
+    if (q) {
+        const rx = { $regex: q, $options: "i" };
+        filter.$or = [
+            { name: rx },
+            { slug: rx },
+            { "biography.fullName": rx },
+            { "biography.alterEgos": rx },
+            { "biography.aliases": rx }, // works if aliases are strings in an array
+        ];
+    }
 
-    return characters;
+    return collectionCharacters
+        .aggregate<CharacterOption>([
+            { $match: filter },
+            { $limit: 20 },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    name: 1,
+                    slug: 1,
+                    "biography.fullName": 1,
+                    "biography.alterEgos": 1,
+                    "biography.aliases": 1,
+                },
+            },
+        ])
+        .toArray();
 }

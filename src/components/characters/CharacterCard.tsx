@@ -3,7 +3,7 @@
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
-import { getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
+import { getCharacterAlignmentColor, getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib/character_utils";
 import CharacterBadge from "./CharacterBadge";
 import { ViewTransition } from 'react'
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
@@ -49,7 +49,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
             </div>
             <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
                 <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
-                <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={getCharacterAlignmentColor(character.biography.alignment)} />
+                <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={`${getCharacterAlignmentTextColor(character.biography.alignment)} bg-transparent font-bold`} />
             </CardHeader>
             <CardDescription className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
                 <div className="flex items-center">

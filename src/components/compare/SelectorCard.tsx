@@ -32,6 +32,9 @@ export async function SelectorCard({ title, selected, otherSelectedId, paramKey,
                     id: 1,
                     name: 1,
                     slug: 1,
+                    "biography.fullName": 1, // string
+                    "biography.alterEgos": 1, // string
+                    "biography.aliases": 1 // Array
                 },
             },
         ])

@@ -7,8 +7,8 @@ import { simulateSpar } from "@/lib/compare_utls";
 export function SparPanel({
     scoreA,
     scoreB,
-    nameA = "Entity A",
-    nameB = "Entity B",
+    nameA = "Character A",
+    nameB = "Character B",
 }: {
     scoreA: number | null;
     scoreB: number | null;

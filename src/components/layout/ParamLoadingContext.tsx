@@ -9,7 +9,9 @@ import {
     useState,
     useEffect,
     useRef,
+    useCallback,
 } from "react";
+import { flushSync } from "react-dom";          // ← add this
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -33,62 +35,64 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
     const searchParams = useSearchParams();
 
     const currentUrl = `${pathname}?${searchParams.toString()}`;
-    // true only while we're in a back/forward navigation
     const isPopNavigation = useRef(false);
     const urlAtPop = useRef<string | null>(null);
+    const minShowUntil = useRef(0);
 
     const isLoading = isPending || isPopLoading;
 
-    // 1. Browser back / forward
+    const clearPopLoading = useCallback(() => {
+        isPopNavigation.current = false;
+        urlAtPop.current = null;
+        setIsPopLoading(false);
+        document.documentElement.classList.remove("pop-loading");
+        document.body.style.overflow = "";
+    }, []);
+
+    // Capture popstate as early as possible
     useEffect(() => {
         const handlePopState = () => {
-            // At popstate time, React hooks often still have the OLD url
             isPopNavigation.current = true;
-            urlAtPop.current = currentUrl; // snapshot of what React still sees
-            setIsPopLoading(true);
+            urlAtPop.current = currentUrl;
+            minShowUntil.current = Date.now() + 320; // a bit longer for safety
+
+            // Force the loading overlay to paint THIS frame (before Next paints the new page)
+            flushSync(() => {
+                setIsPopLoading(true);
+            });
+
+            // Instant CSS hide + scroll lock
+            document.documentElement.classList.add("pop-loading");
+            document.body.style.overflow = "hidden";
         };
 
-        window.addEventListener("popstate", handlePopState);
-        return () => window.removeEventListener("popstate", handlePopState);
+        window.addEventListener("popstate", handlePopState, true);
+        return () => window.removeEventListener("popstate", handlePopState, true);
     }, [currentUrl]);
 
-    // 2. After React receives the new URL, keep the overlay visible briefly, then clear
+    // Clear only after URL has changed AND minimum display time has passed
     useEffect(() => {
         if (!isPopNavigation.current) return;
 
-        // Wait until hooks have moved past the URL we snapped at pop time
         const urlChanged =
             urlAtPop.current !== null && currentUrl !== urlAtPop.current;
 
-        // If Next is very fast, url might already match window.location —
-        // still treat any pop as "in progress" until min time elapses
-        if (!urlChanged && urlAtPop.current === currentUrl) {
-            // hooks not updated yet — stay loading
-            return;
-        }
+        if (!urlChanged) return;
 
-        const MIN_MS = 280; // long enough to actually see the spinner
-        const t = setTimeout(() => {
-            isPopNavigation.current = false;
-            urlAtPop.current = null;
-            setIsPopLoading(false);
-        }, MIN_MS);
+        const remaining = Math.max(0, minShowUntil.current - Date.now());
 
+        const t = setTimeout(clearPopLoading, remaining);
         return () => clearTimeout(t);
-    }, [currentUrl]);
+    }, [currentUrl, clearPopLoading]);
 
-    // Safety net: never leave the overlay stuck
+    // Safety net
     useEffect(() => {
         if (!isPopLoading) return;
-        const t = setTimeout(() => {
-            isPopNavigation.current = false;
-            urlAtPop.current = null;
-            setIsPopLoading(false);
-        }, 2500);
+        const t = setTimeout(clearPopLoading, 2500);
         return () => clearTimeout(t);
-    }, [isPopLoading]);
+    }, [isPopLoading, clearPopLoading]);
 
-    // Scroll lock
+    // Keep body scroll locked
     useEffect(() => {
         if (isLoading) {
             document.body.style.overflow = "hidden";
@@ -100,24 +104,30 @@ function ParamLoadingInner({ children }: { children: ReactNode }) {
         };
     }, [isLoading]);
 
-    const pushParams = (newParams: URLSearchParams) => {
-        startTransition(() => {
-            push(`${pathname}?${newParams.toString()}`, { scroll: false });
-        });
-    };
+    const pushParams = useCallback(
+        (newParams: URLSearchParams) => {
+            startTransition(() => {
+                push(`${pathname}?${newParams.toString()}`, { scroll: false });
+            });
+        },
+        [pathname, push]
+    );
 
-    const navigateRoute = (href: string) => {
-        startTransition(() => {
-            push(href);
-        });
-    };
+    const navigateRoute = useCallback(
+        (href: string) => {
+            startTransition(() => {
+                push(href);
+            });
+        },
+        [push]
+    );
 
     return (
         <ParamLoadingContext.Provider
             value={{ isPending: isLoading, pushParams, navigateRoute }}
         >
             {isLoading && (
-                <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md animate-in fade-in duration-200 pointer-events-auto cursor-wait">
+                <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md animate-in fade-in duration-150 pointer-events-auto cursor-wait">
                     <div className="flex items-center gap-3 p-4 px-6 rounded-2xl bg-card border border-border shadow-2xl">
                         <Loader2 className="w-5 h-5 animate-spin text-primary" />
                         <span className="text-sm font-semibold text-foreground">

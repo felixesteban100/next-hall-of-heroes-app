@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/SelectorCard";
-import { StatBar } from "@/components/compare/StatBar";
 import { PillList } from "@/components/compare/PillList";
 import { collectionCharacters } from "@/db/mongodb";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
@@ -115,7 +114,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-10 overflow-visible">
                 <SelectorCard
                     key={entityA?.id ?? "empty-a"}
-                    title="Entity A"
+                    title="Character A"
                     selected={entityA}
                     otherSelectedId={entityBIdValue ?? undefined}
                     paramKey="id1"
@@ -128,7 +127,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
                 <SelectorCard
                     key={entityB?.id ?? "empty-b"}
-                    title="Entity B"
+                    title="Character B"
                     selected={entityB}
                     otherSelectedId={entityAIdValue ?? undefined}
                     paramKey="id2"

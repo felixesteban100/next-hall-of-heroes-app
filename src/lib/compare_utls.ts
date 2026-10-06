@@ -117,17 +117,20 @@ export function compareMatchScores(
     label: string;
 } {
     if (!a && !b) return { winner: "none", diff: 0, label: "Select characters" };
-    if (a && !b) return { winner: "a", diff: a.overall, label: "Only Entity A scored" };
-    if (!a && b) return { winner: "b", diff: b.overall, label: "Only Entity B scored" };
+    if (a && !b) return { winner: "a", diff: a.overall, label: "Only Character A scored" };
+    // if (a && !b) return { winner: "a", diff: a.overall, label: "Only Entity A scored" };
+    if (!a && b) return { winner: "b", diff: b.overall, label: "Only Character B scored" };
+    // if (!a && b) return { winner: "b", diff: b.overall, label: "Only Entity B scored" };
 
     const diff = round1(a!.overall - b!.overall);
     if (Math.abs(diff) < 3) {
         return { winner: "tie", diff, label: "Too close to call" };
     }
     if (diff > 0) {
-        return { winner: "a", diff, label: `Entity A edge +${diff}` };
+        // return { winner: "a", diff, label: `Entity A edge +${diff}` };
+        return { winner: "a", diff, label: `Character A edge +${diff}` };
     }
-    return { winner: "b", diff: Math.abs(diff), label: `Entity B edge +${Math.abs(diff)}` };
+    return { winner: "b", diff: Math.abs(diff), label: `Character B edge +${Math.abs(diff)}` };
 }
 
 export function hasNemesisLink(

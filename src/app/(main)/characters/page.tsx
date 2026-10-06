@@ -11,6 +11,7 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Suspense } from "react";
 import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
+import { seedCharactersDescription } from "@/db/seeds";
 
 export const instant = false;
 
@@ -48,7 +49,15 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
 
     // Build MongoDB query filter
     const query: Record<string, any> = {};
-    if (name) query.name = { $regex: name, $options: "i" };
+    if (name) {
+        const regexPattern = { $regex: name, $options: "i" };
+        query.$or = [
+            { name: regexPattern },
+            { "biography.fullName": regexPattern },
+            { "biography.aliases": regexPattern },
+            { "biography.alterEgos": regexPattern },
+        ];
+    }
     if (gender) query["appearance.gender"] = gender;
     if (alignment) query["biography.alignment"] = alignment;
     if (universe) query["biography.publisher"] = universe;
@@ -95,6 +104,9 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const sanitizedUniverses = sanitize(universes);
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
+
+    // const charactersToUpdate = 
+    // seedCharactersDescription(charactersToUpdate)
 
     return (
         <div className="space-y-4 mt-4">

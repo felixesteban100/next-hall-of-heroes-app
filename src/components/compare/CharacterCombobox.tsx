@@ -16,7 +16,12 @@ export type CharacterOption = {
     id: number;
     name: string;
     slug: string;
-};
+    biography?: {
+        fullName?: string;
+        alterEgos?: string;
+        aliases?: string[];
+    };
+}
 
 interface CharacterComboboxProps {
     paramKey: "id1" | "id2";
@@ -136,7 +141,19 @@ export function CharacterCombobox({
                 <ComboboxList>
                     {(item: CharacterOption) => (
                         <ComboboxItem key={item.id} value={item.slug}>
-                            {item.name}
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                                <span className="font-medium truncate">{item.name}</span>
+                                {(item.biography?.fullName || item.biography?.aliases?.length) && (
+                                    <span className="text-[10px] text-muted-foreground truncate">
+                                        {[
+                                            item.biography?.fullName,
+                                            item.biography?.aliases?.slice(0, 2).join(", "),
+                                        ]
+                                            .filter(Boolean)
+                                            .join(" · ")}
+                                    </span>
+                                )}
+                            </div>
                         </ComboboxItem>
                     )}
                 </ComboboxList>

@@ -3,14 +3,14 @@ import { Frown, Meh, Smile } from "lucide-react";
 export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
         case "good":
-            return "text-green-500 bg-transparent font-bold";
-        // return "bg-green-500 text-black";
+            // return "text-green-500 bg-transparent font-bold";
+            return "bg-green-400 text-black";
         case "neutral":
-            return "text-yellow-500 bg-transparent font-bold";
-        // return "bg-yellow-500 text-black";
+            // return "text-yellow-500 bg-transparent font-bold";
+            return "bg-yellow-400 text-black";
         case "bad":
-            return "text-red-500 bg-transparent font-bold";
-        // return "bg-red-500 text-white";
+            // return "text-red-500 bg-transparent font-bold";
+            return "bg-red-600 text-white";
         default:
             return "bg-gray-500 text-foreground";
     }

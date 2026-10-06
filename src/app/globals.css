@@ -531,6 +531,19 @@
   html {
     @apply font-sans;
   }
+
+  /* Hide page content the instant a popstate happens */
+  html.pop-loading [data-page-content] {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: none !important; /* no fade – we want it gone immediately */
+  }
+
+  /* Optional: keep the layout from jumping while content is invisible */
+  html.pop-loading [data-page-content] * {
+    pointer-events: none !important;
+  }
+
   :root {
     --font-heading: var(--font-source-code-pro);
     --font-body: var(--font-source-serif-4);

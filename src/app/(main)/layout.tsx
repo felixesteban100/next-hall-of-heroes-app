@@ -11,7 +11,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <Navbar />
             </Suspense>
 
-            <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6">
+            <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6" data-page-content>
                 {children}
             </main>
         </div>
