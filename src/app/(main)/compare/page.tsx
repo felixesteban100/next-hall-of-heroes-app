@@ -9,6 +9,11 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { Progress } from "@/components/ui/progress";
+import { MatchVerdict } from "@/components/compare/MatchVerditct";
+import { computeMatchScore, hasNemesisLink, radarData } from "@/lib/compare_utls";
+import { StatsRadar } from "@/components/compare/StatRadar";
+import { SparPanel } from "@/components/compare/StarPanel";
 
 export const instant = false;
 
@@ -19,20 +24,44 @@ type SearchParamsPromise = Promise<{
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
-    const entityAIdValue = params.id1 ? parseInt(params.id1) : 70;
-    const entityBIdValue = params.id2 ? parseInt(params.id2) : 777;
 
-    const [[entityA], [entityB]] = await Promise.all([
-        collectionCharacters
-            .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-                joinTeam_universe_power_enemies_toCharacter({ id: entityAIdValue }, "id", "desc", 0, 1, { includeEnemies: true })
-            )
-            .toArray(),
-        collectionCharacters
-            .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-                joinTeam_universe_power_enemies_toCharacter({ id: entityBIdValue }, "id", "desc", 0, 1, { includeEnemies: true })
-            )
-            .toArray(),
+    const entityAIdValue = params.id1 ? Number.parseInt(params.id1, 10) : null;
+    const entityBIdValue = params.id2 ? Number.parseInt(params.id2, 10) : null;
+
+    const hasA = entityAIdValue != null && !Number.isNaN(entityAIdValue);
+    const hasB = entityBIdValue != null && !Number.isNaN(entityBIdValue);
+
+    const [entityA, entityB] = await Promise.all([
+        hasA
+            ? collectionCharacters
+                .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+                    joinTeam_universe_power_enemies_toCharacter(
+                        { id: entityAIdValue! },
+                        "id",
+                        "desc",
+                        0,
+                        1,
+                        { includeEnemies: true }
+                    )
+                )
+                .toArray()
+                .then((rows) => rows[0] ?? null)
+            : Promise.resolve(null),
+        hasB
+            ? collectionCharacters
+                .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+                    joinTeam_universe_power_enemies_toCharacter(
+                        { id: entityBIdValue! },
+                        "id",
+                        "desc",
+                        0,
+                        1,
+                        { includeEnemies: true }
+                    )
+                )
+                .toArray()
+                .then((rows) => rows[0] ?? null)
+            : Promise.resolve(null),
     ]);
 
     // Helper to extract team names from groupAffiliation array
@@ -60,20 +89,22 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         return pub.name || pub.value || "N/A";
     };
 
-    if (!entityA || !entityB) {
-        return (
-            <div className="max-w-5xl mx-auto mt-10 p-4 bg-card border border-muted-foreground/20 rounded-xl text-center">
-                <h2 className="text-lg font-bold text-foreground mb-2">Character Not Found</h2>
-                <p className="text-muted-foreground">One or both of the characters you are trying to compare could not be found.</p>
-            </div>
-        );
-    }
+    const TierIconA = entityA
+        ? CHARACTER_TIER_ICON[entityA.tier as keyof typeof CHARACTER_TIER_ICON]
+        : null;
+    const TierIconB = entityB
+        ? CHARACTER_TIER_ICON[entityB.tier as keyof typeof CHARACTER_TIER_ICON]
+        : null;
 
-    const TierIconA = CHARACTER_TIER_ICON[entityA.tier as keyof typeof CHARACTER_TIER_ICON];
-    const TierIconB = CHARACTER_TIER_ICON[entityB.tier as keyof typeof CHARACTER_TIER_ICON];
+    const ClassIconA = entityA ? CHARACTER_CLASS_ICON[entityA.class as keyof typeof CHARACTER_CLASS_ICON] : null;
+    const ClassIconB = entityB ? CHARACTER_CLASS_ICON[entityB.class as keyof typeof CHARACTER_CLASS_ICON] : null;
 
-    const ClassIconA = CHARACTER_CLASS_ICON[entityA.class as keyof typeof CHARACTER_CLASS_ICON];
-    const ClassIconB = CHARACTER_CLASS_ICON[entityB.class as keyof typeof CHARACTER_CLASS_ICON];
+    // after entityA / entityB resolved:
+    const scoreA = computeMatchScore(entityA);
+    const scoreB = computeMatchScore(entityB);
+    const isNemesis =
+        !!entityA && !!entityB && hasNemesisLink(entityA, entityB);
+    const radar = radarData(entityA, entityB);
 
     return (
         <div className="space-y-4 mt-4">
@@ -83,84 +114,69 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             {/* Selector Section */}
             <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-10 overflow-visible">
                 <SelectorCard
-                    key={entityA.id}
+                    key={entityA?.id ?? "empty-a"}
                     title="Entity A"
                     selected={entityA}
-                    otherSelectedId={entityBIdValue}
+                    otherSelectedId={entityBIdValue ?? undefined}
                     paramKey="id1"
                     variant="primary"
                 />
-
                 <div className="flex justify-center items-center">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-background font-black text-xl ">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-background font-black text-xl">
                         VS
                     </div>
                 </div>
-
                 <SelectorCard
-                    key={entityB.id}
+                    key={entityB?.id ?? "empty-b"}
                     title="Entity B"
                     selected={entityB}
-                    otherSelectedId={entityAIdValue}
+                    otherSelectedId={entityAIdValue ?? undefined}
                     paramKey="id2"
                     variant="secondary"
                 />
             </section>
 
-            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-2">
+            <div className="max-w-5xl mx-auto space-y-4 mb-4">
+                <MatchVerdict
+                    nameA={entityA?.name}
+                    nameB={entityB?.name}
+                    scoreA={scoreA}
+                    scoreB={scoreB}
+                    isNemesis={isNemesis}
+                />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-muted-foreground/20 bg-card p-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                            Combat radar
+                        </h3>
+                        <StatsRadar
+                            data={radar}
+                            nameA={entityA?.name}
+                            nameB={entityB?.name}
+                            showA={!!entityA}
+                            showB={!!entityB}
+                        />
+                    </div>
+                    <SparPanel
+                        scoreA={scoreA?.overall ?? null}
+                        scoreB={scoreB?.overall ?? null}
+                        nameA={entityA?.name}
+                        nameB={entityB?.name}
+                    />
+                </div>
+            </div>
+
+            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-14 overflow-x-hidden">
                 {/* Entity Profile Header with Avatar Images */} {/* Sticky Banner Row */}
-                <div className="sticky top-0 z-20 grid grid-cols-[120px_1fr_1fr] sm:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold transition-all">
-                    <div className="p-4 text-foreground text-sm uppercase tracking-wider flex items-center justify-center">
+                <div className="sticky top-0 z-20 grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
+                    <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
                         Entity Profile
                     </div>
-
-                    <div className="p-4 border-l border-muted-foreground/20 flex flex-col items-center gap-2">
-                        <ViewTransition name={`character-${entityA.id}`}>
-                            <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-lg overflow-hidden border-2 border-primary shadow-md bg-card">
-                                <Image
-                                    src={entityA.images?.md}
-                                    alt={entityA.name}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                            </div>
-                        </ViewTransition>
-                        <span className="text-primary text-base sm:text-lg">{entityA.name}</span>
-                        <span className="text-xs text-muted-foreground italic">
-                            {entityA.biography?.fullName || "N/A"}
-                        </span>
-                        <LoadingLink href={`/characters/${entityA.id}`} className="mt-1">
-                            <span className="text-xs text-muted-foreground underline hover:text-primary transition-colors">
-                                View Profile
-                            </span>
-                        </LoadingLink>
-                    </div>
-
-                    <div className="p-4 border-l border-muted-foreground/20 flex flex-col items-center gap-2">
-                        <ViewTransition name={`character-${entityB.id}`}>
-                            <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-lg overflow-hidden border-2 border-secondary shadow-md bg-card">
-                                <Image
-                                    src={entityB.images?.md}
-                                    alt={entityB.name}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                            </div>
-                        </ViewTransition>
-
-                        <span className="text-secondary text-base sm:text-lg">{entityB.name}</span>
-                        <span className="text-xs text-muted-foreground italic">
-                            {entityB.biography?.fullName || "N/A"}
-                        </span>
-                        <LoadingLink href={`/characters/${entityB.id}`} className="mt-1">
-                            <span className="text-xs text-muted-foreground underline hover:text-primary transition-colors">
-                                View Profile
-                            </span>
-                        </LoadingLink>
-                    </div>
+                    <ProfileSlot entity={entityA} variant="primary" />
+                    <ProfileSlot entity={entityB} variant="secondary" />
                 </div>
+
 
                 {/* SECTION: GENERAL & BIOGRAPHY */}
                 <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20">
@@ -168,76 +184,162 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
 
                 <Row label="Publisher">
-                    <Cell>
-                        <div className="flex flex-col justify-center items-center gap-1">
-                            <Image
-                                src={entityA.biography?.publisher?.logo || "/placeholder.png"}
-                                alt={entityA.biography?.publisher?.name}
-                                width={500}
-                                height={500}
-                                className="h-20 w-auto object-contain"
-                            />
-                            <span className="text-sm font-medium">{getPublisher(entityA.biography?.publisher.name)}</span>
-                        </div>
-                    </Cell>
-                    <Cell>
-                        <div className="flex flex-col justify-center items-center gap-1">
-                            <Image
-                                src={entityB.biography?.publisher?.logo || "/placeholder.png"}
-                                alt={entityB.biography?.publisher?.name}
-                                width={500}
-                                height={500}
-                                className="h-20 w-auto object-contain"
-                            />
-                            <span className="text-sm font-medium">{getPublisher(entityB.biography?.publisher.name)}</span>
-                        </div>
-                    </Cell>
+                    {entityA ? (
+                        <Cell>
+                            <div className="flex flex-col justify-center items-center gap-1">
+                                <Image
+                                    src={entityA.biography?.publisher?.logo || "/placeholder.png"}
+                                    alt={entityA.biography?.publisher?.name || ""}
+                                    width={500}
+                                    height={500}
+                                    className="h-20 w-auto object-contain"
+                                />
+                                <span className="text-sm font-medium">
+                                    {getPublisher(entityA.biography?.publisher)}
+                                </span>
+                            </div>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>
+                            <Cell>
+                                <div className="flex flex-col justify-center items-center gap-1">
+                                    <Image
+                                        src={entityB.biography?.publisher?.logo || "/placeholder.png"}
+                                        alt={entityB.biography?.publisher?.name || ""}
+                                        width={500}
+                                        height={500}
+                                        className="h-20 w-auto object-contain"
+                                    />
+                                    <span className="text-sm font-medium">
+                                        {getPublisher(entityB.biography?.publisher)}
+                                    </span>
+                                </div>
+                            </Cell>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Tier">
-                    <Cell className={`${CHARACTER_TIER_COLOR[entityA.tier as keyof typeof CHARACTER_TIER_COLOR].text} font-bold flex gap-2 items-center justify-center`}>
-                        <TierIconA />
-                        {CHARACTER_TIER[entityA.tier as keyof typeof CHARACTER_TIER] || "N/A"}
-                    </Cell>
-                    <Cell className={`${CHARACTER_TIER_COLOR[entityB.tier as keyof typeof CHARACTER_TIER_COLOR].text} font-bold flex gap-2 items-center justify-center`}>
-                        <TierIconB />
-                        {CHARACTER_TIER[entityB.tier as keyof typeof CHARACTER_TIER] || "N/A"}
-                    </Cell>
+                    {entityA && TierIconA ? (
+                        <Cell
+                            className={`${CHARACTER_TIER_COLOR[entityA.tier as keyof typeof CHARACTER_TIER_COLOR].text} font-bold`}
+                        >
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-1 sm:gap-2 min-w-0">
+                                <TierIconA className="size-3.5 sm:size-4 shrink-0" />
+                                <span className="text-[10px] leading-tight sm:text-xs md:text-sm text-center break-words max-w-full">
+                                    {CHARACTER_TIER[entityA.tier as keyof typeof CHARACTER_TIER] || "N/A"}
+                                </span>
+                            </div>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB && TierIconB ? (
+                        <Cell
+                            className={`${CHARACTER_TIER_COLOR[entityB.tier as keyof typeof CHARACTER_TIER_COLOR].text} font-bold`}
+                        >
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-1 sm:gap-2 min-w-0">
+                                <TierIconB className="size-3.5 sm:size-4 shrink-0" />
+                                <span className="text-[10px] leading-tight sm:text-xs md:text-sm text-center break-words max-w-full">
+                                    {CHARACTER_TIER[entityB.tier as keyof typeof CHARACTER_TIER] || "N/A"}
+                                </span>
+                            </div>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Class">
-                    <Cell className={`${CHARACTER_CLASS_COLOR[entityA.class as keyof typeof CHARACTER_CLASS_COLOR].text} font-bold flex gap-2 items-center justify-center`}>
-                        <ClassIconA />
-                        {CHARACTER_CLASS[entityA.class as keyof typeof CHARACTER_CLASS] || "N/A"}
-                    </Cell>
-                    <Cell className={`${CHARACTER_CLASS_COLOR[entityB.class as keyof typeof CHARACTER_CLASS_COLOR].text} font-bold flex gap-2 items-center justify-center`}>
-                        <ClassIconB />
-                        {CHARACTER_CLASS[entityB.class as keyof typeof CHARACTER_CLASS] || "N/A"}
-                    </Cell>
+                    {entityA && ClassIconA ? (
+                        <Cell
+                            className={`${CHARACTER_CLASS_COLOR[entityA.class as keyof typeof CHARACTER_CLASS_COLOR].text} font-bold`}
+                        >
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-1 sm:gap-2 min-w-0">
+                                <ClassIconA className="size-3.5 sm:size-4 shrink-0" />
+                                <span className="text-[10px] leading-tight sm:text-xs md:text-sm text-center break-words max-w-full">
+                                    {CHARACTER_CLASS[entityA.class as keyof typeof CHARACTER_CLASS] || "N/A"}
+                                </span>
+                            </div>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB && ClassIconB ? (
+                        <Cell
+                            className={`${CHARACTER_CLASS_COLOR[entityB.class as keyof typeof CHARACTER_CLASS_COLOR].text} font-bold`}
+                        >
+                            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-1 sm:gap-2 min-w-0">
+                                <ClassIconB className="size-3.5 sm:size-4 shrink-0" />
+                                <span className="text-[10px] leading-tight sm:text-xs md:text-sm text-center break-words max-w-full">
+                                    {CHARACTER_CLASS[entityB.class as keyof typeof CHARACTER_CLASS] || "N/A"}
+                                </span>
+                            </div>
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Alignment">
-                    <Cell className={(entityA.biography?.alignment) === "good" ? "text-green-400 font-bold capitalize" : (entityA.biography?.alignment) === "neutral" ? "text-yellow-400 font-bold capitalize" : "text-red-400 font-bold capitalize"}>
-                        {entityA.biography?.alignment || "N/A"}
-                    </Cell>
-                    <Cell className={(entityB.biography?.alignment) === "good" ? "text-green-400 font-bold capitalize" : (entityB.biography?.alignment) === "neutral" ? "text-yellow-400 font-bold capitalize" : "text-red-400 font-bold capitalize"}>
-                        {entityB.biography?.alignment || "N/A"}
-                    </Cell>
+                    {entityA ? (
+                        <Cell className={(entityA.biography?.alignment) === "good" ? "text-green-400 font-bold capitalize" : (entityA.biography?.alignment) === "neutral" ? "text-yellow-400 font-bold capitalize" : "text-red-400 font-bold capitalize"}>
+                            {entityA.biography?.alignment || "N/A"}
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell className={(entityB.biography?.alignment) === "good" ? "text-green-400 font-bold capitalize" : (entityB.biography?.alignment) === "neutral" ? "text-yellow-400 font-bold capitalize" : "text-red-400 font-bold capitalize"}>
+                            {entityB.biography?.alignment || "N/A"}
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Tier / Class">
-                    <Cell>Tier {entityA.tier ?? "N/A"} / Class {entityA.class ?? "N/A"}</Cell>
-                    <Cell>Tier {entityB.tier ?? "N/A"} / Class {entityB.class ?? "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>Tier {entityA.tier ?? "N/A"} / Class {entityA.class ?? "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>Tier {entityB.tier ?? "N/A"} / Class {entityB.class ?? "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="First Appearance">
-                    <Cell>{entityA.biography?.firstAppearance || "N/A"}</Cell>
-                    <Cell>{entityB.biography?.firstAppearance || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.biography?.firstAppearance || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.biography?.firstAppearance || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Place of Birth">
-                    <Cell>{entityA.biography?.placeOfBirth || "N/A"}</Cell>
-                    <Cell>{entityB.biography?.placeOfBirth || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.biography?.placeOfBirth || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.biography?.placeOfBirth || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 {/* SECTION: POWERSTATS */}
@@ -245,21 +347,41 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     Combat & Powerstats
                 </div>
 
-                {["intelligence", "strength", "speed", "durability", "power", "combat", "total"].map((statKey) => {
-                    const valA = entityA.powerstats?.[statKey as keyof typeof entityA.powerstats] ?? 0;
-                    const valB = entityB.powerstats?.[statKey as keyof typeof entityB.powerstats] ?? 0;
+                {["intelligence", "strength", "speed", "durability", "power", "combat", "total"].map(
+                    (statKey) => {
+                        const valA =
+                            entityA?.powerstats?.[statKey as keyof NonNullable<typeof entityA.powerstats>] ?? null;
+                        const valB =
+                            entityB?.powerstats?.[statKey as keyof NonNullable<typeof entityB.powerstats>] ?? null;
 
-                    return (
-                        <Row key={statKey} label={statKey.toUpperCase()}>
-                            <Cell>
-                                <StatBar value={valA} colorClass="bg-primary" />
-                            </Cell>
-                            <Cell>
-                                <StatBar value={valB} colorClass="bg-secondary" />
-                            </Cell>
-                        </Row>
-                    );
-                })}
+                        return (
+                            <Row key={statKey} label={statKey.toUpperCase()}>
+                                {valA != null ? (
+                                    <Cell className="flex gap-2">
+                                        {valA}
+                                        <Progress
+                                            value={valA > 100 ? 100 : valA}
+                                            indicatorClassName="bg-primary"
+                                        />
+                                    </Cell>
+                                ) : (
+                                    <EmptyCell />
+                                )}
+                                {valB != null ? (
+                                    <Cell className="flex gap-2">
+                                        {valB}
+                                        <Progress
+                                            value={valB > 100 ? 100 : valB}
+                                            indicatorClassName="bg-secondary"
+                                        />
+                                    </Cell>
+                                ) : (
+                                    <EmptyCell />
+                                )}
+                            </Row>
+                        );
+                    }
+                )}
 
                 {/* SECTION: PHYSICAL APPEARANCE */}
                 <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20">
@@ -267,28 +389,68 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
 
                 <Row label="Race">
-                    <Cell>{entityA.appearance?.race || "N/A"}</Cell>
-                    <Cell>{entityB.appearance?.race || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.race || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.race || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Gender">
-                    <Cell>{entityA.appearance?.gender || "N/A"}</Cell>
-                    <Cell>{entityB.appearance?.gender || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.gender || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.gender || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Height">
-                    <Cell>{entityA.appearance?.height?.join(" / ") || "N/A"}</Cell>
-                    <Cell>{entityB.appearance?.height?.join(" / ") || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.height?.join(" / ") || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.height?.join(" / ") || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Weight">
-                    <Cell>{entityA.appearance?.weight?.join(" / ") || "N/A"}</Cell>
-                    <Cell>{entityB.appearance?.weight?.join(" / ") || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.weight?.join(" / ") || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.weight?.join(" / ") || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Eyes / Hair">
-                    <Cell>{entityA.appearance?.eyeColor || "N/A"} / {entityA.appearance?.hairColor || "N/A"}</Cell>
-                    <Cell>{entityB.appearance?.eyeColor || "N/A"} / {entityB.appearance?.hairColor || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.eyeColor || "N/A"} / {entityA.appearance?.hairColor || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.eyeColor || "N/A"} / {entityB.appearance?.hairColor || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 {/* SECTION: WORK & BASE */}
@@ -297,13 +459,29 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
 
                 <Row label="Occupation">
-                    <Cell>{entityA.work?.occupation || "N/A"}</Cell>
-                    <Cell>{entityB.work?.occupation || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.work?.occupation || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.work?.occupation || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Base of Operations">
-                    <Cell>{entityA.work?.base || "N/A"}</Cell>
-                    <Cell>{entityB.work?.base || "N/A"}</Cell>
+                    {entityA ? (
+                        <Cell>{entityA.work?.base || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.work?.base || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 {/* SECTION: ABILITIES, TEAMS & ENEMIES */}
@@ -312,40 +490,98 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
 
                 <Row label="Special Powers">
-                    <Cell>
-                        <PillList items={getPowerNames(entityA.powers)} variant="primary" />
-                    </Cell>
-                    <Cell>
-                        <PillList items={getPowerNames(entityB.powers)} variant="secondary" />
-                    </Cell>
+                    {entityA ? (
+                        <Cell>
+                            <PillList items={getPowerNames(entityA.powers)} variant="primary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>
+                            <PillList items={getPowerNames(entityB.powers)} variant="secondary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Weaknesses">
-                    <Cell>
-                        <PillList items={entityA.weaknesses || []} variant="primary" />
-                    </Cell>
-                    <Cell>
-                        <PillList items={entityB.weaknesses || []} variant="secondary" />
-                    </Cell>
+                    {entityA ? (
+                        <Cell>
+                            <PillList items={entityA.weaknesses || []} variant="primary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>
+                            <PillList items={entityB.weaknesses || []} variant="secondary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+
+
                 </Row>
 
                 <Row label="Teams & Affiliations">
-                    <Cell>
-                        <PillList items={getTeamNames(entityA.connections?.groupAffiliation)} variant="primary" />
-                    </Cell>
-                    <Cell>
-                        <PillList items={getTeamNames(entityB.connections?.groupAffiliation)} variant="secondary" />
-                    </Cell>
+                    {entityA ? (
+                        <Cell>
+                            <PillList items={getTeamNames(entityA.connections?.groupAffiliation)} variant="primary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>
+                            <PillList items={getTeamNames(entityB.connections?.groupAffiliation)} variant="secondary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
 
                 <Row label="Primary Enemies">
-                    <Cell>
-                        <PillList items={getEnemyNames(entityA.connections?.enemies)} variant="primary" />
-                    </Cell>
-                    <Cell>
-                        <PillList items={getEnemyNames(entityB.connections?.enemies)} variant="secondary" />
-                    </Cell>
+                    {entityA ? (
+                        <Cell>
+                            <PillList items={getEnemyNames(entityA.connections?.enemies)} variant="primary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>
+                            <PillList items={getEnemyNames(entityB.connections?.enemies)} variant="secondary" />
+                        </Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
                 </Row>
+
+                <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20">
+                    Match score breakdown
+                </div>
+                {(
+                    [
+                        ["Combat stats", scoreA?.combat, scoreB?.combat],
+                        ["Tier", scoreA?.tier, scoreB?.tier],
+                        ["Class", scoreA?.class, scoreB?.class],
+                        ["Powers", scoreA?.powers, scoreB?.powers],
+                        ["Threat context", scoreA?.threat, scoreB?.threat],
+                        ["Weakness penalty", scoreA?.weaknessPenalty, scoreB?.weaknessPenalty],
+                        ["Overall", scoreA?.overall, scoreB?.overall],
+                    ] as const
+                ).map(([label, a, b]) => (
+                    <Row key={label} label={label}>
+                        <Cell className={a != null && b != null && a > b ? "text-primary font-bold" : ""}>
+                            {a != null ? (label.includes("penalty") ? `−${a}` : a) : "—"}
+                        </Cell>
+                        <Cell className={a != null && b != null && b > a ? "text-secondary font-bold" : ""}>
+                            {b != null ? (label.includes("penalty") ? `−${b}` : b) : "—"}
+                        </Cell>
+                    </Row>
+                ))}
             </main>
             {/* </Suspense> */}
         </div>
@@ -354,8 +590,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className="grid grid-cols-[120px_1fr_1fr] sm:grid-cols-[200px_1fr_1fr] border-b border-muted-foreground/20 last:border-b-0 hover:bg-muted-foreground/10 transition-colors">
-            <div className="p-3 sm:p-4 text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
+        <div className="grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] border-b border-muted-foreground/20 last:border-b-0 hover:bg-muted-foreground/10 transition-colors">
+            <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
                 {label}
             </div>
             {children}
@@ -363,10 +599,81 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     );
 }
 
-function Cell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Cell({
+    children,
+    className = "",
+}: {
+    children: React.ReactNode;
+    className?: string;
+}) {
     return (
-        <div className={`p-3 sm:p-4 text-center border-r border-muted-foreground/20 last:border-r-0 flex items-center justify-center text-sm sm:text-base ${className}`}>
+        <div
+            className={`min-w-0 p-2 sm:p-3 md:p-4 text-center border-r border-muted-foreground/20 last:border-r-0 flex items-center justify-center text-xs sm:text-sm md:text-base ${className}`}
+        >
             {children}
+        </div>
+    );
+}
+
+function EmptyCell({ className = "" }: { className?: string }) {
+    return (
+        <Cell className={`text-muted-foreground/50 ${className}`}>
+            —
+        </Cell>
+    );
+}
+
+function ProfileSlot({
+    entity,
+    variant,
+}: {
+    entity: CharacterWithJoinTeamUniversePowerEnemies | null;
+    variant: "primary" | "secondary";
+}) {
+    const border =
+        variant === "primary" ? "border-primary" : "border-secondary";
+    const nameColor =
+        variant === "primary" ? "text-primary" : "text-secondary";
+
+    if (!entity) {
+        return (
+            <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-2 text-muted-foreground/60">
+                <div
+                    className={`relative w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg border-2 border-dashed ${border} opacity-40 bg-muted/30`}
+                />
+                <span className="text-xs sm:text-sm">Select a character</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+            <ViewTransition name={`character-${entity.id}`}>
+                <div
+                    className={`relative w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-lg overflow-hidden border-2 ${border} shadow-md bg-card shrink-0`}
+                >
+                    <Image
+                        src={entity.images?.md}
+                        alt={entity.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                    />
+                </div>
+            </ViewTransition>
+            <span
+                className={`${nameColor} text-xs sm:text-base md:text-lg text-center break-words max-w-full`}
+            >
+                {entity.name}
+            </span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground italic text-center break-words max-w-full">
+                {entity.biography?.fullName || "N/A"}
+            </span>
+            <LoadingLink href={`/characters/${entity.id}`} className="mt-0.5">
+                <span className="text-[10px] sm:text-xs text-muted-foreground underline hover:text-primary transition-colors">
+                    View Profile
+                </span>
+            </LoadingLink>
         </div>
     );
 }

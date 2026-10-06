@@ -24,7 +24,7 @@ interface CharacterComboboxProps {
     selectedId: number;
     selectedName: string;
     selectedSlug: string;
-    excludeId: number;
+    excludeId?: number;
 }
 
 export function CharacterCombobox({
@@ -95,7 +95,10 @@ export function CharacterCombobox({
     };
 
     // What the user sees in the input
-    const displayValue = inputText !== null ? inputText : selectedName;
+    const displayValue =
+        inputText !== null
+            ? inputText              // user is editing → show what they type
+            : selectedName || "";    // idle → name if selected, else ""
 
     return (
         <Combobox
@@ -116,7 +119,10 @@ export function CharacterCombobox({
                 value={displayValue}
                 onChange={(e) => setInputText(e.target.value)}
                 onFocus={() => {
-                    if (inputText === null) setInputText(selectedName);
+                    // Only prefill with the name if there is one
+                    if (inputText === null) {
+                        setInputText(selectedName || "");
+                    }
                 }}
                 onBlur={() => {
                     requestAnimationFrame(() => setInputText(null));

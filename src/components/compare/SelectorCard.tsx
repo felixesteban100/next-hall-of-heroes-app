@@ -6,8 +6,8 @@ import { CharacterCombobox } from "./CharacterCombobox";
 
 interface SelectorCardProps {
     title: string;
-    selected: CharacterWithJoinTeamUniversePowerEnemies;
-    otherSelectedId: number;
+    selected: CharacterWithJoinTeamUniversePowerEnemies | null;
+    otherSelectedId?: number;
     paramKey: "id1" | "id2";
     variant: "primary" | "secondary";
 }
@@ -15,14 +15,26 @@ interface SelectorCardProps {
 export async function SelectorCard({ title, selected, otherSelectedId, paramKey, variant }: SelectorCardProps) {
     const headingColor = variant === "primary" ? "text-primary" : "text-secondary";
 
-    console.log(otherSelectedId)
-
     // Fetch lightweight index options for the combobox
     const characterOptions = await collectionCharacters
-        .find({ id: { $ne: otherSelectedId } })
-        .project<{ id: number; name: string; slug: string }>({ _id: 0, id: 1, name: 1, slug: 1 })
-        .sort({ name: 1 })
-        .limit(10)
+        .aggregate<{ id: number; name: string; slug: string }>([
+            {
+                $match: {
+                    ...(otherSelectedId != null
+                        ? { id: { $ne: Number(otherSelectedId) } }
+                        : {}),
+                },
+            },
+            { $sample: { size: 10 } },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    name: 1,
+                    slug: 1,
+                },
+            },
+        ])
         .toArray();
 
     return (
@@ -47,10 +59,10 @@ export async function SelectorCard({ title, selected, otherSelectedId, paramKey,
                     <CharacterCombobox
                         paramKey={paramKey}
                         initialOptions={characterOptions}
-                        selectedId={selected.id}
-                        selectedName={selected.name}
-                        selectedSlug={selected.slug}
-                        excludeId={otherSelectedId}
+                        selectedId={selected?.id ?? 0} // or make selectedId optional
+                        selectedName={selected?.name ?? ""}
+                        selectedSlug={selected?.slug ?? ""}
+                        excludeId={otherSelectedId} // only pass if defined
                     />
                 </div>
             </div>

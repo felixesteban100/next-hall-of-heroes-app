@@ -338,3 +338,41 @@ export const CHARACTER_TYPE_COLOR = {
         foreground: "text-white dark:text-white",
     },
 } as const;
+
+/** Character tier → contribution (matches CHARACTER_TIER) */
+export const TIER_SCORE: Record<number, number> = {
+    0: 5,   // Unranked
+    1: 20,  // Street level
+    2: 40,  // Skilled / Enhanced
+    3: 60,  // Superhuman
+    4: 80,  // Powerhouse
+    5: 100, // Cosmic / World-ending
+};
+
+/**
+ * Class is origin/style, not raw power — keep the spread tighter
+ * so Cosmic class doesn't auto-beat a Powerhouse mutant.
+ */
+export const CLASS_SCORE: Record<number, number> = {
+    0: 10, // Unassigned
+    1: 55, // Mutant/Powered
+    2: 45, // Tech/Gadget-based
+    3: 50, // Trained Discipline / Mystic Arts
+    4: 35, // Skill/Peak Human
+    5: 70, // Cosmic/God-tier
+};
+
+/** Power ability tier → multiplier / points (matches POWER_TIER 0–10) */
+export const POWER_TIER_SCORE: Record<number, number> = {
+    0: 5,   // Unrated
+    1: 12,  // Minor / Latent
+    2: 22,  // Tactical / Basic
+    3: 35,  // Enhanced / Substantial
+    4: 48,  // Advanced / Potent
+    5: 60,  // High Tier / Disaster
+    6: 72,  // Supreme / Calamity
+    7: 82,  // Planetary / World Breaker
+    8: 90,  // Stellar / Cosmic
+    9: 96,  // Universal / Transcendent
+    10: 100, // Absolute / Omnipotent
+};
