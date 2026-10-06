@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Shield, ShieldAlert, ShieldCheck, Globe, User, Zap, LucideIcon } from "lucide-react";
 import { ViewTransition } from "react";
 import { LoadingLink } from "./LoadingLink";
@@ -145,8 +144,7 @@ export function MiniEntityGrid({
 
                 return (
                     <ViewTransition key={item.id} name={`${entityType}-${item.id}`}>
-                        <LoadingLink
-                            href={getHref(item)}
+                        <div
                             className={`group relative flex flex-col items-center justify-between h-28 p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
                                 ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
                                 : theme.border
@@ -182,32 +180,33 @@ export function MiniEntityGrid({
                             </div>
 
                             {/* Text Container */}
-                            <div className="flex flex-col items-center justify-center w-full">
-                                <span
-                                    className={`text-xs font-bold line-clamp-1 transition-colors text-foreground ${entityType === "power" && !item.alignment
-                                        ? "group-hover:text-primary"
-                                        : theme.text
-                                        }`}
-                                    title={item.name}
-                                >
-                                    {item.name}
-                                </span>
-
-                                <span className="text-[10px] text-muted-foreground font-mono line-clamp-1">
-                                    {displaySubtext}
-                                </span>
-                                {/* NEW: Compare link – only when we have a current character to compare against */}
-                                {compareWithId && entityType === "character" && (
-                                    <LoadingLink
-                                        href={`/compare/${compareWithId}/${item.id}`}   // ← adjust path to whatever you use
-                                        onClick={(e) => e.stopPropagation()}            // prevents the parent LoadingLink from firing
-                                        className="mt-0.5 text-[9px] font-medium text-muted-foreground hover:text-primary transition-colors"
+                            <LoadingLink href={getHref(item)}>
+                                <div className="flex flex-col items-center justify-center w-full">
+                                    <span
+                                        className={`text-xs font-bold line-clamp-1 transition-colors text-foreground hover:underline ${entityType === "power" && !item.alignment
+                                            ? "group-hover:text-primary"
+                                            : theme.text
+                                            }`}
+                                        title={item.name}
                                     >
-                                        Compare
-                                    </LoadingLink>
-                                )}
-                            </div>
-                        </LoadingLink>
+                                        {item.name}
+                                    </span>
+
+                                    <span className="text-[10px] text-muted-foreground font-mono line-clamp-1">
+                                        {displaySubtext}
+                                    </span>
+                                </div>
+                            </LoadingLink>
+                            {/* NEW: Compare link – only when we have a current character to compare against */}
+                            {compareWithId && entityType === "character" && (
+                                <LoadingLink
+                                    href={`/compare?id1=${compareWithId}&id2=${item.id}`}   // ← adjust path to whatever you use
+                                    className={`mt-0.5 text-xs font-medium text-muted-foreground ${theme.text} hover:underline transition-colors`}
+                                >
+                                    Compare
+                                </LoadingLink>
+                            )}
+                        </div>
                     </ViewTransition>
                 );
             })}

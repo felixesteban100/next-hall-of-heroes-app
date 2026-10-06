@@ -265,21 +265,45 @@ export function buildTeamsLookup() {
 
 // 4. Enemies Lookup Stage
 export function buildEnemiesLookup() {
+    // Helper expression that turns publisher (string | object | null) into a trimmed lowercase string
+    const publisherToString = (fieldPath: string) => ({
+        $toLower: {
+            $trim: {
+                input: {
+                    $let: {
+                        vars: { pub: { $ifNull: [fieldPath, null] } },
+                        in: {
+                            $cond: {
+                                if: { $eq: [{ $type: "$$pub" }, "string"] },
+                                then: "$$pub",
+                                else: {
+                                    $ifNull: [
+                                        "$$pub.name",
+                                        { $ifNull: ["$$pub.value", ""] }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     return [
         {
             $lookup: {
                 from: "characters",
                 let: {
                     enemies: { $ifNull: ["$connections.enemies", []] },
-                    // Pass the parent document's publisher into the lookup
-                    parentPublisher: { $ifNull: ["$biography.publisher", null] }
+                    parentPublisher: publisherToString("$biography.publisher")
                 },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
                                 $or: [
-                                    // 1. Match by ID (type-coerced to string)
+                                    // 1. Match by ID (string-coerced)
                                     {
                                         $in: [
                                             { $toString: "$id" },
@@ -293,25 +317,37 @@ export function buildEnemiesLookup() {
                                         ]
                                     },
 
-                                    // 2. Match by name (case-insensitive) AND same publisher
+                                    // 2. Match by name (case-insensitive + trimmed)
+                                    //    + same publisher (works for both string and object shapes)
                                     {
                                         $and: [
                                             {
                                                 $in: [
-                                                    { $toLower: { $ifNull: ["$name", ""] } },
+                                                    {
+                                                        $toLower: {
+                                                            $trim: {
+                                                                input: { $ifNull: ["$name", ""] }
+                                                            }
+                                                        }
+                                                    },
                                                     {
                                                         $map: {
                                                             input: "$$enemies",
                                                             as: "e",
-                                                            in: { $toLower: { $toString: "$$e" } }
+                                                            in: {
+                                                                $toLower: {
+                                                                    $trim: {
+                                                                        input: { $toString: "$$e" }  // $toString is safe
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 ]
                                             },
-                                            // Same publisher (handles null safely)
                                             {
                                                 $eq: [
-                                                    { $ifNull: ["$biography.publisher", null] },
+                                                    publisherToString("$biography.publisher"),
                                                     "$$parentPublisher"
                                                 ]
                                             }
@@ -321,7 +357,6 @@ export function buildEnemiesLookup() {
                             }
                         }
                     },
-                    // Project only the fields you need
                     {
                         $project: {
                             _id: 0,
@@ -329,7 +364,6 @@ export function buildEnemiesLookup() {
                             name: 1,
                             image: "$images.md",
                             alignment: "$biography.alignment"
-                            // add publisher: "$biography.publisher" if you want it in the result
                         }
                     }
                 ],
@@ -350,7 +384,7 @@ export function buildEnemiesLookup() {
                                         cond: {
                                             $not: {
                                                 $or: [
-                                                    // Already resolved by ID
+                                                    // already resolved by ID
                                                     {
                                                         $in: [
                                                             { $toString: "$$e" },
@@ -363,15 +397,25 @@ export function buildEnemiesLookup() {
                                                             }
                                                         ]
                                                     },
-                                                    // Already resolved by name
+                                                    // already resolved by name
                                                     {
                                                         $in: [
-                                                            { $toLower: { $toString: "$$e" } },
+                                                            {
+                                                                $toLower: {
+                                                                    $trim: { input: { $toString: "$$e" } }
+                                                                }
+                                                            },
                                                             {
                                                                 $map: {
                                                                     input: "$resolvedEnemies",
                                                                     as: "r",
-                                                                    in: { $toLower: { $ifNull: ["$$r.name", ""] } }
+                                                                    in: {
+                                                                        $toLower: {
+                                                                            $trim: {
+                                                                                input: { $ifNull: ["$$r.name", ""] }
+                                                                            }
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         ]

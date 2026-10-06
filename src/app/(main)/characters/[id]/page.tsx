@@ -9,13 +9,13 @@ import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, POWER_TIER } from "@/lib/constants";
-import { Character, CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Power, Team } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Power, Team } from "@/types";
 
 import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIcon, MapPinIcon, Paperclip, Shield, ShieldOff, Swords, Users, Zap, Percent, ScanFace } from "lucide-react";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { sanitize } from "@/lib/utils";
+import { computeMatchScore } from "@/lib/compare_utls";
 
 export const instant = false;
 
@@ -83,6 +83,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
         { icon: ShieldOff, label: "Weaknesses", val: character.weaknesses?.length ? character.weaknesses.join(", ") : "An unknown weakness" },
         { icon: Paperclip, label: "Origin", val: val(biography.origin, "An unknown origin") },
     ];
+
+    const characterScore = computeMatchScore(character)
 
     // Powers
     const externalPowers = character.powers.filter(
@@ -169,7 +171,6 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* Powerstats */}
-            {/* Powerstats JSX rendering */}
             <div id="powerstats" className="space-y-2">
                 <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
@@ -225,6 +226,17 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                 />
             </div>
 
+            {/* Scores */}
+            {characterScore && <div id={"Scores"} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
+                {Object.entries(characterScore).map(([key, value]) => (
+                    <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
+                        <span className="font-light capitalize">{key}: {value}</span>
+                        <Progress value={value} />
+                    </div>
+                ))}
+            </div>}
+
             {/* Groups & Affiliations */}
             <div id={"Groups & Affiliations"} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Groups & Affiliations</p>
@@ -251,6 +263,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     }))}
                     externalNames={externalEnemies.map(c => c.name)}
                     emptyMessage="No enemies found."
+                    compareWithId={character.id}
                 />
             </div>
 

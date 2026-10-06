@@ -111,7 +111,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
             {/* <Suspense fallback={<div className="text-center text-muted-foreground">Loading comparison...</div>}> */}
             {/* Selector Section */}
-            <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-10 overflow-visible">
+            <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-4 overflow-visible">
                 <SelectorCard
                     key={entityA?.id ?? "empty-a"}
                     title="Character A"
@@ -360,7 +360,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                                         {valA}
                                         <Progress
                                             value={valA > 100 ? 100 : valA}
-                                            indicatorClassName="bg-primary"
+                                            indicatorClassName="bg-primary rotate-180"
                                         />
                                     </Cell>
                                 ) : (
@@ -368,11 +368,12 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                                 )}
                                 {valB != null ? (
                                     <Cell className="flex gap-2">
-                                        {valB}
                                         <Progress
                                             value={valB > 100 ? 100 : valB}
                                             indicatorClassName="bg-secondary"
                                         />
+                                        {valB}
+
                                     </Cell>
                                 ) : (
                                     <EmptyCell />
@@ -573,10 +574,18 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     ] as const
                 ).map(([label, a, b]) => (
                     <Row key={label} label={label}>
-                        <Cell className={a != null && b != null && a > b ? "text-primary font-bold" : ""}>
+                        <Cell className={`${a != null && b != null && a > b ? "text-primary font-bold" : ""} flex gap-2`}>
                             {a != null ? (label.includes("penalty") ? `−${a}` : a) : "—"}
+                            <Progress
+                                value={a! > 100 ? 100 : a}
+                                indicatorClassName="bg-primary rotate-180"
+                            />
                         </Cell>
-                        <Cell className={a != null && b != null && b > a ? "text-secondary font-bold" : ""}>
+                        <Cell className={`${a != null && b != null && b > a ? "text-secondary font-bold" : ""} flex gap-2`}>
+                            <Progress
+                                value={b! > 100 ? 100 : b}
+                                indicatorClassName="bg-primary "
+                            />
                             {b != null ? (label.includes("penalty") ? `−${b}` : b) : "—"}
                         </Cell>
                     </Row>
