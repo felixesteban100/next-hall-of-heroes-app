@@ -22,9 +22,6 @@ export default function TeamCard({ team, size }: TeamCardProps) {
                 />
             </ViewTransition>
             <CardHeader>
-                {/* <CardAction>
-                    <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={CharacterAlignmentText(character.biography.alignment)} color={CharacterAlignmentColor(character.biography.alignment)} />
-                </CardAction> */}
                 <CardTitle className="text-lg font-bold flex items-center justify-between gap-2 min-w-0">
                     <span className="truncate" title={team.name}>
                         {team.name}
