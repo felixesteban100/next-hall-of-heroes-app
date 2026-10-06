@@ -28,6 +28,7 @@ interface MiniEntityGridProps {
     emptyMessage?: string;
     fallbackIcon?: LucideIcon;
     avatarShape?: "circle" | "rounded" | "square";
+    compareWithId?: number | string;          // ← new
 }
 
 // Helpers for Alignment Styles
@@ -79,6 +80,7 @@ export function MiniEntityGrid({
     emptyMessage = "No items available.",
     fallbackIcon,
     avatarShape = "circle",
+    compareWithId
 }: MiniEntityGridProps) {
     const hasContent = items.length > 0 || externalNames.length > 0;
 
@@ -194,6 +196,16 @@ export function MiniEntityGrid({
                                 <span className="text-[10px] text-muted-foreground font-mono line-clamp-1">
                                     {displaySubtext}
                                 </span>
+                                {/* NEW: Compare link – only when we have a current character to compare against */}
+                                {compareWithId && entityType === "character" && (
+                                    <LoadingLink
+                                        href={`/compare/${compareWithId}/${item.id}`}   // ← adjust path to whatever you use
+                                        onClick={(e) => e.stopPropagation()}            // prevents the parent LoadingLink from firing
+                                        className="mt-0.5 text-[9px] font-medium text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                        Compare
+                                    </LoadingLink>
+                                )}
                             </div>
                         </LoadingLink>
                     </ViewTransition>
