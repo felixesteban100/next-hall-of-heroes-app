@@ -269,13 +269,17 @@ export function buildEnemiesLookup() {
         {
             $lookup: {
                 from: "characters",
-                let: { enemies: { $ifNull: ["$connections.enemies", []] } },
+                let: {
+                    enemies: { $ifNull: ["$connections.enemies", []] },
+                    // Pass the parent document's publisher into the lookup
+                    parentPublisher: { $ifNull: ["$biography.publisher", null] }
+                },
                 pipeline: [
                     {
                         $match: {
                             $expr: {
                                 $or: [
-                                    // Match by ID (coerce both sides to string)
+                                    // 1. Match by ID (type-coerced to string)
                                     {
                                         $in: [
                                             { $toString: "$id" },
@@ -288,16 +292,28 @@ export function buildEnemiesLookup() {
                                             }
                                         ]
                                     },
-                                    // Match by name (case-insensitive)
+
+                                    // 2. Match by name (case-insensitive) AND same publisher
                                     {
-                                        $in: [
-                                            { $toLower: { $ifNull: ["$name", ""] } },
+                                        $and: [
                                             {
-                                                $map: {
-                                                    input: "$$enemies",
-                                                    as: "e",
-                                                    in: { $toLower: { $toString: "$$e" } }
-                                                }
+                                                $in: [
+                                                    { $toLower: { $ifNull: ["$name", ""] } },
+                                                    {
+                                                        $map: {
+                                                            input: "$$enemies",
+                                                            as: "e",
+                                                            in: { $toLower: { $toString: "$$e" } }
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            // Same publisher (handles null safely)
+                                            {
+                                                $eq: [
+                                                    { $ifNull: ["$biography.publisher", null] },
+                                                    "$$parentPublisher"
+                                                ]
                                             }
                                         ]
                                     }
@@ -305,7 +321,7 @@ export function buildEnemiesLookup() {
                             }
                         }
                     },
-                    // Project only the required fields: name, id, images.md
+                    // Project only the fields you need
                     {
                         $project: {
                             _id: 0,
@@ -313,6 +329,7 @@ export function buildEnemiesLookup() {
                             name: 1,
                             image: "$images.md",
                             alignment: "$biography.alignment"
+                            // add publisher: "$biography.publisher" if you want it in the result
                         }
                     }
                 ],
@@ -375,4 +392,3 @@ export function buildEnemiesLookup() {
         { $project: { resolvedEnemies: 0 } }
     ];
 }
-
