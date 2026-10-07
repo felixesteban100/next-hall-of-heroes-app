@@ -1,12 +1,10 @@
 import Image from "next/image";
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
-import { collectionCharacters } from "@/db/mongodb";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
-import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib/character_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { MatchVerdict } from "@/components/compare/MatchVerditct";
-import { computeMatchScore, getEnemyNames, getPowerNames, getPublisher, getTeamNames, hasNemesisLink, joinUnique, maxClass, maxTier, mergeEnemies, mergePowerNames, mergeTeams, mergeWeaknesses, radarData, radarDataFromStats, uniquePublishers } from "@/lib/compare_utls";
+import { computeMatchScore, getEnemyNames, getPowerNames, getTeamNames, hasNemesisLink, joinUnique, maxClass, maxTier, mergeEnemies, mergePowerNames, mergeTeams, mergeWeaknesses, radarData, radarDataFromStats, uniquePublishers } from "@/lib/compare_utls";
 import { StatsRadar } from "@/components/compare/StatRadar";
 import { ProfileSlot } from "@/components/compare/ProfileSlot";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
@@ -16,7 +14,6 @@ import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
 import { RowBadge, RowBadges } from "@/components/compare/rows/RowBadge";
 import { getAligmentIcon } from "@/lib/characters_utils";
 import { SparPanel } from "@/components/compare/SparPanel";
-import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
 import { detectMode, parseIdList } from "@/lib/compareParams";
 import { fetchCharactersByIds } from "@/lib/fetchCompareEntities";
 import { TeamSelectorCard } from "@/components/compare/selectors/TeamSelectorCard";
@@ -24,7 +21,7 @@ import VS from "@/components/compare/VS";
 import { aggregateScores, avgPowerstats } from "@/lib/compare_utls"; // if you added these
 import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
 import { TeamProfileSlot } from "@/components/compare/TeamProfileSlot";
-import { sanitize } from "@/lib/utils";
+import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
 
 export const instant = false;
 
@@ -119,14 +116,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const TierIconB = tierB != null ? CHARACTER_TIER_ICON[tierB as keyof typeof CHARACTER_TIER_ICON] : null;
     const ClassIconA = classA != null ? CHARACTER_CLASS_ICON[classA as keyof typeof CHARACTER_CLASS_ICON] : null;
     const ClassIconB = classB != null ? CHARACTER_CLASS_ICON[classB as keyof typeof CHARACTER_CLASS_ICON] : null;
-
-    // Alignment: 1v1 only; teams → summary text
-    const alignmentAText =
-        mode === "team"
-            ? joinUnique(entitiesA.map((e) => getCharacterAlignmentText(e.biography?.alignment)))
-            : entityA
-                ? getCharacterAlignmentText(entityA.biography?.alignment)
-                : undefined;
 
     const pubsA = uniquePublishers(entitiesA);
     const pubsB = uniquePublishers(entitiesB);
