@@ -1,116 +1,213 @@
 import Image from "next/image";
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
-import { SelectorCard } from "@/components/compare/SelectorCard";
+import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
 import { collectionCharacters } from "@/db/mongodb";
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { MatchVerdict } from "@/components/compare/MatchVerditct";
-import { computeMatchScore, getEnemyNames, getPowerNames, getPublisher, getTeamNames, hasNemesisLink, radarData } from "@/lib/compare_utls";
+import { computeMatchScore, getEnemyNames, getPowerNames, getPublisher, getTeamNames, hasNemesisLink, joinUnique, maxClass, maxTier, mergeEnemies, mergePowerNames, mergeTeams, mergeWeaknesses, radarData, radarDataFromStats, uniquePublishers } from "@/lib/compare_utls";
 import { StatsRadar } from "@/components/compare/StatRadar";
 import { ProfileSlot } from "@/components/compare/ProfileSlot";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { Row, RowPillContent, RowTextContent } from "@/components/compare/rows/Row";
 import { Cell, EmptyCell } from "@/components/compare/rows/Cell";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
-import RowBadge from "@/components/compare/rows/RowBadge";
+import { RowBadge, RowBadges } from "@/components/compare/rows/RowBadge";
 import { getAligmentIcon } from "@/lib/characters_utils";
 import { SparPanel } from "@/components/compare/SparPanel";
+import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
+import { detectMode, parseIdList } from "@/lib/compareParams";
+import { fetchCharactersByIds } from "@/lib/fetchCompareEntities";
+import { TeamSelectorCard } from "@/components/compare/selectors/TeamSelectorCard";
+import VS from "@/components/compare/VS";
+import { aggregateScores, avgPowerstats } from "@/lib/compare_utls"; // if you added these
+import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
+import { TeamProfileSlot } from "@/components/compare/TeamProfileSlot";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
 type SearchParamsPromise = Promise<{
-    id1: string;
-    id2: string;
+    id1?: string;
+    id2?: string;
+    a?: string;
+    b?: string;
+    mode?: string;
 }>;
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
+    const mode = detectMode(params);
 
-    const entityAIdValue = params.id1 ? Number.parseInt(params.id1, 10) : null;
-    const entityBIdValue = params.id2 ? Number.parseInt(params.id2, 10) : null;
+    // Build id lists for BOTH modes
+    const idsA =
+        mode === "team"
+            ? parseIdList(params.a)
+            : params.id1
+                ? [Number.parseInt(params.id1, 10)].filter((n) => !Number.isNaN(n))
+                : [];
 
-    const hasA = entityAIdValue != null && !Number.isNaN(entityAIdValue);
-    const hasB = entityBIdValue != null && !Number.isNaN(entityBIdValue);
+    const idsB =
+        mode === "team"
+            ? parseIdList(params.b)
+            : params.id2
+                ? [Number.parseInt(params.id2, 10)].filter((n) => !Number.isNaN(n))
+                : [];
 
-    const fetchEntity = (hasEntity: boolean, id?: number | null) =>
-        hasEntity && id != null
-            ? collectionCharacters
-                .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-                    joinTeam_universe_power_enemies_toCharacter(
-                        { id },
-                        "id",
-                        "desc",
-                        0,
-                        1,
-                        { includeEnemies: true }
-                    )
-                )
-                .next() // Directly retrieves the first document (or null) without array allocation
-            : Promise.resolve(null);
-
-    // Execution
-    const [entityA, entityB] = await Promise.all([
-        fetchEntity(hasA, entityAIdValue),
-        fetchEntity(hasB, entityBIdValue),
+    const [entitiesA, entitiesB] = await Promise.all([
+        fetchCharactersByIds(idsA),
+        fetchCharactersByIds(idsB),
     ]);
 
-    const TierIconA = entityA
-        ? CHARACTER_TIER_ICON[entityA.tier as keyof typeof CHARACTER_TIER_ICON]
-        : null;
-    const TierIconB = entityB
-        ? CHARACTER_TIER_ICON[entityB.tier as keyof typeof CHARACTER_TIER_ICON]
-        : null;
+    // 1v1 convenience aliases (first member or null)
+    const entityA = entitiesA[0] ?? null;
+    const entityB = entitiesB[0] ?? null;
 
-    const ClassIconA = entityA ? CHARACTER_CLASS_ICON[entityA.class as keyof typeof CHARACTER_CLASS_ICON] : null;
-    const ClassIconB = entityB ? CHARACTER_CLASS_ICON[entityB.class as keyof typeof CHARACTER_CLASS_ICON] : null;
+    const entityAIdValue = entityA?.id ?? null;
+    const entityBIdValue = entityB?.id ?? null;
 
-    const AligmentIconA = getAligmentIcon(entityA?.biography.alignment!)
-    const AligmentIconB = getAligmentIcon(entityB?.biography.alignment!)
+    // Per-character (1v1) OR team average
+    const scoreA =
+        mode === "team"
+            ? aggregateScores(entitiesA)
+            : computeMatchScore(entityA);
 
-    // after entityA / entityB resolved:
-    const scoreA = computeMatchScore(entityA);
-    const scoreB = computeMatchScore(entityB);
+    const scoreB =
+        mode === "team"
+            ? aggregateScores(entitiesB)
+            : computeMatchScore(entityB);
+
+    // Nemesis: any pair across teams, or only 1v1
     const isNemesis =
-        !!entityA && !!entityB && hasNemesisLink(entityA, entityB);
-    const radar = radarData(entityA, entityB);
+        mode === "team"
+            ? entitiesA.some((a) => entitiesB.some((b) => hasNemesisLink(a, b)))
+            : !!entityA && !!entityB && hasNemesisLink(entityA, entityB);
 
-    console.log(scoreA?.overall)
-    console.log(scoreB?.overall)
+    // Radar: team avg powerstats or single
+    const radar =
+        mode === "team"
+            ? radarDataFromStats(avgPowerstats(entitiesA), avgPowerstats(entitiesB), /* names */)
+            : radarData(entityA, entityB);
+
+    const entityAName =
+        mode === "team"
+            ? entitiesA.map((c) => c.name).join(", ") || undefined
+            : entityA?.name;
+
+    const entityBName =
+        mode === "team"
+            ? entitiesB.map((c) => c.name).join(", ") || undefined
+            : entityB?.name;
+
+    const hasA = entitiesA.length > 0;
+    const hasB = entitiesB.length > 0;
+
+    // Powerstats for bars: team average vs single
+    const powerstatsA =
+        mode === "team" ? avgPowerstats(entitiesA) : entityA?.powerstats;
+    const powerstatsB =
+        mode === "team" ? avgPowerstats(entitiesB) : entityB?.powerstats;
+
+    // Tier / class: show strongest on the team
+    const tierA = mode === "team" ? maxTier(entitiesA) : entityA?.tier ?? null;
+    const tierB = mode === "team" ? maxTier(entitiesB) : entityB?.tier ?? null;
+    const classA = mode === "team" ? maxClass(entitiesA) : entityA?.class ?? null;
+    const classB = mode === "team" ? maxClass(entitiesB) : entityB?.class ?? null;
+
+    const TierIconA = tierA != null ? CHARACTER_TIER_ICON[tierA as keyof typeof CHARACTER_TIER_ICON] : null;
+    const TierIconB = tierB != null ? CHARACTER_TIER_ICON[tierB as keyof typeof CHARACTER_TIER_ICON] : null;
+    const ClassIconA = classA != null ? CHARACTER_CLASS_ICON[classA as keyof typeof CHARACTER_CLASS_ICON] : null;
+    const ClassIconB = classB != null ? CHARACTER_CLASS_ICON[classB as keyof typeof CHARACTER_CLASS_ICON] : null;
+
+    // Alignment: 1v1 only; teams → summary text
+    const alignmentAText =
+        mode === "team"
+            ? joinUnique(entitiesA.map((e) => getCharacterAlignmentText(e.biography?.alignment)))
+            : entityA
+                ? getCharacterAlignmentText(entityA.biography?.alignment)
+                : undefined;
+
+    const pubsA = uniquePublishers(entitiesA);
+    const pubsB = uniquePublishers(entitiesB);
+
+    const rosterA = entitiesA.map((e) => ({
+        id: e.id,
+        name: e.name,
+        overall: computeMatchScore(e)?.overall ?? 0,
+    }));
+    const rosterB = entitiesB.map((e) => ({
+        id: e.id,
+        name: e.name,
+        overall: computeMatchScore(e)?.overall ?? 0,
+    }));
 
     return (
         <div className="space-y-4 mt-4">
             <ComparisonHeader />
+            <CompareModeToggle />
 
             {/* Selector Section */}
             <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-4 overflow-visible">
-                <SelectorCard
-                    key={entityA?.id ?? "empty-a"}
-                    title="Character A"
-                    selected={entityA}
-                    otherSelectedId={entityBIdValue ?? undefined}
-                    paramKey="id1"
-                    variant="primary"
-                />
-                <div className="flex justify-center items-center">
-                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-background font-black text-xl">
-                        VS
-                    </div>
-                </div>
-                <SelectorCard
-                    key={entityB?.id ?? "empty-b"}
-                    title="Character B"
-                    selected={entityB}
-                    otherSelectedId={entityAIdValue ?? undefined}
-                    paramKey="id2"
-                    variant="secondary"
-                />
+                {mode === "team" ? (
+                    <>
+                        <TeamSelectorCard
+                            title="Team A"
+                            selected={entitiesA.map((c) => ({
+                                id: c.id,
+                                name: c.name,
+                                slug: c.slug,
+                                image: c.images.md
+                            }))}
+                            selectedIds={idsA}
+                            excludeIds={[...idsA, ...idsB]}
+                            paramKey="a"
+                            variant="primary"
+                        />
+                        <VS />
+                        <TeamSelectorCard
+                            title="Team B"
+                            selected={entitiesB.map((c) => ({
+                                id: c.id,
+                                name: c.name,
+                                slug: c.slug,
+                                image: c.images.md
+                            }))}
+                            selectedIds={idsB}
+                            excludeIds={[...idsA, ...idsB]}
+                            paramKey="b"
+                            variant="secondary"
+                        />
+                    </>
+                ) : (
+                    <>
+                        <SelectorCard
+                            key={entityA?.id ?? "empty-a"}
+                            title="Character A"
+                            selected={entityA}
+                            otherSelectedId={entityBIdValue ?? undefined}
+                            paramKey="id1"
+                            variant="primary"
+                        />
+                        <VS />
+                        <SelectorCard
+                            key={entityB?.id ?? "empty-b"}
+                            title="Character B"
+                            selected={entityB}
+                            otherSelectedId={entityAIdValue ?? undefined}
+                            paramKey="id2"
+                            variant="secondary"
+                        />
+                    </>
+                )}
             </section>
+
+            {/* rest of the code */}
 
             <div className="max-w-5xl mx-auto space-y-4 mb-4">
                 <MatchVerdict
-                    nameA={entityA?.name}
-                    nameB={entityB?.name}
+                    nameA={entityAName}
+                    nameB={entityBName}
                     scoreA={scoreA}
                     scoreB={scoreB}
                     isNemesis={isNemesis}
@@ -123,8 +220,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         </h3>
                         <StatsRadar
                             data={radar}
-                            nameA={entityA?.name}
-                            nameB={entityB?.name}
+                            nameA={entityAName}
+                            nameB={entityBName}
                             showA={!!entityA}
                             showB={!!entityB}
                         />
@@ -132,8 +229,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     <SparPanel
                         scoreA={scoreA?.overall ?? null}
                         scoreB={scoreB?.overall ?? null}
-                        nameA={entityA?.name}
-                        nameB={entityB?.name}
+                        nameA={entityAName}
+                        nameB={entityBName}
                     />
                 </div>
             </div>
@@ -141,20 +238,30 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-10 overflow-x-hidden">
                 <div className="sticky top-0 z-20 grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                     <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
-                        Entity Profile
+                        {mode === "team" ? "Team profile" : "Entity profile"}
                     </div>
-                    <ProfileSlot entity={entityA} variant="primary" />
-                    <ProfileSlot entity={entityB} variant="secondary" />
+
+                    {mode === "team" ? (
+                        <>
+                            <TeamProfileSlot entities={entitiesA} variant="primary" score={scoreA?.overall} />
+                            <TeamProfileSlot entities={entitiesB} variant="secondary" score={scoreB?.overall} />
+                        </>
+                    ) : (
+                        <>
+                            <ProfileSlot entity={entityA} variant="primary" />
+                            <ProfileSlot entity={entityB} variant="secondary" />
+                        </>
+                    )}
                 </div>
 
-                {/* SECTION: POWERSTATS */}
-                <RowsHeader
-                    text="Combat & Powerstats"
-                />
+                {mode === "team" && (
+                    <MemberBreakdown rosterA={rosterA} rosterB={rosterB} />
+                )}
 
+                <RowsHeader text={mode === "team" ? "Combat & Powerstats · team avg" : "Combat & Powerstats"} />
                 <RowScoreComparer
-                    scoreA={entityA?.powerstats}
-                    scoreB={entityB?.powerstats}
+                    scoreA={powerstatsA}
+                    scoreB={powerstatsB}
                     rows={[
                         { label: "INTELLIGENCE", key: "intelligence" },
                         { label: "STRENGTH", key: "strength" },
@@ -162,53 +269,50 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         { label: "DURABILITY", key: "durability" },
                         { label: "POWER", key: "power" },
                         { label: "COMBAT", key: "combat" },
-                        { label: "TOTAL", key: "total", max: 600 }, // Higher max bound for 'total'
+                        { label: "TOTAL", key: "total", max: 600 },
                     ]}
                 />
 
-                {/* SECTION: MATCH SCORE BREAKDOWN */}
-                <RowsHeader
-                    text="Match score breakdown"
-                />
+                <RowsHeader text="Match score breakdown" />
                 <RowScoreComparer scoreA={scoreA} scoreB={scoreB} />
 
-                {/* SECTION: GENERAL & BIOGRAPHY */}
-                <RowsHeader
-                    text="General Information"
-                />
-
+                <RowsHeader text="General Information" />
                 <Row label="Publisher">
-                    {entityA ? (
+                    {hasA ? (
                         <Cell>
-                            <div className="flex flex-col justify-center items-center gap-1">
-                                <Image
-                                    src={entityA.biography?.publisher?.logo || "/placeholder.png"}
-                                    alt={entityA.biography?.publisher?.name || ""}
-                                    width={500}
-                                    height={500}
-                                    className="h-20 w-auto object-contain"
-                                />
-                                <span className="text-sm font-medium">
-                                    {getPublisher(entityA.biography?.publisher)}
-                                </span>
+                            <div className="flex flex-col items-center gap-2">
+                                {pubsA.map((p) => (
+                                    <div key={p.name} className="flex flex-col items-center gap-1">
+                                        <Image
+                                            src={p.logo || "/placeholder.png"}
+                                            alt={p.name}
+                                            width={200}
+                                            height={80}
+                                            className="h-12 w-auto object-contain"
+                                        />
+                                        <span className="text-xs font-medium">{p.name}</span>
+                                    </div>
+                                ))}
                             </div>
                         </Cell>
                     ) : (
                         <EmptyCell />
                     )}
-                    {entityB ? (
+                    {hasB ? (
                         <Cell>
-                            <div className="flex flex-col justify-center items-center gap-1">
-                                <Image
-                                    src={entityB.biography?.publisher?.logo || "/placeholder.png"}
-                                    alt={entityB.biography?.publisher?.name || ""}
-                                    width={500}
-                                    height={500}
-                                    className="h-20 w-auto object-contain"
-                                />
-                                <span className="text-sm font-medium">
-                                    {getPublisher(entityB.biography?.publisher)}
-                                </span>
+                            <div className="flex flex-col items-center gap-2">
+                                {pubsB.map((p) => (
+                                    <div key={p.name} className="flex flex-col items-center gap-1">
+                                        <Image
+                                            src={p.logo || "/placeholder.png"}
+                                            alt={p.name}
+                                            width={200}
+                                            height={80}
+                                            className="h-12 w-auto object-contain"
+                                        />
+                                        <span className="text-xs font-medium">{p.name}</span>
+                                    </div>
+                                ))}
                             </div>
                         </Cell>
                     ) : (
@@ -217,132 +321,225 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </Row>
 
                 <RowBadge
-                    label="Tier"
-                    entityAAndLogoAExists={(entityA != null && TierIconA != null)}
-                    entityBAndLogoBExists={entityB != null && TierIconB != null}
+                    label={mode === "team" ? "Highest Tier" : "Tier"}
+                    entityAAndLogoAExists={hasA && TierIconA != null}
+                    entityBAndLogoBExists={hasB && TierIconB != null}
                     IconA={TierIconA}
                     IconB={TierIconB}
-                    entityAClassName={CHARACTER_TIER_COLOR[entityA?.tier as keyof typeof CHARACTER_TIER_COLOR].text}
-                    entityBClassName={CHARACTER_TIER_COLOR[entityB?.tier as keyof typeof CHARACTER_TIER_COLOR].text}
-                    valueA={CHARACTER_TIER[entityA?.tier as keyof typeof CHARACTER_TIER]}
-                    valueB={CHARACTER_TIER[entityB?.tier as keyof typeof CHARACTER_TIER]}
+                    entityAClassName={CHARACTER_TIER_COLOR[tierA as keyof typeof CHARACTER_TIER_COLOR]?.text}
+                    entityBClassName={CHARACTER_TIER_COLOR[tierB as keyof typeof CHARACTER_TIER_COLOR]?.text}
+                    valueA={tierA != null ? CHARACTER_TIER[tierA as keyof typeof CHARACTER_TIER] : undefined}
+                    valueB={tierB != null ? CHARACTER_TIER[tierB as keyof typeof CHARACTER_TIER] : undefined}
                 />
 
                 <RowBadge
-                    label="Class"
-                    entityAAndLogoAExists={(entityA != null && ClassIconA != null)}
-                    entityBAndLogoBExists={entityB != null && ClassIconB != null}
+                    label={mode === "team" ? "Highest Class" : "Class"}
+                    entityAAndLogoAExists={hasA && ClassIconA != null}
+                    entityBAndLogoBExists={hasB && ClassIconB != null}
                     IconA={ClassIconA}
                     IconB={ClassIconB}
-                    entityAClassName={CHARACTER_CLASS_COLOR[entityA?.tier as keyof typeof CHARACTER_CLASS_COLOR].text}
-                    entityBClassName={CHARACTER_CLASS_COLOR[entityB?.tier as keyof typeof CHARACTER_CLASS_COLOR].text}
-                    valueA={CHARACTER_CLASS[entityA?.tier as keyof typeof CHARACTER_CLASS]}
-                    valueB={CHARACTER_CLASS[entityB?.tier as keyof typeof CHARACTER_CLASS]}
+                    entityAClassName={CHARACTER_CLASS_COLOR[classA as keyof typeof CHARACTER_CLASS_COLOR]?.text}
+                    entityBClassName={CHARACTER_CLASS_COLOR[classB as keyof typeof CHARACTER_CLASS_COLOR]?.text}
+                    valueA={classA != null ? CHARACTER_CLASS[classA as keyof typeof CHARACTER_CLASS] : undefined}
+                    valueB={classB != null ? CHARACTER_CLASS[classB as keyof typeof CHARACTER_CLASS] : undefined}
                 />
 
-                <RowBadge
-                    label="Alignment"
-                    entityAAndLogoAExists={(entityA != null && AligmentIconA != null)}
-                    entityBAndLogoBExists={entityB != null && AligmentIconB != null}
-                    IconA={AligmentIconA}
-                    IconB={AligmentIconB}
-                    entityAClassName={getCharacterAlignmentTextColor(entityA?.biography.alignment!)}
-                    entityBClassName={getCharacterAlignmentTextColor(entityB?.biography.alignment!)}
-                    valueA={getCharacterAlignmentText(entityA?.biography.alignment!)}
-                    valueB={getCharacterAlignmentText(entityB?.biography.alignment!)}
+                <RowBadges
+                    label={mode == "team" ? "Aligments" : "Aligment"}
+                    entityAAndLogoAExists={hasA}
+                    entityBAndLogoBExists={hasB}
+                    aligmentsA={entitiesA.map(c => ({
+                        name: c.name,
+                        icon: getAligmentIcon(c.biography.alignment),
+                        className: getCharacterAlignmentTextColor(c?.biography.alignment!),
+                        value: getCharacterAlignmentText(c?.biography.alignment!)
+                    }))}
+                    aligmentsB={entitiesB.map(c => ({
+                        name: c.name,
+                        icon: getAligmentIcon(c.biography.alignment),
+                        className: getCharacterAlignmentTextColor(c?.biography.alignment!),
+                        value: getCharacterAlignmentText(c?.biography.alignment!)
+                    }))}
                 />
 
                 <RowTextContent
                     label="Tier / Class"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={`Tier ${entityA?.tier ?? "N/A"} / Class ${entityA?.class ?? "N/A"}`}
-                    entityBtext={`Tier ${entityB?.tier ?? "N/A"} / Class ${entityB?.class ?? "N/A"}`}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => `T${e.tier ?? "?"} / C${e.class ?? "?"}`))
+                            : `Tier ${entityA?.tier ?? "N/A"} / Class ${entityA?.class ?? "N/A"}`
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => `T${e.tier ?? "?"} / C${e.class ?? "?"}`))
+                            : `Tier ${entityB?.tier ?? "N/A"} / Class ${entityA?.class ?? "N/A"}`
+                    }
                 />
 
                 <RowTextContent
                     label="First Appearance"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.biography?.firstAppearance}
-                    entityBtext={entityB?.biography?.firstAppearance}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.biography?.firstAppearance))
+                            : entityA?.biography?.firstAppearance
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.biography?.firstAppearance))
+                            : entityB?.biography?.firstAppearance
+                    }
                 />
 
                 <RowTextContent
                     label="Place of Birth"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.biography?.placeOfBirth}
-                    entityBtext={entityB?.biography?.placeOfBirth}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.biography?.placeOfBirth))
+                            : entityA?.biography?.placeOfBirth
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.biography?.placeOfBirth))
+                            : entityB?.biography?.placeOfBirth
+                    }
                 />
 
                 <RowTextContent
                     label="Origin"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.biography?.origin}
-                    entityBtext={entityB?.biography?.origin}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.biography?.origin))
+                            : entityA?.biography?.origin
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.biography?.origin))
+                            : entityB?.biography?.origin
+                    }
                 />
 
-
-                {/* SECTION: PHYSICAL APPEARANCE */}
-                <RowsHeader
-                    text="Physical Characteristics"
-                />
-
+                <RowsHeader text="Physical Characteristics" />
                 <RowTextContent
                     label="Race"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.appearance?.race}
-                    entityBtext={entityB?.appearance?.race}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.race))
+                            : entityA?.appearance?.race
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.race))
+                            : entityB?.appearance?.race
+                    }
                 />
 
                 <RowTextContent
                     label="Gender"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.appearance?.gender}
-                    entityBtext={entityB?.appearance?.gender}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.gender))
+                            : entityA?.appearance?.gender
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.gender))
+                            : entityB?.appearance?.gender
+                    }
                 />
 
                 <RowTextContent
                     label="Height"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.appearance?.height?.join(" / ")}
-                    entityBtext={entityB?.appearance?.height?.join(" / ")}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.height?.join(" / ")))
+                            : entityA?.appearance?.height?.join(" / ")
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.height?.join(" / ")))
+                            : entityB?.appearance?.height?.join(" / ")
+                    }
                 />
 
                 <RowTextContent
                     label="Weight"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.appearance?.weight?.join(" / ")}
-                    entityBtext={entityB?.appearance?.weight?.join(" / ")}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.weight?.join(" / ")))
+                            : entityA?.appearance?.weight?.join(" / ")
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.weight?.join(" / ")))
+                            : entityB?.appearance?.weight?.join(" / ")
+                    }
                 />
 
                 <RowTextContent
-                    label="Eyes / Hair"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={`${entityA?.appearance?.eyeColor || "N/A"} / ${entityA?.appearance?.hairColor || "N/A"}`}
-                    entityBtext={`${entityB?.appearance?.eyeColor || "N/A"} / ${entityB?.appearance?.hairColor || "N/A"}`}
+                    label="Eyes"
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.eyeColor))
+                            : entityA?.appearance?.eyeColor
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.eyeColor))
+                            : entityB?.appearance?.eyeColor
+                    }
+                />
+
+                <RowTextContent
+                    label="Hair"
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.hairColor))
+                            : entityA?.appearance?.hairColor
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.hairColor))
+                            : entityB?.appearance?.hairColor
+                    }
                 />
 
                 <RowTextContent
                     label="Description"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAtext={entityA?.appearance?.description}
-                    entityBtext={entityB?.appearance?.description}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAtext={
+                        mode === "team"
+                            ? joinUnique(entitiesA.map((e) => e.appearance?.description))
+                            : entityA?.appearance?.description
+                    }
+                    entityBtext={
+                        mode === "team"
+                            ? joinUnique(entitiesB.map((e) => e.appearance?.description))
+                            : entityB?.appearance?.description
+                    }
                 />
 
-                {/* SECTION: WORK & BASE */}
-                <RowsHeader
-                    text="Work & Operations"
-                />
-
+                <RowsHeader text="Work & Operations" />
                 <RowTextContent
                     label="Occupation"
                     entityAexist={entityA != null}
@@ -359,41 +556,37 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     entityBtext={entityB?.work?.base}
                 />
 
-                {/* SECTION: ABILITIES, TEAMS & ENEMIES */}
-                <RowsHeader
-                    text="Powers & Connections"
-                />
-
+                <RowsHeader text="Powers & Connections" />
                 <RowPillContent
                     label="Special Powers"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAPillList={getPowerNames(entityA?.powers)}
-                    entityBPillList={getPowerNames(entityB?.powers)}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAPillList={mode === "team" ? mergePowerNames(entitiesA) : getPowerNames(entityA?.powers)}
+                    entityBPillList={mode === "team" ? mergePowerNames(entitiesB) : getPowerNames(entityB?.powers)}
                 />
 
                 <RowPillContent
                     label="Weaknesses"
-                    entityAexist={entityA != null}
-                    entityBexist={entityB != null}
-                    entityAPillList={entityA?.weaknesses || []}
-                    entityBPillList={entityB?.weaknesses || []}
+                    entityAexist={hasA}
+                    entityBexist={hasB}
+                    entityAPillList={mode === "team" ? mergeWeaknesses(entitiesA) : entityA?.weaknesses || []}
+                    entityBPillList={mode === "team" ? mergeWeaknesses(entitiesB) : entityB?.weaknesses || []}
                 />
 
                 <RowPillContent
                     label="Teams & Affiliations"
                     entityAexist={entityA != null}
                     entityBexist={entityB != null}
-                    entityAPillList={getTeamNames(entityA?.connections?.groupAffiliation)}
-                    entityBPillList={getTeamNames(entityB?.connections?.groupAffiliation)}
+                    entityAPillList={mode === "team" ? mergeTeams(entitiesA) : getTeamNames(entityA?.connections?.groupAffiliation) || []}
+                    entityBPillList={mode === "team" ? mergeTeams(entitiesB) : getTeamNames(entityB?.connections?.groupAffiliation) || []}
                 />
 
                 <RowPillContent
                     label="Primary Enemies"
                     entityAexist={entityA != null}
                     entityBexist={entityB != null}
-                    entityAPillList={getEnemyNames(entityA?.connections?.enemies)}
-                    entityBPillList={getEnemyNames(entityB?.connections?.enemies)}
+                    entityAPillList={mode === "team" ? mergeEnemies(entitiesA) : getEnemyNames(entityA?.connections?.enemies) || []}
+                    entityBPillList={mode === "team" ? mergeEnemies(entitiesB) : getEnemyNames(entityB?.connections?.enemies) || []}
                 />
             </main>
         </div>
