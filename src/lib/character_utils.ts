@@ -74,6 +74,7 @@ export function joinTeam_universe_power_enemies_toCharacter(
                     tier: 1,
                     class: 1,
                     character_type: 1,
+                    "biography.fullName": 1,
                     "biography.alignment": 1,
                     "biography.publisher.logo": 1,  // or just .logo if that's all CardFooter uses
                     "appearance.gender": 1,
@@ -265,7 +266,6 @@ export function buildTeamsLookup() {
 
 // 4. Enemies Lookup Stage
 export function buildEnemiesLookup() {
-    // Helper expression that turns publisher (string | object | null) into a trimmed lowercase string
     const publisherToString = (fieldPath: string) => ({
         $toLower: {
             $trim: {
@@ -302,55 +302,40 @@ export function buildEnemiesLookup() {
                     {
                         $match: {
                             $expr: {
-                                $or: [
-                                    // 1. Match by ID (string-coerced)
+                                $and: [
+                                    // At least one enemy matches this character
                                     {
-                                        $in: [
-                                            { $toString: "$id" },
-                                            {
-                                                $map: {
-                                                    input: "$$enemies",
-                                                    as: "e",
-                                                    in: { $toString: "$$e" }
+                                        $anyElementTrue: {
+                                            $map: {
+                                                input: "$$enemies",
+                                                as: "e",
+                                                in: {
+                                                    $or: [
+                                                        // Exact ID match
+                                                        {
+                                                            $eq: [
+                                                                { $toString: "$id" },
+                                                                { $toString: "$$e" }
+                                                            ]
+                                                        },
+                                                        // Regex name match (case-insensitive)
+                                                        {
+                                                            $regexMatch: {
+                                                                input: { $ifNull: ["$name", ""] },
+                                                                regex: { $toString: "$$e" },
+                                                                options: "i"
+                                                            }
+                                                        }
+                                                    ]
                                                 }
                                             }
-                                        ]
+                                        }
                                     },
-
-                                    // 2. Match by name (case-insensitive + trimmed)
-                                    //    + same publisher (works for both string and object shapes)
+                                    // Same publisher
                                     {
-                                        $and: [
-                                            {
-                                                $in: [
-                                                    {
-                                                        $toLower: {
-                                                            $trim: {
-                                                                input: { $ifNull: ["$name", ""] }
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        $map: {
-                                                            input: "$$enemies",
-                                                            as: "e",
-                                                            in: {
-                                                                $toLower: {
-                                                                    $trim: {
-                                                                        input: { $toString: "$$e" }  // $toString is safe
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                $eq: [
-                                                    publisherToString("$biography.publisher"),
-                                                    "$$parentPublisher"
-                                                ]
-                                            }
+                                        $eq: [
+                                            publisherToString("$biography.publisher"),
+                                            "$$parentPublisher"
                                         ]
                                     }
                                 ]
@@ -383,44 +368,31 @@ export function buildEnemiesLookup() {
                                         as: "e",
                                         cond: {
                                             $not: {
-                                                $or: [
-                                                    // already resolved by ID
-                                                    {
-                                                        $in: [
-                                                            { $toString: "$$e" },
-                                                            {
-                                                                $map: {
-                                                                    input: "$resolvedEnemies",
-                                                                    as: "r",
-                                                                    in: { $toString: "$$r.id" }
-                                                                }
-                                                            }
-                                                        ]
-                                                    },
-                                                    // already resolved by name
-                                                    {
-                                                        $in: [
-                                                            {
-                                                                $toLower: {
-                                                                    $trim: { input: { $toString: "$$e" } }
-                                                                }
-                                                            },
-                                                            {
-                                                                $map: {
-                                                                    input: "$resolvedEnemies",
-                                                                    as: "r",
-                                                                    in: {
-                                                                        $toLower: {
-                                                                            $trim: {
-                                                                                input: { $ifNull: ["$$r.name", ""] }
-                                                                            }
-                                                                        }
+                                                $anyElementTrue: {
+                                                    $map: {
+                                                        input: "$resolvedEnemies",
+                                                        as: "r",
+                                                        in: {
+                                                            $or: [
+                                                                // matched by ID
+                                                                {
+                                                                    $eq: [
+                                                                        { $toString: "$$r.id" },
+                                                                        { $toString: "$$e" }
+                                                                    ]
+                                                                },
+                                                                // matched by name (same regex logic)
+                                                                {
+                                                                    $regexMatch: {
+                                                                        input: { $ifNull: ["$$r.name", ""] },
+                                                                        regex: { $toString: "$$e" },
+                                                                        options: "i"
                                                                     }
                                                                 }
-                                                            }
-                                                        ]
+                                                            ]
+                                                        }
                                                     }
-                                                ]
+                                                }
                                             }
                                         }
                                     }

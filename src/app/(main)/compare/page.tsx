@@ -166,7 +166,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
             </div>
 
-            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-14 overflow-x-hidden">
+            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-10 overflow-x-hidden">
                 {/* Entity Profile Header with Avatar Images */} {/* Sticky Banner Row */}
                 <div className="sticky top-0 z-20 grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                     <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
@@ -341,6 +341,19 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     )}
                 </Row>
 
+                <Row label="Origin">
+                    {entityA ? (
+                        <Cell>{entityA.biography?.origin || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.biography?.origin || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                </Row>
+
                 {/* SECTION: POWERSTATS */}
                 <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20">
                     Combat & Powerstats
@@ -356,24 +369,23 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         return (
                             <Row key={statKey} label={statKey.toUpperCase()}>
                                 {valA != null ? (
-                                    <Cell className="flex gap-2">
+                                    <Cell className={`${valA != null && valB != null && valA > valB ? "text-primary font-bold" : ""} flex gap-2`}>
                                         {valA}
                                         <Progress
                                             value={valA > 100 ? 100 : valA}
-                                            indicatorClassName="bg-primary rotate-180"
+                                            indicatorClassName={`${(valB != null && valA > valB) ? "bg-primary" : "bg-foreground/50"} rotate-180`}
                                         />
                                     </Cell>
                                 ) : (
                                     <EmptyCell />
                                 )}
                                 {valB != null ? (
-                                    <Cell className="flex gap-2">
+                                    <Cell className={`${valA != null && valB != null && valB > valA ? "text-secondary font-bold" : ""} flex gap-2`}>
                                         <Progress
                                             value={valB > 100 ? 100 : valB}
-                                            indicatorClassName="bg-secondary"
+                                            indicatorClassName={`${(valA != null && valB > valA) ? "bg-secondary" : "bg-foreground/50"}`}
                                         />
                                         {valB}
-
                                     </Cell>
                                 ) : (
                                     <EmptyCell />
@@ -453,6 +465,19 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     )}
                 </Row>
 
+                <Row label="Description">
+                    {entityA ? (
+                        <Cell>{entityA.appearance?.description || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                    {entityB ? (
+                        <Cell>{entityB.appearance?.description || "N/A"}</Cell>
+                    ) : (
+                        <EmptyCell />
+                    )}
+                </Row>
+
                 {/* SECTION: WORK & BASE */}
                 <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20">
                     Work & Operations
@@ -521,8 +546,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     ) : (
                         <EmptyCell />
                     )}
-
-
                 </Row>
 
                 <Row label="Teams & Affiliations">
@@ -574,17 +597,17 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     ] as const
                 ).map(([label, a, b]) => (
                     <Row key={label} label={label}>
-                        <Cell className={`${a != null && b != null && a > b ? "text-primary font-bold" : ""} flex gap-2`}>
+                        <Cell className={`${(a != null && b != null && a > b) ? "text-primary font-bold" : "text-foreground"} flex gap-2`}>
                             {a != null ? (label.includes("penalty") ? `−${a}` : a) : "—"}
                             <Progress
                                 value={a! > 100 ? 100 : a}
-                                indicatorClassName="bg-primary rotate-180"
+                                indicatorClassName={`${(a != null && b != null && a > b) ? "bg-primary" : "bg-foreground/50"} rotate-180`}
                             />
                         </Cell>
-                        <Cell className={`${a != null && b != null && b > a ? "text-secondary font-bold" : ""} flex gap-2`}>
+                        <Cell className={`${(a != null && b != null && b > a) ? "text-secondary font-bold" : "text-foreground"} flex gap-2`}>
                             <Progress
                                 value={b! > 100 ? 100 : b}
-                                indicatorClassName="bg-primary "
+                                indicatorClassName={`${(a != null && b != null && b > a) ? "bg-secondary" : "bg-foreground/50"} `}
                             />
                             {b != null ? (label.includes("penalty") ? `−${b}` : b) : "—"}
                         </Cell>

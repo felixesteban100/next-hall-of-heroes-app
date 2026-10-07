@@ -98,7 +98,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                         unoptimized
                         src={power.img}
                         alt={power.name}
-                        className="h-52 w-auto rounded-lg object-cover shrink-0"
+                        className="h-52 w-auto lg:max-w-sm rounded-lg object-cover shrink-0"
                         width={500}
                         height={500}
                     />

@@ -27,7 +27,12 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     // 1. Fetch Members
     const teamCharacters = await collectionCharacters
-        .find({ "connections.groupAffiliation": { $in: [team.id] } })
+        .find({
+            $or: [
+                { "connections.groupAffiliation": { $in: [team.id] } },
+                { "connections.groupAffiliation": team.name }
+            ]
+        })
         .sort({ name: 1 })
         .toArray();
 

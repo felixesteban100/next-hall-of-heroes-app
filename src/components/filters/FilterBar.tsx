@@ -123,13 +123,13 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10 "
+                        className="pl-10"
                     />
                     {name && (
                         <X
                             size={16}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
-                            onClick={() => { setName(""); updateParam("name", ""); }}
+                            onClick={() => { setName(""); /* updateParam("name", ""); */ }}
                         />
                     )}
                 </div>

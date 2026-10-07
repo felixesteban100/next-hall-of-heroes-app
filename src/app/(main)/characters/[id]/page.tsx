@@ -153,7 +153,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 
                         <div className="flex flex-wrap gap-2 pt-1">
                             {aliases.length ? aliases.join(",").split(",").map((a, i) => (
-                                <Badge variant="secondary" key={a + i}>{a}</Badge>
+                                <Badge variant="outline" className="border-foreground" key={a + i}>{a}</Badge>
                             )) : <p className="text-sm text-muted-foreground">No aliases or alter egos listed.</p>}
                         </div>
                     </div>
@@ -229,12 +229,14 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             {/* Scores */}
             {characterScore && <div id={"Scores"} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
-                {Object.entries(characterScore).map(([key, value]) => (
-                    <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
-                        <span className="font-light capitalize">{key}: {value}</span>
-                        <Progress value={value} />
-                    </div>
-                ))}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                    {Object.entries(characterScore).map(([key, value]) => (
+                        <div key={key} className={`${key == "overall" && "col-span-2 lg:col-span-3"} flex flex-col justify-between gap-2 border p-3 rounded bg-muted`}>
+                            <span className="font-light capitalize">{key}: <span className="font-bold">{value}</span></span>
+                            <Progress value={value} />
+                        </div>
+                    ))}
+                </div>
             </div>}
 
             {/* Groups & Affiliations */}

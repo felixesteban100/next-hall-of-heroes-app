@@ -1,9 +1,9 @@
 "use client"
 
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
-import { getCharacterAlignmentColor, getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib/character_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib/character_utils";
 import CharacterBadge from "./CharacterBadge";
 import { ViewTransition } from 'react'
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
@@ -34,7 +34,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
         <Card
             className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl "
         >
-            <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-[4/4]"} bg-muted/20 overflow-hidden`}>
+            <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden`}>
                 <ViewTransition name={`character-${character.id}`}>
                     <Image
                         src={`${character.images.md}`}
@@ -51,7 +51,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                 <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
                 <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={`${getCharacterAlignmentTextColor(character.biography.alignment)} bg-transparent font-bold`} />
             </CardHeader>
-            <CardDescription className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
+            {/* <CardDescription className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
                 <div className="flex items-center">
                     <p>{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown" : character.biography.fullName}</p>
                     <span className="text-xs h-5 self-center text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
@@ -59,6 +59,30 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </span>
                 </div>
                 <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-12 w-auto rounded-md" />
+            </CardDescription> */}
+            <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 shrink-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <p className="truncate">
+                        {character.biography.fullName === "-" || character.biography.fullName === ""
+                            ? "Unknown"
+                            : character.biography.fullName}
+                    </p>
+                    <span className="text-xs h-5 self-center text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+                        #{character.id}
+                    </span>
+                </div>
+
+                {/* Uniform publisher logo */}
+                <div className="h-8 w-16 sm:h-9 sm:w-20 shrink-0 flex items-center justify-center">
+                    <Image
+                        src={character.biography.publisher?.logo ?? ""}
+                        alt={`${character.biography.publisher?.name ?? "publisher"} logo`}
+                        width={120}
+                        height={60}
+                        unoptimized
+                        className="max-h-full max-w-full object-contain"
+                    />
+                </div>
             </CardDescription>
             <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0">
                 <div className="grid grid-cols-4 w-full divide-x divide-foreground/50 text-center text-xs">
