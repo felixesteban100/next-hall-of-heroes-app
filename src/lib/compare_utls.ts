@@ -1,5 +1,5 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
-import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import type { CharacterWithJoinTeamUniversePowerEnemies, Universe } from "@/types";
 
 const STAT_KEYS = [
     "intelligence",
@@ -207,6 +207,17 @@ export function radarData(
     }));
 }
 
+export function radarDataFromStats(
+    statsA: Record<string, number> | null | undefined,
+    statsB: Record<string, number> | null | undefined
+) {
+    return STAT_KEYS_RADAR.map((key) => ({
+        stat: key.slice(0, 3).toUpperCase(),
+        full: key,
+        A: Math.min(100, Number(statsA?.[key]) || 0),
+        B: Math.min(100, Number(statsB?.[key]) || 0),
+    }));
+}
 
 // Helper to extract team names from groupAffiliation array
 export const getTeamNames = (teams: any) => {
@@ -232,3 +243,81 @@ export const getPublisher = (pub: any) => {
     if (typeof pub === "string") return pub;
     return pub.name || pub.value || "N/A";
 };
+
+
+export function aggregateScores(
+    entities: CharacterWithJoinTeamUniversePowerEnemies[]
+): MatchBreakdown | null {
+    const scores = entities.map(computeMatchScore).filter(Boolean) as MatchBreakdown[];
+    if (!scores.length) return null;
+
+    const avg = (key: keyof MatchBreakdown) =>
+        scores.reduce((s, x) => s + Number(x[key]), 0) / scores.length;
+
+    return {
+        combat: round1(avg("combat")),
+        tier: round1(avg("tier")),
+        class: round1(avg("class")),
+        powers: round1(avg("powers")),
+        threat: round1(avg("threat")),
+        weaknessPenalty: round1(avg("weaknessPenalty")),
+        overall: round1(avg("overall")),
+    };
+}
+
+// powerstats average for radar / RowScoreComparer
+export function avgPowerstats(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    const keys = ["intelligence", "strength", "speed", "durability", "power", "combat", "total"] as const;
+    const out: Record<string, number> = {};
+    for (const k of keys) {
+        const vals = entities.map((e) => Number(e.powerstats?.[k]) || 0);
+        out[k] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    }
+    return out;
+}
+
+export function maxTier(entities: { tier?: number }[]) {
+    if (!entities.length) return null;
+    return Math.max(...entities.map((e) => e.tier ?? 0));
+}
+
+export function maxClass(entities: { class?: number }[]) {
+    if (!entities.length) return null;
+    return Math.max(...entities.map((e) => e.class ?? 0));
+}
+
+export function uniquePublishers(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    const map = new Map<string, { name: string; logo?: string }>();
+    for (const e of entities) {
+        const p: Universe = e.biography?.publisher;
+        const name = typeof p === "string" ? p : p?.name;
+        if (!name) continue;
+        if (!map.has(name)) {
+            map.set(name, {
+                name,
+                logo: typeof p === "object" ? p?.logo : undefined,
+            });
+        }
+    }
+    return [...map.values()];
+}
+
+export function joinUnique(values: (string | undefined | null)[]) {
+    return [...new Set(values.map((v) => v?.trim()).filter(Boolean) as string[])].join(" · ") || undefined;
+}
+
+export function mergePowerNames(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return [...new Set(entities.flatMap((e) => getPowerNames(e.powers)))];
+}
+
+export function mergeWeaknesses(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return [...new Set(entities.flatMap((e) => e.weaknesses || []))];
+}
+
+export function mergeTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return [...new Set(entities.flatMap((e) => getTeamNames(e.connections?.groupAffiliation)))];
+}
+
+export function mergeEnemies(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return [...new Set(entities.flatMap((e) => getEnemyNames(e.connections?.enemies)))];
+}

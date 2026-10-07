@@ -53,7 +53,7 @@ export function RowScoreComparer({
                 // Format values (e.g. adding minus sign for penalties)
                 const formatValue = (val?: number) => {
                     if (val == null) return "—";
-                    return isPenalty || label.toLowerCase().includes("penalty") ? `−${val}` : val;
+                    return isPenalty || label.toLowerCase().includes("penalty") ? `−${Math.round(val * 100) / 100}` : Math.round(val * 100) / 100;
                 };
 
                 // Clamp progress value between 0 and max

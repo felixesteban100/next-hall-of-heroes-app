@@ -1,6 +1,6 @@
 "use server";
 
-import { CharacterOption } from "@/components/compare/CharacterCombobox";
+import { CharacterOption } from "@/components/compare/selectors/CharacterCombobox";
 import { collectionCharacters } from "@/db/mongodb";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -9,22 +9,26 @@ export async function clearDataCache(path?: string, tag?: string) {
     if (tag) revalidateTag(tag, { expire: 0 });
 }
 
-export async function searchCharacters(query: string, excludeId?: number) {
-    const q = query.trim();
+// app/actions.ts
+export async function searchCharacters(
+    query: string,
+    excludeIds: number | number[] = []
+) {
+    const exclude = (Array.isArray(excludeIds) ? excludeIds : [excludeIds])
+        .map(Number)
+        .filter((n) => !Number.isNaN(n));
+
     const filter: Record<string, unknown> = {};
+    if (exclude.length) filter.id = { $nin: exclude };
 
-    if (excludeId != null && !Number.isNaN(Number(excludeId))) {
-        filter.id = { $ne: Number(excludeId) };
-    }
-
+    const q = query.trim();
     if (q) {
         const rx = { $regex: q, $options: "i" };
         filter.$or = [
             { name: rx },
             { slug: rx },
             { "biography.fullName": rx },
-            { "biography.alterEgos": rx },
-            { "biography.aliases": rx }, // works if aliases are strings in an array
+            { "biography.aliases": rx },
         ];
     }
 

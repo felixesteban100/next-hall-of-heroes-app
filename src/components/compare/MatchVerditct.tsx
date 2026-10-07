@@ -10,10 +10,10 @@ type Props = {
 };
 
 export function MatchVerdict({
-    // nameA = "Entity A",
-    // nameB = "Entity B",
-    nameA = "Character A",
-    nameB = "Character B",
+    nameA = "Entity A",
+    nameB = "Entity B",
+    // nameA = "Character A",
+    // nameB = "Character B",
     scoreA,
     scoreB,
     isNemesis,
