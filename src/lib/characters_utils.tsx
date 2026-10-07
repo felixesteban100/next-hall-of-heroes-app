@@ -1,7 +1,7 @@
 import { CircleQuestionMark, Frown, Meh, Smile } from "lucide-react";
 
-export function CharacterBadgeIcon(Alignment: string) {
-    switch (Alignment) {
+export function CharacterBadgeIcon(alignment: string) {
+    switch (alignment) {
         case "good":
             return <Smile className="" />;
         case "neutral":
@@ -13,14 +13,14 @@ export function CharacterBadgeIcon(Alignment: string) {
     }
 }
 
-export function getAligmentIcon(Alignment: string) {
-    switch (Alignment) {
+export function getAligmentIcon(alignment: string) {
+    switch (alignment) {
         case "good":
-            Smile;
+            return Smile;
         case "neutral":
-            Meh;
+            return Meh;
         case "bad":
-            Frown
+            return Frown
         default:
             return CircleQuestionMark;
     }

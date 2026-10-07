@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dices } from "lucide-react";
 import { simulateSpar } from "@/lib/compare_utls";
 
@@ -16,13 +16,18 @@ export function SparPanel({
     nameB?: string;
 }) {
     const [seed, setSeed] = useState(0);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Ensure we only run randomized simulations after hydration
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const result = useMemo(() => {
-        if (scoreA == null || scoreB == null) return null;
-        // seed in deps so "Roll again" re-runs
+        if (!isMounted || scoreA == null || scoreB == null) return null;
         void seed;
         return simulateSpar(scoreA, scoreB, 100);
-    }, [scoreA, scoreB, seed]);
+    }, [scoreA, scoreB, seed, isMounted]);
 
     if (scoreA == null || scoreB == null) {
         return (
@@ -33,7 +38,7 @@ export function SparPanel({
     }
 
     return (
-        <div className="rounded-xl border border-muted-foreground/20 p-4 space-y-3">
+        <div className="rounded-xl border border-muted-foreground/20 p-4 space-y-3 min-h-[140px]">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Spar simulation (100 rounds)
@@ -48,7 +53,12 @@ export function SparPanel({
                 </button>
             </div>
 
-            {result && (
+            {/* Skeleton loader / fallback state during SSR hydration */}
+            {!result ? (
+                <div className="py-4 text-center text-xs text-muted-foreground animate-pulse">
+                    Calculating simulation...
+                </div>
+            ) : (
                 <>
                     <div className="grid grid-cols-3 gap-2 text-center">
                         <div>

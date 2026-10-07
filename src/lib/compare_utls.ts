@@ -206,3 +206,29 @@ export function radarData(
         B: b ? Math.min(100, Number(b.powerstats?.[key]) || 0) : 0,
     }));
 }
+
+
+// Helper to extract team names from groupAffiliation array
+export const getTeamNames = (teams: any) => {
+    if (!teams || !Array.isArray(teams)) return [];
+    return teams.map((t) => (typeof t === "string" ? t : t.name || t.value));
+};
+
+// Helper to extract enemy names from enemies array
+export const getEnemyNames = (enemies: any) => {
+    if (!enemies || !Array.isArray(enemies)) return [];
+    return enemies.map((e) => (typeof e === "string" ? e : e.name));
+};
+
+// Helper to extract power names from powers array
+export const getPowerNames = (powers: any) => {
+    if (!powers || !Array.isArray(powers)) return [];
+    return powers.map((p) => (typeof p === "string" ? p : p.name || p.value));
+};
+
+// Helper to safely get publisher string
+export const getPublisher = (pub: any) => {
+    if (!pub) return "N/A";
+    if (typeof pub === "string") return pub;
+    return pub.name || pub.value || "N/A";
+};
