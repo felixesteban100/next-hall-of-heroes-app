@@ -203,20 +203,18 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                     )}
                     {entityB ? (
                         <Cell>
-                            <Cell>
-                                <div className="flex flex-col justify-center items-center gap-1">
-                                    <Image
-                                        src={entityB.biography?.publisher?.logo || "/placeholder.png"}
-                                        alt={entityB.biography?.publisher?.name || ""}
-                                        width={500}
-                                        height={500}
-                                        className="h-20 w-auto object-contain"
-                                    />
-                                    <span className="text-sm font-medium">
-                                        {getPublisher(entityB.biography?.publisher)}
-                                    </span>
-                                </div>
-                            </Cell>
+                            <div className="flex flex-col justify-center items-center gap-1">
+                                <Image
+                                    src={entityB.biography?.publisher?.logo || "/placeholder.png"}
+                                    alt={entityB.biography?.publisher?.name || ""}
+                                    width={500}
+                                    height={500}
+                                    className="h-20 w-auto object-contain"
+                                />
+                                <span className="text-sm font-medium">
+                                    {getPublisher(entityB.biography?.publisher)}
+                                </span>
+                            </div>
                         </Cell>
                     ) : (
                         <EmptyCell />
