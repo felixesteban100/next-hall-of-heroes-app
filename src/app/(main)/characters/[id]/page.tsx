@@ -192,7 +192,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     <p className="text-sm font-light flex gap-1.5 items-center">
                         <Percent size={16} /> Overall score: {powerstats.total}
                     </p>
-                    <Progress value={powerstats.total} indicatorClassName="bg-primary" />
+                    <Progress value={powerstats.total > 100 ? 100 : powerstats.total} indicatorClassName="bg-primary" />
                 </div>
             </div>
 
