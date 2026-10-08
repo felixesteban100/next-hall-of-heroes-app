@@ -1,9 +1,8 @@
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
-// lib/compareParams.ts
-export type CompareMode = "1v1" | "team";
+export type CompareMode = "1v1" | "team" | "bracket";
 
-export function parseIdList(raw?: string | string[]): number[] {
+export function parseIdList(raw?: string | string[] | null): number[] {
     if (!raw) return [];
     const s = Array.isArray(raw) ? raw.join(",") : raw;
     return s
@@ -15,12 +14,13 @@ export function parseIdList(raw?: string | string[]): number[] {
 
 export function detectMode(params: {
     mode?: string;
-    id1?: string;
-    id2?: string;
     a?: string;
     b?: string;
-}): CompareMode {
-    if (params.mode === "team") return "team";
-    if (params.a != null || params.b != null) return "team";
-    return "1v1";
+    id1?: string;
+    id2?: string;
+    p?: string;
+}) {
+    if (params.mode === "bracket" || params.p) return "bracket" as const;
+    if (params.mode === "team" || params.a || params.b) return "team" as const;
+    return "1v1" as const;
 }

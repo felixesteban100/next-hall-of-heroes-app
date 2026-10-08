@@ -1,3 +1,5 @@
+import "server-only"
+
 import { Character, Power, Team, Universe } from '@/types';
 import { MongoClient } from 'mongodb';
 

@@ -1,7 +1,7 @@
 // components/compare/rows/RowGroupedPills.tsx
 import { Row } from "./Row";
 import { Cell, EmptyCell } from "./Cell";
-import type { GroupedItems } from "@/lib/compare_utls";
+import type { GroupedItems } from "@/lib/compare/compare_utls";
 
 function GroupBlock({
     group,

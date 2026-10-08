@@ -1,7 +1,7 @@
 "use server";
 
-import { CharacterOption } from "@/components/compare/selectors/CharacterCombobox";
 import { collectionCharacters } from "@/db/mongodb";
+import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function clearDataCache(path?: string, tag?: string) {
@@ -49,4 +49,19 @@ export async function searchCharacters(
             },
         ])
         .toArray();
+}
+
+export async function sampleCharacterIds(
+    count: number,
+    excludeIds: number[] = []
+) {
+    const exclude = excludeIds.map(Number).filter((n) => !Number.isNaN(n));
+    const rows = await collectionCharacters
+        .aggregate<{ id: number }>([
+            { $match: exclude.length ? { id: { $nin: exclude } } : {} },
+            { $sample: { size: Math.min(Math.max(count, 1), 10) } },
+            { $project: { _id: 0, id: 1 } },
+        ])
+        .toArray();
+    return rows.map((r) => r.id);
 }

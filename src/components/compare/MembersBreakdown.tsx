@@ -23,7 +23,7 @@ export function MemberBreakdown({ rosterA, rosterB }: Props) {
 
     return (
         <>
-            <div className="bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-muted-foreground/20 flex items-center justify-between gap-2">
+            <div className="bg-muted px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border border-muted-foreground/20 flex items-center justify-between gap-2">
                 <span>Member breakdown</span>
                 <button
                     type="button"
@@ -35,8 +35,7 @@ export function MemberBreakdown({ rosterA, rosterB }: Props) {
             </div>
 
             <div
-                className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                    }`}
+                className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"} border`}
             >
                 <div className="overflow-hidden min-h-0">
                     <Row label="Roster">

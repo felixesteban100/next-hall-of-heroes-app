@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { Row } from "./Row";
 import { Cell, EmptyCell } from "./Cell";
-import type { GroupedBadges, BadgeMeta, SharedBadge } from "@/lib/compare_utls";
+import type { GroupedBadges, BadgeMeta, SharedBadge } from "@/lib/compare/compare_utls";
 
 function BadgeVisual({ item }: { item: BadgeMeta }) {
     const Icon = item.icon;
@@ -11,7 +11,7 @@ function BadgeVisual({ item }: { item: BadgeMeta }) {
             {item.imageSrc ? (
                 <Image
                     src={item.imageSrc}
-                    alt={item.imageAlt || item.value}
+                    alt={`${item.imageAlt || item.value || "N/A"} ${item.key}`}
                     width={120}
                     height={48}
                     className="h-10 sm:h-12 w-auto object-contain"
@@ -19,7 +19,7 @@ function BadgeVisual({ item }: { item: BadgeMeta }) {
             ) : Icon ? (
                 <>
                     <Icon className="size-3.5 sm:size-4 shrink-0" />
-                    <span className="text-[10px] sm:text-xs md:text-sm font-bold break-words">
+                    <span className="text-[10px] sm:text-xs md:text-sm font-bold wrap-break-word">
                         {item.value}
                     </span>
                 </>
@@ -91,14 +91,14 @@ export function RowGroupedBadges({
     return (
         <Row label={label}>
             {hasA ? (
-                <Cell className="!items-start !justify-start">
+                <Cell className="items-start! justify-start!">
                     <Side group={groupA} showNames={showNames} />
                 </Cell>
             ) : (
                 <EmptyCell />
             )}
             {hasB ? (
-                <Cell className="!items-start !justify-start">
+                <Cell className="items-start! justify-start!">
                     <Side group={groupB} showNames={showNames} />
                 </Cell>
             ) : (

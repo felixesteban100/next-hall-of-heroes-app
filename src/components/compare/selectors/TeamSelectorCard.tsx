@@ -1,8 +1,9 @@
 import { TeamAddCombobox } from "./TeamAddCombobox";
 import Image from "next/image";
 import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
-import { collectionCharacters } from "@/db/mongodb";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
+// import { collectionCharacters } from "@/db/mongodb";
+import { searchCharacters } from "@/app/actions";
 
 export async function TeamSelectorCard({
     title,
@@ -24,29 +25,7 @@ export async function TeamSelectorCard({
 
 
     // Fetch lightweight index options for the combobox
-    const characterOptions = await collectionCharacters
-        .aggregate<{ id: number; name: string; slug: string }>([
-            {
-                $match: {
-                    ...(selectedIds != null
-                        ? { id: { $ne: Number(selectedIds) } }
-                        : {}),
-                },
-            },
-            { $sample: { size: 10 } },
-            {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    name: 1,
-                    slug: 1,
-                    "biography.fullName": 1, // string
-                    "biography.alterEgos": 1, // string
-                    "biography.aliases": 1 // Array
-                },
-            },
-        ])
-        .toArray();
+    const characterOptions = await searchCharacters("", excludeIds)
 
     return (
         <div className="bg-card border border-muted-foreground/20 rounded-xl p-5 flex flex-col gap-3">

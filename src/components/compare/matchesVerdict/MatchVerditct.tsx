@@ -1,4 +1,4 @@
-import { compareMatchScores, MatchBreakdown } from "@/lib/compare_utls";
+import { compareMatchScores, MatchBreakdown } from "@/lib/compare/compare_utls";
 import { Trophy, Swords, Equal } from "lucide-react";
 
 type Props = {
@@ -70,7 +70,7 @@ export function MatchVerdict({
             </div>
 
             {isNemesis && (
-                <div className="border-t border-muted-foreground/15 px-3 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-amber-500">
+                <div className="animate-pulse border-t border-muted-foreground/15 px-3 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-amber-500">
                     <Swords className="size-3.5" />
                     Canonical rivalry — listed as enemies
                 </div>

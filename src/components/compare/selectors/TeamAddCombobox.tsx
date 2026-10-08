@@ -12,22 +12,12 @@ import {
 import { searchCharacters } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
-
-export type CharacterOption = {
-    id: number;
-    name: string;
-    slug: string;
-    biography?: {
-        fullName?: string;
-        alterEgos?: string;
-        aliases?: string[];
-    };
-};
+import { CharacterOption } from "@/types";
 
 type Props = {
     excludeIds: number[];
-    /** "a" | "b" */
-    paramKey: "a" | "b";
+    /** "a" | "b" for teams, or "p" for a bracket */
+    paramKey: "a" | "b" | "p";
     /** Current team ids from the URL */
     ids: number[];
     initialOptions?: CharacterOption[];
@@ -91,24 +81,30 @@ export function TeamAddCombobox({
 
     const handleSelect = (slug: string | null) => {
         if (!slug) return;
-
         const match = options.find((o) => o.slug === slug);
-        if (!match || excludeSet.has(match.id)) return;
-        if (ids.includes(match.id)) {
-            setQuery("");
-            return;
-        }
-        if (ids.length >= max) {
-            setQuery("");
-            return;
-        }
+        if (!match || excludeSet.has(match.id) || ids.includes(match.id)) return;
+        if (ids.length >= max) return;
 
         const nextIds = [...ids, match.id];
         const params = new URLSearchParams(searchParams.toString());
-        params.set("mode", "team");
-        params.delete("id1");
-        params.delete("id2");
-        params.set(paramKey, nextIds.join(","));
+
+        if (paramKey === "p") {
+            params.set("mode", "bracket");
+            params.set("size", String(max === 8 ? 8 : 4));
+            params.set("p", nextIds.join(","));
+            params.delete("a");
+            params.delete("b");
+            params.delete("id1");
+            params.delete("id2");
+        } else {
+            // existing team a/b branch
+            params.set("mode", "team");
+            params.set(paramKey, nextIds.join(","));
+            params.delete("id1");
+            params.delete("id2");
+            params.delete("p");
+            params.delete("size");
+        }
 
         pushParams(params);
         setQuery("");

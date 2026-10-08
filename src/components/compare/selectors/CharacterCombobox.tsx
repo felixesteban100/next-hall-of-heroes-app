@@ -11,17 +11,7 @@ import {
     ComboboxList,
 } from "@/components/ui/combobox";
 import { searchCharacters } from "@/app/actions";
-
-export type CharacterOption = {
-    id: number;
-    name: string;
-    slug: string;
-    biography?: {
-        fullName?: string;
-        alterEgos?: string;
-        aliases?: string[];
-    };
-}
+import { CharacterOption } from "@/types";
 
 interface CharacterComboboxProps {
     paramKey: "id1" | "id2";

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Dices } from "lucide-react";
-import { simulateSpar } from "@/lib/compare_utls";
+import { simulateSpar } from "@/lib/compare/compare_utls";
 
 export function SparPanel({
     scoreA,

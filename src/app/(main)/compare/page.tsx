@@ -1,23 +1,31 @@
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
 import { MatchVerdict } from "@/components/compare/matchesVerdict/MatchVerditct";
-import { aggregateTeamScores, computeMatchScore, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats } from "@/lib/compare_utls";
+import { aggregateTeamScores, computeMatchScore, groupAlignments, groupClasses, avgPowerstats, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats } from "@/lib/compare/compare_utls";
 import { StatsRadar } from "@/components/compare/StatRadar";
 import { ProfileSlot } from "@/components/compare/ProfileSlot";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
 import { SparPanel } from "@/components/compare/SparPanel";
-import { detectMode, parseIdList } from "@/lib/compareParams";
-import { fetchCharactersByIds } from "@/lib/fetchCompareEntities";
+import { detectMode, parseIdList } from "@/lib/compare/compareParams";
+import { fetchCharactersByIds, fetchFightersById } from "@/lib/compare/fetchCompareEntities";
 import { TeamSelectorCard } from "@/components/compare/selectors/TeamSelectorCard";
 import VS from "@/components/compare/VS";
-import { avgPowerstats } from "@/lib/compare_utls"; // if you added these
 import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
 import { TeamProfileSlot } from "@/components/compare/TeamProfileSlot";
 import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
 import TeamMatchVerdict from "@/components/compare/matchesVerdict/TeamMatchVerdict";
 import { RowGroupedPills } from "@/components/compare/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/compare/rows/RowGroupedBadges";
+import { CopySummaryButton } from "@/components/compare/CopySummaryButton";
+import { RandomFillButton } from "@/components/compare/RandomFillButton";
+import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
+// import { BracketView } from "@/components/compare/BracketView";
+// import { buildBracket } from "@/lib/compare/bracket";
+import { BracketPicker } from "@/components/compare/BracketAddCombobox";
+import { DynamicBracketView } from "@/components/compare/BracketView";
+import { Character } from "@/types";
+import { searchCharacters } from "@/app/actions";
 
 export const instant = false;
 
@@ -26,7 +34,9 @@ type SearchParamsPromise = Promise<{
     id2?: string;
     a?: string;
     b?: string;
+    p?: string;
     mode?: string;
+    size?: string;
 }>;
 
 export const MAX_TEAM_SIZE = 10; // one constant
@@ -34,6 +44,12 @@ export const MAX_TEAM_SIZE = 10; // one constant
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
     const mode = detectMode(params);
+
+    const size = 8;
+    const ids = parseIdList(params.p);
+    const fighters = await fetchFightersById(ids);
+    const characterOptions = await searchCharacters("", ids)
+    // const bouts = buildBracket(fighters, 10);
 
     // Build id lists for BOTH modes
     const idsA =
@@ -143,10 +159,54 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         { label: "Primary Enemies", functionGroup: groupEnemies, BadgeComponent: RowGroupedPills },
     ]
 
+    // after scores are computed:
+    const aceAInfo =
+        mode === "team" && teamA?.ace
+            ? { name: teamA.aceName ?? "Ace", overall: teamA.ace.overall }
+            : entityA
+                ? { name: entityA.name, overall: scoreA?.overall ?? 0 }
+                : null;
+
+    const aceBInfo =
+        mode === "team" && teamB?.ace
+            ? { name: teamB.aceName ?? "Ace", overall: teamB.ace.overall }
+            : entityB
+                ? { name: entityB.name, overall: scoreB?.overall ?? 0 }
+                : null;
+
+    if (mode === "bracket") {
+        return (
+            <div className="space-y-4 mt-4">
+                <ComparisonHeader title="Bracket" />
+                <CompareModeToggle />
+                <BracketPicker size={size} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={fighters} />
+                {/* <BracketView bouts={bouts} size={size} /> */}
+                <DynamicBracketView fighters={JSON.parse(JSON.stringify(fighters)).map((c: Character) => ({
+                    id: c.id,
+                    name: c.name,
+                    overall: c.powerstats.total,
+                    image: c.images.md,
+                }))} />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-4 mt-4">
             <ComparisonHeader />
-            <CompareModeToggle />
+            <div className="flex flex-wrap gap-2 items-center">
+                <CompareModeToggle />
+                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} />
+                <CopySummaryButton
+                    mode={mode}
+                    nameA={entityAName ?? "Side A"}
+                    nameB={entityBName ?? "Side B"}
+                    avgA={scoreA?.overall}
+                    avgB={scoreB?.overall}
+                    aceA={mode === "team" ? aceAInfo : null}
+                    aceB={mode === "team" ? aceBInfo : null}
+                />
+            </div>
 
             <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-4 overflow-visible">
                 {mode === "team" ? (
@@ -204,7 +264,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
             <div className="max-w-5xl mx-auto space-y-4 mb-4">
                 {mode === "team" && teamA && teamB ? (
-                    <TeamMatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA} teamB={teamB} />
+                    <TeamMatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA} teamB={teamB} entitiesA={entitiesA} entitiesB={entitiesB} />
                 ) : (
                     <MatchVerdict nameA={entityAName} nameB={entityBName} scoreA={scoreA} scoreB={scoreB} isNemesis={isNemesis} />
                 )}
@@ -232,11 +292,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                                 entities={entitiesA}
                                 variant="primary"
                                 score={scoreA?.overall}
+                                chemistry={computeTeamChemistry(entitiesA)}
                             />
                             <TeamProfileSlot
                                 entities={entitiesB}
                                 variant="secondary"
                                 score={scoreB?.overall}
+                                chemistry={computeTeamChemistry(entitiesB)}
                             />
                         </>
                     ) : (

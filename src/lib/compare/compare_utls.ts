@@ -1,6 +1,6 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
 import type { CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "./character_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "../character_utils";
 import type { LucideIcon } from "lucide-react";
 import {
     CHARACTER_TIER,
@@ -10,7 +10,7 @@ import {
     CHARACTER_CLASS_COLOR,
     CHARACTER_CLASS_ICON,
 } from "@/lib/constants";
-import { getAligmentIcon } from "./characters_utils"; // your paths
+import { getAligmentIcon } from "../characters_utils"; // your paths
 
 const STAT_KEYS = [
     "intelligence",

@@ -132,3 +132,17 @@ export type QueryOptions = {
     "appearance.race"?: string | RegExp;
     "powers.value"?: string | RegExp;
 };
+
+export type CharacterOption = {
+    id: number;
+    name: string;
+    slug: string;
+    biography?: {
+        fullName?: string;
+        alterEgos?: string;
+        aliases?: string[];
+    };
+    images: {
+        md: string
+    }
+}

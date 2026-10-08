@@ -1,4 +1,6 @@
-import { compareMatchScores, MatchBreakdown } from "@/lib/compare_utls";
+import { compareMatchScores, MatchBreakdown } from "@/lib/compare/compare_utls";
+import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Equal, Swords, Trophy } from "lucide-react";
 
 type Props = {
@@ -16,11 +18,16 @@ type Props = {
         aceName: string | null;
         memberCount: number;
     };
+    entitiesA: CharacterWithJoinTeamUniversePowerEnemies[],
+    entitiesB: CharacterWithJoinTeamUniversePowerEnemies[],
     isNemesis?: boolean;
 };
 
-export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, isNemesis }: Props) {
+export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, entitiesA, entitiesB, isNemesis }: Props) {
     const verdict = compareMatchScores(teamA.avg, teamB.avg);
+
+    const chemA = computeTeamChemistry(entitiesA);
+    const chemB = computeTeamChemistry(entitiesB);
 
     return (
         <div className="sticky top-0 z-30 mb-4 rounded-xl border border-muted-foreground/20 bg-card/95 backdrop-blur-md shadow-lg">
@@ -36,6 +43,12 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, isNemesis
                         Avg · Ace {teamA.ace.overall.toFixed(1)}
                         {teamA.aceName ? ` (${teamA.aceName})` : ""}
                     </p>
+                    {chemA && (
+                        <p className="text-[11px] text-muted-foreground">
+                            Chem <span className="font-bold text-foreground">{chemA.score}</span>
+                            {chemA.notes[0] ? ` · ${chemA.notes.join(", ")}` : ""}
+                        </p>
+                    )}
                 </div>
 
                 <div className="text-center">
@@ -75,10 +88,16 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, isNemesis
                         Avg · Ace {teamB.ace.overall.toFixed(1)}
                         {teamB.aceName ? ` (${teamB.aceName})` : ""}
                     </p>
+                    {chemB && (
+                        <p className="text-[11px] text-muted-foreground">
+                            Chem <span className="font-bold text-foreground">{chemB.score}</span>
+                            {chemB.notes[0] ? ` · ${chemB.notes[0]}` : ""}
+                        </p>
+                    )}
                 </div>
             </div>
             {isNemesis && (
-                <div className="border-t border-muted-foreground/15 px-3 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-amber-500">
+                <div className="animate-pulse border-t border-muted-foreground/15 px-3 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-amber-500">
                     <Swords className="size-3.5" />
                     Canonical rivalry — listed as enemies
                 </div>

@@ -1,8 +1,9 @@
 // components/compare/SelectorCard.tsx
-import { collectionCharacters } from "@/db/mongodb";
+// import { collectionCharacters } from "@/db/mongodb";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Image from "next/image";
 import { CharacterCombobox } from "./CharacterCombobox";
+import { searchCharacters } from "@/app/actions";
 
 interface SelectorCardProps {
     title: string;
@@ -16,29 +17,30 @@ export async function SelectorCard({ title, selected, otherSelectedId, paramKey,
     const headingColor = variant === "primary" ? "text-primary" : "text-secondary";
 
     // Fetch lightweight index options for the combobox
-    const characterOptions = await collectionCharacters
-        .aggregate<{ id: number; name: string; slug: string }>([
-            {
-                $match: {
-                    ...(otherSelectedId != null
-                        ? { id: { $ne: Number(otherSelectedId) } }
-                        : {}),
-                },
-            },
-            { $sample: { size: 10 } },
-            {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    name: 1,
-                    slug: 1,
-                    "biography.fullName": 1, // string
-                    "biography.alterEgos": 1, // string
-                    "biography.aliases": 1 // Array
-                },
-            },
-        ])
-        .toArray();
+    const characterOptions = await searchCharacters("", otherSelectedId)
+    // const characterOptions = await collectionCharacters
+    //     .aggregate<{ id: number; name: string; slug: string }>([
+    //         {
+    //             $match: {
+    //                 ...(otherSelectedId != null
+    //                     ? { id: { $ne: Number(otherSelectedId) } }
+    //                     : {}),
+    //             },
+    //         },
+    //         { $sample: { size: 10 } },
+    //         {
+    //             $project: {
+    //                 _id: 0,
+    //                 id: 1,
+    //                 name: 1,
+    //                 slug: 1,
+    //                 "biography.fullName": 1, // string
+    //                 "biography.alterEgos": 1, // string
+    //                 "biography.aliases": 1 // Array
+    //             },
+    //         },
+    //     ])
+    //     .toArray();
 
     return (
         <div className="bg-card border border-muted-foreground/20 rounded-xl p-5 flex flex-col gap-3">
