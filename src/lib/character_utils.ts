@@ -1,4 +1,4 @@
-import { Frown, Meh, Smile } from "lucide-react";
+import { Frown, Mars, Meh, PersonStanding, Smile, Venus } from "lucide-react";
 
 export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
@@ -44,6 +44,21 @@ export function getCharacterAlignmentText(alignment: string) {
 
 export function getCharacterAligmentIcon(alignment: string) {
     return alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh
+}
+
+export function getCharacterGenderTextColor(gender: string) {
+    return gender === "Male" ? "text-blue-500" : "text-pink-500"
+}
+
+export function getCharacterGenderIcon(gender: string) {
+    return gender === "Male" ? Mars : Venus
+}
+
+export function getCharacterRaceIcon(race: string) {
+    switch (race) {
+        default:
+            return PersonStanding
+    }
 }
 
 export function joinTeam_universe_power_enemies_toCharacter(

@@ -1,5 +1,16 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
-import type { CharacterWithJoinTeamUniversePowerEnemies, Universe } from "@/types";
+import type { CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "./character_utils";
+import type { LucideIcon } from "lucide-react";
+import {
+    CHARACTER_TIER,
+    CHARACTER_TIER_COLOR,
+    CHARACTER_TIER_ICON,
+    CHARACTER_CLASS,
+    CHARACTER_CLASS_COLOR,
+    CHARACTER_CLASS_ICON,
+} from "@/lib/constants";
+import { getAligmentIcon } from "./characters_utils"; // your paths
 
 const STAT_KEYS = [
     "intelligence",
@@ -8,6 +19,7 @@ const STAT_KEYS = [
     "durability",
     "power",
     "combat",
+    "total"
 ] as const;
 
 export type MatchBreakdown = {
@@ -186,20 +198,11 @@ export function simulateSpar(
     };
 }
 
-export const STAT_KEYS_RADAR = [
-    "intelligence",
-    "strength",
-    "speed",
-    "durability",
-    "power",
-    "combat",
-] as const;
-
 export function radarData(
     a: CharacterWithJoinTeamUniversePowerEnemies | null,
     b: CharacterWithJoinTeamUniversePowerEnemies | null
 ) {
-    return STAT_KEYS_RADAR.map((key) => ({
+    return STAT_KEYS.map((key) => ({
         stat: key.slice(0, 3).toUpperCase(), // INT, STR, ...
         full: key,
         A: a ? Math.min(100, Number(a.powerstats?.[key]) || 0) : 0,
@@ -211,7 +214,7 @@ export function radarDataFromStats(
     statsA: Record<string, number> | null | undefined,
     statsB: Record<string, number> | null | undefined
 ) {
-    return STAT_KEYS_RADAR.map((key) => ({
+    return STAT_KEYS.map((key) => ({
         stat: key.slice(0, 3).toUpperCase(),
         full: key,
         A: Math.min(100, Number(statsA?.[key]) || 0),
@@ -237,87 +240,308 @@ export const getPowerNames = (powers: any) => {
     return powers.map((p) => (typeof p === "string" ? p : p.name || p.value));
 };
 
-// Helper to safely get publisher string
-export const getPublisher = (pub: any) => {
-    if (!pub) return "N/A";
-    if (typeof pub === "string") return pub;
-    return pub.name || pub.value || "N/A";
+export const getAlignmentNames = (powers: any) => {
+    if (!powers || !Array.isArray(powers)) return [];
+    return powers.map((p) => (getCharacterAlignmentText(typeof p === "string" ? p : p.name || p.value)));
 };
 
+export type TeamAggregate = {
+    /** Mean of member overalls */
+    avg: MatchBreakdown;
+    /** Strongest member's breakdown */
+    ace: MatchBreakdown;
+    /** Character that produced ace */
+    aceName: string | null;
+    memberCount: number;
+};
 
-export function aggregateScores(
+export function aggregateTeamScores(
     entities: CharacterWithJoinTeamUniversePowerEnemies[]
-): MatchBreakdown | null {
-    const scores = entities.map(computeMatchScore).filter(Boolean) as MatchBreakdown[];
-    if (!scores.length) return null;
+): TeamAggregate | null {
+    const scored = entities
+        .map((e) => ({ entity: e, score: computeMatchScore(e) }))
+        .filter((x): x is { entity: typeof entities[0]; score: MatchBreakdown } =>
+            x.score != null
+        );
 
-    const avg = (key: keyof MatchBreakdown) =>
-        scores.reduce((s, x) => s + Number(x[key]), 0) / scores.length;
+    if (!scored.length) return null;
+
+    const n = scored.length;
+    const keys = [
+        "combat",
+        "tier",
+        "class",
+        "powers",
+        "threat",
+        "weaknessPenalty",
+        "overall",
+    ] as const;
+
+    const avg = {} as MatchBreakdown;
+    for (const k of keys) {
+        avg[k] =
+            Math.round(
+                (scored.reduce((s, x) => s + Number(x.score[k] ?? 0), 0) / n) * 10
+            ) / 10;
+    }
+
+    const best = scored.reduce((a, b) =>
+        b.score.overall > a.score.overall ? b : a
+    );
 
     return {
-        combat: round1(avg("combat")),
-        tier: round1(avg("tier")),
-        class: round1(avg("class")),
-        powers: round1(avg("powers")),
-        threat: round1(avg("threat")),
-        weaknessPenalty: round1(avg("weaknessPenalty")),
-        overall: round1(avg("overall")),
+        avg,
+        ace: best.score,
+        aceName: best.entity.name,
+        memberCount: n,
     };
 }
 
 // powerstats average for radar / RowScoreComparer
 export function avgPowerstats(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    const keys = ["intelligence", "strength", "speed", "durability", "power", "combat", "total"] as const;
     const out: Record<string, number> = {};
-    for (const k of keys) {
+    for (const k of STAT_KEYS) {
         const vals = entities.map((e) => Number(e.powerstats?.[k]) || 0);
         out[k] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     }
     return out;
 }
 
-export function maxTier(entities: { tier?: number }[]) {
-    if (!entities.length) return null;
-    return Math.max(...entities.map((e) => e.tier ?? 0));
-}
+export type SharedItem = {
+    name: string;
+    /** Characters on this side who have it */
+    members: { id: number; name: string }[];
+};
 
-export function maxClass(entities: { class?: number }[]) {
-    if (!entities.length) return null;
-    return Math.max(...entities.map((e) => e.class ?? 0));
-}
+export type GroupedItems = {
+    shared: SharedItem[];
+    byCharacter: { id: number; name: string; items: string[] }[];
+};
+/**
+ * itemsForEntity: returns the string list for one character
+ * sharedThreshold: 2 = on at least two members; use entities.length for "everyone"
+ */
+export function groupItemsByCharacter(
+    entities: CharacterWithJoinTeamUniversePowerEnemies[],
+    itemsForEntity: (e: CharacterWithJoinTeamUniversePowerEnemies) => string[],
+    sharedThreshold = 2
+): GroupedItems {
+    if (!entities.length) {
+        return { shared: [], byCharacter: [] };
+    }
 
-export function uniquePublishers(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    const map = new Map<string, { name: string; logo?: string }>();
+    const idToName = new Map(entities.map((e) => [e.id, e.name]));
+
+    // item → set of character ids
+    const itemToChars = new Map<string, Set<number>>();
+
     for (const e of entities) {
-        const p: Universe = e.biography?.publisher;
-        const name = typeof p === "string" ? p : p?.name;
-        if (!name) continue;
-        if (!map.has(name)) {
-            map.set(name, {
+        for (const item of new Set(itemsForEntity(e).filter(Boolean))) {
+            if (!itemToChars.has(item)) itemToChars.set(item, new Set());
+            itemToChars.get(item)!.add(e.id);
+        }
+    }
+
+    const shared: SharedItem[] = [];
+    for (const [name, ids] of itemToChars) {
+        if (ids.size >= sharedThreshold) {
+            shared.push({
                 name,
-                logo: typeof p === "object" ? p?.logo : undefined,
+                members: [...ids]
+                    .map((id) => ({ id, name: idToName.get(id) ?? String(id) }))
+                    .sort((a, b) => a.name.localeCompare(b.name)),
             });
         }
     }
-    return [...map.values()];
+    shared.sort((a, b) => a.name.localeCompare(b.name));
+
+    const sharedNames = new Set(shared.map((s) => s.name));
+
+    const byCharacter = entities.map((e) => {
+        const all = [...new Set(itemsForEntity(e).filter(Boolean))];
+        return {
+            id: e.id,
+            name: e.name,
+            items: all
+                .filter((x) => !sharedNames.has(x))
+                .sort((a, b) => a.localeCompare(b)),
+        };
+    });
+
+    return { shared, byCharacter };
 }
 
-export function joinUnique(values: (string | undefined | null)[]) {
-    return [...new Set(values.map((v) => v?.trim()).filter(Boolean) as string[])].join(" · ") || undefined;
+// Thin wrappers (optional)
+export function groupPowers(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupItemsByCharacter(entities, (e) => getPowerNames(e.powers));
 }
 
-export function mergePowerNames(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    return [...new Set(entities.flatMap((e) => getPowerNames(e.powers)))];
+export function groupWeaknesses(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupItemsByCharacter(entities, (e) => e.weaknesses || []);
 }
 
-export function mergeWeaknesses(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    return [...new Set(entities.flatMap((e) => e.weaknesses || []))];
+export function groupEnemies(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupItemsByCharacter(entities, (e) =>
+        getEnemyNames(e.connections?.enemies)
+    );
 }
 
-export function mergeTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    return [...new Set(entities.flatMap((e) => getTeamNames(e.connections?.groupAffiliation)))];
+export function groupTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupItemsByCharacter(entities, (e) =>
+        getTeamNames(e.connections?.groupAffiliation)
+    );
 }
 
-export function mergeEnemies(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    return [...new Set(entities.flatMap((e) => getEnemyNames(e.connections?.enemies)))];
+
+/* 
+*
+*
+* 
+* 
+ 
+*/
+
+export type BadgeMeta = {
+    /** Grouping key — must be stable (e.g. "tier:4", "class:5", "align:good", "pub:DC Comics") */
+    key: string;
+    value: string;
+    className?: string;
+    icon?: LucideIcon | null;
+    imageSrc?: string | null;
+    imageAlt?: string;
+};
+
+export type SharedBadge = BadgeMeta & {
+    members: { id: number; name: string }[];
+};
+
+export type GroupedBadges = {
+    shared: SharedBadge[];
+    byCharacter: {
+        id: number;
+        name: string;
+        items: BadgeMeta[];
+    }[];
+};
+
+export function groupBadgesByCharacter(
+    entities: CharacterWithJoinTeamUniversePowerEnemies[],
+    metaForEntity: (e: CharacterWithJoinTeamUniversePowerEnemies) => BadgeMeta | null,
+    sharedThreshold = 2
+): GroupedBadges {
+    if (!entities.length) return { shared: [], byCharacter: [] };
+
+    // key → { meta, member ids }
+    const map = new Map<string, { meta: BadgeMeta; ids: Set<number> }>();
+
+    for (const e of entities) {
+        const meta = metaForEntity(e);
+        if (!meta?.key) continue;
+        const cur = map.get(meta.key);
+        if (!cur) {
+            map.set(meta.key, { meta, ids: new Set([e.id]) });
+        } else {
+            cur.ids.add(e.id);
+        }
+    }
+
+    const idToName = new Map(entities.map((e) => [e.id, e.name]));
+
+    const shared: SharedBadge[] = [];
+    for (const { meta, ids } of map.values()) {
+        if (ids.size >= sharedThreshold) {
+            shared.push({
+                ...meta,
+                members: [...ids]
+                    .map((id) => ({ id, name: idToName.get(id) ?? String(id) }))
+                    .sort((a, b) => a.name.localeCompare(b.name)),
+            });
+        }
+    }
+    shared.sort((a, b) => a.value.localeCompare(b.value));
+
+    const sharedKeys = new Set(shared.map((s) => s.key));
+
+    const byCharacter = entities.map((e) => {
+        const meta = metaForEntity(e);
+        const items =
+            meta && !sharedKeys.has(meta.key) ? [meta] : [];
+        return { id: e.id, name: e.name, items };
+    });
+
+    return { shared, byCharacter };
+}
+
+export function groupGenders(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const a = c.appearance.gender;
+        return {
+            key: `gender:${a ?? "unknown"}`,
+            value: a,
+            className: getCharacterGenderTextColor(a),
+            icon: getCharacterGenderIcon(a),
+        };
+    });
+}
+
+export function groupRaces(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const a = c.appearance.race;
+        return {
+            key: `race:${a ?? "unknown"}`,
+            value: a ?? "unknown",
+            className: "",
+            icon: getCharacterRaceIcon(a),
+        };
+    });
+}
+
+export function groupTiers(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const tier = c.tier as keyof typeof CHARACTER_TIER;
+        return {
+            key: `tier:${c.tier}`,
+            value: CHARACTER_TIER[tier] ?? "N/A",
+            className: CHARACTER_TIER_COLOR[tier]?.text,
+            icon: CHARACTER_TIER_ICON[tier],
+        };
+    });
+}
+
+export function groupClasses(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const cls = c.class as keyof typeof CHARACTER_CLASS;
+        return {
+            key: `class:${c.class}`,
+            value: CHARACTER_CLASS[cls] ?? "N/A",
+            className: CHARACTER_CLASS_COLOR[cls]?.text,
+            icon: CHARACTER_CLASS_ICON[cls],
+        };
+    });
+}
+
+export function groupAlignments(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const a = c.biography?.alignment;
+        return {
+            key: `align:${a ?? "unknown"}`,
+            value: getCharacterAlignmentText(a),
+            className: getCharacterAlignmentTextColor(a),
+            icon: getAligmentIcon(a),
+        };
+    });
+}
+
+export function groupPublishers(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+    return groupBadgesByCharacter(entities, (c) => {
+        const p: Universe = c.biography?.publisher;
+        const name = typeof p === "string" ? p : p?.name ?? "Unknown";
+        const logo = typeof p === "object" ? p?.logo : undefined;
+        return {
+            key: `pub:${name}`,
+            value: name,
+            imageSrc: logo || "/placeholder.png",
+            imageAlt: name,
+        };
+    });
 }

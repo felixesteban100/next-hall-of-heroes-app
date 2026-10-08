@@ -43,7 +43,7 @@ export function TeamAddCombobox({
     initialOptions = [],
     placeholder = "Add character…",
     disabled = false,
-    max = 4,
+    max = 10, // MAX_TEAM_SIZE
 }: Props) {
     const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();

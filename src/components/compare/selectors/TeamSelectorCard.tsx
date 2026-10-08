@@ -2,6 +2,7 @@ import { TeamAddCombobox } from "./TeamAddCombobox";
 import Image from "next/image";
 import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { collectionCharacters } from "@/db/mongodb";
+import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 export async function TeamSelectorCard({
     title,
@@ -10,7 +11,7 @@ export async function TeamSelectorCard({
     excludeIds,
     paramKey,
     variant,
-    max = 4,
+    max = MAX_TEAM_SIZE,
 }: {
     title: string;
     selected: { id: number; name: string; slug: string, image: string }[];

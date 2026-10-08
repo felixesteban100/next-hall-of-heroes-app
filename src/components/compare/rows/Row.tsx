@@ -1,5 +1,3 @@
-import { PillList } from "../PillList";
-import { Cell, EmptyCell } from "./Cell";
 
 export function Row({ label, children }: { label: string; children: React.ReactNode }) {
     return (
@@ -10,58 +8,4 @@ export function Row({ label, children }: { label: string; children: React.ReactN
             {children}
         </div>
     );
-}
-
-type RowTextContentProps = {
-    label: string
-    entityAexist: boolean
-    entityBexist: boolean
-    entityAtext?: string | number
-    entityBtext?: string | number
-}
-
-export function RowTextContent({ label, entityAexist, entityBexist, entityAtext, entityBtext }: RowTextContentProps) {
-    return (
-        <Row label={label}>
-            {entityAexist ? (
-                <Cell>{entityAtext || "N/A"}</Cell>
-            ) : (
-                <EmptyCell />
-            )}
-            {entityBexist ? (
-                <Cell>{entityBtext || "N/A"}</Cell>
-            ) : (
-                <EmptyCell />
-            )}
-        </Row>
-    )
-}
-
-type RowPillContentProps = {
-    label: string
-    entityAexist: boolean
-    entityBexist: boolean
-    entityAPillList: string[]
-    entityBPillList: string[]
-}
-
-export function RowPillContent({ entityAexist, entityBexist, label, entityAPillList, entityBPillList }: RowPillContentProps) {
-    return (
-        <Row label={label}>
-            {entityAexist ? (
-                <Cell>
-                    <PillList items={entityAPillList} variant="primary" />
-                </Cell>
-            ) : (
-                <EmptyCell />
-            )}
-            {entityBexist ? (
-                <Cell>
-                    <PillList items={entityBPillList} variant="secondary" />
-                </Cell>
-            ) : (
-                <EmptyCell />
-            )}
-        </Row>
-    )
 }
