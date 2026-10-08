@@ -49,6 +49,14 @@ export function CharacterCombobox({
                 id: selectedId,
                 name: selectedName,
                 slug: selectedSlug,
+                biography: {
+                    fullName: "",
+                    alterEgos: "",
+                    aliases: [],
+                },
+                images: {
+                    md: "",
+                }
             });
         }
         return Array.from(map.values());
