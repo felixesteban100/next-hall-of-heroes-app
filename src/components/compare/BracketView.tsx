@@ -81,27 +81,27 @@ function BoutCard({
                 : "border-border/60"
                 }`}
         >
-            {isVisible && bout.a && bout.b ? (
-                <>
-                    <FighterLine
-                        c={bout.a}
-                        score={bout.scoreA}
-                        winnerId={bout.winner?.id}
-                        isActiveWinner={isCurrentStep}
-                    />
-                    <FighterLine
-                        c={bout.b}
-                        score={bout.scoreB}
-                        winnerId={bout.winner?.id}
-                        isActiveWinner={isCurrentStep}
-                    />
-                </>
+            {/* {isVisible && bout.a && bout.b ? (
+                <> */}
+            <FighterLine
+                c={bout.a}
+                score={bout.scoreA}
+                winnerId={isVisible ? bout.winner?.id : 0}
+                isActiveWinner={isCurrentStep}
+            />
+            <FighterLine
+                c={bout.b}
+                score={bout.scoreB}
+                winnerId={isVisible ? bout.winner?.id : 0}
+                isActiveWinner={isCurrentStep}
+            />
+            {/* </>
             ) : (
                 <>
                     <FighterLine c={null} score={null} />
                     <FighterLine c={null} score={null} />
                 </>
-            )}
+            )} */}
 
             {bout.winner && isVisible && (
                 <motion.p
@@ -186,7 +186,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
     }
 
     return (
-        <div className="flex flex-col items-center py-3 sm:py-4 gap-3 sm:gap-4 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col items-center py-3 sm:py-4 gap-3 sm:gap-4 w-full max-w-full ">
             {/* Playback Controls Bar */}
             <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-full border border-border/80 shadow-2xs">
                 <button
@@ -237,7 +237,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
                                         <BoutCard
                                             key={bout.id}
                                             bout={bout}
-                                            isVisible={boutIndex <= currentStep}
+                                            isVisible={boutIndex < currentStep}
                                             isCurrentStep={isCurrentStep}
                                             cardRef={isCurrentStep ? activeCardRef : undefined}
                                         />

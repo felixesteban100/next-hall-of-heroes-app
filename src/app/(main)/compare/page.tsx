@@ -178,7 +178,10 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         return (
             <div className="space-y-4 mt-4">
                 <ComparisonHeader title="Bracket" />
-                <CompareModeToggle />
+                <div className="flex flex-wrap gap-2 items-center">
+                    <CompareModeToggle />
+                    <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} />
+                </div>
                 <BracketPicker size={size} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={fighters} />
                 {/* <BracketView bouts={bouts} size={size} /> */}
                 <DynamicBracketView fighters={JSON.parse(JSON.stringify(fighters)).map((c: Character) => ({

@@ -32,7 +32,7 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, entitiesA
     return (
         <div className="sticky top-0 z-30 mb-4 rounded-xl border border-muted-foreground/20 bg-card/95 backdrop-blur-md shadow-lg">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 p-3 sm:p-4">
-                <div className="text-right space-y-1">
+                <div className="text-right space-y-1 flex flex-col justify-between h-full">
                     <p className="text-[10px] uppercase text-muted-foreground truncate">
                         {nameA}
                     </p>
@@ -44,10 +44,12 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, entitiesA
                         {teamA.aceName ? ` (${teamA.aceName})` : ""}
                     </p>
                     {chemA && (
-                        <p className="text-[11px] text-muted-foreground">
-                            Chem <span className="font-bold text-foreground">{chemA.score}</span>
-                            {chemA.notes[0] ? ` · ${chemA.notes.join(", ")}` : ""}
-                        </p>
+                        <div className="text-[11px] text-muted-foreground flex flex-col">
+                            <span className="font-bold text-foreground"><span className="font-light text-muted-foreground">Chem</span>{" "}{chemA.score}</span>
+                            {chemA.notes[0] ?
+                                chemA.notes.map(c => <span key={c}>{c}</span>)
+                                : ""}
+                        </div>
                     )}
                 </div>
 
@@ -77,7 +79,7 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, entitiesA
                     </p>
                 </div>
 
-                <div className="text-left space-y-1">
+                <div className="text-left space-y-1 flex flex-col justify-between h-full">
                     <p className="text-[10px] uppercase text-muted-foreground truncate">
                         {nameB}
                     </p>
@@ -89,10 +91,12 @@ export default function TeamMatchVerdict({ nameA, nameB, teamA, teamB, entitiesA
                         {teamB.aceName ? ` (${teamB.aceName})` : ""}
                     </p>
                     {chemB && (
-                        <p className="text-[11px] text-muted-foreground">
-                            Chem <span className="font-bold text-foreground">{chemB.score}</span>
-                            {chemB.notes[0] ? ` · ${chemB.notes[0]}` : ""}
-                        </p>
+                        <div className="text-[11px] text-muted-foreground flex flex-col">
+                            <span className="font-bold text-foreground"><span className="font-light text-muted-foreground">Chem</span>{" "}{chemB.score}</span>
+                            {chemB.notes[0] ?
+                                chemB.notes.map(c => <span key={c}>{c}</span>)
+                                : ""}
+                        </div>
                     )}
                 </div>
             </div>
