@@ -56,7 +56,7 @@ function Side({
             </p>
 
             {/* Secondary */}
-            <div className="text-[11px] sm:text-xs text-muted-foreground flex flex-col md:flex-row">
+            <div className={`text-[11px] sm:text-xs text-muted-foreground flex flex-col md:flex-row ${align === "right" ? "justify-end" : "justify-start"}`}>
                 <span className="text-foreground/80">Avg {team.avg.overall.toFixed(1)}</span>
                 <span className="mx-1.5 text-muted-foreground/40">·</span>
                 <span>
@@ -68,14 +68,14 @@ function Side({
             </div>
 
             {/* Tertiary boosts — single quiet line */}
-            <div className={`text-[10px] sm:text-[11px] ${soft} flex flex-col md:flex-row`}>
+            <div className={`text-[10px] sm:text-[11px] ${soft} flex flex-col md:flex-row ${align === "right" ? "justify-end" : "justify-start"}`}>
                 {team.chemistry && (
-                    <>
-                        Chem {team.chemistry.score}
+                    <div className="flex gap-1">
+                        <span>Chem {team.chemistry.score}</span>
                         {team.chemistryBoost > 0 && (
                             <span className="text-muted-foreground"> (+{team.chemistryBoost.toFixed(1)})</span>
                         )}
-                    </>
+                    </div>
                 )}
                 {team.supportBoost > 0 && (
                     <>

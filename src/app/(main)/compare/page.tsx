@@ -136,13 +136,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
     const entityAName =
         // mode === "team" && lessMembersSharedTeamA ? lessMembersSharedTeamA.name
-        mode === "team" && randomSharedTeamA ? randomSharedTeamA.name
+        mode === "team" && entitiesA.length > 1 && randomSharedTeamA ? randomSharedTeamA.name
             : mode === "team"
                 ? "Team A"
                 : entityA?.name;
 
     const entityBName =
-        mode === "team" && randomSharedTeamB ? randomSharedTeamB.name
+        mode === "team" && entitiesB.length > 1 && randomSharedTeamB ? randomSharedTeamB.name
             : mode === "team"
                 ? "Team B"
                 : entityB?.name;

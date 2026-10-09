@@ -16,6 +16,7 @@ import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
+import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;
 
@@ -174,9 +175,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             <div id="powerstats" className="space-y-2">
                 <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
-                    <LoadingLink href={`/compare?id1=${character.id}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                        Compare with another character
-                    </LoadingLink>
+                    <CompareWithButton mode="1v1" ids={[character.id]} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                     {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (

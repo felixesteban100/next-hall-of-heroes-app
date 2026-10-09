@@ -10,6 +10,7 @@ import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { Character } from "@/types";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { getRandom10Ids } from "@/lib/character_utils";
+import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;
 
@@ -157,9 +158,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     <LoadingLink href={`/characters?powers=[${power.id}]`} className="font-medium uppercase text-primary">
                         Users ({powerCharacters.length})
                     </LoadingLink>
-                    <LoadingLink href={`/compare?a=${getRandom10Ids(powerCharacters.map(c => c.id)).join(",")}`}>
-                        Compare characters (max 10 random)
-                    </LoadingLink>
+                    <CompareWithButton mode="team" ids={powerCharacters.map(c => c.id)} />
                 </div>
                 <CharacterAccordionList characters={powerCharacters} />
             </div>

@@ -9,6 +9,7 @@ import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { getRandom10Ids } from "@/lib/character_utils";
+import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;
 
@@ -82,9 +83,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                     <LoadingLink href={`/characters?universe=${universe.name}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
                         CHARACTERS ({universeCharacters.length})
                     </LoadingLink>
-                    <LoadingLink href={`/compare?a=${getRandom10Ids(universeCharacters.map(c => c.id)).join(",")}`}>
-                        Compare characters (max 10 random)
-                    </LoadingLink>
+                    <CompareWithButton mode="team" ids={universeCharacters.map(c => c.id)} />
                 </div>
                 <CharacterAccordionList characters={universeCharacters} />
             </div>

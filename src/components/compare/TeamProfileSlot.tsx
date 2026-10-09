@@ -79,7 +79,7 @@ export function TeamProfileSlot({
             )}
             {chemistry != null && (
                 <span className="text-[10px] text-muted-foreground">
-                    Chem +{chemistry.score}
+                    Chem{" "}+{chemistry.score}
                 </span>
             )}
         </div>

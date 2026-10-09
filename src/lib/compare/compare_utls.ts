@@ -321,7 +321,19 @@ function supportFromRoster(
 /** Chemistry 0–100 → small boost on team power (0–8) */
 function chemistryBoostFrom(chem: ChemistryResult | null): number {
     if (!chem) return 0;
-    return Math.min(8, (chem.score / 100) * 8);
+
+    // Base: up to +18 from overall chem (was +8)
+    const fromScore = (chem.score / 100) * 18;
+
+    // Extra for shared-team cohesion (breakdown.teams is 0–40)
+    // 4 shared teams ≈ teamsPts ~ 40 → up to +10 more
+    const fromTeams = (chem.breakdown.teams / 40) * 10;
+
+    // Small publisher cohesion (0–35) → up to +4
+    const fromPub = (chem.breakdown.publisher / 35) * 4;
+
+    // No hard 8 cap — soft dampen only if you want
+    return Math.round((fromScore + fromTeams + fromPub) * 10) / 10;
 }
 
 export function aggregateTeamScores(
