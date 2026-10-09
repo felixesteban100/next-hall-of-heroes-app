@@ -1,14 +1,14 @@
 import { collectionCharacters, collectionTeams, collectionUniverses } from "@/db/mongodb";
-import Link from "next/link";
 import Image from "next/image";
 import { ViewTransition } from "react";
 import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, Tv, BookOpen, Film } from "lucide-react";
+import { Users, Shield } from "lucide-react";
 import { CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL } from "@/lib/constants";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { getRandom10Ids } from "@/lib/character_utils";
 
 export const instant = false;
 
@@ -77,10 +77,15 @@ export default async function page({ params }: { params: Promise<{ id: string }>
             </div>
 
             {/* Characters Section */}
-            <div id="universe-characters" className="space-y-3 ">
-                <LoadingLink href={`/characters?universe=${universe.name}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
-                    CHARACTERS ({universeCharacters.length})
-                </LoadingLink>
+            <div id="universe-characters" className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <LoadingLink href={`/characters?universe=${universe.name}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
+                        CHARACTERS ({universeCharacters.length})
+                    </LoadingLink>
+                    <LoadingLink href={`/compare?a=${getRandom10Ids(universeCharacters.map(c => c.id)).join(",")}`}>
+                        Compare characters (max 10 random)
+                    </LoadingLink>
+                </div>
                 <CharacterAccordionList characters={universeCharacters} />
             </div>
 

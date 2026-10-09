@@ -9,6 +9,7 @@ import { CharacterAccordionList } from "@/components/characters/CharacterAccordi
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { Character } from "@/types";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { getRandom10Ids } from "@/lib/character_utils";
 
 export const instant = false;
 
@@ -154,9 +155,11 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
             <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm font-light">
                     <LoadingLink href={`/characters?powers=[${power.id}]`} className="font-medium uppercase text-primary">
-                        Users
+                        Users ({powerCharacters.length})
                     </LoadingLink>
-                    {powerCharacters.length} characters with this power
+                    <LoadingLink href={`/compare?a=${getRandom10Ids(powerCharacters.map(c => c.id)).join(",")}`}>
+                        Compare characters (max 10 random)
+                    </LoadingLink>
                 </div>
                 <CharacterAccordionList characters={powerCharacters} />
             </div>

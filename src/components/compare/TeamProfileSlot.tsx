@@ -41,27 +41,24 @@ export function TeamProfileSlot({
         <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full">
                 {entities.map((e) => (
-                    <div
-                        key={e.id}
-                        className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg overflow-hidden border-2 ${border} bg-card shrink-0`}
-                        title={e.name}
-                    >
-                        <ViewTransition name={`character-${e.id}`}>
-                            <Image
-                                src={e.images?.md || e.images?.sm || "/placeholder.png"}
-                                alt={e.name}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </ViewTransition>
-                    </div>
-                ))}
-            </div>
+                    <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
+                        <div
+                            key={e.id}
+                            className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg overflow-hidden border-2 ${border} bg-card shrink-0`}
+                            title={e.name}
+                        >
 
-            <div className="flex flex-wrap justify-center gap-1 max-w-xs mx-auto">
-                {entities.map((e) => (
-                    <LoadingLink key={e.id} href={`/characters/${e.id}`}>
+                            <ViewTransition name={`character-${e.id}`}>
+                                <Image
+                                    src={e.images?.md || e.images?.sm || "/placeholder.png"}
+                                    alt={e.name}
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            </ViewTransition>
+
+                        </div>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 truncate max-w-28 ${nameColor}`}>
                             {e.name}
                         </span>
@@ -69,14 +66,20 @@ export function TeamProfileSlot({
                 ))}
             </div>
 
+            {/* <div className="flex flex-wrap justify-center gap-1 max-w-xs mx-auto">
+                {entities.map((e) => (
+                        
+                ))}
+            </div> */}
+
             {score != null && (
                 <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    Avg score {score.toFixed(1)}
+                    Score {score.toFixed(1)}
                 </span>
             )}
             {chemistry != null && (
                 <span className="text-[10px] text-muted-foreground">
-                    Chem {chemistry.score}
+                    Chem +{chemistry.score}
                 </span>
             )}
         </div>

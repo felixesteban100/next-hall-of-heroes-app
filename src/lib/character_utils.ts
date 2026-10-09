@@ -61,6 +61,17 @@ export function getCharacterRaceIcon(race: string) {
     }
 }
 
+export function getRandom10Ids(ids: number[], count = 10) {
+    const temp = [...ids];
+    const result = [];
+    for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * temp.length);
+        result.push(temp.splice(index, 1)[0]);
+    }
+    return result;
+}
+
+
 export function joinTeam_universe_power_enemies_toCharacter(
     queryOptions: Record<string, any>,
     sortBy: string,

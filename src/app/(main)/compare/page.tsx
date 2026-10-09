@@ -85,6 +85,10 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const scoreA = mode === "team" ? teamA?.avg ?? null : computeMatchScore(entityA);
     const scoreB = mode === "team" ? teamB?.avg ?? null : computeMatchScore(entityB);
 
+    // Big verdict + spar: use powerEstimate
+    const displayA = mode === "team" ? teamA?.powerEstimate : scoreA?.overall;
+    const displayB = mode === "team" ? teamB?.powerEstimate : scoreB?.overall;
+
     // Nemesis: any pair across teams, or only 1v1
     const isNemesis =
         mode === "team"
@@ -266,8 +270,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             </section>
 
             <div className="max-w-5xl mx-auto space-y-4 mb-4">
-                {mode === "team" && teamA && teamB ? (
-                    <TeamMatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA} teamB={teamB} entitiesA={entitiesA} entitiesB={entitiesB} />
+                {mode === "team" ? (
+                    <TeamMatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA ?? null} teamB={teamB ?? null} entitiesA={entitiesA} entitiesB={entitiesB} />
                 ) : (
                     <MatchVerdict nameA={entityAName} nameB={entityBName} scoreA={scoreA} scoreB={scoreB} isNemesis={isNemesis} />
                 )}
@@ -279,12 +283,14 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         </h3>
                         <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA} showB={!!entityB} />
                     </div>
-                    <SparPanel scoreA={scoreA?.overall ?? null} scoreB={scoreB?.overall ?? null} nameA={entityAName} nameB={entityBName} />
+                    <SparPanel scoreA={displayA ?? null} scoreB={displayB ?? null} nameA={entityAName} nameB={entityBName} />
                 </div>
             </div>
 
-            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl max-h-[80vh] overflow-y-auto relative mb-10 overflow-x-hidden">
-                <div className="sticky top-0 z-20 grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
+            {/* max-h-[80vh] overflow-y-auto */}
+            <main className="max-w-5xl mx-auto bg-card border border-muted-foreground/20 rounded-xl  relative mb-10 overflow-x-hidden">
+                {/* sticky top-0 z-20 */}
+                <div className=" grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                     <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
                         {mode === "team" ? "Team profile" : "Entity profile"}
                     </div>
@@ -294,13 +300,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                             <TeamProfileSlot
                                 entities={entitiesA}
                                 variant="primary"
-                                score={scoreA?.overall}
+                                score={displayA}
                                 chemistry={computeTeamChemistry(entitiesA)}
                             />
                             <TeamProfileSlot
                                 entities={entitiesB}
                                 variant="secondary"
-                                score={scoreB?.overall}
+                                score={displayB}
                                 chemistry={computeTeamChemistry(entitiesB)}
                             />
                         </>

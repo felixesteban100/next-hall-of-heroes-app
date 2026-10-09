@@ -5,6 +5,7 @@ import { TeamHeroHeader } from "@/components/teams/TeamHeroHeader";
 import { Filter } from "mongodb";
 import { Character } from "@/types";
 import { LoadingLink } from "@/components/shared/LoadingLink";
+import { getRandom10Ids } from "@/lib/character_utils";
 
 export const instant = false;
 
@@ -138,6 +139,9 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                 <div className="flex items-center justify-between">
                     <LoadingLink href={`/characters?universe=${universe?.value}&team=${team.id}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
                         MEMBERS ({teamCharacters.length})
+                    </LoadingLink>
+                    <LoadingLink href={`/compare?a=${getRandom10Ids(teamCharacters.map(c => c.id)).join(",")}`}>
+                        Compare characters (max 10 random)
                     </LoadingLink>
                 </div>
                 <CharacterAccordionList characters={teamCharacters} />

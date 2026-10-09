@@ -11,6 +11,7 @@ import {
     CHARACTER_CLASS_ICON,
 } from "@/lib/constants";
 import { getAligmentIcon } from "../characters_utils"; // your paths
+import { ChemistryResult, computeTeamChemistry } from "./teamChemistry";
 
 const STAT_KEYS = [
     "intelligence",
@@ -121,28 +122,29 @@ export function computeMatchScore(
 
 /** Compare two sides for UI badges */
 export function compareMatchScores(
-    a: MatchBreakdown | null,
-    b: MatchBreakdown | null
+    a: MatchBreakdown | null | undefined,
+    b: MatchBreakdown | null | undefined
 ): {
     winner: "a" | "b" | "tie" | "none";
     diff: number;
     label: string;
 } {
     if (!a && !b) return { winner: "none", diff: 0, label: "Select characters" };
-    if (a && !b) return { winner: "a", diff: a.overall, label: "Only Character A scored" };
-    // if (a && !b) return { winner: "a", diff: a.overall, label: "Only Entity A scored" };
-    if (!a && b) return { winner: "b", diff: b.overall, label: "Only Character B scored" };
-    // if (!a && b) return { winner: "b", diff: b.overall, label: "Only Entity B scored" };
+    // if (a && !b) return { winner: "a", diff: a.overall, label: "Only Character A scored" };
+    if (a && !b) return { winner: "a", diff: a.overall, label: "Only Entity A scored" };
+    // if (!a && b) return { winner: "b", diff: b.overall, label: "Only Character B scored" };
+    if (!a && b) return { winner: "b", diff: b.overall, label: "Only Entity B scored" };
 
     const diff = round1(a!.overall - b!.overall);
     if (Math.abs(diff) < 3) {
         return { winner: "tie", diff, label: "Too close to call" };
     }
     if (diff > 0) {
-        // return { winner: "a", diff, label: `Entity A edge +${diff}` };
-        return { winner: "a", diff, label: `Character A edge +${diff}` };
+        return { winner: "a", diff, label: `Entity A edge +${diff}` };
+        // return { winner: "a", diff, label: `Character A edge +${diff}` };
     }
-    return { winner: "b", diff: Math.abs(diff), label: `Character B edge +${Math.abs(diff)}` };
+    // return { winner: "b", diff: Math.abs(diff), label: `Character B edge +${Math.abs(diff)}` };
+    return { winner: "b", diff: Math.abs(diff), label: `Enitity B edge +${Math.abs(diff)}` };
 }
 
 export function hasNemesisLink(
@@ -246,22 +248,90 @@ export const getAlignmentNames = (powers: any) => {
 };
 
 export type TeamAggregate = {
-    /** Mean of member overalls */
+    /** Mean of member overalls — “typical” squad level (can fall when adding weaker members) */
     avg: MatchBreakdown;
-    /** Strongest member's breakdown */
+    /** Strongest member */
     ace: MatchBreakdown;
-    /** Character that produced ace */
     aceName: string | null;
     memberCount: number;
+
+    /** Sum of member overalls (raw depth; not capped) */
+    scoresCombined: number;
+
+    /**
+     * Team fighting strength 0–100.
+     * Always ≥ ace (before tiny float noise), grows with extra members (diminishing) + chemistry.
+     * Use THIS as the big verdict number / spar input in team mode.
+     */
+    powerEstimate: number;
+
+    /** Chemistry 0–100 (null if &lt; 2 members) */
+    chemistry: ChemistryResult | null;
+
+    /** Points added from chemistry onto powerEstimate (0–~8) */
+    chemistryBoost: number;
+
+    /** Points added from non-ace members (0–~15) */
+    supportBoost: number;
 };
+
+function emptyBreakdown(): MatchBreakdown {
+    return {
+        combat: 0,
+        tier: 0,
+        class: 0,
+        powers: 0,
+        threat: 0,
+        weaknessPenalty: 0,
+        overall: 0,
+    };
+}
+
+/**
+ * Diminishing support from non-ace members.
+ * Sorted strongest-first among supporters so #2 helps more than #5.
+ */
+function supportFromRoster(
+    overalls: number[],
+    aceOverall: number
+): number {
+    if (overalls.length <= 1) return 0;
+
+    const others = overalls
+        .filter((_, i) => overalls[i] !== aceOverall || overalls.indexOf(aceOverall) !== i)
+        // safer: drop one instance of ace
+        .slice();
+
+    // Remove ace once
+    const sorted = [...overalls].sort((a, b) => b - a);
+    const supporters = sorted.slice(1); // everyone except strongest
+
+    let boost = 0;
+    supporters.forEach((o, i) => {
+        // Strong allies contribute more; each extra slot decays
+        const weight = 0.12 * Math.pow(0.75, i); // 12%, 9%, 6.75%, ...
+        // Scale by how strong they are relative to a “full” 100 hero
+        boost += (o / 100) * 100 * weight;
+    });
+
+    // Soft cap so a 10-man pile-on doesn’t hit +40
+    return Math.min(15, boost);
+}
+
+/** Chemistry 0–100 → small boost on team power (0–8) */
+function chemistryBoostFrom(chem: ChemistryResult | null): number {
+    if (!chem) return 0;
+    return Math.min(8, (chem.score / 100) * 8);
+}
 
 export function aggregateTeamScores(
     entities: CharacterWithJoinTeamUniversePowerEnemies[]
 ): TeamAggregate | null {
     const scored = entities
         .map((e) => ({ entity: e, score: computeMatchScore(e) }))
-        .filter((x): x is { entity: typeof entities[0]; score: MatchBreakdown } =>
-            x.score != null
+        .filter(
+            (x): x is { entity: (typeof entities)[0]; score: MatchBreakdown } =>
+                x.score != null
         );
 
     if (!scored.length) return null;
@@ -277,16 +347,28 @@ export function aggregateTeamScores(
         "overall",
     ] as const;
 
-    const avg = {} as MatchBreakdown;
+    const avg = emptyBreakdown();
     for (const k of keys) {
-        avg[k] =
-            Math.round(
-                (scored.reduce((s, x) => s + Number(x.score[k] ?? 0), 0) / n) * 10
-            ) / 10;
+        avg[k] = round1(
+            scored.reduce((s, x) => s + Number(x.score[k] ?? 0), 0) / n
+        );
     }
 
     const best = scored.reduce((a, b) =>
         b.score.overall > a.score.overall ? b : a
+    );
+
+    const overalls = scored.map((x) => x.score.overall);
+    const scoresCombined = round1(overalls.reduce((s, o) => s + o, 0));
+
+    const supportBoost = round1(supportFromRoster(overalls, best.score.overall));
+    const chemistry = computeTeamChemistry(entities);
+    const chemistryBoost = round1(chemistryBoostFrom(chemistry));
+
+    // Core: never below ace; always a little stronger with real allies
+    const powerEstimate = round1(
+        // Math.min(100, best.score.overall + supportBoost + chemistryBoost)
+        best.score.overall + supportBoost + chemistryBoost
     );
 
     return {
@@ -294,6 +376,11 @@ export function aggregateTeamScores(
         ace: best.score,
         aceName: best.entity.name,
         memberCount: n,
+        scoresCombined,
+        powerEstimate,
+        chemistry,
+        chemistryBoost,
+        supportBoost,
     };
 }
 
@@ -324,6 +411,7 @@ export type GroupedItems = {
 export function groupItemsByCharacter(
     entities: CharacterWithJoinTeamUniversePowerEnemies[],
     itemsForEntity: (e: CharacterWithJoinTeamUniversePowerEnemies) => string[],
+    property = "",
     sharedThreshold = 2
 ): GroupedItems {
     if (!entities.length) {
@@ -344,7 +432,16 @@ export function groupItemsByCharacter(
 
     const shared: SharedItem[] = [];
     for (const [name, ids] of itemToChars) {
-        if (ids.size >= sharedThreshold) {
+        if (property === "teams") {
+            if (ids.size == entities.length) {
+                shared.push({
+                    name,
+                    members: [...ids]
+                        .map((id) => ({ id, name: idToName.get(id) ?? String(id) }))
+                        .sort((a, b) => a.name.localeCompare(b.name)),
+                });
+            }
+        } else if (ids.size >= sharedThreshold) {
             shared.push({
                 name,
                 members: [...ids]
@@ -388,7 +485,7 @@ export function groupEnemies(entities: CharacterWithJoinTeamUniversePowerEnemies
 
 export function groupTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
     return groupItemsByCharacter(entities, (e) =>
-        getTeamNames(e.connections?.groupAffiliation)
+        getTeamNames(e.connections?.groupAffiliation), "teams"
     );
 }
 
