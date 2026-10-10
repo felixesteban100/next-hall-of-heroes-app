@@ -22,6 +22,10 @@ export async function searchCharacters(
     if (exclude.length) filter.id = { $nin: exclude };
 
     const q = query.trim();
+
+    // Build pipeline stages
+    const pipeline: any[] = [];
+
     if (q) {
         const rx = { $regex: q, $options: "i" };
         filter.$or = [
@@ -30,24 +34,29 @@ export async function searchCharacters(
             { "biography.fullName": rx },
             { "biography.aliases": rx },
         ];
+        pipeline.push({ $match: filter });
+        pipeline.push({ $limit: 20 });
+    } else {
+        // When query is empty, match exclusions and randomize results using $sample
+        pipeline.push({ $match: filter });
+        pipeline.push({ $sample: { size: 20 } });
     }
 
+    pipeline.push({
+        $project: {
+            _id: 0,
+            id: 1,
+            name: 1,
+            slug: 1,
+            image: 1, // Added image projection if your character options display avatars
+            "biography.fullName": 1,
+            "biography.alterEgos": 1,
+            "biography.aliases": 1,
+        },
+    });
+
     return collectionCharacters
-        .aggregate<CharacterOption>([
-            { $match: filter },
-            { $limit: 20 },
-            {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    name: 1,
-                    slug: 1,
-                    "biography.fullName": 1,
-                    "biography.alterEgos": 1,
-                    "biography.aliases": 1,
-                },
-            },
-        ])
+        .aggregate<CharacterOption>(pipeline)
         .toArray();
 }
 

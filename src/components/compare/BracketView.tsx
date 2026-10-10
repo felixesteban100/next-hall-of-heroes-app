@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw, ChevronRight, User } from "lucide-react";
 import { BracketFighter, Bout, buildDynamicBracket } from "@/lib/compare/bracket";
 import Image from "next/image";
+import { shuffleArray } from "@/lib/utils";
 
 function FighterLine({
     c,
@@ -118,7 +119,7 @@ function BoutCard({
 
 export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] }) {
     const { rounds, allBouts } = useMemo(
-        () => buildDynamicBracket(fighters),
+        () => buildDynamicBracket(shuffleArray(fighters)),
         [fighters]
     );
 
