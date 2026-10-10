@@ -217,9 +217,10 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
             </div>
 
             {/* Responsive Touch-Pan Scroll Container */}
+            {/* overflow-x-auto overflow-y-hidden touch-pan-x snap-x scroll-smooth */}
             <div
                 ref={containerRef}
-                className="w-full max-w-full overflow-x-auto overflow-y-hidden touch-pan-x snap-x scroll-smooth pb-4 pt-1 px-2"
+                className="w-full max-w-full  pb-4 pt-1 px-2"
             >
                 <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 justify-center items-center min-w-max px-2">
                     {rounds.map((roundBouts, rIdx) => {

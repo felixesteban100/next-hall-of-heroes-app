@@ -70,7 +70,7 @@ function Side({
             {/* Tertiary boosts — single quiet line */}
             <div className={`text-[10px] sm:text-[11px] ${soft} flex flex-col md:flex-row ${align === "right" ? "justify-end" : "justify-start"}`}>
                 {team.chemistry && (
-                    <div className="flex gap-1">
+                    <div className={`flex gap-1 ${align === "right" ? "justify-end" : "justify-start"}`}>
                         <span>Chem {team.chemistry.score}</span>
                         {team.chemistryBoost > 0 && (
                             <span className="text-muted-foreground"> (+{team.chemistryBoost.toFixed(1)})</span>

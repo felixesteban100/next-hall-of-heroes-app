@@ -106,7 +106,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     />
                 </ViewTransition>
 
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-3 w-full">
                     {/* Tier badge */}
                     <Badge className={`${tierColors.bg} ${tierColors.foreground}`}>
                         <TierIcon size={12} />

@@ -11,6 +11,7 @@ const ROUTE_KEYS: Record<string, string> = {
     "/teams": "lastParams_teams",
     "/universes": "lastParams_universes",
     "/powers": "lastParams_powers",
+    "/compare": "lastParams_compare",
 };
 
 const navLinks = [
