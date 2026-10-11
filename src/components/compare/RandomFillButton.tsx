@@ -1,7 +1,7 @@
 // components/compare/RandomFillButton.tsx
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
 import { sampleCharacterIds } from "@/app/actions";
 import { Dices } from "lucide-react";
@@ -27,7 +27,8 @@ export function RandomFillButton({
     sizeB = 3,
     bracketSize,
 }: Props) {
-    const { pushParams } = useParamLoading();
+    // const { pushParams } = useParamLoading();
+    const { push: pushParams } = useRouter()
     const searchParams = useSearchParams();
     const [pending, start] = useTransition();
 
@@ -72,7 +73,7 @@ export function RandomFillButton({
                 params.delete("id1");
                 params.delete("id2");
 
-                pushParams(params);
+                pushParams(`?${params.toString()}`);
             } else if (mode === "team") {
                 const a = await sampleCharacterIds(sizeA, [...idsA, ...idsB]);
                 const b = await sampleCharacterIds(sizeB, [...idsA, ...idsB, ...a]);
@@ -85,7 +86,7 @@ export function RandomFillButton({
                 params.set("a", a.join(","));
                 params.set("b", b.join(","));
 
-                pushParams(params);
+                pushParams(`?${params.toString()}`);
             } else {
                 // 1v1 mode
                 const [id1, id2] = await sampleCharacterIds(2, [...idsA, ...idsB]);
@@ -98,7 +99,7 @@ export function RandomFillButton({
                 if (id1) params.set("id1", String(id1));
                 if (id2) params.set("id2", String(id2));
 
-                pushParams(params);
+                pushParams(`?${params.toString()}`);
             }
         });
     };

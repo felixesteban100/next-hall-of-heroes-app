@@ -40,4 +40,15 @@ export async function fetchFightersById(ids: number[]): Promise<Character[]> {
         .find<Character>({ id: { $in: [...ids] } })
         .project<Character>({ _id: 0 })
         .toArray();
+    // return collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+    //             joinTeam_universe_power_enemies_toCharacter(
+    //                 { id: { $in: [...ids] } },
+    //                 "id",
+    //                 "desc",
+    //                 (page - 1) * pageSize,
+    //                 pageSize,
+    //                 { includeEnemies: false }
+    //             )
+    //         )
+    //         .toArray(),
 }

@@ -4,22 +4,27 @@
 import { useState } from "react";
 import { Row } from "@/components/compare/rows/Row";
 import { Cell, EmptyCell } from "@/components/compare/rows/Cell";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { computeMatchScore } from "@/lib/compare/compare_utls";
 
 type Props = {
-    rosterA: {
-        id: number,
-        name: string,
-        overall: number,
-    }[],
-    rosterB: {
-        id: number,
-        name: string,
-        overall: number,
-    }[]
+    entitiesA: CharacterWithJoinTeamUniversePowerEnemies[]
+    entitiesB: CharacterWithJoinTeamUniversePowerEnemies[]
 };
 
-export function MemberBreakdown({ rosterA, rosterB }: Props) {
+export function MemberBreakdown({ entitiesA, entitiesB }: Props) {
     const [open, setOpen] = useState(true);
+
+    const rosterA = entitiesA.map((e) => ({
+        id: e.id,
+        name: e.name,
+        overall: computeMatchScore(e).overall,
+    }));
+    const rosterB = entitiesB.map((e) => ({
+        id: e.id,
+        name: e.name,
+        overall: computeMatchScore(e).overall,
+    }));
 
     return (
         <>

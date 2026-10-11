@@ -44,8 +44,11 @@ export function CharacterCombobox({
         for (const o of options) {
             if (o.id !== excludeId) map.set(o.id, o);
         }
-        if (selectedId && selectedId !== excludeId) {
-            map.set(selectedId, {
+        if (selectedId && selectedId !== excludeId && !map.has(selectedId)) {
+            // Try to find it in initialOptions first so we don't wipe out biography/aliases
+            const existing = initialOptions.find((opt) => opt.id === selectedId);
+
+            map.set(selectedId, existing || {
                 id: selectedId,
                 name: selectedName,
                 slug: selectedSlug,
@@ -103,6 +106,8 @@ export function CharacterCombobox({
             ? inputText              // user is editing → show what they type
             : selectedName || "";    // idle → name if selected, else ""
 
+    console.log(items)
+
     return (
         <Combobox
             items={items}
@@ -141,16 +146,20 @@ export function CharacterCombobox({
                         <ComboboxItem key={item.id} value={item.slug}>
                             <div className="flex flex-col gap-0.5 min-w-0">
                                 <span className="font-medium truncate">{item.name}</span>
-                                {(item.biography?.fullName || item.biography?.aliases?.length) && (
-                                    <span className="text-[10px] text-muted-foreground truncate">
-                                        {[
-                                            item.biography?.fullName,
-                                            item.biography?.aliases?.slice(0, 2).join(", "),
-                                        ]
-                                            .filter(Boolean)
-                                            .join(" · ")}
-                                    </span>
-                                )}
+                                {Boolean(
+                                    item.biography?.fullName || item.biography?.aliases?.length
+                                ) && (
+                                        <span className="text-[10px] text-muted-foreground truncate">
+                                            {[
+                                                item.biography?.fullName,
+                                                Array.isArray(item.biography?.aliases)
+                                                    ? item.biography.aliases.filter(Boolean).join(", ")
+                                                    : null,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(" · ")}
+                                        </span>
+                                    )}
                             </div>
                         </ComboboxItem>
                     )}

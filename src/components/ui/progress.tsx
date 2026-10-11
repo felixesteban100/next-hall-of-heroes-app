@@ -50,7 +50,7 @@ function Progress({
       ref={ref}
       data-slot="progress"
       className={cn(
-        "relative flex h-1.5 w-full items-center overflow-hidden rounded-full bg-muted",
+        "relative flex h-1.5 w-full items-center overflow-hidden rounded-full bg-muted border",
         className
       )}
       value={currentValue > 100 ? 100 : currentValue}

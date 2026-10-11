@@ -1,5 +1,5 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
-import type { CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
+import type { Character, CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "../character_utils";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -24,7 +24,7 @@ const STAT_KEYS = [
 ] as const;
 
 export type MatchBreakdown = {
-    combat: number;
+    averagePowerStats: number;
     tier: number;
     class: number;
     powers: number;
@@ -37,13 +37,13 @@ function round1(n: number) {
     return Math.round(n * 10) / 10;
 }
 
-function scoreCombat(
-    stats?: CharacterWithJoinTeamUniversePowerEnemies["powerstats"]
-): number {
-    if (!stats) return 0;
-    const vals = STAT_KEYS.map((k) => Math.min(100, Number(stats[k]) || 0));
-    return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
+// function scoreAveragePowerStats(
+//     stats?: CharacterWithJoinTeamUniversePowerEnemies["powerstats"]
+// ): number {
+//     if (!stats) return 0;
+//     const vals = STAT_KEYS.map((k) => Math.min(100, Number(stats[k]) || 0));
+//     return vals.reduce((a, b) => a + b, 0) / vals.length;
+// }
 
 function scorePowers(powers: unknown): number {
     if (!Array.isArray(powers) || powers.length === 0) return 0;
@@ -76,7 +76,7 @@ function scoreWeaknessPenalty(weaknesses?: string[]): number {
 }
 
 function scoreThreat(
-    entity: CharacterWithJoinTeamUniversePowerEnemies
+    entity: CharacterWithJoinTeamUniversePowerEnemies | Character
 ): number {
     const enemies = entity.connections?.enemies;
     const count = Array.isArray(enemies) ? enemies.length : 0;
@@ -85,11 +85,21 @@ function scoreThreat(
 }
 
 export function computeMatchScore(
-    entity: CharacterWithJoinTeamUniversePowerEnemies | null | undefined
-): MatchBreakdown | null {
-    if (!entity) return null;
-
-    const combat = scoreCombat(entity.powerstats);
+    entity: CharacterWithJoinTeamUniversePowerEnemies | Character
+): MatchBreakdown {
+    if (entity == null) {
+        return {
+            averagePowerStats: 0,
+            tier: 0,
+            class: 0,
+            powers: 0,
+            threat: 0,
+            weaknessPenalty: 0,
+            overall: 0,
+        };
+    }
+    // const averagePowerStats = scoreAveragePowerStats(entity.powerstats);
+    const averagePowerStats = entity.powerstats.total;
     const tier = TIER_SCORE[entity.tier ?? 0] ?? 5;
     const cls = CLASS_SCORE[entity.class ?? 0] ?? 10;
     const powers = scorePowers(entity.powers);
@@ -100,7 +110,7 @@ export function computeMatchScore(
         0,
         Math.min(
             100,
-            combat * 0.35 +
+            averagePowerStats * 0.35 +
             tier * 0.22 +
             cls * 0.08 +
             powers * 0.25 +
@@ -110,7 +120,7 @@ export function computeMatchScore(
     );
 
     return {
-        combat: round1(combat),
+        averagePowerStats: round1(averagePowerStats),
         tier: round1(tier),
         class: round1(cls),
         powers: round1(powers),
@@ -275,18 +285,6 @@ export type TeamAggregate = {
     supportBoost: number;
 };
 
-function emptyBreakdown(): MatchBreakdown {
-    return {
-        combat: 0,
-        tier: 0,
-        class: 0,
-        powers: 0,
-        threat: 0,
-        weaknessPenalty: 0,
-        overall: 0,
-    };
-}
-
 /**
  * Diminishing support from non-ace members.
  * Sorted strongest-first among supporters so #2 helps more than #5.
@@ -350,7 +348,7 @@ export function aggregateTeamScores(
 
     const n = scored.length;
     const keys = [
-        "combat",
+        "averagePowerStats",
         "tier",
         "class",
         "powers",
@@ -359,7 +357,15 @@ export function aggregateTeamScores(
         "overall",
     ] as const;
 
-    const avg = emptyBreakdown();
+    const avg: MatchBreakdown = {
+        averagePowerStats: 0,
+        tier: 0,
+        class: 0,
+        powers: 0,
+        threat: 0,
+        weaknessPenalty: 0,
+        overall: 0,
+    };
     for (const k of keys) {
         avg[k] = round1(
             scored.reduce((s, x) => s + Number(x.score[k] ?? 0), 0) / n
@@ -397,7 +403,7 @@ export function aggregateTeamScores(
 }
 
 // powerstats average for radar / RowScoreComparer
-export function avgPowerstats(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
+export function avgTeamPowerstats(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
     const out: Record<string, number> = {};
     for (const k of STAT_KEYS) {
         const vals = entities.map((e) => Number(e.powerstats?.[k]) || 0);

@@ -12,13 +12,15 @@ function FighterLine({
     score,
     winnerId,
     isActiveWinner,
+    isVisible,
 }: {
     c: BracketFighter | null;
     score: number | null;
     winnerId?: number | string;
     isActiveWinner?: boolean;
+    isVisible: boolean;
 }) {
-    const isWinner = Boolean(c && c.id && c.id === winnerId);
+    const isWinner = Boolean(isVisible && c && c.id && c.id === winnerId);
     const hasImage = Boolean(c?.image);
 
     return (
@@ -32,7 +34,7 @@ function FighterLine({
         >
             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                 <div className="relative h-4 w-4 sm:h-5 sm:w-5 rounded-md bg-muted/60 overflow-hidden shrink-0 border border-border/50 flex items-center justify-center">
-                    {hasImage ? (
+                    {hasImage && isVisible ? (
                         <Image
                             src={c!.image}
                             alt={c?.name || "Fighter"}
@@ -45,11 +47,13 @@ function FighterLine({
                     )}
                 </div>
 
-                <span className="truncate leading-none">{c?.name && c.name !== "" ? c.name : "TBD"}</span>
+                <span className="truncate leading-none">
+                    {isVisible && c?.name && c.name !== "" ? c.name : "TBD"}
+                </span>
             </div>
 
             <span className="tabular-nums text-muted-foreground text-[9px] sm:text-[10px] shrink-0 font-mono">
-                {score != null ? score.toFixed(1) : "—"}
+                {isVisible && score != null ? score.toFixed(1) : "—"}
             </span>
         </div>
     );
@@ -69,50 +73,35 @@ function BoutCard({
     return (
         <motion.div
             ref={cardRef}
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{
-                opacity: isVisible ? 1 : 0.2,
-                scale: isVisible ? 1 : 0.96,
-                y: isVisible ? 0 : 4,
+                opacity: isVisible ? 1 : 0.35,
+                scale: isCurrentStep ? 1.02 : 1,
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            /* Responsive Width: w-32 on small screens, w-36 on sm, w-40 on md */
-            className={`rounded-lg border bg-card p-1 sm:p-1.5 w-32 sm:w-36 md:w-40 space-y-1 shadow-xs transition-colors duration-300 shrink-0 snap-center ${isCurrentStep
+            /* w-28 on mobile, scaling up to w-36/w-40 on larger screens */
+            className={`rounded-lg border bg-card p-1 sm:p-1.5 w-28 sm:w-36 md:w-40 space-y-1 shadow-xs transition-colors duration-300 shrink-0 snap-center ${isCurrentStep
                 ? "border-primary ring-2 ring-primary/20 shadow-sm"
                 : "border-border/60"
                 }`}
         >
-            {/* {isVisible && bout.a && bout.b ? (
-                <> */}
             <FighterLine
                 c={bout.a}
                 score={bout.scoreA}
-                winnerId={isVisible ? bout.winner?.id : 0}
+                winnerId={bout.winner?.id}
                 isActiveWinner={isCurrentStep}
+                isVisible={isVisible}
             />
             <FighterLine
                 c={bout.b}
                 score={bout.scoreB}
-                winnerId={isVisible ? bout.winner?.id : 0}
+                winnerId={bout.winner?.id}
                 isActiveWinner={isCurrentStep}
+                isVisible={isVisible}
             />
-            {/* </>
-            ) : (
-                <>
-                    <FighterLine c={null} score={null} />
-                    <FighterLine c={null} score={null} />
-                </>
-            )} */}
 
-            {bout.winner && isVisible && (
-                <motion.p
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-[8px] sm:text-[9px] text-primary font-semibold truncate px-0.5 pt-0.5"
-                >
-                    → {bout.winner.name}
-                </motion.p>
-            )}
+            <p className="text-[8px] sm:text-[9px] text-primary font-semibold truncate px-0.5 pt-0.5 min-h-[12px]">
+                {isVisible && bout?.winner?.name ? `→ ${bout.winner.name}` : "\u00A0"}
+            </p>
         </motion.div>
     );
 }
@@ -126,8 +115,10 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+    const fighterIdsKey = useMemo(() => fighters.map((f) => f.id).join(","), [fighters]);
+
     const activeCardRef = useRef<HTMLDivElement | null>(null);
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    // const containerRef = useRef<HTMLDivElement | null>(null);
     const maxSteps = allBouts.length;
 
     useEffect(() => {
@@ -145,22 +136,26 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
         return () => clearTimeout(timer);
     }, [isPlaying, currentStep, maxSteps]);
 
-    // Smooth Auto-Centering on Mobile and Desktop
     useEffect(() => {
-        if (currentStep > 0 && activeCardRef.current && containerRef.current) {
-            const card = activeCardRef.current;
-            const container = containerRef.current;
+        setCurrentStep(0);
+        setIsPlaying(false);
+    }, [fighterIdsKey]);
 
-            // Compute center scroll offset for horizontal scroll view
-            const scrollLeft =
-                card.offsetLeft - container.clientWidth / 2 + card.clientWidth / 2;
+    // Smooth Auto-Centering on Mobile and Desktop
+    // useEffect(() => {
+    //     if (currentStep > 0 && activeCardRef.current && containerRef.current) {
+    //         const card = activeCardRef.current;
+    //         const container = containerRef.current;
 
-            container.scrollTo({
-                left: scrollLeft,
-                behavior: "smooth",
-            });
-        }
-    }, [currentStep]);
+    //         const scrollLeft =
+    //             card.offsetLeft - container.clientWidth / 2 + card.clientWidth / 2;
+
+    //         container.scrollTo({
+    //             left: scrollLeft,
+    //             behavior: "smooth",
+    //         });
+    //     }
+    // }, [currentStep]);
 
     const handleReset = () => {
         setIsPlaying(false);
@@ -187,7 +182,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
     }
 
     return (
-        <div className="flex flex-col items-center py-3 sm:py-4 gap-3 sm:gap-4 w-full max-w-full ">
+        <div className="flex flex-col items-center py-3 sm:py-4 gap-3 sm:gap-4 w-full ">
             {/* Playback Controls Bar */}
             <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-full border border-border/80 shadow-2xs">
                 <button
@@ -217,17 +212,13 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
                 </button>
             </div>
 
-            {/* Responsive Touch-Pan Scroll Container */}
-            {/* overflow-x-auto overflow-y-hidden touch-pan-x snap-x scroll-smooth */}
-            <div
-                ref={containerRef}
-                className="w-full max-w-full  pb-4 pt-1 px-2"
-            >
-                <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 justify-center items-center min-w-max px-2">
+            {/* Outer Container */}
+            <div /* ref={containerRef} */ className="w-full max-w-full overflow-x-auto overflow-y-hidden touch-pan-x snap-x scroll-smooth pb-4 pt-1 px-2">
+                <div className="flex flex-row gap-1.5 sm:gap-3 justify-start lg:justify-center items-center min-w-max px-2 scale-90 sm:scale-100 origin-left sm:origin-center">
                     {rounds.map((roundBouts, rIdx) => {
                         const roundName = roundBouts[0]?.roundName ?? `Round ${rIdx + 1}`;
                         return (
-                            <div key={rIdx} className="flex flex-col gap-2.5 sm:gap-3 justify-center">
+                            <div key={rIdx} className="flex flex-col gap-2 sm:gap-2.5 justify-center">
                                 <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground text-center">
                                     {roundName}
                                 </span>
@@ -249,39 +240,37 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
                         );
                     })}
 
-                    {/* Responsive Champion Badge */}
+                    {/* Champion Column */}
                     <div className="flex flex-col justify-center items-center gap-2">
-                        <AnimatePresence>
-                            {champion && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                    className="p-2.5 sm:p-3 rounded-xl border border-primary/40 bg-gradient-to-b from-primary/15 to-primary/5 text-center w-32 sm:w-36 shadow-sm flex flex-col items-center gap-1 shrink-0 snap-center"
-                                >
-                                    <span className="text-[8px] sm:text-[9px] uppercase tracking-wider font-extrabold text-primary">
-                                        🏆 Champion
-                                    </span>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-transparent select-none">
+                            Champion
+                        </span>
+                        <div
+                            className={`p-2 sm:p-3 rounded-xl border border-primary/40 bg-gradient-to-b from-primary/15 to-primary/5 text-center w-24 sm:w-36 shadow-sm flex flex-col items-center gap-1 shrink-0 snap-center transition-opacity duration-300 ${champion ? "opacity-100" : "opacity-0 pointer-events-none"
+                                }`}
+                        >
+                            <span className="text-[7px] sm:text-[9px] uppercase tracking-wider font-extrabold text-primary">
+                                🏆 Champion
+                            </span>
 
-                                    {champion.image && (
-                                        <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-primary shadow-xs my-0.5">
-                                            <Image
-                                                src={champion.image}
-                                                alt={champion.name}
-                                                fill
-                                                sizes="40px"
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                    )}
-
-                                    <p className="text-[11px] sm:text-xs font-bold text-foreground truncate w-full">
-                                        {champion.name}
-                                    </p>
-                                </motion.div>
+                            {champion?.image ? (
+                                <div className="relative w-7 h-7 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-primary shadow-xs my-0.5">
+                                    <Image
+                                        src={champion.image}
+                                        alt={champion.name}
+                                        fill
+                                        sizes="40px"
+                                        className="object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-muted my-0.5" />
                             )}
-                        </AnimatePresence>
+
+                            <p className="text-[10px] sm:text-xs font-bold text-foreground truncate w-full">
+                                {champion?.name || "Placeholder"}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

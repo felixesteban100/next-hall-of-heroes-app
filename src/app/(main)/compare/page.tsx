@@ -1,7 +1,7 @@
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
 import { MatchVerdict } from "@/components/compare/matchesVerdict/MatchVerditct";
-import { aggregateTeamScores, computeMatchScore, groupAlignments, groupClasses, avgPowerstats, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats } from "@/lib/compare/compare_utls";
+import { aggregateTeamScores, computeMatchScore, groupAlignments, groupClasses, avgTeamPowerstats, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats } from "@/lib/compare/compare_utls";
 import { StatsRadar } from "@/components/compare/StatRadar";
 import { ProfileSlot } from "@/components/compare/ProfileSlot";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
@@ -20,12 +20,11 @@ import { RowGroupedBadges } from "@/components/compare/rows/RowGroupedBadges";
 import { CopySummaryButton } from "@/components/compare/CopySummaryButton";
 import { RandomFillButton } from "@/components/compare/RandomFillButton";
 import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
-// import { BracketView } from "@/components/compare/BracketView";
-// import { buildBracket } from "@/lib/compare/bracket";
 import { BracketPicker } from "@/components/compare/BracketAddCombobox";
 import { DynamicBracketView } from "@/components/compare/BracketView";
 import { Character } from "@/types";
 import { searchCharacters } from "@/app/actions";
+import { sanitize } from "@/lib/utils";
 
 export const instant = false;
 
@@ -67,8 +66,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 : [];
 
     const [entitiesA, entitiesB] = await Promise.all([
-        fetchCharactersByIds(idsA),
-        fetchCharactersByIds(idsB),
+        sanitize(await fetchCharactersByIds(idsA)),
+        sanitize(await fetchCharactersByIds(idsB)),
     ]);
 
     // 1v1 convenience aliases (first member or null)
@@ -98,44 +97,18 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     // Radar: team avg powerstats or single
     const radar =
         mode === "team"
-            ? radarDataFromStats(avgPowerstats(entitiesA), avgPowerstats(entitiesB))
+            ? radarDataFromStats(avgTeamPowerstats(entitiesA), avgTeamPowerstats(entitiesB))
             : radarData(entityA, entityB);
 
     const hasA = entitiesA.length > 0;
     const hasB = entitiesB.length > 0;
 
-    // Powerstats for bars: team average vs single
-    const powerstatsA =
-        mode === "team" ? avgPowerstats(entitiesA) : entityA?.powerstats;
-    const powerstatsB =
-        mode === "team" ? avgPowerstats(entitiesB) : entityB?.powerstats;
-
-    const rosterA = entitiesA.map((e) => ({
-        id: e.id,
-        name: e.name,
-        overall: computeMatchScore(e)?.overall ?? 0,
-    }));
-    const rosterB = entitiesB.map((e) => ({
-        id: e.id,
-        name: e.name,
-        overall: computeMatchScore(e)?.overall ?? 0,
-    }));
-
     const sharedTeamA = groupTeams(entitiesA).shared.map(c => ({ name: c.name, members: c.members }))
     const sharedTeamB = groupTeams(entitiesB).shared.map(c => ({ name: c.name, members: c.members }))
-
     const randomSharedTeamA = sharedTeamA[Math.floor(Math.random() * sharedTeamA.length)]
     const randomSharedTeamB = sharedTeamB[Math.floor(Math.random() * sharedTeamB.length)]
 
-    // const lessMembersSharedTeamA = (sharedTeamA ?? []).reduce((min, current) =>
-    //     current.members.length < min.members.length ? current : min
-    // );
-    // const lessMembersSharedTeamB = (sharedTeamB ?? []).reduce((min, current) =>
-    //     current.members.length < min.members.length ? current : min, 
-    // );
-
     const entityAName =
-        // mode === "team" && lessMembersSharedTeamA ? lessMembersSharedTeamA.name
         mode === "team" && entitiesA.length > 1 && randomSharedTeamA ? randomSharedTeamA.name
             : mode === "team"
                 ? "Team A"
@@ -180,7 +153,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
     if (mode === "bracket") {
         return (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-4 mt-4 ">
                 <ComparisonHeader title="Bracket" />
                 <div className="flex flex-wrap gap-2 items-center">
                     <CompareModeToggle />
@@ -191,7 +164,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 <DynamicBracketView fighters={JSON.parse(JSON.stringify(fighters)).map((c: Character) => ({
                     id: c.id,
                     name: c.name,
-                    overall: c.powerstats.total,
+                    // overall: c.powerstats.total,
+                    overall: computeMatchScore(c).overall,
                     image: c.images.md,
                 }))} />
             </div>
@@ -319,13 +293,13 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </div>
 
                 {mode === "team" && (
-                    <MemberBreakdown rosterA={rosterA} rosterB={rosterB} />
+                    <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} />
                 )}
 
                 <RowsHeader text={mode === "team" ? "Combat & Powerstats · team avg" : "Combat & Powerstats"} />
                 <RowScoreComparer
-                    scoreA={powerstatsA}
-                    scoreB={powerstatsB}
+                    scoreA={mode === "team" ? avgTeamPowerstats(entitiesA) : entityA?.powerstats}
+                    scoreB={mode === "team" ? avgTeamPowerstats(entitiesB) : entityB?.powerstats}
                     rows={[
                         { label: "INTELLIGENCE", key: "intelligence" },
                         { label: "STRENGTH", key: "strength" },
@@ -333,12 +307,24 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         { label: "DURABILITY", key: "durability" },
                         { label: "POWER", key: "power" },
                         { label: "COMBAT", key: "combat" },
-                        { label: "TOTAL", key: "total", max: 600 },
+                        { label: "TOTAL", key: "total" },
                     ]}
                 />
 
                 <RowsHeader text="Match score breakdown" />
-                <RowScoreComparer scoreA={scoreA} scoreB={scoreB} />
+                <RowScoreComparer
+                    scoreA={scoreA}
+                    scoreB={scoreB}
+                    rows={[
+                        { label: "Average Powerstats", key: "averagePowerStats" },
+                        { label: "Tier", key: "tier" },
+                        { label: "Class", key: "class" },
+                        { label: "Powers", key: "powers" },
+                        { label: "Threat context", key: "threat" },
+                        { label: "Weakness penalty", key: "weaknessPenalty", isPenalty: true },
+                        { label: "Overall", key: "overall" },
+                    ]}
+                />
 
                 <RowsHeader text="General Information" />
                 {rowsBadges.map(row => (

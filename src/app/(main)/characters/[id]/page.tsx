@@ -171,29 +171,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-            {/* Powerstats */}
-            <div id="powerstats" className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
-                    <CompareWithButton mode="1v1" ids={[character.id]} />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                    {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (
-                        <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
-                            <p className="text-sm font-light flex gap-1.5 items-center">
-                                <Icon size={16} /> {label}: {powerstats[key]}
-                            </p>
-                            <Progress value={powerstats[key]} indicatorClassName={color} />
-                        </div>
-                    ))}
-                </div>
-                <div className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
-                    <p className="text-sm font-light flex gap-1.5 items-center">
-                        <Percent size={16} /> Overall score: {powerstats.total}
-                    </p>
-                    <Progress value={powerstats.total > 100 ? 100 : powerstats.total} indicatorClassName="bg-primary" />
-                </div>
-            </div>
+
 
             {/* Biography */}
             <div id="biography" className="space-y-2">
@@ -207,6 +185,48 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     ))}
                 </div>
             </div>
+
+
+
+            {/* Powerstats */}
+            <div id="powerstats" className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
+                    <CompareWithButton mode="1v1" ids={[character.id]} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (
+                        <div key={key} className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
+                            <p className="text-sm font-light flex gap-1.5 items-center">
+                                <Icon size={16} /> {label}: {powerstats[key]}
+                            </p>
+                            <Progress value={powerstats[key]} /* indicatorClassName={color} */ />
+                        </div>
+                    ))}
+                </div>
+                <div className="flex flex-col justify-between gap-2 border p-3 rounded bg-muted">
+                    <p className="text-sm font-light flex gap-1.5 items-center">
+                        <Percent size={16} /> Total: {powerstats.total}
+                    </p>
+                    <Progress value={powerstats.total > 100 ? 100 : powerstats.total} indicatorClassName="bg-primary" />
+                </div>
+            </div>
+
+            {/* Scores */}
+            {characterScore && <div id={"Scores"} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                    {Object.entries(characterScore).map(([key, value]) => (
+                        <div key={key} className={`${key == "overall" && "col-span-2 lg:col-span-3"} flex flex-col justify-between gap-2 border p-3 rounded bg-muted`}>
+                            {/* <span className="font-light capitalize">{key}: <span className="font-bold">{value}</span></span> */}
+                            <p className="text-sm font-light flex gap-1.5 items-center capitalize">
+                                {key}: <span className="font-bold">{value}</span>
+                            </p>
+                            <Progress value={value} />
+                        </div>
+                    ))}
+                </div>
+            </div>}
 
             {/* Powers & Abilities */}
             <div id={"Powers & Abilities"} className="space-y-2">
@@ -224,19 +244,6 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     emptyMessage="No powers found."
                 />
             </div>
-
-            {/* Scores */}
-            {characterScore && <div id={"Scores"} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                    {Object.entries(characterScore).map(([key, value]) => (
-                        <div key={key} className={`${key == "overall" && "col-span-2 lg:col-span-3"} flex flex-col justify-between gap-2 border p-3 rounded bg-muted`}>
-                            <span className="font-light capitalize">{key}: <span className="font-bold">{value}</span></span>
-                            <Progress value={value} />
-                        </div>
-                    ))}
-                </div>
-            </div>}
 
             {/* Groups & Affiliations */}
             <div id={"Groups & Affiliations"} className="space-y-2">

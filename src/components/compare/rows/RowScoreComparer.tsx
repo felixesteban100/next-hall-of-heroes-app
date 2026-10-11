@@ -2,44 +2,44 @@ import { Progress } from "@/components/ui/progress";
 import { Row } from "./Row";
 import { Cell } from "./Cell";
 
-export interface ScoreData {
-    combat?: number;
-    tier?: number;
-    class?: number;
-    powers?: number;
-    threat?: number;
-    weaknessPenalty?: number;
-    overall?: number;
+export type ScoreData = {
+    // averagePowerStats?: number;
+    // tier?: number;
+    // class?: number;
+    // powers?: number;
+    // threat?: number;
+    // weaknessPenalty?: number;
+    // overall?: number;
     [key: string]: number | undefined;
 }
 
-interface ScoreRowConfig {
+type ScoreRowConfig = {
     label: string;
     key: keyof ScoreData;
     isPenalty?: boolean;
     max?: number;
 }
 
-const DEFAULT_SCORE_ROWS: ScoreRowConfig[] = [
-    { label: "Combat stats", key: "combat" },
-    { label: "Tier", key: "tier" },
-    { label: "Class", key: "class" },
-    { label: "Powers", key: "powers" },
-    { label: "Threat context", key: "threat" },
-    { label: "Weakness penalty", key: "weaknessPenalty", isPenalty: true },
-    { label: "Overall", key: "overall" },
-];
+// const DEFAULT_SCORE_ROWS: ScoreRowConfig[] = [
+//     { label: "Average Powerstats", key: "averagePowerStats" },
+//     { label: "Tier", key: "tier" },
+//     { label: "Class", key: "class" },
+//     { label: "Powers", key: "powers" },
+//     { label: "Threat context", key: "threat" },
+//     { label: "Weakness penalty", key: "weaknessPenalty", isPenalty: true },
+//     { label: "Overall", key: "overall" },
+// ];
 
 interface RowScoreComparerProps {
     scoreA?: ScoreData | null;
     scoreB?: ScoreData | null;
-    rows?: ScoreRowConfig[];
+    rows: ScoreRowConfig[];
 }
 
 export function RowScoreComparer({
     scoreA,
     scoreB,
-    rows = DEFAULT_SCORE_ROWS,
+    rows /* = DEFAULT_SCORE_ROWS */,
 }: RowScoreComparerProps) {
     return (
         <>
@@ -47,8 +47,8 @@ export function RowScoreComparer({
                 const valA = scoreA?.[key];
                 const valB = scoreB?.[key];
 
-                const isAWinning = valA != null && valB != null && valA > valB;
-                const isBWinning = valA != null && valB != null && valB > valA;
+                const isAWinning = valA != null && (valB == null || valA > valB);
+                const isBWinning = valB != null && (valA == null || valB > valA);
 
                 // Format values (e.g. adding minus sign for penalties)
                 const formatValue = (val?: number) => {
@@ -71,9 +71,9 @@ export function RowScoreComparer({
                         >
                             {formatValue(valA)}
                             <Progress
+                                key={`a${label}`}
                                 value={getProgressValue(valA)}
-                                indicatorClassName={`${isAWinning ? "bg-primary" : "bg-foreground/50"
-                                    } rotate-180`}
+                                indicatorClassName={`${isAWinning ? "bg-primary" : "bg-foreground/50"} rotate-180`}
                             />
                         </Cell>
 
@@ -83,10 +83,9 @@ export function RowScoreComparer({
                                 } flex gap-2 items-center justify-start`}
                         >
                             <Progress
+                                key={`b${label}`}
                                 value={getProgressValue(valB)}
-                                indicatorClassName={
-                                    isBWinning ? "bg-secondary" : "bg-foreground/50"
-                                }
+                                indicatorClassName={isBWinning ? "bg-secondary" : "bg-foreground/50"}
                             />
                             {formatValue(valB)}
                         </Cell>
