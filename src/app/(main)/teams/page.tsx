@@ -47,13 +47,13 @@ export default async function page({
     // console.log((await collectionTeams.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
 
     return (
-        <div className="space-y-4 mt-4">
-            <div>
+        <div className="space-y-2 mt-4">
+            {/* <div>
                 <h1 className="text-2xl font-bold">Teams</h1>
                 <p className="text-muted-foreground font-light">
                     {totalTeams} teams across all universes
                 </p>
-            </div>
+            </div> */}
             <Suspense fallback={<FilterBarSkeleton />}>
                 <SimpleFilterBar
                     placeholder="Search teams..."

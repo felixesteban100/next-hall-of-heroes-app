@@ -22,8 +22,8 @@ export default function SortButton({ sort, sortOrientation, updateParam, sortOpt
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="sm" variant="outline">
-                        Sort: {sortOptions.find(o => o.value === sort)?.label}
+                    <Button size="sm" className='truncate' variant="outline">
+                        {sortOptions.find(o => o.value === sort)?.label}
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-32">

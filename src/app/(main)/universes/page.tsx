@@ -47,13 +47,13 @@ export default async function page({
     // console.log((await collectionUniverses.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
 
     return (
-        <div className="space-y-4 mt-4">
-            <div>
+        <div className="space-y-2 mt-4">
+            {/* <div>
                 <h1 className="text-2xl font-bold">Universes</h1>
                 <p className="text-muted-foreground font-light">
                     {totalUniverses} universes
                 </p>
-            </div>
+            </div> */}
             <Suspense fallback={<FilterBarSkeleton />}  >
                 <SimpleFilterBar
                     placeholder="Search universes..."
@@ -73,7 +73,7 @@ export default async function page({
                     </div>
                 )}
             </div>
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center">
                 <PaginationPages currentPage={page} totalPages={Math.ceil(totalUniverses / pageSize)} />
             </div>
         </div>

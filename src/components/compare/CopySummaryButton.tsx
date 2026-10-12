@@ -9,8 +9,8 @@ import { Bout } from "@/lib/compare/bracket";
 type Props = {
   nameA?: string;
   nameB?: string;
-  avgA?: number | null;
-  avgB?: number | null;
+  powerEstimateA?: number | null;
+  powerEstimateB?: number | null;
   aceA?: { name: string; overall: number } | null;
   aceB?: { name: string; overall: number } | null;
   mode?: CompareMode;
@@ -30,8 +30,8 @@ function fmt(n: number | null | undefined) {
 export function CopySummaryButton({
   nameA = "Side A",
   nameB = "Side B",
-  avgA,
-  avgB,
+  powerEstimateA,
+  powerEstimateB,
   aceA,
   aceB,
   mode = "1v1",
@@ -99,7 +99,7 @@ export function CopySummaryButton({
     }
 
     // Standard 1v1 / Team summaries...
-    const edge = avgA != null && avgB != null ? avgA - avgB : null;
+    const edge = powerEstimateA != null && powerEstimateB != null ? powerEstimateA - powerEstimateB : null;
     const edgeText =
       edge == null
         ? ""
@@ -115,8 +115,8 @@ export function CopySummaryButton({
         : "";
 
     return mode === "team"
-      ? `Team compare: ${nameA} (${fmt(avgA)} avg) vs ${nameB} (${fmt(avgB)} avg)${aceLine}${edgeText}\n${url}`
-      : `Compare: ${nameA} (${fmt(avgA)}) vs ${nameB} (${fmt(avgB)})${edgeText}\n${url}`;
+      ? `Team compare: ${nameA} (${fmt(powerEstimateA)} power estimate) vs ${nameB} (${fmt(powerEstimateB)} power estimate)${aceLine}${edgeText}\n${url}`
+      : `Compare: ${nameA} (${fmt(powerEstimateA)}) vs ${nameB} (${fmt(powerEstimateB)})${edgeText}\n${url}`;
   };
 
   const onCopy = async () => {

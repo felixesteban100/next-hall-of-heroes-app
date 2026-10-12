@@ -158,7 +158,8 @@ function BoutCard({
                                 : "bg-rose-500/20 text-rose-400"
                                 }`}
                         >
-                            {isPredictionCorrect ? "✓ Picked" : "✕ Miss"}
+                            {/* {isPredictionCorrect ? "✓ Picked" : "✕ Miss"} */}
+                            {isPredictionCorrect ? "✓" : "✕"}
                         </span>
                     )}
                 </div>

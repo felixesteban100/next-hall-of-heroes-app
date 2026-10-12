@@ -32,19 +32,22 @@ export default function SimpleFilterBar({
     }, [searchParams, pathname, push]);
 
     return (
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-row md:flex-col gap-3 w-full">
             {/* Row 1 — search only */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
                 <div className="relative flex-1">
-                    <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
                     <Input
-                        placeholder={placeholder}
+                        // placeholder={placeholder}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10 "
+                        className="pl-2 md:pl-10 rounded-r-none"
                     />
-                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
+                    {
+                        name &&
+                        <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
+                    }
                 </div>
                 <Button size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />

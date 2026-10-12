@@ -113,17 +113,17 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
     }, [draftFilters]);
 
     return (
-        <div className="relative flex flex-col gap-3 w-full">
+        <div className="relative flex flex-row md:flex-col gap-3 w-full">
             {/* Row 1 — Search input */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center w-full">
                 <div className="relative flex-1">
-                    <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
                     <Input
-                        placeholder="Search characters by name..."
+                        // placeholder="Search characters by name..."
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10"
+                        className="pl-2 md:pl-10 rounded-r-none"
                     />
                     {name && (
                         <X
@@ -133,25 +133,25 @@ export const FilterBar = ({ universes, teams, powers, activeFilterProps }: {
                         />
                     )}
                 </div>
-                <Button size="sm" onClick={() => updateParam("name", name)}>
+                <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
                 </Button>
             </div>
 
             {/* Row 2 — Chips + Filter Drawer + Sort */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
                 <div className="flex-1 min-w-0">
                     <ActiveFiltersBadges {...activeFilterProps} onRemove={removeFilter} />
                 </div>
                 <Drawer direction="right" open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
                     <DrawerTrigger asChild>
                         <Button size="sm" variant="outline">
-                            <SlidersHorizontal size={16} /> Filter
-                            {activeFilterCount > 0 && (
+                            <SlidersHorizontal size={16} />
+                            {/* {activeFilterCount > 0 && (
                                 <span className="ml-1 text-xs bg-accent text-accent-foreground rounded-full px-1.5 py-0.5 leading-none">
                                     {activeFilterCount}
                                 </span>
-                            )}
+                            )} */}
                         </Button>
                     </DrawerTrigger>
 

@@ -114,8 +114,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         mode={mode}
                         nameA={entityAName ?? "Side A"}
                         nameB={entityBName ?? "Side B"}
-                        avgA={teamA?.avg.overall}
-                        avgB={teamB?.avg.overall}
+                        powerEstimateA={teamA?.powerEstimate}
+                        powerEstimateB={teamB?.powerEstimate}
                         aceA={mode === "team" ? aceAInfo : null}
                         aceB={mode === "team" ? aceBInfo : null}
                         fighterCount={fighters.length}

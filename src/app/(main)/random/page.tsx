@@ -26,10 +26,10 @@ export default async function Random() {
 
     return (
         <div className="flex flex-col mt-4 ">
-            <h1 className="text-2xl font-bold">Random Characters</h1>
+            {/* <h1 className="text-2xl font-bold">Random Characters</h1>
             <div className="text-muted-foreground font-light">
                 8 random characters across all universes
-            </div>
+            </div> */}
             <CacheClearButton path="/characters/random" />
             <CharacterGrid characters={sanitizedCharacters} />
         </div>

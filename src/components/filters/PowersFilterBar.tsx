@@ -33,28 +33,30 @@ export default function PowersFilterBar() {
     const tierColor = tierKey !== undefined ? POWER_TIER_COLOR[tierKey as keyof typeof POWER_TIER_COLOR] : undefined;
 
     return (
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-row md:flex-col gap-3 w-full">
             {/* Search row */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
                 <div className="relative flex-1">
-                    <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
                     <Input
-                        placeholder="Search powers..."
+                        // placeholder="Search powers..."
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-10 "
+                        className="pl-2 md:pl-10 rounded-r-none"
                     />
-                    <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
+                    {name && (
+                        <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
+                    )}
                 </div>
-                <Button size="sm" onClick={() => updateParam("name", name)}>
+                <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
                 </Button>
             </div>
 
             {/* Filters and Controls row */}
             <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
+                <div className="hidden md:flex-1 min-w-0">
                     {(tierName && TierIcon && tierColor) && (
                         <span
                             key={tierName}
@@ -70,7 +72,7 @@ export default function PowersFilterBar() {
                 <Drawer direction="right">
                     <DrawerTrigger asChild>
                         <Button size="sm" variant="outline">
-                            <SlidersHorizontal size={16} /> Filter
+                            <SlidersHorizontal size={16} />
                         </Button>
                     </DrawerTrigger>
                     <DrawerContent>

@@ -119,7 +119,7 @@ export default function ActiveFiltersBadges({
     return (
         <div>
             {activeFilters.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="hidden md:flex flex-wrap gap-2 mt-2">
                     {activeFilters.map((f) => {
                         const Icon = f.icon;
                         return (

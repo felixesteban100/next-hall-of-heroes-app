@@ -109,13 +109,13 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className="space-y-4 mt-4">
-            <div>
+        <div className="space-y-2 mt-4 flex flex-col justify-center">
+            {/* <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
                     {totalCharacters} characters across all universes
                 </div>
-            </div>
+            </div>*/}
 
             <FilterBar
                 universes={sanitizedUniverses}
@@ -138,13 +138,13 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
 
             <CharacterGrid characters={sanitizedCharacters} />
 
-            <div className="flex justify-center mt-4">
-                <Suspense fallback={null}>
-                    <PaginationPages
-                        currentPage={page}
-                        totalPages={Math.ceil(totalCharacters / pageSize)}
-                    />
-                </Suspense>
+            <div className="flex justify-center">
+                {/* <Suspense fallback={null}> */}
+                <PaginationPages
+                    currentPage={page}
+                    totalPages={Math.ceil(totalCharacters / pageSize)}
+                />
+                {/* </Suspense> */}
             </div>
         </div>
     );
