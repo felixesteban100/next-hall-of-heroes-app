@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { Row } from "./Row";
 import { Cell } from "./Cell";
+import { Field, FieldLabel } from "@/components/ui/field"
 
 export type ScoreData = {
     // averagePowerStats?: number;
@@ -69,12 +70,19 @@ export function RowScoreComparer({
                             className={`${isAWinning ? "text-primary font-bold" : "text-foreground"
                                 } flex gap-2 items-center justify-end`}
                         >
-                            {formatValue(valA)}
-                            <Progress
-                                key={`a${label}`}
-                                value={getProgressValue(valA)}
-                                indicatorClassName={`${isAWinning ? "bg-primary" : "bg-foreground/50"} rotate-180`}
-                            />
+                            <Field className="w-full">
+                                <FieldLabel htmlFor="progress-valB">
+                                    <span className="mr-auto">{formatValue(valB)}</span>
+                                </FieldLabel>
+                                {/* {formatValue(valA)} */}
+                                <Progress
+                                    key={`a${label}`}
+                                    id="progress-valA"
+                                    value={getProgressValue(valA)}
+                                    indicatorClassName={`${isAWinning ? "bg-primary" : "bg-foreground/50"} rotate-180`}
+                                />
+                            </Field>
+
                         </Cell>
 
                         {/* Side B */}
@@ -82,12 +90,18 @@ export function RowScoreComparer({
                             className={`${isBWinning ? "text-secondary font-bold" : "text-foreground"
                                 } flex gap-2 items-center justify-start`}
                         >
-                            <Progress
-                                key={`b${label}`}
-                                value={getProgressValue(valB)}
-                                indicatorClassName={isBWinning ? "bg-secondary" : "bg-foreground/50"}
-                            />
-                            {formatValue(valB)}
+                            <Field className="w-full">
+                                <FieldLabel htmlFor="progress-valB">
+                                    <span className="ml-auto">{formatValue(valB)}</span>
+                                </FieldLabel>
+                                <Progress
+                                    key={`b${label}`}
+                                    id="progress-valB"
+                                    value={getProgressValue(valB)}
+                                    indicatorClassName={isBWinning ? "bg-secondary" : "bg-foreground/50"}
+                                />
+                                {/* {formatValue(valB)} */}
+                            </Field>
                         </Cell>
                     </Row>
                 );

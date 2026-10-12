@@ -23,8 +23,8 @@ export function RandomFillButton({
     idsA = [],
     idsB = [],
     idsBracket = [],
-    sizeA = 3,
-    sizeB = 3,
+    sizeA = 4,
+    sizeB = 4,
     bracketSize,
 }: Props) {
     // const { pushParams } = useParamLoading();

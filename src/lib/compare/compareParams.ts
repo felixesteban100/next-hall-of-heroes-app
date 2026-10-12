@@ -19,7 +19,7 @@ export function detectMode(params: {
     id1?: string;
     id2?: string;
     p?: string;
-}) {
+}): CompareMode {
     if (params.mode === "bracket" || params.p) return "bracket" as const;
     if (params.mode === "team" || params.a || params.b) return "team" as const;
     return "1v1" as const;

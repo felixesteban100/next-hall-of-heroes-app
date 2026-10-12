@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Check, Link2 } from "lucide-react";
 import { CompareMode } from "@/lib/compare/compareParams";
+import { Bout } from "@/lib/compare/bracket";
 
 type Props = {
   nameA?: string;
@@ -14,6 +15,13 @@ type Props = {
   aceB?: { name: string; overall: number } | null;
   mode?: CompareMode;
   className?: string;
+  // Detailed Bracket props
+  champion?: { name: string } | null;
+  totalCorrect?: number;
+  totalVoted?: number;
+  fighterCount?: number;
+  allBouts?: Bout[];
+  userPredictions?: Record<string, string | number>;
 };
 
 function fmt(n: number | null | undefined) {
@@ -29,13 +37,56 @@ export function CopySummaryButton({
   aceB,
   mode = "1v1",
   className = "",
+  champion,
+  totalCorrect = 0,
+  totalVoted = 0,
+  fighterCount,
+  allBouts = [],
+  userPredictions = {},
 }: Props) {
   const [copied, setCopied] = useState(false);
 
   const buildSummary = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    const edge =
-      avgA != null && avgB != null ? avgA - avgB : null;
+
+    if (mode === "bracket") {
+      const champStr = champion ? `🏆 Champion: ${champion.name}` : "🏆 Tournament in progress";
+      const accuracyPct = totalVoted > 0 ? Math.round((totalCorrect / totalVoted) * 100) : 0;
+      const scoreStr = totalVoted > 0 ? `🎯 Overall Accuracy: ${totalCorrect}/${totalVoted} (${accuracyPct}%)` : "🎯 No predictions cast yet";
+      const sizeStr = fighterCount ? `${fighterCount}-Fighter Tournament` : "Custom Bracket";
+
+      // Build detailed match breakdown
+      const boutLines = allBouts.map((bout, idx) => {
+        const fighterA = bout.a?.name || "TBD";
+        const fighterB = bout.b?.name || "TBD";
+        const scoreA = bout.scoreA != null ? bout.scoreA.toFixed(1) : "—";
+        const scoreB = bout.scoreB != null ? bout.scoreB.toFixed(1) : "—";
+        const actualWinner = bout.winner?.name || "Pending";
+
+        // Find what the user picked
+        const userChoiceId = userPredictions[bout.id];
+        const userPickedName =
+          userChoiceId === bout.a?.id ? fighterA :
+            userChoiceId === bout.b?.id ? fighterB : "No Pick";
+
+        const isCorrect = userChoiceId != null && bout.winner?.id != null && userChoiceId === bout.winner.id;
+        const resultIcon = userChoiceId == null ? "⏳" : isCorrect ? "✅" : "❌";
+
+        return `Match ${idx + 1} [${bout.roundName}]:\n  • ${fighterA} (${scoreA}) vs ${fighterB} (${scoreB})\n  • Winner: ${actualWinner}\n  • Your Pick: ${userPickedName} ${resultIcon}`;
+      });
+
+      return [
+        `⚔️ Hall of Heroes - ${sizeStr}`,
+        champStr,
+        scoreStr,
+        "\n📋 Match Breakdown:",
+        ...boutLines,
+        `\n🔗 ${url}`
+      ].filter(Boolean).join("\n");
+    }
+
+    // Standard 1v1 / Team summaries...
+    const edge = avgA != null && avgB != null ? avgA - avgB : null;
     const edgeText =
       edge == null
         ? ""
@@ -62,7 +113,6 @@ export function CopySummaryButton({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
       window.prompt("Copy summary:", text);
     }
   };
