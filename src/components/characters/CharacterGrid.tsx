@@ -73,20 +73,13 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
         return (
             <div
                 ref={containerRef}
-                /* 
-                  ✨ FIX: Constrain height dynamically using standard viewport units (svh) 
-                  so the snap container leaves exact room for the header, filters, and pagination 
-                  without pushing anything off-screen.
-                */
-                /* max-w-[400px] */
-                className="sm:hidden h-[72svh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth"
+                className="sm:hidden h-[80vh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
                 {characters.map((character, i) => (
                     <LoadingLink
                         key={character.id}
                         href={`/characters/${character.id}`}
-                        className="snap-card snap-center snap-always shrink-0 h-full w-full flex items-center justify-center py-1 transition-all duration-300 scale-95 opacity-70"
-                        // className="w-full h-full mx-auto"
+                        className="snap-card snap-center snap-always shrink-0 h-full w-full flex items-center justify-center p-0 transition-all duration-300 scale-95 opacity-70"
                         onFocus={() => setFocusedIndex(i)}
                     >
                         <CharacterCard character={character} />

@@ -6,6 +6,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { SearchIcon, X } from "lucide-react";
 import SortButton, { SortOption } from "./SortButton";
+import { SearchInputBar } from "./SearchInputBar";
 
 export default function SimpleFilterBar({
     placeholder = "Search...",
@@ -34,7 +35,13 @@ export default function SimpleFilterBar({
     return (
         <div className="flex flex-row md:flex-col gap-3 w-full">
             {/* Row 1 — search only */}
-            <div className="flex items-center">
+            <SearchInputBar
+                value={name}
+                onChange={(val) => setName(val)}
+                onSearch={() => updateParam("name", name)}
+                placeholder="Search characters by name..."
+            />
+            {/* <div className="flex items-center w-full">
                 <div className="relative flex-1">
                     <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
                     <Input
@@ -49,10 +56,10 @@ export default function SimpleFilterBar({
                         <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
                     }
                 </div>
-                <Button size="sm" onClick={() => updateParam("name", name)}>
+                <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
                 </Button>
-            </div>
+            </div> */}
 
             {/* Row 2 — sort (no filter drawer needed for simple pages) */}
             <div className="flex items-center justify-end gap-2">

@@ -119,26 +119,28 @@ export default function ActiveFiltersBadges({
     return (
         <div>
             {activeFilters.length > 0 && (
-                <div className="hidden md:flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2">
                     {activeFilters.map((f) => {
                         const Icon = f.icon;
                         return (
-                            <span
+                            <div
                                 key={f.label}
                                 className={`capitalize inline-flex items-center gap-1 text-xs ${f.colorText ?? "text-muted-foreground"} font-bold ${f.colorBg ?? "bg-muted"} rounded-full px-3 py-1`}
                             >
                                 <Icon size={12} />
-                                {f.display}
-                                {onRemove && (
-                                    <button
-                                        onClick={() => onRemove(f.paramKey)}
-                                        className="ml-1 hover:opacity-70 transition-opacity"
-                                        aria-label={`Remove ${f.label} filter`}
-                                    >
-                                        <X size={10} />
-                                    </button>
-                                )}
-                            </span>
+                                <div className="hidden md:inline">
+                                    {f.display}
+                                    {onRemove && (
+                                        <button
+                                            onClick={() => onRemove(f.paramKey)}
+                                            className="ml-1 hover:opacity-70 transition-opacity"
+                                            aria-label={`Remove ${f.label} filter`}
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         );
                     })}
                 </div>

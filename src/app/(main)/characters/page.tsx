@@ -13,6 +13,10 @@ import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";
 
+import smartcrop from 'smartcrop';
+import sharp from 'sharp';
+
+
 export const instant = false;
 
 type SearchParamsPromise = Promise<{

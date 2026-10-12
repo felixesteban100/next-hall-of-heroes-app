@@ -29,10 +29,8 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
     return (
-
-        /* when the pages load I can see the character cards border from squared to rounded ❌ */
         <Card
-            className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl "
+            className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none md:hover:shadow-2xl"
         >
             <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden`}>
                 <ViewTransition name={`character-${character.id}`}>
@@ -41,25 +39,23 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                         alt={`${character.name}'s main image`}
                         unoptimized
                         fill
-                        className="object-cover object-top duration-500 group-hover:scale-110 rounded-t-2xl"
+                        // ✨ Use object-position. You can fallback to "object-top" or dynamic coordinates if stored in your DB (e.g. character.imageFocus = "50% 20%")
+                        className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl"
+                        style={{
+                            objectPosition: character.imageFocus || "50% 15%",
+                            contain: "layout"
+                        }}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        style={{ contain: "layout" }}
                     />
                 </ViewTransition>
             </div>
+
+            {/* Card Header, Description, and Footer remain unchanged */}
             <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
                 <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
                 <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={`${getCharacterAlignmentTextColor(character.biography.alignment)} bg-transparent font-bold`} />
             </CardHeader>
-            {/* <CardDescription className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
-                <div className="flex items-center">
-                    <p>{character.biography.fullName === "-" || character.biography.fullName === "" ? "Unknown" : character.biography.fullName}</p>
-                    <span className="text-xs h-5 self-center text-muted-foreground font-medium shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
-                        #{character.id}
-                    </span>
-                </div>
-                <Image src={character.biography.publisher.logo} alt="publisher" width={500} height={500} unoptimized className="h-12 w-auto rounded-md" />
-            </CardDescription> */}
+
             <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 shrink-0">
                 <div className="flex items-center gap-1.5 min-w-0">
                     <p className="truncate">
@@ -72,7 +68,6 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </span>
                 </div>
 
-                {/* Uniform publisher logo */}
                 <div className="h-8 w-16 sm:h-9 sm:w-20 shrink-0 flex items-center justify-center">
                     <Image
                         src={character.biography.publisher?.logo ?? ""}
@@ -84,6 +79,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     />
                 </div>
             </CardDescription>
+
             <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0">
                 <div className="grid grid-cols-4 w-full divide-x divide-foreground/50 text-center text-xs">
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Gender">
@@ -109,5 +105,5 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                 </div>
             </CardFooter>
         </Card>
-    )
+    );
 }

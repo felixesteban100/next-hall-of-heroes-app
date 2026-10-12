@@ -8,6 +8,7 @@ import { SearchIcon, SlidersHorizontal, X } from "lucide-react";
 import { POWER_TIER, POWER_TIER_ICON, POWER_TIER_COLOR } from "@/lib/constants"; // Adjust path to your constants file
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer";
 import SortButton from "./SortButton";
+import { SearchInputBar } from "./SearchInputBar";
 
 export default function PowersFilterBar() {
     const { push } = useRouter();
@@ -35,7 +36,7 @@ export default function PowersFilterBar() {
     return (
         <div className="flex flex-row md:flex-col gap-3 w-full">
             {/* Search row */}
-            <div className="flex items-center">
+            {/* <div className="flex items-center w-full">
                 <div className="relative flex-1">
                     <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
                     <Input
@@ -52,10 +53,16 @@ export default function PowersFilterBar() {
                 <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
                     <SearchIcon size={16} />
                 </Button>
-            </div>
+            </div> */}
+            <SearchInputBar
+                value={name}
+                onChange={(val) => setName(val)}
+                onSearch={() => updateParam("name", name)}
+                placeholder="Search characters by name..."
+            />
 
             {/* Filters and Controls row */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
                 <div className="hidden md:flex-1 min-w-0">
                     {(tierName && TierIcon && tierColor) && (
                         <span
