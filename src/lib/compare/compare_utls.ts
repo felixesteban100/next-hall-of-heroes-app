@@ -130,33 +130,6 @@ export function computeMatchScore(
     };
 }
 
-/** Compare two sides for UI badges */
-export function compareMatchScores(
-    a: MatchBreakdown | null | undefined,
-    b: MatchBreakdown | null | undefined
-): {
-    winner: "a" | "b" | "tie" | "none";
-    diff: number;
-    label: string;
-} {
-    if (!a && !b) return { winner: "none", diff: 0, label: "Select characters" };
-    // if (a && !b) return { winner: "a", diff: a.overall, label: "Only Character A scored" };
-    if (a && !b) return { winner: "a", diff: a.overall, label: "Only Entity A scored" };
-    // if (!a && b) return { winner: "b", diff: b.overall, label: "Only Character B scored" };
-    if (!a && b) return { winner: "b", diff: b.overall, label: "Only Entity B scored" };
-
-    const diff = round1(a!.overall - b!.overall);
-    if (Math.abs(diff) < 3) {
-        return { winner: "tie", diff, label: "Too close to call" };
-    }
-    if (diff > 0) {
-        return { winner: "a", diff, label: `Entity A edge +${diff}` };
-        // return { winner: "a", diff, label: `Character A edge +${diff}` };
-    }
-    // return { winner: "b", diff: Math.abs(diff), label: `Character B edge +${Math.abs(diff)}` };
-    return { winner: "b", diff: Math.abs(diff), label: `Enitity B edge +${Math.abs(diff)}` };
-}
-
 export function hasNemesisLink(
     a: CharacterWithJoinTeamUniversePowerEnemies,
     b: CharacterWithJoinTeamUniversePowerEnemies
@@ -179,23 +152,33 @@ export function hasNemesisLink(
 }
 
 /** Toy spar: probability A wins ≈ logistic of overall difference */
-export function simulateSpar(
-    scoreA: number,
-    scoreB: number,
-    trials = 100
-): { aWins: number; bWins: number; draws: number; aWinPct: number } {
-    const diff = scoreA - scoreB;
-    // sigmoid → P(A wins a round)
-    const pA = 1 / (1 + Math.exp(-diff / 8));
+// lib/compare/compare_utls.ts
+
+// lib/compare/compare_utls.ts
+
+export function simulateSpar(scoreA: number, scoreB: number, rounds = 100) {
     let aWins = 0;
     let bWins = 0;
     let draws = 0;
 
-    for (let i = 0; i < trials; i++) {
-        const r = Math.random();
-        if (Math.abs(scoreA - scoreB) < 2 && Math.random() < 0.15) {
+    // Use the actual score magnitude to scale variance (e.g. higher tiers have tighter, more consistent power bands)
+    const avgScore = (scoreA + scoreB) / 2;
+    // Scale variance dynamically so a 10-point gap at 100 power acts similarly to a 20-point gap at 200 power
+    const varianceScale = Math.max(0.05, 0.15 * (100 / Math.max(avgScore, 50)));
+
+    for (let i = 0; i < rounds; i++) {
+        // Dynamic jitter per round based on scale
+        const jitterA = scoreA * (1 + (Math.random() * (varianceScale * 2) - varianceScale));
+        const jitterB = scoreB * (1 + (Math.random() * (varianceScale * 2) - varianceScale));
+
+        const d = jitterA - jitterB;
+        const maxVal = Math.max(jitterA, jitterB, 1);
+        const pct = Math.abs(d) / maxVal;
+
+        // Apply your 6% toss-up threshold correctly against the scaled round percentage
+        if (pct < 0.06) {
             draws++;
-        } else if (r < pA) {
+        } else if (jitterA > jitterB) {
             aWins++;
         } else {
             bWins++;
@@ -206,7 +189,9 @@ export function simulateSpar(
         aWins,
         bWins,
         draws,
-        aWinPct: Math.round((aWins / trials) * 1000) / 10,
+        aWinPct: Math.round((aWins / rounds) * 100),
+        bWinPct: Math.round((bWins / rounds) * 100),
+        drawPct: Math.round((draws / rounds) * 100),
     };
 }
 
@@ -336,7 +321,7 @@ function chemistryBoostFrom(chem: ChemistryResult | null): number {
 
 export function aggregateTeamScores(
     entities: CharacterWithJoinTeamUniversePowerEnemies[]
-): TeamAggregate | null {
+): TeamAggregate {
     const scored = entities
         .map((e) => ({ entity: e, score: computeMatchScore(e) }))
         .filter(
@@ -344,7 +329,35 @@ export function aggregateTeamScores(
                 x.score != null
         );
 
-    if (!scored.length) return null;
+    const avg: MatchBreakdown = {
+        averagePowerStats: 0,
+        tier: 0,
+        class: 0,
+        powers: 0,
+        threat: 0,
+        weaknessPenalty: 0,
+        overall: 0,
+    };
+
+    if (!scored.length) return {
+        avg,
+        ace: {
+            averagePowerStats: 0,
+            tier: 0,
+            class: 0,
+            powers: 0,
+            threat: 0,
+            weaknessPenalty: 0,
+            overall: 0,
+        },
+        aceName: null,
+        memberCount: 0,
+        scoresCombined: 0,
+        powerEstimate: 0,
+        chemistry: null,
+        chemistryBoost: 0,
+        supportBoost: 0,
+    };
 
     const n = scored.length;
     const keys = [
@@ -357,15 +370,7 @@ export function aggregateTeamScores(
         "overall",
     ] as const;
 
-    const avg: MatchBreakdown = {
-        averagePowerStats: 0,
-        tier: 0,
-        class: 0,
-        powers: 0,
-        threat: 0,
-        weaknessPenalty: 0,
-        overall: 0,
-    };
+
     for (const k of keys) {
         avg[k] = round1(
             scored.reduce((s, x) => s + Number(x.score[k] ?? 0), 0) / n

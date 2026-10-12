@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, Sparkles, Users } from "lucide-react";
+import { CheckCircle2, XCircle, Sparkles, Handshake } from "lucide-react";
 import Image from "next/image";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
@@ -23,10 +23,10 @@ export function MatchPredictionOverlay({
     actualWinner,
     onReveal,
 }: MatchPredictionOverlayProps) {
-    const [userPick, setUserPick] = useState<"A" | "B" | null>(null);
+    const [userPick, setUserPick] = useState<"A" | "B" | "Draw" | null>(null);
     const [isResolved, setIsResolved] = useState<boolean>(false);
 
-    const handleVote = (choice: "A" | "B") => {
+    const handleVote = (choice: "A" | "B" | "Draw") => {
         setUserPick(choice);
         setIsResolved(true);
         setTimeout(() => {
@@ -61,65 +61,74 @@ export function MatchPredictionOverlay({
                 </div>
 
                 {!isResolved ? (
-                    <div className="grid grid-cols-2 gap-3 w-full mt-2">
-                        {/* Side A Vote Button */}
-                        <button
-                            onClick={() => handleVote("A")}
-                            className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary transition-all cursor-pointer group"
-                        >
-                            {/* Avatar Stack for Teams / Avatar for 1v1 */}
-                            <div className="flex -space-x-2 overflow-hidden justify-center my-1">
-                                {entitiesA.slice(0, 3).map((ent, idx) => (
-                                    <div
-                                        key={ent.id || idx}
-                                        className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
-                                    >
-                                        <Image
-                                            src={ent.images.md}
-                                            alt={ent.name}
-                                            width={800}
-                                            height={800}
-                                            className="object-cover w-full h-full"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            <span className="text-sm font-bold truncate w-full text-primary/50 group-hover:text-primary">
-                                {entityAName}
-                            </span>
-                            <span className="text-xs font-semibold truncate w-full group-hover:text-primary ">
-                                {labelA}
-                            </span>
-                        </button>
+                    <div className="flex flex-col gap-2.5 w-full mt-2">
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                            {/* Side A Vote Button */}
+                            <button
+                                onClick={() => handleVote("A")}
+                                className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary transition-all cursor-pointer group"
+                            >
+                                <div className="flex -space-x-2 overflow-hidden justify-center my-1">
+                                    {entitiesA.slice(0, 3).map((ent, idx) => (
+                                        <div
+                                            key={ent.id || idx}
+                                            className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
+                                        >
+                                            <Image
+                                                src={ent.images.md}
+                                                alt={ent.name}
+                                                width={800}
+                                                height={800}
+                                                className="object-cover w-full h-full"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <span className="text-sm font-bold truncate w-full text-primary/50 group-hover:text-primary">
+                                    {entityAName}
+                                </span>
+                                <span className="text-xs font-semibold truncate w-full group-hover:text-primary ">
+                                    {labelA}
+                                </span>
+                            </button>
 
-                        {/* Side B Vote Button */}
+                            {/* Side B Vote Button */}
+                            <button
+                                onClick={() => handleVote("B")}
+                                className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/40 hover:bg-secondary/10 hover:border-secondary transition-all cursor-pointer group"
+                            >
+                                <div className="flex -space-x-2 overflow-hidden justify-center my-1">
+                                    {entitiesB.slice(0, 3).map((ent, idx) => (
+                                        <div
+                                            key={ent.id || idx}
+                                            className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
+                                        >
+                                            <Image
+                                                src={ent.images.md}
+                                                alt={ent.name}
+                                                width={800}
+                                                height={800}
+                                                className="object-cover w-full h-full"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <span className="text-sm font-bold truncate w-full text-secondary/50 group-hover:text-secondary">
+                                    {entityBName}
+                                </span>
+                                <span className="text-xs font-semibold truncate w-full group-hover:text-secondary">
+                                    {labelB}
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* 👉 Toss-up / Draw Button Added Here */}
                         <button
-                            onClick={() => handleVote("B")}
-                            className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/40 hover:bg-secondary/10 hover:border-secondary transition-all cursor-pointer group"
+                            onClick={() => handleVote("Draw")}
+                            className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted font-semibold text-xs transition-all cursor-pointer text-muted-foreground hover:text-foreground w-full"
                         >
-                            {/* Avatar Stack for Teams / Avatar for 1v1 */}
-                            <div className="flex -space-x-2 overflow-hidden justify-center my-1">
-                                {entitiesB.slice(0, 3).map((ent, idx) => (
-                                    <div
-                                        key={ent.id || idx}
-                                        className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
-                                    >
-                                        <Image
-                                            src={ent.images.md}
-                                            alt={ent.name}
-                                            width={800}
-                                            height={800}
-                                            className="object-cover w-full h-full"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            <span className="text-sm font-bold truncate w-full text-secondary/50 group-hover:text-secondary">
-                                {entityBName}
-                            </span>
-                            <span className="text-xs font-semibold truncate w-full group-hover:text-secondary">
-                                {labelB}
-                            </span>
+                            <Handshake className="w-4 h-4 text-muted-foreground" />
+                            Too Close / Toss-up (Draw)
                         </button>
                     </div>
                 ) : (

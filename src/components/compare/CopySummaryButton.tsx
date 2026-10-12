@@ -15,7 +15,6 @@ type Props = {
   aceB?: { name: string; overall: number } | null;
   mode?: CompareMode;
   className?: string;
-  // Detailed Bracket props
   champion?: { name: string } | null;
   totalCorrect?: number;
   totalVoted?: number;
@@ -55,13 +54,27 @@ export function CopySummaryButton({
       const scoreStr = totalVoted > 0 ? `🎯 Overall Accuracy: ${totalCorrect}/${totalVoted} (${accuracyPct}%)` : "🎯 No predictions cast yet";
       const sizeStr = fighterCount ? `${fighterCount}-Fighter Tournament` : "Custom Bracket";
 
-      // Build detailed match breakdown
+      // Build detailed match breakdown using your Edge / Toss-up logic
       const boutLines = allBouts.map((bout, idx) => {
         const fighterA = bout.a?.name || "TBD";
         const fighterB = bout.b?.name || "TBD";
-        const scoreA = bout.scoreA != null ? bout.scoreA.toFixed(1) : "—";
-        const scoreB = bout.scoreB != null ? bout.scoreB.toFixed(1) : "—";
+        const scoreA = bout.scoreA;
+        const scoreB = bout.scoreB;
         const actualWinner = bout.winner?.name || "Pending";
+
+        // Edge and Toss-up Calculation Logic
+        let edgeDescription = "Pending";
+        if (scoreA != null && scoreB != null) {
+          const d = scoreA - scoreB;
+          const pct = Math.abs(d) / Math.max(scoreA, scoreB, 1);
+
+          if (pct < 0.06) {
+            edgeDescription = `⚖️ Toss-up (Δ ${d >= 0 ? "+" : ""}${d.toFixed(1)})`;
+          } else {
+            const aWins = d > 0;
+            edgeDescription = `${aWins ? "A" : "B"} edge (+${Math.abs(d).toFixed(1)})`;
+          }
+        }
 
         // Find what the user picked
         const userChoiceId = userPredictions[bout.id];
@@ -72,7 +85,7 @@ export function CopySummaryButton({
         const isCorrect = userChoiceId != null && bout.winner?.id != null && userChoiceId === bout.winner.id;
         const resultIcon = userChoiceId == null ? "⏳" : isCorrect ? "✅" : "❌";
 
-        return `Match ${idx + 1} [${bout.roundName}]:\n  • ${fighterA} (${scoreA}) vs ${fighterB} (${scoreB})\n  • Winner: ${actualWinner}\n  • Your Pick: ${userPickedName} ${resultIcon}`;
+        return `Match ${idx + 1} [${bout.roundName}]:\n  • ${fighterA} vs ${fighterB}\n  • Matchup: ${edgeDescription}\n  • Winner: ${actualWinner}\n  • Your Pick: ${userPickedName} ${resultIcon}`;
       });
 
       return [

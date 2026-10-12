@@ -32,7 +32,7 @@ export function StatsRadar({
     if (!showA && !showB) {
         return (
             <p className="text-center text-sm text-muted-foreground py-8">
-                Select characters to see combat radar
+                Select characters to see stats radar
             </p>
         );
     }

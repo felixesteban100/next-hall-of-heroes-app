@@ -28,7 +28,7 @@ export function MemberBreakdown({ entitiesA, entitiesB }: Props) {
 
     return (
         <>
-            <div className="bg-muted px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground border border-muted-foreground/20 flex items-center justify-between gap-2">
+            <div className="bg-transparent border-0 px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between gap-2">
                 <span>Member breakdown</span>
                 <button
                     type="button"

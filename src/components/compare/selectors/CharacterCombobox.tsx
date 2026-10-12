@@ -106,8 +106,6 @@ export function CharacterCombobox({
             ? inputText              // user is editing → show what they type
             : selectedName || "";    // idle → name if selected, else ""
 
-    console.log(items)
-
     return (
         <Combobox
             items={items}

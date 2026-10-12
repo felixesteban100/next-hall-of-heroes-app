@@ -8,17 +8,14 @@ import { ChemistryResult } from "@/lib/compare/teamChemistry";
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
     variant: "primary" | "secondary";
-    score?: number | null;
-    /** Optional label under avatars; defaults to joined names */
-    label?: string;
+    powerEstimate?: number;
     chemistry: ChemistryResult | null;
 };
 
 export function TeamProfileSlot({
     entities,
     variant,
-    score,
-    label,
+    powerEstimate,
     chemistry
 }: Props) {
     const border =
@@ -66,15 +63,9 @@ export function TeamProfileSlot({
                 ))}
             </div>
 
-            {/* <div className="flex flex-wrap justify-center gap-1 max-w-xs mx-auto">
-                {entities.map((e) => (
-                        
-                ))}
-            </div> */}
-
-            {score != null && (
+            {powerEstimate != null && (
                 <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    Score {score.toFixed(1)}
+                    PowerEstimate {powerEstimate.toFixed(1)}
                 </span>
             )}
             {chemistry != null && (

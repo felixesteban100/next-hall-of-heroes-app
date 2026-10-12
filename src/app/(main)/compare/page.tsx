@@ -37,9 +37,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const ids = parseIdList(params.p);
     const fighters = await fetchFightersById(ids);
     const characterOptions = await searchCharacters("", ids)
-    // const bouts = buildBracket(fighters, 10);
 
-    // Build id lists for BOTH modes
     const idsA =
         mode === "team"
             ? parseIdList(params.a)
@@ -66,12 +64,10 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const entityAIdValue = entityA?.id ?? null;
     const entityBIdValue = entityB?.id ?? null;
 
-    const teamA = mode === "team" ? aggregateTeamScores(entitiesA) : null;
-    const teamB = mode === "team" ? aggregateTeamScores(entitiesB) : null;
-
-    // 1v1 still uses single scores
-    const scoreA = mode === "team" ? teamA?.avg ?? null : computeMatchScore(entityA);
-    const scoreB = mode === "team" ? teamB?.avg ?? null : computeMatchScore(entityB);
+    // const teamA = mode === "team" ? aggregateTeamScores(entitiesA) : computeMatchScore(entityA);
+    const teamA = aggregateTeamScores(entitiesA);
+    // const teamB = mode === "team" ? aggregateTeamScores(entitiesB) : computeMatchScore(entityB);
+    const teamB = aggregateTeamScores(entitiesB);
 
     const sharedTeamA = groupTeams(entitiesA).shared.map(c => ({ name: c.name, members: c.members }))
     const sharedTeamB = groupTeams(entitiesB).shared.map(c => ({ name: c.name, members: c.members }))
@@ -95,14 +91,14 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         mode === "team" && teamA?.ace
             ? { name: teamA.aceName ?? "Ace", overall: teamA.ace.overall }
             : entityA
-                ? { name: entityA.name, overall: scoreA?.overall ?? 0 }
+                ? { name: entityA.name, overall: teamA?.avg.overall ?? 0 }
                 : null;
 
     const aceBInfo =
         mode === "team" && teamB?.ace
             ? { name: teamB.aceName ?? "Ace", overall: teamB.ace.overall }
             : entityB
-                ? { name: entityB.name, overall: scoreB?.overall ?? 0 }
+                ? { name: entityB.name, overall: teamB?.avg.overall ?? 0 }
                 : null;
 
     return (
@@ -118,8 +114,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         mode={mode}
                         nameA={entityAName ?? "Side A"}
                         nameB={entityBName ?? "Side B"}
-                        avgA={scoreA?.overall}
-                        avgB={scoreB?.overall}
+                        avgA={teamA?.avg.overall}
+                        avgB={teamB?.avg.overall}
                         aceA={mode === "team" ? aceAInfo : null}
                         aceB={mode === "team" ? aceBInfo : null}
                         fighterCount={fighters.length}
@@ -201,8 +197,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         idsB={idsB}
                         teamA={teamA}
                         teamB={teamB}
-                        scoreA={scoreA}
-                        scoreB={scoreB}
                         entitiesA={entitiesA}
                         entitiesB={entitiesB}
                         entityA={entityA}

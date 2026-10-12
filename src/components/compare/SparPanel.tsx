@@ -1,47 +1,55 @@
+// components/compare/SparPanel.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Dices } from "lucide-react";
 import { simulateSpar } from "@/lib/compare/compare_utls";
 
+const ROUNDS = 100
+
 export function SparPanel({
-    scoreA,
-    scoreB,
+    powerEstimateA,
+    powerEstimateB,
     nameA = "Character A",
     nameB = "Character B",
 }: {
-    scoreA: number | null;
-    scoreB: number | null;
+    powerEstimateA: number;
+    powerEstimateB: number;
     nameA?: string;
     nameB?: string;
 }) {
     const [seed, setSeed] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Ensure we only run randomized simulations after hydration
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
     const result = useMemo(() => {
-        if (!isMounted || scoreA == null || scoreB == null) return null;
+        if (!isMounted) return null;
         void seed;
-        return simulateSpar(scoreA, scoreB, 100);
-    }, [scoreA, scoreB, seed, isMounted]);
+        return simulateSpar(powerEstimateA, powerEstimateB, ROUNDS);
+    }, [powerEstimateA, powerEstimateB, seed, isMounted]);
 
-    if (scoreA == null || scoreB == null) {
+    if (powerEstimateA == null || powerEstimateB == null) {
         return (
             <p className="text-sm text-muted-foreground text-center py-4">
-                Select both characters to run a spar simulation
+                Select for both sides to run a spar simulation
             </p>
         );
     }
+
+    // Calculate percentages for a 3-way split (A wins, Draws, B wins)
+    const totalRounds = ROUNDS;
+    const aPct = result ? (result.aWins / totalRounds) * 100 : 0;
+    const drawPct = result ? (result.draws / totalRounds) * 100 : 0;
+    const bPct = result ? (result.bWins / totalRounds) * 100 : 0;
 
     return (
         <div className="rounded-xl border border-muted-foreground/20 p-4 space-y-3 min-h-[140px]">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Spar simulation (100 rounds)
+                    Spar simulation ({ROUNDS} rounds)
                 </h3>
                 <button
                     type="button"
@@ -53,7 +61,6 @@ export function SparPanel({
                 </button>
             </div>
 
-            {/* Skeleton loader / fallback state during SSR hydration */}
             {!result ? (
                 <div className="py-4 text-center text-xs text-muted-foreground animate-pulse">
                     Calculating simulation...
@@ -67,26 +74,33 @@ export function SparPanel({
                         </div>
                         <div>
                             <p className="text-lg font-black text-muted-foreground">{result.draws}</p>
-                            <p className="text-[10px] text-muted-foreground">Draws</p>
+                            <p className="text-[10px] text-muted-foreground">Draws / Toss-ups</p>
                         </div>
                         <div>
                             <p className="text-lg font-black text-secondary">{result.bWins}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{nameB}</p>
                         </div>
                     </div>
+
+                    {/* 3-Way Split Progress Bar (A wins | Draws | B wins) */}
                     <div className="h-2 rounded-full bg-muted overflow-hidden flex">
                         <div
                             className="h-full bg-primary transition-all"
-                            style={{ width: `${result.aWinPct}%` }}
+                            style={{ width: `${aPct}%` }}
+                        />
+                        <div
+                            className="h-full bg-muted-foreground/40 transition-all"
+                            style={{ width: `${drawPct}%` }}
                         />
                         <div
                             className="h-full bg-secondary transition-all"
-                            style={{ width: `${100 - result.aWinPct}%` }}
+                            style={{ width: `${bPct}%` }}
                         />
                     </div>
+
                     <p className="text-[10px] text-center text-muted-foreground">
                         Toy model from overall scores — not canon. {nameA} win rate ≈{" "}
-                        {result.aWinPct}%
+                        {Math.round(aPct)}%
                     </p>
                 </>
             )}
