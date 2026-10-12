@@ -146,7 +146,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                                         id: c.id,
                                         name: c.name,
                                         slug: c.slug,
-                                        image: c.images.md
+                                        image: c.images.md,
+                                        imageFocus: c.imageFocus
                                     }))}
                                     selectedIds={idsA}
                                     excludeIds={[...idsA, ...idsB]}
@@ -160,7 +161,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                                         id: c.id,
                                         name: c.name,
                                         slug: c.slug,
-                                        image: c.images.md
+                                        image: c.images.md,
+                                        imageFocus: c.imageFocus
                                     }))}
                                     selectedIds={idsB}
                                     excludeIds={[...idsA, ...idsB]}

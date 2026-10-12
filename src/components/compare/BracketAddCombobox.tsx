@@ -77,6 +77,10 @@ export function BracketPicker({
                                             fill
                                             sizes="20px"
                                             className="object-cover"
+                                            style={{
+                                                objectPosition: char.imageFocus || "50% 15%",
+                                                contain: "layout"
+                                            }}
                                         />
                                     </div>
                                 ) : (

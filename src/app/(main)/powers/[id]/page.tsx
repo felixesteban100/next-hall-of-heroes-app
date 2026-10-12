@@ -170,6 +170,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     name: c.name,
                     image: c.images?.md,
                     alignment: c.biography.alignment,
+                    // imageFocus: c.imageFocus
                 }))}
             />
         </div>

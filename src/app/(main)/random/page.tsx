@@ -30,7 +30,7 @@ export default async function Random() {
             <div className="text-muted-foreground font-light">
                 8 random characters across all universes
             </div> */}
-            <CacheClearButton path="/characters/random" />
+            <CacheClearButton path="/random" />
             <CharacterGrid characters={sanitizedCharacters} />
         </div>
     )

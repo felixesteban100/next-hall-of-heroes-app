@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/carousel"
 import Image from "next/image"
 
-export function CharacterImageCarousel({ images, name }: { images: string[], name: string }) {
+export function CharacterImageCarousel({ images, name, imageFocus }: { images: string[], name: string, imageFocus: string }) {
   return (
     <Carousel
       className="w-80 h-[24rem] rounded-lg overflow-hidden shrink-0"
@@ -34,6 +34,10 @@ export function CharacterImageCarousel({ images, name }: { images: string[], nam
                 className="object-cover rounded-lg transition-opacity duration-700"
                 priority={index === 0}
                 unoptimized
+              // style={{
+              //   objectPosition: imageFocus || "50% 15%",
+              //   contain: "layout"
+              // }}
               />
             </div>
           </CarouselItem>

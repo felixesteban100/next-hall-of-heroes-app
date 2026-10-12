@@ -16,6 +16,7 @@ export type MiniGridItem = {
     powerstatTotal?: number;
     category?: string;       // E.g., "Elemental", "Telepathy", "Physical"
     characterCount?: number; // Number of characters with this power
+    imageFocus?: string
 };
 
 interface MiniEntityGridProps {
@@ -168,6 +169,10 @@ export function MiniEntityGrid({
                                         className={`${getImageStyle()} transition-transform duration-300 group-hover:scale-105`}
                                         width={entityType === "character" ? 40 : 100}
                                         height={entityType === "character" ? 40 : 50}
+                                    // style={entityType === "character" ? {
+                                    //     objectPosition: item.imageFocus || "",
+                                    //     contain: "layout"
+                                    // } : {}}
                                     />
                                 ) : (
                                     <DefaultIcon

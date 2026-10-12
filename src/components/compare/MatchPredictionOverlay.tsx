@@ -77,9 +77,13 @@ export function MatchPredictionOverlay({
                                             <Image
                                                 src={ent.images.md}
                                                 alt={ent.name}
-                                                width={800}
-                                                height={800}
+                                                fill // Use fill instead of explicit width/height for responsive absolute container sizing
+                                                sizes="40px"
                                                 className="object-cover w-full h-full"
+                                                style={{
+                                                    // Force vertical head framing for tiny circles, or parse just the X coordinate from imageFocus
+                                                    objectPosition: ent.imageFocus ? `50% ${ent.imageFocus.split(' ')[1]}` : "50% 18%"
+                                                }}
                                             />
                                         </div>
                                     ))}
@@ -109,6 +113,10 @@ export function MatchPredictionOverlay({
                                                 width={800}
                                                 height={800}
                                                 className="object-cover w-full h-full"
+                                            // style={{
+                                            //     objectPosition: ent.imageFocus || "50% 15%",
+                                            //     contain: "layout"
+                                            // }}
                                             />
                                         </div>
                                     ))}

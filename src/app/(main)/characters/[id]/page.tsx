@@ -124,7 +124,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                         }
                     >
                         <ViewTransition name={`character-${character.id}`}>
-                            <CharacterImageCarousel images={characterImages} name={character.name} />
+                            <CharacterImageCarousel images={characterImages} name={character.name} imageFocus={character.imageFocus} />
                         </ViewTransition>
                     </Suspense>
                 </div>
@@ -268,6 +268,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                         name: c.name,
                         image: c.image,
                         alignment: c.alignment,
+                        // imageFocus: c.imageFocus
                     }))}
                     externalNames={externalEnemies.map(c => c.name)}
                     emptyMessage="No enemies found."

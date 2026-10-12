@@ -15,7 +15,7 @@ export async function TeamSelectorCard({
     max = MAX_TEAM_SIZE,
 }: {
     title: string;
-    selected: { id: number; name: string; slug: string, image: string }[];
+    selected: { id: number; name: string; slug: string, image: string, imageFocus: string }[];
     selectedIds: number[];
     excludeIds: number[];
     paramKey: "a" | "b";
@@ -43,13 +43,18 @@ export async function TeamSelectorCard({
                     {selected.map((c) => (
                         <div
                             key={c.id}
-                            className={`rounded-full px-1 py-[3px] flex gap-2 justify-start items-center ${variant === "primary" ? "bg-primary/10 border border-primary" : "bg-secondary/10 border border-secondary"}`}>
+                            className={`rounded-full px-1 py-[3px] flex gap-2 justify-start items-center ${variant === "primary" ? "bg-primary/10 border border-primary" : "bg-secondary/10 border border-secondary"}`}
+                        >
                             <Image
                                 src={c.image}
                                 alt={c.name}
                                 width={500}
                                 height={500}
                                 className="h-12 w-12 rounded-full shrink-0 object-cover"
+                                style={{
+                                    // Force vertical head framing for tiny circles, or parse just the X coordinate from imageFocus
+                                    objectPosition: c.imageFocus ? `50% ${c.imageFocus.split(' ')[1]}` : "50% 18%"
+                                }}
                             />
                             <span>{c.name}</span>
                             <RemoveCharacterOfTeamButton

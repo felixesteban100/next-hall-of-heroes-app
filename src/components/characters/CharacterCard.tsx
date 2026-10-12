@@ -43,7 +43,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                         className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl"
                         style={{
                             objectPosition: character.imageFocus || "50% 15%",
-                            contain: "layout"
+                            // contain: "layout"
                         }}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />

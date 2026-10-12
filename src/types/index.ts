@@ -53,6 +53,7 @@ export type Character = {
     tier: number;
     weaknesses: string[];
     character_type: string; // anime, cartoon, comic, game, movie, novel, real, tv
+    imageFocus: string;
 }
 
 export type Universe = {
@@ -145,5 +146,6 @@ export type CharacterOption = {
     };
     images: {
         md: string
-    }
+    },
+    imageFocus: string
 }

@@ -158,6 +158,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                         name: c.name,
                         image: c.images?.md,
                         alignment: c.biography?.alignment,
+                        // imageFocus: c.imageFocus
                     }))}
                     externalNames={externalLeaders.map(c => c.name)} // Renders missing characters as external badges
                     emptyMessage="No team leaders specified."

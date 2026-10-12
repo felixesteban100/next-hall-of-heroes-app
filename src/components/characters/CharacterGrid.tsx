@@ -73,13 +73,13 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
         return (
             <div
                 ref={containerRef}
-                className="sm:hidden h-[80vh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="sm:hidden h-[80vh] max-w-4xl flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
                 {characters.map((character, i) => (
                     <LoadingLink
                         key={character.id}
                         href={`/characters/${character.id}`}
-                        className="snap-card snap-center snap-always shrink-0 h-full w-full flex items-center justify-center p-0 transition-all duration-300 scale-95 opacity-70"
+                        className="snap-card snap-center snap-always shrink-0 h-full w-full flex items-center justify-center p-0 transition-all duration-300 scale-95 "
                         onFocus={() => setFocusedIndex(i)}
                     >
                         <CharacterCard character={character} />
