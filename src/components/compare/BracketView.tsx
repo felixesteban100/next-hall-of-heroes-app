@@ -308,7 +308,8 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
             </div>
 
             {/* Outer Container */}
-            <div className="w-full max-w-full overflow-x-auto overflow-y-hidden touch-pan-x snap-x scroll-smooth pb-4 pt-1 px-2">
+            {/* overflow-y-hidden touch-pan-x snap-x scroll-smooth */}
+            <div className="w-full max-w-full overflow-x-auto  pb-4 pt-1 px-2">
                 <div className="flex flex-row gap-1.5 sm:gap-3 justify-start lg:justify-center items-center min-w-max px-2 scale-90 sm:scale-100 origin-left sm:origin-center">
                     {rounds.map((roundBouts, rIdx) => {
                         const roundName = roundBouts[0]?.roundName ?? `Round ${rIdx + 1}`;
