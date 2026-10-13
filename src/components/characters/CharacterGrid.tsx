@@ -73,7 +73,7 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
         return (
             <div
                 ref={containerRef}
-                className="sm:hidden h-[80vh] max-w-4xl flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="sm:hidden h-[80vh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
                 {characters.map((character, i) => (
                     <LoadingLink

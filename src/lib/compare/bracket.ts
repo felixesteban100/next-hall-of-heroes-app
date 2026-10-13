@@ -3,6 +3,7 @@ export type BracketFighter = {
     name: string;
     overall?: number;
     image: string;
+    imageFocus?: string;
 };
 
 export type Bout = {

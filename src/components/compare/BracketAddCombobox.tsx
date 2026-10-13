@@ -70,12 +70,12 @@ export function BracketPicker({
                                 className="group flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-full border border-border bg-muted/40 hover:bg-muted transition-colors text-xs font-medium text-foreground"
                             >
                                 {char?.images.md ? (
-                                    <div className="relative h-5 w-5 rounded-full overflow-hidden shrink-0 border border-border">
+                                    <div className="relative h-12 w-12 rounded-full overflow-hidden shrink-0 border border-border">
                                         <Image
                                             src={char.images.md}
                                             alt={char.name}
                                             fill
-                                            sizes="20px"
+                                            sizes="50px"
                                             className="object-cover"
                                             style={{
                                                 objectPosition: char.imageFocus || "50% 15%",

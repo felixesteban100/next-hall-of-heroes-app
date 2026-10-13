@@ -268,7 +268,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                         name: c.name,
                         image: c.image,
                         alignment: c.alignment,
-                        // imageFocus: c.imageFocus
+                        imageFocus: c.imageFocus
                     }))}
                     externalNames={externalEnemies.map(c => c.name)}
                     emptyMessage="No enemies found."

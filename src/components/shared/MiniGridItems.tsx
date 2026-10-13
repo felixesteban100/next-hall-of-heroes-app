@@ -169,10 +169,10 @@ export function MiniEntityGrid({
                                         className={`${getImageStyle()} transition-transform duration-300 group-hover:scale-105`}
                                         width={entityType === "character" ? 40 : 100}
                                         height={entityType === "character" ? 40 : 50}
-                                    // style={entityType === "character" ? {
-                                    //     objectPosition: item.imageFocus || "",
-                                    //     contain: "layout"
-                                    // } : {}}
+                                        style={(entityType === "character" && item.imageFocus) ? {
+                                            objectPosition: `50% ${item.imageFocus.split(' ')[1]}` || "",
+                                            contain: "layout"
+                                        } : {}}
                                     />
                                 ) : (
                                     <DefaultIcon

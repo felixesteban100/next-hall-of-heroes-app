@@ -71,6 +71,7 @@ export async function SelectorCard({ title, selected, otherSelectedId, paramKey,
                         selectedId={selected?.id ?? 0} // or make selectedId optional
                         selectedName={selected?.name ?? ""}
                         selectedSlug={selected?.slug ?? ""}
+                        selectedImageFocus={selected?.imageFocus ?? ""}
                         excludeId={otherSelectedId} // only pass if defined
                     />
                 </div>

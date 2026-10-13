@@ -69,7 +69,7 @@ export type Universe = {
 }
 
 // export type Enemy = Omit<Character, "biography.publisher" | "connections" | "powers">[]
-export type Enemy = { name: string, id: string, image: string, alignment: string }
+export type Enemy = { name: string, id: string, image: string, alignment: string, imageFocus: string }
 
 export type CharacterWithJoinTeamUniversePowerEnemies = Omit<Character, "biography.publisher" | "connections" | "powers"> & {
     biography: {

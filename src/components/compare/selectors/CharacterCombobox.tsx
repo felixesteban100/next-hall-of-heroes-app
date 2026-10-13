@@ -19,6 +19,7 @@ interface CharacterComboboxProps {
     selectedId: number;
     selectedName: string;
     selectedSlug: string;
+    selectedImageFocus: string;
     excludeId?: number;
 }
 
@@ -29,6 +30,7 @@ export function CharacterCombobox({
     selectedName,
     selectedSlug,
     excludeId,
+    selectedImageFocus,
 }: CharacterComboboxProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -59,7 +61,8 @@ export function CharacterCombobox({
                 },
                 images: {
                     md: "",
-                }
+                },
+                imageFocus: selectedImageFocus
             });
         }
         return Array.from(map.values());

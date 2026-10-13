@@ -132,6 +132,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                             name: c.name,
                             overall: computeMatchScore(c).overall,
                             image: c.images.md,
+                            imageFocus: c.imageFocus
                         }))}
                     />
                 </>
