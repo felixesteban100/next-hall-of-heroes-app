@@ -66,10 +66,11 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     }, [teamA, teamB]);
 
     // Nemesis: any pair across teams, or only 1v1
-    const isNemesis =
-        mode === "team"
-            ? entitiesA.some((a) => entitiesB.some((b) => hasNemesisLink(a, b)))
-            : !!entityA && !!entityB && hasNemesisLink(entityA, entityB);
+    const isNemesis = useMemo(() => {
+        const validA = entitiesA.filter(Boolean);
+        const validB = entitiesB.filter(Boolean);
+        return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
+    }, [mode, entitiesA, entitiesB, entityA, entityB]);
 
     // Radar: team avg powerstats or single
     const radar =

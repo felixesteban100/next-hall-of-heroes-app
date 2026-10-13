@@ -25,7 +25,7 @@ export async function TeamSelectorCard({
 
 
     // Fetch lightweight index options for the combobox
-    const characterOptions = await searchCharacters("", excludeIds)
+    const characterOptions = await searchCharacters("", excludeIds, selectedIds)
 
     return (
         <div className="bg-card border border-muted-foreground/20 rounded-xl p-5 flex flex-col gap-3">

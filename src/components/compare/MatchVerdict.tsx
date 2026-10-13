@@ -2,6 +2,7 @@
 import type { TeamAggregate } from "@/lib/compare/compare_utls";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import VS from "./VS";
+import { Zap, Trophy, ShieldAlert } from "lucide-react";
 
 type Props = {
     nameA?: string;
@@ -50,12 +51,10 @@ function Side({
                 {name ?? "Team"}
             </p>
 
-            {/* Hero number */}
             <p className={`text-4xl sm:text-5xl font-black tracking-tight tabular-nums ${scoreColor} leading-none`}>
                 {team.powerEstimate.toFixed(1)}
             </p>
 
-            {/* Secondary */}
             <div className={`text-[11px] sm:text-xs text-muted-foreground flex flex-col md:flex-row ${align === "right" ? "justify-end" : "justify-start"}`}>
                 <span className="text-foreground/80">Avg {team.avg.overall.toFixed(1)}</span>
                 <span className="mx-1.5 text-muted-foreground/40">·</span>
@@ -67,7 +66,6 @@ function Side({
                 </span>
             </div>
 
-            {/* Tertiary boosts — single quiet line */}
             <div className={`text-[10px] sm:text-[11px] ${soft} flex flex-col md:flex-row ${align === "right" ? "justify-end" : "justify-start"}`}>
                 {team.chemistry && (
                     <div className={`flex gap-1 ${align === "right" ? "justify-end" : "justify-start"}`}>
@@ -87,7 +85,6 @@ function Side({
                 <span className="text-muted-foreground">Σ {team.scoresCombined.toFixed(0)}</span>
             </div>
 
-            {/* Notes */}
             {notes.length > 0 && (
                 <div
                     className={`flex flex-wrap gap-1 ${align === "right" ? "justify-end" : "justify-start"}`}
@@ -137,7 +134,8 @@ function EdgeBadge({
     if (pct < 0.06) {
         return (
             <div className="flex flex-col items-center gap-1">
-                <span className="rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-2.5 py-1">
+                <span className="rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-2.5 py-1 flex items-center gap-1">
+                    {isNemesis && <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />}
                     Toss-up
                 </span>
                 <span className="text-[9px] tabular-nums text-muted-foreground">
@@ -152,14 +150,14 @@ function EdgeBadge({
     return (
         <div className="flex flex-col items-center gap-1">
             <span
-                className={`rounded-full text-[10px] font-bold px-2.5 py-1 ${aWins ? "bg-primary/15 text-primary" : "bg-secondary/15 text-secondary"
+                className={`rounded-full text-[10px] font-bold px-2.5 py-1 flex items-center gap-1 ${aWins ? "bg-primary/15 text-primary" : "bg-secondary/15 text-secondary"
                     }`}
             >
-                {isNemesis ? "⚡ " : ""}
+                {isNemesis && <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />}
                 {aWins ? "A edge" : "B edge"}
             </span>
             <span className="text-[9px] tabular-nums text-muted-foreground">
-                {aWins ? "Avg" : "Avg"} {d >= 0 ? "+" : ""}
+                Avg {d >= 0 ? "+" : ""}
                 {d.toFixed(1)}
             </span>
         </div>
@@ -173,10 +171,69 @@ export default function MatchVerdict({
     teamB,
     isNemesis,
 }: Props) {
+    // Calculate winner / draw status
+    const scoreA = teamA?.powerEstimate ?? null;
+    const scoreB = teamB?.powerEstimate ?? null;
+
+    let verdictBanner = null;
+
+    if (scoreA !== null && scoreB !== null) {
+        const diff = Math.abs(scoreA - scoreB);
+        const maxScore = Math.max(scoreA, scoreB, 1);
+        const isDraw = diff / maxScore < 0.06; // 6% Toss-up threshold
+
+        if (isDraw) {
+            verdictBanner = {
+                text: "Match Result: Too Close / Draw (Toss-up)",
+                bg: "bg-muted/60 border-muted-foreground/20 text-muted-foreground",
+                icon: <ShieldAlert className="w-3.5 h-3.5" />
+            };
+        } else if (scoreA > scoreB) {
+            verdictBanner = {
+                text: `Winner: ${nameA || "Team A"}`,
+                bg: "bg-primary/15 border-primary/30 text-primary",
+                icon: <Trophy className="w-3.5 h-3.5" />
+            };
+        } else {
+            verdictBanner = {
+                text: `Winner: ${nameB || "Team B"}`,
+                bg: "bg-secondary/15 border-secondary/30 text-secondary",
+                icon: <Trophy className="w-3.5 h-3.5" />
+            };
+        }
+    }
+
     return (
-        <div className="relative overflow-hidden rounded-2xl border border-muted-foreground/15 bg-card/80 backdrop-blur-sm shadow-sm">
-            {/* soft glow */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
+        <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 bg-card/80 backdrop-blur-sm shadow-sm ${isNemesis
+                ? "border-amber-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
+                : "border-muted-foreground/15"
+            }`}>
+            {/* Background glow */}
+            <div className={`pointer-events-none absolute inset-0 ${isNemesis
+                    ? "bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-amber-500/10 animate-pulse"
+                    : "bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"
+                }`} />
+
+            {/* Top Bar: Shows Winner / Draw + Nemesis status cleanly combined */}
+            <div className="flex flex-col sm:flex-row items-center justify-between border-b border-muted-foreground/10 px-4 py-2 gap-2 bg-muted/20">
+                {/* Winner or Draw Badge */}
+                {verdictBanner ? (
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${verdictBanner.bg}`}>
+                        {verdictBanner.icon}
+                        <span>{verdictBanner.text}</span>
+                    </div>
+                ) : (
+                    <span className="text-xs text-muted-foreground font-medium">Awaiting match data...</span>
+                )}
+
+                {/* Active Nemesis Tag if applicable */}
+                {isNemesis && (
+                    <div className="inline-flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-full text-amber-400 text-xs font-bold animate-pulse">
+                        <Zap className="w-3.5 h-3.5 fill-amber-400" />
+                        <span>Active Blood Feud / Nemesis</span>
+                    </div>
+                )}
+            </div>
 
             <div className="relative grid grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 items-center px-4 py-5 sm:px-6 sm:py-6">
                 <Side name={nameA} team={teamA} variant="primary" align="right" />
@@ -184,8 +241,8 @@ export default function MatchVerdict({
                 <div className="flex flex-col items-center gap-2 shrink-0">
                     <VS />
                     <EdgeBadge
-                        a={teamA?.powerEstimate ?? null}
-                        b={teamB?.powerEstimate ?? null}
+                        a={scoreA}
+                        b={scoreB}
                         isNemesis={isNemesis}
                     />
                 </div>

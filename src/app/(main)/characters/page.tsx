@@ -13,9 +13,6 @@ import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";
 
-import smartcrop from 'smartcrop';
-import sharp from 'sharp';
-
 
 export const instant = false;
 
@@ -113,7 +110,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className="space-y-2 mt-4 flex flex-col justify-center overflow-visible md:overflow-hidden">
+        <div className="space-y-2 mt-4 flex flex-col justify-center overflow-visible">
             {/* <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
@@ -143,12 +140,10 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
             <CharacterGrid characters={sanitizedCharacters} />
 
             <div className="flex justify-center">
-                {/* <Suspense fallback={null}> */}
                 <PaginationPages
                     currentPage={page}
                     totalPages={Math.ceil(totalCharacters / pageSize)}
                 />
-                {/* </Suspense> */}
             </div>
         </div>
     );

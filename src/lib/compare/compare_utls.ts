@@ -1,5 +1,5 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
-import type { Character, CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
+import type { Character, CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Team, Universe } from "@/types";
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "../character_utils";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -134,6 +134,8 @@ export function hasNemesisLink(
     a: CharacterWithJoinTeamUniversePowerEnemies,
     b: CharacterWithJoinTeamUniversePowerEnemies
 ): boolean {
+    if (!a || !b) return false; // ← guard against undefined entities
+
     const list = (entity: CharacterWithJoinTeamUniversePowerEnemies) =>
         entity.connections?.enemies ?? [];
 
@@ -144,8 +146,11 @@ export function hasNemesisLink(
         list(source).some((e) => {
             if (!e || typeof e !== "object") return false;
             const id = "id" in e ? Number(e.id) : NaN;
-            const name = "name" in e ? String((e as { name: string }).name) : "";
-            return id === target.id || (name && name === target.name);
+            const name = "name" in e ? String((e as any).name ?? "") : "";
+            return (
+                (!Number.isNaN(id) && id === target.id) ||
+                (name.length > 0 && name.toLowerCase() === target.name?.toLowerCase())
+            );
         });
 
     return hits(a, b) || hits(b, a);
@@ -455,8 +460,9 @@ export function groupItemsByCharacter(
 
     const shared: SharedItem[] = [];
     for (const [name, ids] of itemToChars) {
-        if (property === "teams") {
-            if (ids.size == entities.length) {
+        /* this is not quite getting there */
+       /*  if (property === "teams") {
+            if (ids.size >= 3 || ids.size == entities.length) {
                 shared.push({
                     name,
                     members: [...ids]
@@ -464,7 +470,7 @@ export function groupItemsByCharacter(
                         .sort((a, b) => a.name.localeCompare(b.name)),
                 });
             }
-        } else if (ids.size >= sharedThreshold) {
+        } else  */if (ids.size >= sharedThreshold) {
             shared.push({
                 name,
                 members: [...ids]

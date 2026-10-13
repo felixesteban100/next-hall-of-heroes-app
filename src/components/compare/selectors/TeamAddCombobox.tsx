@@ -9,6 +9,7 @@ import {
     ComboboxItem,
     ComboboxList,
 } from "@/components/ui/combobox";
+import { Sparkles } from "lucide-react";
 import { searchCharacters } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
@@ -16,10 +17,9 @@ import { CharacterOption } from "@/types";
 
 type Props = {
     excludeIds: number[];
-    /** "a" | "b" for teams, or "p" for a bracket */
     paramKey: "a" | "b" | "p";
-    /** Current team ids from the URL */
     ids: number[];
+    selectedIds?: number[];
     initialOptions?: CharacterOption[];
     placeholder?: string;
     disabled?: boolean;
@@ -30,10 +30,11 @@ export function TeamAddCombobox({
     excludeIds,
     paramKey,
     ids,
+    selectedIds = [],
     initialOptions = [],
     placeholder = "Add character…",
     disabled = false,
-    max = 10, // MAX_TEAM_SIZE
+    max = 10,
 }: Props) {
     const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();
@@ -55,8 +56,7 @@ export function TeamAddCombobox({
     );
 
     const excludeSet = useMemo(
-        () =>
-            new Set(excludeKey ? excludeKey.split(",").map(Number) : []),
+        () => new Set(excludeKey ? excludeKey.split(",").map(Number) : []),
         [excludeKey]
     );
 
@@ -71,7 +71,7 @@ export function TeamAddCombobox({
 
         const t = setTimeout(() => {
             startTransition(async () => {
-                const results = await searchCharacters(query, [...excludeSet]);
+                const results = await searchCharacters(query, [...excludeSet], selectedIds);
                 setOptions(results);
             });
         }, 250);
@@ -97,7 +97,6 @@ export function TeamAddCombobox({
             params.delete("id1");
             params.delete("id2");
         } else {
-            // existing team a/b branch
             params.set("mode", "team");
             params.set(paramKey, nextIds.join(","));
             params.delete("id1");
@@ -109,6 +108,11 @@ export function TeamAddCombobox({
         pushParams(params);
         setQuery("");
     };
+
+    // Split into synergy picks (score > 0) and the rest
+    const synergyPicks = options.filter((o) => (o.synergyScore ?? 0) > 0);
+    const rest = options.filter((o) => (o.synergyScore ?? 0) === 0);
+    const hasSynergy = selectedIds.length > 0 && synergyPicks.length > 0;
 
     return (
         <Combobox
@@ -129,18 +133,57 @@ export function TeamAddCombobox({
                     {isPending ? "Searching…" : "No character found."}
                 </ComboboxEmpty>
                 <ComboboxList>
-                    {(item: CharacterOption) => (
-                        <ComboboxItem key={item.id} value={item.slug}>
-                            <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className="font-medium truncate">{item.name}</span>
-                                {item.biography?.fullName && (
-                                    <span className="text-[10px] text-muted-foreground truncate">
-                                        {item.biography.fullName}
-                                    </span>
+                    {(item: CharacterOption) => {
+                        const isSynergy = (item.synergyScore ?? 0) > 0;
+                        const isFirstRest = !isSynergy && hasSynergy && item === rest[0];
+
+                        return (
+                            <>
+                                {/* Synergy section header — render before first synergy item */}
+                                {isSynergy && hasSynergy && item === synergyPicks[0] && (
+                                    <div className="flex items-center gap-1.5 px-3 pt-2 pb-1">
+                                        <Sparkles className="w-3 h-3 text-amber-400" />
+                                        <span className="text-[10px] font-semibold tracking-wider text-amber-400 uppercase">
+                                            Good synergy
+                                        </span>
+                                    </div>
                                 )}
-                            </div>
-                        </ComboboxItem>
-                    )}
+
+                                <ComboboxItem
+                                    key={item.id}
+                                    value={item.slug}
+                                    className={
+                                        isSynergy
+                                            ? "border-l-2 border-amber-400/60 bg-amber-400/5 data-[highlighted]:bg-amber-400/10"
+                                            : ""
+                                    }
+                                >
+                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="font-medium truncate">{item.name}</span>
+                                            {isSynergy && (
+                                                <Sparkles className="w-3 h-3 shrink-0 text-amber-400/70" />
+                                            )}
+                                        </div>
+                                        {item.biography?.fullName && (
+                                            <span className="text-[10px] text-muted-foreground truncate">
+                                                {item.biography.fullName}
+                                            </span>
+                                        )}
+                                    </div>
+                                </ComboboxItem>
+
+                                {/* Divider before the "rest" group */}
+                                {isFirstRest && (
+                                    <div className="flex items-center gap-2 px-3 py-1.5">
+                                        <div className="flex-1 h-px bg-border" />
+                                        <span className="text-[10px] text-muted-foreground">Others</span>
+                                        <div className="flex-1 h-px bg-border" />
+                                    </div>
+                                )}
+                            </>
+                        );
+                    }}
                 </ComboboxList>
             </ComboboxContent>
         </Combobox>

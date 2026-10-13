@@ -25,7 +25,7 @@ export default async function Random() {
     const sanitizedCharacters = sanitize(charactersPerPage);
 
     return (
-        <div className="flex flex-col mt-4 overflow-visible md:overflow-hidden">
+        <div className="flex flex-col mt-4 overflow-visible ">
             {/* <h1 className="text-2xl font-bold">Random Characters</h1>
             <div className="text-muted-foreground font-light">
                 8 random characters across all universes

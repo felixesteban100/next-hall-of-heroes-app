@@ -147,5 +147,6 @@ export type CharacterOption = {
     images: {
         md: string
     },
-    imageFocus: string
+    imageFocus: string;
+    synergyScore?: number; // ← new, 0 when no selected team
 }
