@@ -41,6 +41,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                         fill
                         // ✨ Use object-position. You can fallback to "object-top" or dynamic coordinates if stored in your DB (e.g. character.imageFocus = "50% 20%")
                         className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl"
+                        // the wide images look kinda weird
                         style={{
                             objectPosition: character.imageFocus || "50% 15%",
                             // contain: "layout"
