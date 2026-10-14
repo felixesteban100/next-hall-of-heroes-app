@@ -34,100 +34,82 @@ export default function PowersFilterBar() {
     const tierColor = tierKey !== undefined ? POWER_TIER_COLOR[tierKey as keyof typeof POWER_TIER_COLOR] : undefined;
 
     return (
-        <div className="flex flex-row md:flex-col gap-3 w-full">
-            {/* Search row */}
-            {/* <div className="flex items-center w-full">
-                <div className="relative flex-1">
-                    <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
-                    <Input
-                        // placeholder="Search powers..."
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-2 md:pl-10 rounded-r-none"
-                    />
-                    {name && (
-                        <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
-                    )}
-                </div>
-                <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
-                    <SearchIcon size={16} />
-                </Button>
-            </div> */}
-            <SearchInputBar
-                value={name}
-                onChange={(val) => setName(val)}
-                onSearch={() => updateParam("name", name)}
-                placeholder="Search characters by name..."
-            />
-
-            {/* Filters and Controls row */}
-            <div className="flex items-center justify-end gap-2">
-                <div className="hidden md:flex-1 min-w-0">
-                    {(tierName && TierIcon && tierColor) && (
-                        <span
-                            key={tierName}
-                            className={`capitalize inline-flex items-center gap-1 text-xs ${tierColor.foreground ?? "text-muted-foreground"} font-bold ${tierColor.bg ?? "bg-muted"} rounded-full px-3 py-1`}
-                        >
-                            <TierIcon size={10} />
-                            {tierName}{" "}
-                            #{activeTier}
-                        </span>
-                    )}
-                </div>
-
-                <Drawer direction="right">
-                    <DrawerTrigger asChild>
-                        <Button size="sm" variant="outline">
-                            <SlidersHorizontal size={16} />
-                        </Button>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                        <DrawerHeader>
-                            <DrawerTitle className="flex items-center gap-2 border-b pb-2">
-                                <SlidersHorizontal size={16} /> Filter Powers
-                            </DrawerTitle>
-                        </DrawerHeader>
-                        <div className="no-scrollbar overflow-y-auto px-4 space-y-4">
-                            {Object.entries(POWER_TIER).map(([key, label]) => {
-                                const tierNum = Number(key);
-                                const Icon = POWER_TIER_ICON[tierNum];
-                                const colors = POWER_TIER_COLOR[tierNum as keyof typeof POWER_TIER_COLOR];
-                                const isActive = activeTier === key;
-
-                                return (
-                                    <DrawerClose
-                                        key={key}
-                                        asChild
-                                    >
-                                        <Button
-                                            size="sm"
-                                            variant={isActive ? "outline" : "ghost"}
-                                            onClick={() => updateParam("tier", isActive ? "" : key)}
-                                            className={`${colors.text} hover:${colors.text} ${isActive ? "font-bold" : "font-medium"}`}
-                                        >
-
-                                            {Icon && <Icon className="w-3.5 h-3.5 mr-1 inline-block" />}
-                                            T{key}: {label.split(" / ")[0]}
-
-                                        </Button>
-                                    </DrawerClose>
-                                );
-                            })}
-                        </div>
-                    </DrawerContent>
-                </Drawer>
-
-                <SortButton
-                    sort={sort}
-                    sortOrientation={sortOrientation}
-                    updateParam={updateParam}
-                    sortOptions={[
-                        { value: "score", label: "Score" },
-                        { value: "name", label: "Name" },
-                        { value: "id", label: "Id" },
-                    ]}
+        <div className="flex flex-col  gap-3 w-full">
+            <div className="flex items-center w-full gap-2">
+                <SearchInputBar
+                    value={name}
+                    onChange={(val) => setName(val)}
+                    onSearch={() => updateParam("name", name)}
+                    placeholder="Search characters by name..."
                 />
+
+                <div className="flex items-center justify-end gap-1">
+                    <Drawer direction="right">
+                        <DrawerTrigger asChild>
+                            <Button size="sm" variant="outline" className='py-[17px]'>
+                                <SlidersHorizontal size={16} />
+                            </Button>
+                        </DrawerTrigger>
+                        <DrawerContent>
+                            <DrawerHeader>
+                                <DrawerTitle className="flex items-center gap-2 border-b pb-2">
+                                    <SlidersHorizontal size={16} /> Filter Powers
+                                </DrawerTitle>
+                            </DrawerHeader>
+                            <div className="no-scrollbar overflow-y-auto px-4 space-y-4">
+                                {Object.entries(POWER_TIER).map(([key, label]) => {
+                                    const tierNum = Number(key);
+                                    const Icon = POWER_TIER_ICON[tierNum];
+                                    const colors = POWER_TIER_COLOR[tierNum as keyof typeof POWER_TIER_COLOR];
+                                    const isActive = activeTier === key;
+
+                                    return (
+                                        <DrawerClose
+                                            key={key}
+                                            asChild
+                                        >
+                                            <Button
+                                                size="sm"
+                                                variant={isActive ? "outline" : "ghost"}
+                                                onClick={() => updateParam("tier", isActive ? "" : key)}
+                                                className={`${colors.text} hover:${colors.text} ${isActive ? "font-bold" : "font-medium"}`}
+                                            >
+
+                                                {Icon && <Icon className="w-3.5 h-3.5 mr-1 inline-block" />}
+                                                T{key}: {label.split(" / ")[0]}
+
+                                            </Button>
+                                        </DrawerClose>
+                                    );
+                                })}
+                            </div>
+                        </DrawerContent>
+                    </Drawer>
+
+                    <SortButton
+                        sort={sort}
+                        sortOrientation={sortOrientation}
+                        updateParam={updateParam}
+                        sortOptions={[
+                            { value: "score", label: "Score" },
+                            { value: "name", label: "Name" },
+                            { value: "id", label: "Id" },
+                        ]}
+                    />
+                </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+                {(tierName && TierIcon && tierColor) && (
+                    <span
+                        key={tierName}
+                        className={`capitalize inline-flex items-center gap-1 text-xs ${tierColor.foreground ?? "text-muted-foreground"} font-bold ${tierColor.bg ?? "bg-muted"} rounded-full px-3 py-1`}
+                    >
+                        <TierIcon size={10} />
+                        <span className="hidden md:flex">{tierName}{" "}
+                            #{activeTier}</span>
+                    </span>
+                )}
             </div>
         </div>
     );

@@ -33,7 +33,7 @@ export default function SimpleFilterBar({
     }, [searchParams, pathname, push]);
 
     return (
-        <div className="flex flex-row md:flex-col gap-3 w-full">
+        <div className="flex flex-row gap-2 w-full">
             {/* Row 1 — search only */}
             <SearchInputBar
                 value={name}
@@ -41,25 +41,6 @@ export default function SimpleFilterBar({
                 onSearch={() => updateParam("name", name)}
                 placeholder="Search characters by name..."
             />
-            {/* <div className="flex items-center w-full">
-                <div className="relative flex-1">
-                    <SearchIcon size={16} className="hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground " />
-                    <Input
-                        // placeholder={placeholder}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && updateParam("name", name)}
-                        className="pl-2 md:pl-10 rounded-r-none"
-                    />
-                    {
-                        name &&
-                        <X size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setName("")} />
-                    }
-                </div>
-                <Button className='rounded-l-none py-4' size="sm" onClick={() => updateParam("name", name)}>
-                    <SearchIcon size={16} />
-                </Button>
-            </div> */}
 
             {/* Row 2 — sort (no filter drawer needed for simple pages) */}
             <div className="flex items-center justify-end gap-2">

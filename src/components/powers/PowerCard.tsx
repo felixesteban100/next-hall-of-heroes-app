@@ -10,7 +10,7 @@ type PowerCardProps = {
 
 export default function PowerCard({ power, size }: PowerCardProps) {
     return (
-        <Card /* size={size} */ className="h-full hover:scale-102 transition-transform duration-300 shadow hover:shadow-xl">
+        <Card /* size={size} */ className="h-full hover:scale-102 transition-all duration-300 hover:shadow-xl">
             {/* <div className="absolute inset-0 z-30 aspect-video dark:brightness-40" /> */}
             <ViewTransition name={`power-${power.id}`} share="morph">
                 <Image

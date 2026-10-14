@@ -10,7 +10,7 @@ type UniverseCardProps = {
 
 export default function UniverseCard({ universe, size }: UniverseCardProps) {
     return (
-        <Card /* size={size} */ className="group h-full justify-between hover:scale-102 transition-transform duration-300 shadow hover:shadow-xl pt-0">
+        <Card /* size={size} */ className="group h-full justify-between hover:scale-102 transition-all duration-300 hover:shadow-xl pt-0">
             {/* <div className="absolute inset-0 z-30 aspect-video dark:brightness-40" /> */}
             <ViewTransition name={`universe-${universe.id}`} share="morph">
                 <div className={`${size === "sm" ? "h-30" : size === "lg" ? "h-40" : "h-40"} relative rounded-t-xl `}>

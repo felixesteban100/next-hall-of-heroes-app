@@ -8,7 +8,6 @@ import {
 } from "@/db/mongodb";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { Suspense } from "react";
 import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";

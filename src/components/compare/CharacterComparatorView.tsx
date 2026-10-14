@@ -102,7 +102,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     return (
         <>
             <div className="relative w-full max-w-5xl">
-                {/* Prediction Overlay covers the comparison until voted */}
                 {(hasBothSides && showPredictionOverlay) && (
                     <MatchPredictionOverlay
                         entityAName={entityAName}
@@ -114,8 +113,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     />
                 )}
 
-                {/* Main comparison content (blurred out until prediction is made) */}
-                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-sm pointer-events-none select-none opacity-40" : "opacity-100"}`}>
+                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 max-h-[450px] overflow-hidden" : "opacity-100 max-h-none"}`}>
                     <div className="mx-auto space-y-4 mb-4">
                         <MatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA ?? null} teamB={teamB ?? null} entitiesA={entitiesA} entitiesB={entitiesB} />
 
@@ -124,14 +122,14 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                                     Stats radar
                                 </h3>
-                                <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA} showB={!!entityB} />
+                                <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
                             </div>
                             <SparPanel powerEstimateA={teamA.powerEstimate} powerEstimateB={teamB.powerEstimate} nameA={entityAName} nameB={entityBName} />
                         </div>
                     </div>
 
                     {/* max-h-[80vh] overflow-y-auto */}
-                    <main className=" mx-auto bg-card border border-muted-foreground/20 rounded-xl  relative mb-10 overflow-x-hidden bg-transparent border-0">
+                    <div className={`mx-auto bg-card border border-muted-foreground/20 rounded-xl  relative mb-10 overflow-x-hidden bg-transparent border-0`}>
                         {/* sticky top-0 z-20 */}
                         <div className=" grid grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                             <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
@@ -220,7 +218,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 showNames={mode === "team"}
                             />
                         ))}
-                    </main>
+                    </div>
                 </div>
             </div>
         </>

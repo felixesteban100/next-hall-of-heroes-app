@@ -17,13 +17,13 @@ export default function SortButton({ sort, sortOrientation, updateParam, sortOpt
         <ButtonGroup>
             <Button size="sm" variant="outline" aria-label="Toggle sort direction"
                 onClick={() => updateParam("sortOrientation", sortOrientation === "asc" ? "desc" : "asc")}
-                className='py-4'
+                className='py-[17px]'
             >
                 <ArrowBigDown className={`${sortOrientation === "desc" ? "rotate-180" : ""} transition-all`} />
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="sm" className='truncate py-4' variant="outline" >
+                    <Button size="sm" className='truncate py-[17px]' variant="outline" >
                         {sortOptions.find(o => o.value === sort)?.label}
                     </Button>
                 </DropdownMenuTrigger>
