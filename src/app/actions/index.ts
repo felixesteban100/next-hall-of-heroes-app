@@ -3,6 +3,7 @@
 import { collectionCharacters } from "@/db/mongodb";
 import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
+import { MAX_TEAM_SIZE } from "../(main)/compare/page";
 
 export async function clearDataCache(path?: string, tag?: string) {
     if (path) revalidatePath(path);
@@ -177,7 +178,7 @@ export async function sampleCharacterIds(
     const rows = await collectionCharacters
         .aggregate<{ id: number }>([
             { $match: exclude.length ? { id: { $nin: exclude } } : {} },
-            { $sample: { size: Math.min(Math.max(count, 1), 10) } },
+            { $sample: { size: Math.min(Math.max(count, 1), MAX_TEAM_SIZE) } },
             { $project: { _id: 0, id: 1 } },
         ])
         .toArray();

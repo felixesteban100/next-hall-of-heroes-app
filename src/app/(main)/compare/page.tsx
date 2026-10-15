@@ -27,13 +27,13 @@ type SearchParamsPromise = Promise<{
     size?: string;
 }>;
 
-export const MAX_TEAM_SIZE = 10; // one constant
+export const MAX_TEAM_SIZE = 12; // one constant
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
     const mode = detectMode(params);
 
-    const size = 8;
+    const size = MAX_TEAM_SIZE;
     const ids = parseIdList(params.p);
     const fighters = await fetchFightersById(ids);
     const characterOptions = await searchCharacters("", ids)
@@ -106,7 +106,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             <ComparisonHeader />
             <div className="flex flex-wrap gap-2 items-center">
                 <CompareModeToggle />
-                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? 8 : undefined} />
+                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? size : undefined} />
                 {
                     mode != "bracket"
                     &&

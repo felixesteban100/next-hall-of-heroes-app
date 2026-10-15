@@ -14,6 +14,7 @@ import { searchCharacters } from "@/app/actions";
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
 import { CharacterOption } from "@/types";
+import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 type Props = {
     excludeIds: number[];
@@ -34,7 +35,7 @@ export function TeamAddCombobox({
     initialOptions = [],
     placeholder = "Add character…",
     disabled = false,
-    max = 10,
+    max = MAX_TEAM_SIZE,
 }: Props) {
     const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();
@@ -90,7 +91,7 @@ export function TeamAddCombobox({
 
         if (paramKey === "p") {
             params.set("mode", "bracket");
-            params.set("size", String(max === 8 ? 8 : 4));
+            // params.set("size", String(max === 8 ? 8 : 4));
             params.set("p", nextIds.join(","));
             params.delete("a");
             params.delete("b");

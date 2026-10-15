@@ -7,6 +7,7 @@ import { sampleCharacterIds } from "@/app/actions";
 import { Dices } from "lucide-react";
 import { useTransition } from "react";
 import { CompareMode, parseIdList } from "@/lib/compare/compareParams";
+import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 type Props = {
     mode: CompareMode;
@@ -25,7 +26,7 @@ export function RandomFillButton({
     idsBracket = [],
     sizeA = 4,
     sizeB = 4,
-    bracketSize,
+    bracketSize = MAX_TEAM_SIZE,
 }: Props) {
     // const { pushParams } = useParamLoading();
     const { push: pushParams } = useRouter()
@@ -37,10 +38,9 @@ export function RandomFillButton({
             const params = new URLSearchParams(searchParams.toString());
 
             if (mode === "bracket") {
-                // Determine bracket size: priority -> prop > URL param > fallback (8)
                 const targetSize =
                     bracketSize ??
-                    (searchParams.get("size") ? Number(searchParams.get("size")) : 8);
+                    (searchParams.get("size") ? Number(searchParams.get("size")) : MAX_TEAM_SIZE);
 
                 // Read current bracket IDs or fall back to passed props
                 const currentBracketIds =

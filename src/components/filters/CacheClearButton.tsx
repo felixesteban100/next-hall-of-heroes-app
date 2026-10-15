@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { clearDataCache } from '@/app/actions';
 import { Button } from '../ui/button';
+import { RefreshCcw } from 'lucide-react';
 
 export function CacheClearButton({ path }: { path: string }) {
     const router = useRouter();
@@ -17,7 +18,7 @@ export function CacheClearButton({ path }: { path: string }) {
 
     return (
         <Button onClick={handleClick} size="sm" variant="outline" className="mb-4">
-            Clear Cache & Refresh
+            <RefreshCcw /><span className='hidden md:inline'>Clear Cache & Refresh</span>
         </Button>
     );
 }   

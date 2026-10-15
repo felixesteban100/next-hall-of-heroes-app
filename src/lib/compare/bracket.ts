@@ -41,19 +41,11 @@ export function buildDynamicBracket(fighters: BracketFighter[]): {
         return { rounds: [], allBouts: [] };
     }
 
-    const n = fighters.length;
-    // Find next power of 2 (e.g., 5 -> 8, 10 -> 16)
-    const bracketSize = Math.pow(2, Math.ceil(Math.log2(n)));
-    const totalRounds = Math.log2(bracketSize);
+    const rounds: Bout[][] = [];
+    const allBouts: Bout[] = [];
 
-    // Pad fighters list with nulls for BYEs
-    const paddedFighters: (BracketFighter | null)[] = [...fighters];
-    while (paddedFighters.length < bracketSize) {
-        paddedFighters.push(null);
-    }
-
-    const getRoundName = (roundIdx: number, total: number) => {
-        const remaining = total - roundIdx;
+    const getRoundName = (roundIdx: number, totalRounds: number) => {
+        const remaining = totalRounds - roundIdx;
         if (remaining === 1) return "Finals";
         if (remaining === 2) return "Semifinals";
         if (remaining === 3) return "Quarterfinals";
@@ -61,20 +53,24 @@ export function buildDynamicBracket(fighters: BracketFighter[]): {
         return `Round ${roundIdx + 1}`;
     };
 
-    const rounds: Bout[][] = [];
-    const allBouts: Bout[] = [];
-
     // --- Round 1 ---
     const round1Bouts: Bout[] = [];
-    for (let i = 0; i < bracketSize / 2; i++) {
-        const fighterA = paddedFighters[i * 2];
-        const fighterB = paddedFighters[i * 2 + 1];
-        const { winner, scoreA, scoreB } = evaluateWinner(fighterA, fighterB);
+    const n = fighters.length;
+    const half = Math.ceil(n / 2);
+
+    for (let i = 0; i < half; i++) {
+        const fighterA = fighters[i * 2] || null;
+        const fighterB = fighters[i * 2 + 1] || null;
+
+        // If one side is null, they automatically win/advance
+        const winner = !fighterB ? fighterA : (!fighterA ? fighterB : evaluateWinner(fighterA, fighterB).winner);
+        const scoreA = fighterA && fighterB ? evaluateWinner(fighterA, fighterB).scoreA : (fighterA ? 100000 : null);
+        const scoreB = fighterA && fighterB ? evaluateWinner(fighterA, fighterB).scoreB : (fighterB ? 100000 : null);
 
         const bout: Bout = {
             id: `r0-b${i}`,
             roundIndex: 0,
-            roundName: getRoundName(0, totalRounds),
+            roundName: "Round 1", // Will be normalized below based on total rounds
             a: fighterA,
             b: fighterB,
             winner,
@@ -87,22 +83,26 @@ export function buildDynamicBracket(fighters: BracketFighter[]): {
     rounds.push(round1Bouts);
 
     // --- Subsequent Rounds ---
-    for (let r = 1; r < totalRounds; r++) {
-        const prevRound = rounds[r - 1];
+    let currentPrevRound = round1Bouts;
+    let r = 1;
+
+    while (currentPrevRound.length > 1) {
         const currentRoundBouts: Bout[] = [];
+        for (let i = 0; i < currentPrevRound.length; i += 2) {
+            const boutA = currentPrevRound[i];
+            const boutB = currentPrevRound[i + 1];
 
-        for (let i = 0; i < prevRound.length / 2; i++) {
-            const boutA = prevRound[i * 2];
-            const boutB = prevRound[i * 2 + 1];
+            const fighterA = boutA ? boutA.winner : null;
+            const fighterB = boutB ? boutB.winner : null;
 
-            const fighterA = boutA.winner;
-            const fighterB = boutB.winner;
-            const { winner, scoreA, scoreB } = evaluateWinner(fighterA, fighterB);
+            const winner = !fighterB ? fighterA : (!fighterA ? fighterB : evaluateWinner(fighterA, fighterB).winner);
+            const scoreA = fighterA && fighterB ? evaluateWinner(fighterA, fighterB).scoreA : (fighterA ? 100000 : null);
+            const scoreB = fighterA && fighterB ? evaluateWinner(fighterA, fighterB).scoreB : (fighterB ? 100000 : null);
 
             const bout: Bout = {
-                id: `r${r}-b${i}`,
+                id: `r${r}-b${Math.floor(i / 2)}`,
                 roundIndex: r,
-                roundName: getRoundName(r, totalRounds),
+                roundName: "",
                 a: fighterA,
                 b: fighterB,
                 winner,
@@ -113,7 +113,18 @@ export function buildDynamicBracket(fighters: BracketFighter[]): {
             allBouts.push(bout);
         }
         rounds.push(currentRoundBouts);
+        currentPrevRound = currentRoundBouts;
+        r++;
     }
+
+    // Fix round names dynamically based on actual total rounds calculated
+    const totalRounds = rounds.length;
+    rounds.forEach((roundBouts, rIdx) => {
+        const name = getRoundName(rIdx, totalRounds);
+        roundBouts.forEach((b) => {
+            b.roundName = name;
+        });
+    });
 
     return { rounds, allBouts };
 }
