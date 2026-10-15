@@ -2,12 +2,11 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useParamLoading } from "@/components/layout/ParamLoadingContext";
 import { sampleCharacterIds } from "@/app/actions";
 import { Dices } from "lucide-react";
 import { useTransition } from "react";
 import { CompareMode, parseIdList } from "@/lib/compare/compareParams";
-import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
+import { MAX_BRACKET_SIZE, MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 type Props = {
     mode: CompareMode;
@@ -24,12 +23,10 @@ export function RandomFillButton({
     idsA = [],
     idsB = [],
     idsBracket = [],
-    sizeA = 4,
-    sizeB = 4,
-    bracketSize = MAX_TEAM_SIZE,
+    sizeA = MAX_TEAM_SIZE,
+    sizeB = MAX_TEAM_SIZE,
 }: Props) {
-    // const { pushParams } = useParamLoading();
-    const { push: pushParams } = useRouter()
+    const { push: pushParams } = useRouter();
     const searchParams = useSearchParams();
     const [pending, start] = useTransition();
 
@@ -38,9 +35,7 @@ export function RandomFillButton({
             const params = new URLSearchParams(searchParams.toString());
 
             if (mode === "bracket") {
-                const targetSize =
-                    bracketSize ??
-                    (searchParams.get("size") ? Number(searchParams.get("size")) : MAX_TEAM_SIZE);
+                const targetSize = MAX_BRACKET_SIZE;
 
                 // Read current bracket IDs or fall back to passed props
                 const currentBracketIds =
@@ -48,22 +43,20 @@ export function RandomFillButton({
                         ? idsBracket
                         : parseIdList(searchParams.get("p"));
 
-                // How many new IDs we need to fill the remaining bracket slots
+                // How many new IDs we need to fill the remaining bracket slots up to 24 max
                 const neededCount = Math.max(0, targetSize - currentBracketIds.length);
 
-                if (neededCount === 0) {
-                    // Bracket is already full -> completely randomize a fresh set of size `targetSize`
+                if (neededCount === 0 || currentBracketIds.length >= targetSize) {
+                    // Bracket is full or exceeded -> randomize a fresh set of size `targetSize` (24)
                     const freshIds = await sampleCharacterIds(targetSize, []);
                     params.set("mode", "bracket");
-                    params.set("size", String(targetSize));
                     params.set("p", freshIds.join(","));
                 } else {
-                    // Fill remaining empty slots while excluding existing IDs
+                    // Fill remaining empty slots up to 24 while excluding existing IDs
                     const newIds = await sampleCharacterIds(neededCount, currentBracketIds);
-                    const completeRoster = [...currentBracketIds, ...newIds];
+                    const completeRoster = [...currentBracketIds, ...newIds].slice(0, targetSize);
 
                     params.set("mode", "bracket");
-                    params.set("size", String(targetSize));
                     params.set("p", completeRoster.join(","));
                 }
 

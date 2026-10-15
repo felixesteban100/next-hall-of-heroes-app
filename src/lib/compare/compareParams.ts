@@ -1,4 +1,3 @@
-import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 export type CompareMode = "1v1" | "team" | "bracket";
 
@@ -9,7 +8,7 @@ export function parseIdList(raw?: string | string[] | null): number[] {
         .split(",")
         .map((x) => Number.parseInt(x.trim(), 10))
         .filter((n) => !Number.isNaN(n))
-        .slice(0, MAX_TEAM_SIZE);
+    // .slice(0, MAX_TEAM_SIZE);
 }
 
 export function detectMode(params: {

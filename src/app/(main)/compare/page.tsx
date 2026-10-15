@@ -28,12 +28,12 @@ type SearchParamsPromise = Promise<{
 }>;
 
 export const MAX_TEAM_SIZE = 12; // one constant
+export const MAX_BRACKET_SIZE = 24; // one constant
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
     const mode = detectMode(params);
 
-    const size = MAX_TEAM_SIZE;
     const ids = parseIdList(params.p);
     const fighters = await fetchFightersById(ids);
     const characterOptions = await searchCharacters("", ids)
@@ -106,7 +106,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             <ComparisonHeader />
             <div className="flex flex-wrap gap-2 items-center">
                 <CompareModeToggle />
-                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? size : undefined} />
+                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? MAX_BRACKET_SIZE : MAX_TEAM_SIZE} />
                 {
                     mode != "bracket"
                     &&
@@ -125,7 +125,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
             {mode === "bracket" ?
                 <>
-                    <BracketPicker size={size} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={fighters} />
+                    <BracketPicker size={MAX_BRACKET_SIZE} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={fighters} />
                     <DynamicBracketView
                         fighters={JSON.parse(JSON.stringify(fighters)).map((c: Character) => ({
                             id: c.id,

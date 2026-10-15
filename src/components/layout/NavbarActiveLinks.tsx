@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Shield, Globe2, Zap, Sparkles } from "lucide-react";
+import { Users, Shield, Globe2, Zap, Sparkles, Scale } from "lucide-react";
 import { useParamLoading } from "./ParamLoadingContext";
 
 const ROUTE_KEYS: Record<string, string> = {
@@ -20,7 +20,7 @@ const navLinks = [
     { name: "Universes", href: "/universes", icon: Globe2 },
     { name: "Powers", href: "/powers", icon: Zap },
     { name: "Random", href: "/random", icon: Users },
-    { name: "Compare", href: "/compare", icon: Sparkles },
+    { name: "Compare", href: "/compare", icon: Scale },
 ];
 
 export function NavbarActiveLinks() {

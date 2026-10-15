@@ -4,6 +4,7 @@
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
 import { parseIdList, type CompareMode } from "@/lib/compare/compareParams";
+import { MAX_BRACKET_SIZE, MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 function detectClientMode(searchParams: URLSearchParams): CompareMode {
     if (searchParams.get("mode") === "bracket" || searchParams.get("p")) {
@@ -92,21 +93,22 @@ export function CompareModeToggle() {
                 Number(searchParams.get("id2")),
             ].filter((n) => typeof n === "number" && !Number.isNaN(n) && n > 0);
 
+
             // Unique deduplicated participant IDs
             const unique = Array.from(new Set(seed));
 
             // Determine bracket size: check existing param, default to 8 if count > 4, else 4
-            const rawSize = searchParams.get("size");
-            const targetSize = rawSize
-                ? parseInt(rawSize, 10)
+            // const rawSize = searchParams.get("size");
+            /* const targetSize = rawSize
+                ? parseInt(rawSize, MAX_TEAM_SIZE)
                 : unique.length > 4
                     ? 8
-                    : 4;
+                    : 4; */
 
-            const trimmedParticipants = unique.slice(0, targetSize);
+            const trimmedParticipants = unique.slice(0, MAX_BRACKET_SIZE);
 
             params.set("mode", "bracket");
-            params.set("size", String(targetSize));
+            // params.set("size", String(MAX_TEAM_SIZE));
 
             if (trimmedParticipants.length > 0) {
                 params.set("p", trimmedParticipants.join(","));
@@ -130,8 +132,8 @@ export function CompareModeToggle() {
             type="button"
             onClick={() => go(m)}
             className={`rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${current === m
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
         >
             {label}

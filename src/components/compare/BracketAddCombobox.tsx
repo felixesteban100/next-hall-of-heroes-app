@@ -6,6 +6,7 @@ import { TeamAddCombobox } from "@/components/compare/selectors/TeamAddCombobox"
 import { CharacterOption } from "@/types";
 import { X } from "lucide-react";
 import { CharacterImage } from "../shared/CharacterImage";
+import { MAX_BRACKET_SIZE } from "@/app/(main)/compare/page";
 
 type Props = {
     ids: number[];
@@ -29,9 +30,9 @@ export function BracketPicker({
         const params = new URLSearchParams(searchParams.toString());
 
         params.set("mode", "bracket");
-        params.set("size", String(size));
+        // params.set("size", String(size));
         if (nextIds.length) {
-            params.set("p", nextIds.slice(0, size).join(","));
+            params.set("p", nextIds.slice(0, MAX_BRACKET_SIZE).join(","));
         } else {
             params.delete("p");
         }
