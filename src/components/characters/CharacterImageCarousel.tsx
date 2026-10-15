@@ -6,9 +6,9 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel"
-import Image from "next/image"
+import { CharacterImage } from "../shared/CharacterImage"
 
-export function CharacterImageCarousel({ images, name, imageFocus }: { images: string[], name: string, imageFocus: string }) {
+export function CharacterImageCarousel({ images, name, imageFocus }: { images: { [key: string]: string }, name: string, imageFocus: string }) {
   return (
     <Carousel
       className="w-80 h-[24rem] rounded-lg overflow-hidden shrink-0"
@@ -23,21 +23,16 @@ export function CharacterImageCarousel({ images, name, imageFocus }: { images: s
       }}
     >
       <CarouselContent className="-ml-0 h-full">
-        {images.map((image, index) => (
+        {Object.entries(images).map(([key, image], index) => (
           <CarouselItem key={index} className="pl-0 h-full">
             <div className="relative h-[24rem] w-full bg-muted rounded-lg overflow-hidden">
-              <Image
+              <CharacterImage
                 src={image}
                 alt={`${name}-${index}`}
-                fill
-                sizes="320px"
-                className="object-cover rounded-lg transition-opacity duration-700"
-                priority={index === 0}
-                unoptimized
-              // style={{
-              //   objectPosition: imageFocus || "50% 15%",
-              //   contain: "layout"
-              // }}
+                imageFocus={key == "md" ? imageFocus : null}
+                width={400}
+                height={500}
+                className="w-full h-full rounded-xl"
               />
             </div>
           </CarouselItem>

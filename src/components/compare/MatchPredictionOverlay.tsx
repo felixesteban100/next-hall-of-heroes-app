@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Sparkles, Handshake } from "lucide-react";
-import Image from "next/image";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { CharacterImage } from "../shared/CharacterImage";
 
 interface MatchPredictionOverlayProps {
     entityAName: string;
@@ -74,16 +74,12 @@ export function MatchPredictionOverlay({
                                             key={ent.id || idx}
                                             className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
                                         >
-                                            <Image
+                                            <CharacterImage
                                                 src={ent.images.md}
                                                 alt={ent.name}
-                                                fill // Use fill instead of explicit width/height for responsive absolute container sizing
-                                                sizes="40px"
-                                                className="object-cover w-full h-full"
-                                                style={{
-                                                    // Force vertical head framing for tiny circles, or parse just the X coordinate from imageFocus
-                                                    objectPosition: ent.imageFocus ? `50% ${ent.imageFocus.split(' ')[1]}` : "50% 18%"
-                                                }}
+                                                imageFocus={ent.imageFocus}
+                                                fill
+                                                className="w-full h-full"
                                             />
                                         </div>
                                     ))}
@@ -107,16 +103,12 @@ export function MatchPredictionOverlay({
                                             key={ent.id || idx}
                                             className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-background shrink-0 bg-muted"
                                         >
-                                            <Image
+                                            <CharacterImage
                                                 src={ent.images.md}
                                                 alt={ent.name}
-                                                width={800}
-                                                height={800}
-                                                className="object-cover w-full h-full"
-                                            // style={{
-                                            //     objectPosition: ent.imageFocus || "50% 15%",
-                                            //     contain: "layout"
-                                            // }}
+                                                imageFocus={ent.imageFocus}
+                                                fill
+                                                className="w-full h-full"
                                             />
                                         </div>
                                     ))}

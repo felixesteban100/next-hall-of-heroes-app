@@ -105,6 +105,7 @@ export function joinTeam_universe_power_enemies_toCharacter(
                     "biography.publisher.logo": 1,  // or just .logo if that's all CardFooter uses
                     "appearance.gender": 1,
                     "powerstats.total": 1,     // if you show the score
+                    "imageFocus": 1
                 }
             }] : []
         )

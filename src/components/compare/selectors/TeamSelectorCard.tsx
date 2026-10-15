@@ -4,6 +4,7 @@ import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 // import { collectionCharacters } from "@/db/mongodb";
 import { searchCharacters } from "@/app/actions";
+import { CharacterImage } from "@/components/shared/CharacterImage";
 
 export async function TeamSelectorCard({
     title,
@@ -45,16 +46,12 @@ export async function TeamSelectorCard({
                             key={c.id}
                             className={`rounded-full px-1 py-[3px] flex gap-2 justify-start items-center ${variant === "primary" ? "bg-primary/10 border border-primary" : "bg-secondary/10 border border-secondary"}`}
                         >
-                            <Image
+                            <CharacterImage
                                 src={c.image}
                                 alt={c.name}
-                                width={500}
-                                height={500}
-                                className="h-12 w-12 rounded-full shrink-0 object-cover"
-                                style={{
-                                    // Force vertical head framing for tiny circles, or parse just the X coordinate from imageFocus
-                                    objectPosition: c.imageFocus ? `50% ${c.imageFocus.split(' ')[1]}` : "50% 18%"
-                                }}
+                                imageFocus={c.imageFocus}
+                                fill
+                                className="w-12 h-12 rounded-full shrink-0"
                             />
                             <span>{c.name}</span>
                             <RemoveCharacterOfTeamButton

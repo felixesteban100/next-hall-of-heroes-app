@@ -51,10 +51,14 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
     ].map(a => a.trim()).filter(a => a && a !== "-");
 
     // Process Images
-    const characterImages = [
-        images.md,
-        ...Object.entries(images).filter(([k, img]) => k !== "md" && img && img !== "-").map(([, img]) => img.toString())
-    ];
+    const characterImages: { [key: string]: string } = {
+        "md": images.md,
+        ...Object.fromEntries(
+            Object.entries(images)
+                .filter(([k, img]) => k !== "md" && img && img !== "-")
+                .map(([key, img]) => [key, img.toString()])
+        )
+    };
 
     const TierIcon = CHARACTER_TIER_ICON[Number(character.tier)];
     const ClassIcon = CHARACTER_CLASS_ICON[Number(character.class)];

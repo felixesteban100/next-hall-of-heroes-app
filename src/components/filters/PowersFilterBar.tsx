@@ -70,9 +70,9 @@ export default function PowersFilterBar() {
                                         >
                                             <Button
                                                 size="sm"
-                                                variant={isActive ? "outline" : "ghost"}
+                                                variant={isActive ? "default" : "ghost"}
                                                 onClick={() => updateParam("tier", isActive ? "" : key)}
-                                                className={`${colors.text} hover:${colors.text} ${isActive ? "font-bold" : "font-medium"}`}
+                                                className={`${colors.text} hover:${colors.text} ${isActive ? "font-bold border-current bg-muted/50 hover:bg-muted/50" : ""}`}
                                             >
 
                                                 {Icon && <Icon className="w-3.5 h-3.5 mr-1 inline-block" />}

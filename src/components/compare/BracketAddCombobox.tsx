@@ -5,7 +5,7 @@ import { useParamLoading } from "@/components/layout/ParamLoadingContext";
 import { TeamAddCombobox } from "@/components/compare/selectors/TeamAddCombobox";
 import { CharacterOption } from "@/types";
 import { X } from "lucide-react";
-import Image from "next/image";
+import { CharacterImage } from "../shared/CharacterImage";
 
 type Props = {
     ids: number[];
@@ -71,16 +71,13 @@ export function BracketPicker({
                             >
                                 {char?.images.md ? (
                                     <div className="relative h-12 w-12 rounded-full overflow-hidden shrink-0 border border-border">
-                                        <Image
+                                        <CharacterImage
                                             src={char.images.md}
                                             alt={char.name}
-                                            fill
-                                            sizes="50px"
-                                            className="object-cover"
-                                            style={{
-                                                objectPosition: char.imageFocus || "50% 15%",
-                                                contain: "layout"
-                                            }}
+                                            imageFocus={char.imageFocus}
+                                            width={400}
+                                            height={500}
+                                            className="w-full h-full"
                                         />
                                     </div>
                                 ) : (

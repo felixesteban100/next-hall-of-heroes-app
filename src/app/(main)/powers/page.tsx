@@ -45,8 +45,6 @@ export default async function page({
 
     const totalPowers = await collectionPowers.countDocuments(query);
 
-    // console.log((await collectionPowers.find({}).toArray()).map(c => ({ value: c.value, name: c.name, id: c.id })))
-
     return (
         <div className="space-y-2 mt-4">
             {/* <div>

@@ -10,6 +10,7 @@ import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
 import { Mars, Venus } from "lucide-react";
 import { useIsMobile } from "./CharacterGrid";
+import { CharacterImage } from "../shared/CharacterImage";
 
 type CharacterCardProps = {
     character: CharacterWithJoinTeamUniversePowerEnemies;
@@ -28,25 +29,20 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     const TypeIcon = CHARACTER_TYPE_ICON[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
+
     return (
         <Card
             className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
         >
             <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden`}>
                 <ViewTransition name={`character-${character.id}`}>
-                    <Image
-                        src={`${character.images.md}`}
+                    <CharacterImage
+                        src={character.images.md}
                         alt={`${character.name}'s main image`}
-                        unoptimized
-                        fill
-                        // ✨ Use object-position. You can fallback to "object-top" or dynamic coordinates if stored in your DB (e.g. character.imageFocus = "50% 20%")
-                        className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl"
-                        // the wide images look kinda weird
-                        style={{
-                            objectPosition: character.imageFocus || "50% 15%",
-                            // contain: "layout"
-                        }}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        imageFocus={character.imageFocus}
+                        width={400}
+                        height={500}
+                        className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl h-full"
                     />
                 </ViewTransition>
             </div>

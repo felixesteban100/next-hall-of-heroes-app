@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Shield, ShieldAlert, ShieldCheck, Globe, User, Zap, LucideIcon } from "lucide-react";
 import { ViewTransition } from "react";
 import { LoadingLink } from "./LoadingLink";
+import { CharacterImage } from "./CharacterImage";
 
 export type MiniGridItem = {
     id: number | string;
@@ -162,26 +163,30 @@ export function MiniEntityGrid({
 
                             {/* Media Avatar / Logo / Power Icon */}
                             <div className="w-full h-10 relative flex items-center justify-center mt-1">
-                                {imgSrc ? (
-                                    <Image
+                                {(imgSrc && entityType === "character") ?
+                                    <CharacterImage
                                         src={imgSrc}
                                         alt={item.name}
-                                        className={`${getImageStyle()} transition-transform duration-300 group-hover:scale-105`}
-                                        width={entityType === "character" ? 40 : 100}
-                                        height={entityType === "character" ? 40 : 50}
-                                        style={(entityType === "character" && item.imageFocus) ? {
-                                            objectPosition: `50% ${item.imageFocus.split(' ')[1]}` || "",
-                                            contain: "layout"
-                                        } : {}}
+                                        fill
+                                        imageFocus={item.imageFocus}
+                                        className={`h-10 w-10 rounded-full  transition-transform duration-300 group-hover:scale-105`}
                                     />
-                                ) : (
-                                    <DefaultIcon
-                                        className={`w-5 h-5 ${entityType === "power"
-                                            ? "text-primary/70 group-hover:text-primary"
-                                            : "text-muted-foreground/50"
-                                            } transition-colors`}
-                                    />
-                                )}
+                                    : imgSrc ? (
+                                        <Image
+                                            src={imgSrc}
+                                            alt={item.name}
+                                            className={`${getImageStyle()} transition-transform duration-300 group-hover:scale-105`}
+                                            width={100}
+                                            height={50}
+                                        />
+                                    ) : (
+                                        <DefaultIcon
+                                            className={`w-5 h-5 ${entityType === "power"
+                                                ? "text-primary/70 group-hover:text-primary"
+                                                : "text-muted-foreground/50"
+                                                } transition-colors`}
+                                        />
+                                    )}
                             </div>
 
                             {/* Text Container */}

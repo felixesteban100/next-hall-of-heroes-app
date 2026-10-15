@@ -4,6 +4,7 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Image from "next/image";
 import { CharacterCombobox } from "./CharacterCombobox";
 import { searchCharacters } from "@/app/actions";
+import { CharacterImage } from "@/components/shared/CharacterImage";
 
 interface SelectorCardProps {
     title: string;
@@ -49,17 +50,14 @@ export async function SelectorCard({ title, selected, otherSelectedId, paramKey,
             </h2>
             <div className="flex gap-3 items-center">
                 {selected?.images?.md && (
-                    <div className="aspect-4/4 relative w-10 h-10 rounded-md overflow-hidden shrink-0 border border-muted-foreground/20">
-                        <Image
+                    <div className="aspect-4/4 relative w-12 h-12 rounded-full overflow-hidden shrink-0 border border-muted-foreground/20">
+                        <CharacterImage
                             src={selected.images.md}
                             alt={selected.name}
+                            imageFocus={selected.imageFocus}
                             fill
-                            className="h-12 w-auto object-cover"
+                            className="w-full h-full"
                             unoptimized
-                            style={{
-                                objectPosition: selected.imageFocus || "50% 15%",
-                                contain: "layout"
-                            }}
                         />
                     </div>
                 )}

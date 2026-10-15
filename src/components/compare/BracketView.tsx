@@ -4,9 +4,9 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { BracketFighter, Bout, buildDynamicBracket } from "@/lib/compare/bracket";
-import Image from "next/image";
 import { shuffleArray } from "@/lib/utils";
 import { CopySummaryButton } from "./CopySummaryButton";
+import { CharacterImage } from "../shared/CharacterImage";
 
 function FighterLine({
     c,
@@ -31,6 +31,15 @@ function FighterLine({
         ? "border-secondary bg-secondary/20 font-bold text-secondary"
         : "border-primary bg-primary/20 font-bold text-primary";
 
+    // If fighter is null, you can render a compact placeholder line or skip it
+    if (!c) {
+        return (
+            <div className="flex justify-between items-center gap-2 text-xs sm:text-sm rounded-md px-2 py-1.5 border border-dashed border-border/40 bg-muted/20 text-muted-foreground italic">
+                <span>Empty</span>
+            </div>
+        );
+    }
+
     return (
         <div
             className={`flex justify-between items-center gap-2 text-xs sm:text-sm rounded-md px-2 py-1.5 border transition-all duration-300 ${isWinner
@@ -41,16 +50,14 @@ function FighterLine({
             <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className="relative h-7 w-7 sm:h-8 sm:w-8 rounded-md bg-muted/60 overflow-hidden shrink-0 border border-border/50 flex items-center justify-center">
                     {isVisible && c?.image &&
-                        <Image
+                        <CharacterImage
                             src={c.image}
-                            alt={c?.name || "Fighter"}
+                            alt={c.name}
+                            imageFocus={c.imageFocus}
                             fill
-                            sizes="32px"
-                            className="object-cover"
-                            style={{
-                                objectPosition: c.imageFocus ? `50% ${c.imageFocus.split(' ')[0]}` : "50% 18%"
-                            }}
-                        />}
+                            className="w-10 h-10 rounded-full border border-border shadow-sm"
+                        />
+                    }
                 </div>
 
                 <span className="truncate leading-tight font-medium">
@@ -129,24 +136,27 @@ function BoutCard({
             {isPendingVote ? (
                 <div className="pt-1 flex flex-col items-center gap-1.5">
                     <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider animate-pulse">
-                        Predict Winner
+                        {bout.a && bout.b ? "Predict Winner" : "Waiting for Opponent"}
                     </span>
-                    <div className="grid grid-cols-2 gap-1.5 w-full">
-                        <button
-                            disabled={!bout.a}
-                            onClick={() => bout.a && onVote?.(Number(bout.a.id))}
-                            className="text-xs font-bold truncate p-1.5 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                            {bout.a?.name ? bout.a.name/* .split(" ")[0] */ : "Fighter A"}
-                        </button>
-                        <button
-                            disabled={!bout.b}
-                            onClick={() => bout.b && onVote?.(Number(bout.b.id))}
-                            className="text-xs font-bold truncate p-1.5 rounded bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                            {bout.b?.name ? bout.b.name/* .split(" ")[0] */ : "Fighter B"}
-                        </button>
-                    </div>
+                    {/* Only show voting buttons if both fighters are actually present */}
+                    {bout.a && bout.b ? (
+                        <div className="grid grid-cols-2 gap-1.5 w-full">
+                            <button
+                                onClick={() => onVote?.(Number(bout.a?.id))}
+                                className="text-xs font-bold truncate p-1.5 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors cursor-pointer"
+                            >
+                                {bout.a.name}
+                            </button>
+                            <button
+                                onClick={() => onVote?.(Number(bout.b?.id))}
+                                className="text-xs font-bold truncate p-1.5 rounded bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 transition-colors cursor-pointer"
+                            >
+                                {bout.b.name}
+                            </button>
+                        </div>
+                    ) : (
+                        <p className="text-[11px] text-muted-foreground italic">Advances automatically</p>
+                    )}
                 </div>
             ) : (
                 <div className="flex items-center justify-between px-1 pt-0.5 min-h-4">
@@ -197,10 +207,25 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
 
         const currentBout = allBouts[currentStep - 1];
 
-        if (currentBout && !userPredictions[currentBout.id]) {
-            setIsPlaying(false);
-            setPendingVoteBoutId(currentBout.id);
-            return;
+        if (currentBout) {
+            // 🚀 AUTOMATIC BYE RESOLUTION: If one side is null, auto-advance instantly!
+            if (!currentBout.a || !currentBout.b) {
+                const autoWinner = currentBout.a || currentBout.b;
+                if (autoWinner && !userPredictions[currentBout.id]) {
+                    setUserPredictions((prev) => ({ ...prev, [currentBout.id]: Number(autoWinner.id) }));
+                }
+                const timer = setTimeout(() => {
+                    setCurrentStep((prev) => prev + 1);
+                }, 300); // Quick transition for byes
+                return () => clearTimeout(timer);
+            }
+
+            // Normal match requiring prediction vote
+            if (!userPredictions[currentBout.id]) {
+                setIsPlaying(false);
+                setPendingVoteBoutId(currentBout.id);
+                return;
+            }
         }
 
         const timer = setTimeout(() => {
@@ -348,15 +373,12 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
 
                             {champion?.image ? (
                                 <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-primary shadow-sm my-1">
-                                    <Image
+                                    <CharacterImage
                                         src={champion.image}
                                         alt={champion.name}
+                                        imageFocus={champion.imageFocus}
                                         fill
-                                        sizes="64px"
-                                        className="object-cover"
-                                        style={{
-                                            objectPosition: champion.imageFocus ? `50% ${champion.imageFocus.split(' ')[0]}` : "50% 18%"
-                                        }}
+                                        className="w-full h-full"
                                     />
                                 </div>
                             ) : (

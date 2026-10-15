@@ -81,7 +81,6 @@ export type CharacterWithJoinTeamUniversePowerEnemies = Omit<Character, "biograp
         enemies: (Enemy | FallbackItem)[]/* Enemy */;
     };
     powers: (Power | FallbackItem)[],
-    imageFocus: string;
 }
 
 export type Team = {

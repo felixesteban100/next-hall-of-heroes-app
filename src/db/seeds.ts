@@ -1,4 +1,4 @@
-import { collectionCharacters, collectionTeams, collectionUniverses } from "./mongodb";
+import { collectionCharacters, collectionPowers, collectionTeams, collectionUniverses } from "./mongodb";
 import { AnyBulkWriteOperation } from "mongodb";
 
 
@@ -138,6 +138,41 @@ export async function seedTeamLeadersHybrid(leaderMap: Record<string, string[]>)
     }
 }
 
+export async function seedPowers(items: SeedItem[]) {
+    try {
+        console.log("Starting powers seed...");
+
+        const bulkOps: Parameters<typeof collectionPowers.bulkWrite>[0] = items.map((item) => {
+
+            return {
+                updateOne: {
+                    filter: { name: item.name },
+                    update: {
+                        $set: item.data,
+                    },
+                },
+            };
+        });
+
+        if (bulkOps.length === 0) {
+            console.log("No character seed data found.");
+            return;
+        }
+
+        const result = await collectionPowers.bulkWrite(bulkOps, {
+            ordered: false, // keep going if one id is missing
+        });
+
+        console.log(
+            `Powers seed: matched=${result.matchedCount}, modified=${result.modifiedCount}`
+        );
+        return result;
+    } catch (error) {
+        console.error("Failed to seed powers:", error);
+        throw error;
+    }
+}
+
 // db/seed/seedCharacters.ts
 /** Extract numeric id from slug like "982-mary-marvel/DC Comics" → 982 */
 export function idFromSlug(slug: string): number {
@@ -150,6 +185,7 @@ export function idFromSlug(slug: string): number {
 
 type SeedItem = {
     slug: string;
+    name: string;
     /** Any fields to $set on the character doc (dot-paths allowed) */
     data: Record<string, unknown>;
 };
@@ -203,6 +239,7 @@ export async function seedCharactersPowerstats(
 ) {
     return seedCharacters(
         rows.map(({ slug, powerstats }) => ({
+            name: "",
             slug,
             data: { powerstats },
         }))
@@ -214,6 +251,7 @@ export async function seedCharactersEnemies(
 ) {
     return seedCharacters(
         characterEnemiesData.map(({ slug, enemies }) => ({
+            name: "",
             slug,
             data: { "connections.enemies": enemies },
         }))
@@ -225,6 +263,7 @@ export async function seedCharactersTier(
 ) {
     return seedCharacters(
         rows.map(({ slug, tier, class: cls }) => ({
+            name: "",
             slug,
             data: {
                 tier,
@@ -239,6 +278,7 @@ export async function seedCharactersRelativesList(
 ) {
     return seedCharacters(
         data.map(({ slug, relatives }) => ({
+            name: "",
             slug,
             data: {
                 // join to match current schema
@@ -253,10 +293,24 @@ export async function seedCharactersDescription(
 ) {
     return seedCharacters(
         data.map(({ slug, description }) => ({
+            name: "",
             slug,
             data: {
                 "appearance.description": description,
             },
         }))
     );
+}
+
+export async function seedPowersCollectionScoreAndTier(data: { name: string, tier: number; score: number }[]) {
+    return seedPowers(
+        data.map(({ name, score, tier }) => ({
+            name,
+            slug: "",
+            data: {
+                tier,
+                score
+            }
+        }))
+    )
 }
