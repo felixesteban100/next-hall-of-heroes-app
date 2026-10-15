@@ -251,14 +251,14 @@ function FilterDrawerBody({
             </DrawerHeader>
             <div className="no-scrollbar overflow-y-auto px-4 space-y-4 max-h-[70vh]">
                 <FilterSection label="GENDER" active={!!draftFilters.gender} onClear={() => setFilter("gender", "")}>
-                    <Button variant={draftFilters.gender === "Male" ? "outline" : "ghost"}
-                        className={`text-blue-500 hover:text-blue-800 ${draftFilters.gender === "Male" ? "bg-blue-100" : ""}`}
+                    <Button variant={draftFilters.gender === "Male" ? "default" : "ghost"}
+                        className={`text-blue-500 hover:text-blue-500 ${draftFilters.gender === "Male" ? "font-bold border-current bg-muted/50 hover:bg-muted/50" : ""}`}
                         onClick={() => setFilter("gender", "Male")}
                     >
                         <Mars /> Male
                     </Button>
-                    <Button variant={draftFilters.gender === "Female" ? "outline" : "ghost"}
-                        className="text-pink-500 hover:text-pink-800"
+                    <Button variant={draftFilters.gender === "Female" ? "default" : "ghost"}
+                        className={`text-pink-500 hover:text-pink-500 ${draftFilters.gender === "Female" ? "font-bold border-current bg-muted/50 hover:bg-muted/50" : ""}`}
                         onClick={() => setFilter("gender", "Female")}
                     >
                         <Venus /> Female
@@ -272,8 +272,9 @@ function FilterDrawerBody({
                         { value: "bad", label: "Villain", className: "text-red-500 hover:text-red-500" },
                     ].map(({ value, label, className }) => (
                         <Button key={value}
-                            variant={draftFilters.alignment === value ? "outline" : "ghost"}
-                            className={className}
+                            variant={draftFilters.alignment === value ? "default" : "ghost"}
+                            // className={` ${draftFilters.alignment === value ? classNameSelected : className}`}
+                            className={`${className} ${draftFilters.alignment === value ? `font-bold border-current bg-muted/50 hover:bg-muted/50` : ""}`}
                             onClick={() => setFilter("alignment", value)}
                         >
                             {CharacterBadgeIcon(value)} {label}
@@ -291,8 +292,9 @@ function FilterDrawerBody({
                         return (
                             <Button
                                 key={type}
-                                variant={isSelected ? "outline" : "ghost"}
-                                className={`${color.text} hover:${color.text} ${isSelected ? "font-bold border-current bg-muted/50" : "font-medium"}`}
+                                variant={isSelected ? "default" : "ghost"}
+                                // className={`${color.text} hover:${color.text} ${isSelected ? "font-bold border-current bg-muted/50" : "font-medium"}`}
+                                className={`${color.text} hover:${color.text} ${isSelected ? `font-bold border-current bg-muted/50 hover:bg-muted/50` : ""}`}
                                 onClick={() => setFilter("character_type", isSelected ? "" : type)}
                             >
                                 {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
@@ -312,8 +314,8 @@ function FilterDrawerBody({
                         return (
                             <Button
                                 key={value}
-                                variant={draftFilters.tier === value ? "outline" : "ghost"}
-                                className={`${color.text} hover:${color.text} ${draftFilters.tier === value ? "font-bold border-current bg-muted/50" : "font-medium"}`}
+                                variant={draftFilters.tier === value ? "default" : "ghost"}
+                                className={`${color.text} hover:${color.text} ${draftFilters.tier === value ? `font-bold border-current bg-muted/50 hover:bg-muted/50` : ""}`}
                                 onClick={() => setFilter("tier", value)}
                             >
                                 {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
@@ -333,8 +335,9 @@ function FilterDrawerBody({
                         return (
                             <Button
                                 key={value}
-                                variant={draftFilters.class === value ? "outline" : "ghost"}
-                                className={`${color.text} hover:${color.text} ${draftFilters.class === value ? "font-bold border-current bg-muted/50" : "font-medium"}`}
+                                variant={draftFilters.class === value ? "default" : "ghost"}
+                                // className={`${draftFilters.class === value ? `font-bold ${color.bg} hover:${color.bg} ${color.foreground} hover:${color.foreground}` : `${color.text} hover:${color.text} `}`}
+                                className={`${color.text} hover:${color.text} ${draftFilters.class === value ? `font-bold border-current bg-muted/50 hover:bg-muted/50` : ""}`}
                                 onClick={() => setFilter("class", value)}
                             >
                                 {Icon && <Icon className="w-4 h-4 mr-1.5 shrink-0" />}
