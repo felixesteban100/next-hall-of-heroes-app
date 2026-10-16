@@ -10,7 +10,7 @@ import { CopySummaryButton } from "@/components/compare/CopySummaryButton";
 import { RandomFillButton } from "@/components/compare/RandomFillButton";
 import { BracketPicker } from "@/components/compare/BracketAddCombobox";
 import { DynamicBracketView } from "@/components/compare/BracketView";
-import { searchCharacters } from "@/app/actions";
+import { getBestTeamName, searchCharacters } from "@/app/actions";
 import { sanitize } from "@/lib/utils";
 import CharacterComparatorView from "@/components/compare/CharacterComparatorView";
 
@@ -66,19 +66,19 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const teamA = aggregateTeamScores(entitiesA);
     const teamB = aggregateTeamScores(entitiesB);
 
-    const sharedTeamA = groupTeams(entitiesA).shared.map(c => ({ name: c.name, members: c.members }))
-    const sharedTeamB = groupTeams(entitiesB).shared.map(c => ({ name: c.name, members: c.members }))
-    const randomSharedTeamA = sharedTeamA[Math.floor(Math.random() * sharedTeamA.length)]
-    const randomSharedTeamB = sharedTeamB[Math.floor(Math.random() * sharedTeamB.length)]
+    const bestTeamNameA = await getBestTeamName(entitiesA);
+    const bestTeamNameB = await getBestTeamName(entitiesB);
 
     const entityAName =
-        mode === "team" && entitiesA.length > 1 && randomSharedTeamA ? randomSharedTeamA.name
+        mode === "team" && entitiesA.length > 1
+            ? (bestTeamNameA ?? "Team A")
             : mode === "team"
                 ? "Team A"
                 : entityA?.name;
 
     const entityBName =
-        mode === "team" && entitiesB.length > 1 && randomSharedTeamB ? randomSharedTeamB.name
+        mode === "team" && entitiesB.length > 1
+            ? (bestTeamNameB ?? "Team B")
             : mode === "team"
                 ? "Team B"
                 : entityB?.name;

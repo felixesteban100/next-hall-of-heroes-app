@@ -1,6 +1,7 @@
 "use server";
 
-import { collectionCharacters } from "@/db/mongodb";
+import { collectionCharacters, collectionTeams } from "@/db/mongodb";
+import { groupTeams } from "@/lib/compare/compare_utls";
 import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -35,9 +36,8 @@ export async function searchCharacters(
         "connections.groupAffiliation": 1,
     };
 
-    // ── 1. Fetch selected characters' context ────────────────────────────────
     let publishers = new Set<string>();
-    let teamIds = new Set<number>();
+    let teamIds = new Set<string | number>(); // Supports both strings and numbers
 
     if (selectedIds.length > 0) {
         const selected = await collectionCharacters
@@ -54,16 +54,12 @@ export async function searchCharacters(
             .toArray();
 
         publishers = new Set(selected.map((s) => s.publisher).filter(Boolean));
-        teamIds = new Set<number>(
-            selected.flatMap((s) =>
-                s.teamIds.filter((t): t is number => typeof t === "number")
-            )
-        );
+        teamIds = new Set<string | number>(selected.flatMap((s) => s.teamIds));
     }
 
     const hasSynergyContext = publishers.size > 0 || teamIds.size > 0;
 
-    // ── 2. If searching by query — normal search, score results ─────────────
+    // ── 2. If searching by query — search, score by synergy, and sort ─────────────
     if (q) {
         const rx = { $regex: q, $options: "i" };
         const filter = {
@@ -79,25 +75,25 @@ export async function searchCharacters(
         const candidates = await collectionCharacters
             .aggregate<CharacterOption>([
                 { $match: filter },
-                { $limit: 40 },
+                { $limit: 50 }, // fetch enough matches to evaluate synergy
                 { $project: projection },
             ])
             .toArray();
 
-        return scoreAndStrip(candidates, publishers, teamIds).slice(0, 20);
+        // Score all search results and sort highest synergy to the top!
+        return scoreAndStrip(candidates, publishers, teamIds)
+            .sort((a, b) => (b.synergyScore ?? 0) - (a.synergyScore ?? 0))
+            .slice(0, 20);
     }
 
-    // ── 3. No query — intentionally fetch synergy candidates + random fill ───
     const SYNERGY_SLOTS = 5;
     const RANDOM_SLOTS = 15;
-
     let synergyResults: any[] = [];
 
     if (hasSynergyContext) {
-        // Build a filter that matches publisher OR shared team ID
         const synergyFilter: Record<string, unknown> = {
             ...baseFilter,
-            id: { $nin: [...exclude, ...selectedIds] }, // also exclude the selected themselves
+            id: { $nin: [...exclude, ...selectedIds] },
             $or: [
                 ...(publishers.size > 0
                     ? [{ "biography.publisher": { $in: [...publishers] } }]
@@ -111,18 +107,16 @@ export async function searchCharacters(
         synergyResults = await collectionCharacters
             .aggregate<any>([
                 { $match: synergyFilter },
-                { $sample: { size: SYNERGY_SLOTS * 3 } }, // over-fetch so scoring can pick best
+                { $sample: { size: SYNERGY_SLOTS * 4 } },
                 { $project: projection },
             ])
             .toArray();
 
-        // Score and take top SYNERGY_SLOTS
         synergyResults = scoreAndStrip(synergyResults, publishers, teamIds)
             .sort((a, b) => (b.synergyScore ?? 0) - (a.synergyScore ?? 0))
             .slice(0, SYNERGY_SLOTS);
     }
 
-    // Random fill — exclude already fetched synergy ids + selected
     const synergyIds = synergyResults.map((c) => c.id);
     const randomFilter = {
         ...baseFilter,
@@ -137,7 +131,6 @@ export async function searchCharacters(
         ])
         .toArray();
 
-    // Synergy picks first (already scored), randoms get score 0
     const randoms = randomResults.map((c) => ({
         ...stripSynergyFields(c),
         synergyScore: 0,
@@ -149,16 +142,16 @@ export async function searchCharacters(
 function scoreAndStrip(
     candidates: any[],
     publishers: Set<string>,
-    teamIds: Set<number>
+    teamIds: Set<string | number>
 ): (CharacterOption & { synergyScore: number })[] {
     return candidates.map((c) => {
         let score = 0;
 
         // const pub = c.biography?.publisher ?? "";
-        // if (pub && publishers.has(pub)) score += 3;
+        // if (pub && publishers.has(pub)) score += 3; // Re-enabled publisher weight
 
         const cTeams: (number | string)[] = c.connections?.groupAffiliation ?? [];
-        if (cTeams.some((t) => typeof t === "number" && teamIds.has(t))) score += 2;
+        if (cTeams.some((t) => teamIds.has(t))) score += 5; // Higher weight for shared teams
 
         return { ...stripSynergyFields(c), synergyScore: score };
     });
@@ -182,4 +175,91 @@ export async function sampleCharacterIds(
         ])
         .toArray();
     return rows.map((r) => r.id);
+}
+
+
+export async function getBestTeamName(entities: any[]): Promise<string | null> {
+    const { shared } = groupTeams(entities);
+    if (!shared || shared.length === 0) return null;
+
+    // 1. Extract the names of all shared candidate teams
+    const sharedTeamNames = shared.map((t: any) => t.name).filter(Boolean);
+    if (sharedTeamNames.length === 0) return null;
+
+    // 2. Fetch the true official totalMembersCount from MongoDB for these teams
+    const sharedTeamsDB = await collectionTeams.aggregate<{
+        id: string;
+        name: string;
+        totalMembersCount: number
+    }>([
+        {
+            $match: { name: { $in: sharedTeamNames } }
+        },
+        {
+            $lookup: {
+                from: "characters",
+                let: { teamName: "$name", teamId: "$id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $or: [
+                                    { $in: ["$$teamName", { $ifNull: ["$connections.groupAffiliation", []] }] },
+                                    { $in: ["$$teamId", { $ifNull: ["$connections.groupAffiliation", []] }] }
+                                ]
+                            }
+                        }
+                    },
+                    { $count: "count" }
+                ],
+                as: "memberCountData"
+            }
+        },
+        {
+            $addFields: {
+                totalMembersCount: {
+                    $ifNull: [{ $arrayElemAt: ["$memberCountData.count", 0] }, 0]
+                }
+            }
+        },
+        {
+            $project: {
+                memberCountData: 0
+            }
+        }
+    ]).toArray();
+
+    // Create a lookup map for fast O(1) access to database team sizes
+    const teamSizeMap = new Map(sharedTeamsDB.map(t => [t.name, t.totalMembersCount]));
+
+    const selectedCount = entities.length;
+
+    // 3. Score each team factoring in the real database totalMembersCount
+    const scoredTeams = shared.map((team: any) => {
+        const matchedMembersCount = team.members ? team.members.length : 0;
+        const totalTeamSize = teamSizeMap.get(team.name) ?? 10; // fallback if not found
+
+        const coverageRatio = selectedCount > 0 ? matchedMembersCount / selectedCount : 0;
+        const isFullRosterMatch = matchedMembersCount === selectedCount;
+
+        // Tighter teams (smaller total roster size) get a massive bonus over bloated universe teams
+        const tightnessBonus = Math.max(0, 100 - totalTeamSize);
+        const hasThePrefix = team.name.toLowerCase().startsWith("the ") ? 20 : 0;
+
+        const score =
+            (matchedMembersCount * 15) +
+            (coverageRatio * 40) +
+            (isFullRosterMatch ? 100 : 0) +
+            tightnessBonus +
+            hasThePrefix;
+
+        return {
+            name: team.name,
+            score,
+        };
+    });
+
+    scoredTeams.sort((a, b) => b.score - a.score);
+
+    return scoredTeams[0]?.name ?? null;
 }

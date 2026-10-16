@@ -1,5 +1,4 @@
-// lib/compare/teamChemistry.ts
-import type { CharacterWithJoinTeamUniversePowerEnemies, Universe } from "@/types";
+import type { CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
 import { getPowerNames, getTeamNames } from "@/lib/compare/compare_utls"; // your paths
 
 function publisherName(c: CharacterWithJoinTeamUniversePowerEnemies) {
@@ -95,7 +94,7 @@ export function computeTeamChemistry(
         Math.round(Math.min(powN, 5) * 3 + cover * 10)
     );
 
-    const score = Math.min(100, publisherPts + teamsPts + powersPts);
+    const score = Math.min(100,/*  publisherPts +  */teamsPts/*  + powersPts */);
 
     const notes: string[] = [];
     if (pub >= 0.99) notes.push("Same publisher");

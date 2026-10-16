@@ -72,7 +72,7 @@ export function TeamAddCombobox({
 
         const t = setTimeout(() => {
             startTransition(async () => {
-                const results = await searchCharacters(query, [...excludeSet], selectedIds);
+                const results = await searchCharacters(query, [...excludeSet], selectedIds.length ? selectedIds : ids);
                 setOptions(results);
             });
         }, 250);
@@ -91,7 +91,6 @@ export function TeamAddCombobox({
 
         if (paramKey === "p") {
             params.set("mode", "bracket");
-            // params.set("size", String(max === 8 ? 8 : 4));
             params.set("p", nextIds.join(","));
             params.delete("a");
             params.delete("b");
@@ -110,7 +109,6 @@ export function TeamAddCombobox({
         setQuery("");
     };
 
-    // Split into synergy picks (score > 0) and the rest
     const synergyPicks = options.filter((o) => (o.synergyScore ?? 0) > 0);
     const rest = options.filter((o) => (o.synergyScore ?? 0) === 0);
     const hasSynergy = selectedIds.length > 0 && synergyPicks.length > 0;
@@ -121,6 +119,7 @@ export function TeamAddCombobox({
             value=""
             onValueChange={handleSelect}
             onInputValueChange={(v) => setQuery(v ?? "")}
+            autoHighlight // 👈 Automatically highlights the first matched item
         >
             <ComboboxInput
                 placeholder={placeholder}
@@ -139,8 +138,7 @@ export function TeamAddCombobox({
                         const isFirstRest = !isSynergy && hasSynergy && item === rest[0];
 
                         return (
-                            <>
-                                {/* Synergy section header — render before first synergy item */}
+                            <div key={item.id}>
                                 {isSynergy && hasSynergy && item === synergyPicks[0] && (
                                     <div className="flex items-center gap-1.5 px-3 pt-2 pb-1">
                                         <Sparkles className="w-3 h-3 text-amber-400" />
@@ -155,8 +153,8 @@ export function TeamAddCombobox({
                                     value={item.slug}
                                     className={
                                         isSynergy
-                                            ? "border-l-2 border-amber-400/60 bg-amber-400/5 data-[highlighted]:bg-amber-400/10"
-                                            : ""
+                                            ? "border-l-2 border-amber-400/60 bg-amber-400/5 data-[highlighted]:bg-amber-400/10 data-[highlighted]:text-foreground cursor-pointer"
+                                            : "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground cursor-pointer" // 👈 Added default highlight styles
                                     }
                                 >
                                     <div className="flex flex-col gap-0.5 min-w-0">
@@ -174,7 +172,6 @@ export function TeamAddCombobox({
                                     </div>
                                 </ComboboxItem>
 
-                                {/* Divider before the "rest" group */}
                                 {isFirstRest && (
                                     <div className="flex items-center gap-2 px-3 py-1.5">
                                         <div className="flex-1 h-px bg-border" />
@@ -182,7 +179,7 @@ export function TeamAddCombobox({
                                         <div className="flex-1 h-px bg-border" />
                                     </div>
                                 )}
-                            </>
+                            </div>
                         );
                     }}
                 </ComboboxList>

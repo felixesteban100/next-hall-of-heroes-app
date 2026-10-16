@@ -1,9 +1,8 @@
 "use server"
 
-// lib/compare/fetchCompareEntities.ts
 import { collectionCharacters } from "@/db/mongodb";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
-import type { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
 export async function fetchCharacterById(
     id: number
