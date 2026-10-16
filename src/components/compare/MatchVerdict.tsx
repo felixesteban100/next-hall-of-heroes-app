@@ -205,13 +205,13 @@ export default function MatchVerdict({
 
     return (
         <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 bg-card/80 backdrop-blur-sm shadow-sm ${isNemesis
-                ? "border-amber-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
-                : "border-muted-foreground/15"
+            ? "border-amber-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
+            : "border-muted-foreground/15"
             }`}>
             {/* Background glow */}
             <div className={`pointer-events-none absolute inset-0 ${isNemesis
-                    ? "bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-amber-500/10 animate-pulse"
-                    : "bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"
+                ? "bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-amber-500/10 animate-pulse"
+                : "bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"
                 }`} />
 
             {/* Top Bar: Shows Winner / Draw + Nemesis status cleanly combined */}

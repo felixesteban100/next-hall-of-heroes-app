@@ -1,8 +1,8 @@
 import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
-import { aggregateTeamScores, computeMatchScore, groupTeams } from "@/lib/compare/compare_utls";
+import { aggregateTeamScores, groupTeams } from "@/lib/compare/compare_utls";
 import { detectMode, parseIdList } from "@/lib/compare/compareParams";
-import { fetchCharactersByIds, fetchFightersById } from "@/lib/compare/fetchCompareEntities";
+import { fetchCharactersByIds, fetchCharactersJoinedById } from "@/lib/compare/fetchCompareEntities";
 import { TeamSelectorCard } from "@/components/compare/selectors/TeamSelectorCard";
 import VS from "@/components/compare/VS";
 import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
@@ -10,7 +10,6 @@ import { CopySummaryButton } from "@/components/compare/CopySummaryButton";
 import { RandomFillButton } from "@/components/compare/RandomFillButton";
 import { BracketPicker } from "@/components/compare/BracketAddCombobox";
 import { DynamicBracketView } from "@/components/compare/BracketView";
-import { Character } from "@/types";
 import { searchCharacters } from "@/app/actions";
 import { sanitize } from "@/lib/utils";
 import CharacterComparatorView from "@/components/compare/CharacterComparatorView";
@@ -35,7 +34,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const mode = detectMode(params);
 
     const ids = parseIdList(params.p);
-    const fighters = await fetchFightersById(ids);
+    const characters = await fetchCharactersJoinedById(ids);
     const characterOptions = await searchCharacters("", ids)
 
     const idsA =
@@ -64,9 +63,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const entityAIdValue = entityA?.id ?? null;
     const entityBIdValue = entityB?.id ?? null;
 
-    // const teamA = mode === "team" ? aggregateTeamScores(entitiesA) : computeMatchScore(entityA);
     const teamA = aggregateTeamScores(entitiesA);
-    // const teamB = mode === "team" ? aggregateTeamScores(entitiesB) : computeMatchScore(entityB);
     const teamB = aggregateTeamScores(entitiesB);
 
     const sharedTeamA = groupTeams(entitiesA).shared.map(c => ({ name: c.name, members: c.members }))
@@ -118,23 +115,15 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         powerEstimateB={teamB?.powerEstimate}
                         aceA={mode === "team" ? aceAInfo : null}
                         aceB={mode === "team" ? aceBInfo : null}
-                        fighterCount={fighters.length}
+                        fighterCount={characters.length}
                     />
                 }
             </div>
 
             {mode === "bracket" ?
                 <>
-                    <BracketPicker size={MAX_BRACKET_SIZE} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={fighters} />
-                    <DynamicBracketView
-                        fighters={JSON.parse(JSON.stringify(fighters)).map((c: Character) => ({
-                            id: c.id,
-                            name: c.name,
-                            overall: computeMatchScore(c).overall,
-                            image: c.images.md,
-                            imageFocus: c.imageFocus
-                        }))}
-                    />
+                    <BracketPicker size={MAX_BRACKET_SIZE} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={sanitize(characters)} />
+                    <DynamicBracketView characters={sanitize(characters)} />
                 </>
                 :
                 <>

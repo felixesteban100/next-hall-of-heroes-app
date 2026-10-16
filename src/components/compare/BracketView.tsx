@@ -7,6 +7,7 @@ import { BracketFighter, Bout, buildDynamicBracket } from "@/lib/compare/bracket
 import { shuffleArray } from "@/lib/utils";
 import { CopySummaryButton } from "./CopySummaryButton";
 import { CharacterImage } from "../shared/CharacterImage";
+import { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
 function FighterLine({
     c,
@@ -180,10 +181,10 @@ function BoutCard({
     );
 }
 
-export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] }) {
+export function DynamicBracketView({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] }) {
     const { rounds, allBouts } = useMemo(
-        () => buildDynamicBracket(shuffleArray(fighters)),
-        [fighters]
+        () => buildDynamicBracket(shuffleArray(characters)),
+        [characters]
     );
 
     const [currentStep, setCurrentStep] = useState<number>(0);
@@ -193,7 +194,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
     const [predictionResults, setPredictionResults] = useState<Record<string, boolean>>({});
     const [pendingVoteBoutId, setPendingVoteBoutId] = useState<string | null>(null);
 
-    const fighterIdsKey = useMemo(() => fighters.map((f) => f.id).join(","), [fighters]);
+    const charactersIdsKey = useMemo(() => characters.map((f) => f.id).join(","), [characters]);
     const activeCardRef = useRef<HTMLDivElement | null>(null);
     const maxSteps = allBouts.length;
 
@@ -237,7 +238,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
 
     useEffect(() => {
         handleReset();
-    }, [fighterIdsKey]);
+    }, [charactersIdsKey]);
 
     const handleReset = () => {
         setCurrentStep(0);
@@ -267,7 +268,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
     const totalCorrectPredictions = Object.values(predictionResults).filter(Boolean).length;
     const totalPredictionsMade = Object.keys(predictionResults).length;
 
-    if (fighters.length < 2) {
+    if (characters.length < 2) {
         return (
             <p className="text-center text-sm text-muted-foreground py-8">
                 Select at least 2 characters to start a bracket comparison.
@@ -297,7 +298,7 @@ export function DynamicBracketView({ fighters }: { fighters: BracketFighter[] })
                     champion={champion}
                     totalCorrect={totalCorrectPredictions}
                     totalVoted={totalPredictionsMade}
-                    fighterCount={fighters.length}
+                    fighterCount={characters.length}
                     allBouts={allBouts}
                     userPredictions={userPredictions}
                 />

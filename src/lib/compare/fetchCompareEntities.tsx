@@ -35,20 +35,16 @@ export async function fetchCharactersByIds(
         .filter((r): r is CharacterWithJoinTeamUniversePowerEnemies => r != null);
 }
 
-export async function fetchFightersById(ids: number[]): Promise<Character[]> {
-    return collectionCharacters
-        .find<Character>({ id: { $in: [...ids] } })
-        .project<Character>({ _id: 0 })
+export async function fetchCharactersJoinedById(ids: number[]): Promise<CharacterWithJoinTeamUniversePowerEnemies[]> {
+    return collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+        joinTeam_universe_power_enemies_toCharacter(
+            { id: { $in: [...ids] } },
+            "id",
+            "desc",
+            0,
+            24,
+            { includeEnemies: true }
+        )
+    )
         .toArray();
-    // return collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-    //             joinTeam_universe_power_enemies_toCharacter(
-    //                 { id: { $in: [...ids] } },
-    //                 "id",
-    //                 "desc",
-    //                 (page - 1) * pageSize,
-    //                 pageSize,
-    //                 { includeEnemies: false }
-    //             )
-    //         )
-    //         .toArray(),
 }

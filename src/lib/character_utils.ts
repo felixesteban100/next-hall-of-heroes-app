@@ -87,6 +87,7 @@ export function joinTeam_universe_power_enemies_toCharacter(
         { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
         { $skip: offset },
         { $limit: howManyPerPage },
+        { $project: { _id: 0 } },
         ...buildUniverseLookup(),
         ...(includeEnemies ? buildPowersLookup() : []),
         ...(includeEnemies ? buildTeamsLookup() : []),

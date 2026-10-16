@@ -72,7 +72,7 @@ export function RowScoreComparer({
                         >
                             <Field className="w-full">
                                 <FieldLabel htmlFor="progress-valB">
-                                    <span className="mr-auto">{formatValue(valB)}</span>
+                                    <span className="mr-auto">{formatValue(valA)}</span>
                                 </FieldLabel>
                                 {/* {formatValue(valA)} */}
                                 <Progress

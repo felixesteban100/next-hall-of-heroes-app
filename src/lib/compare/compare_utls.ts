@@ -365,6 +365,7 @@ export function aggregateTeamScores(
     };
 
     const n = scored.length;
+
     const keys = [
         "averagePowerStats",
         "tier",
