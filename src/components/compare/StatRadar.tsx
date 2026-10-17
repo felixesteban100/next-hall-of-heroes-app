@@ -13,8 +13,8 @@ import {
 
 export type PointRadar = { stat: string; A: number; B: number; full?: string };
 
-const COLOR_A = "#0891b2"; // Entity A / primary look
-const COLOR_B = "#ea580c"; // Entity B / secondary look
+const COLOR_A = "#b5be37"; // Entity A / primary look
+const COLOR_B = "#13a4ae"; // Entity B / secondary look
 
 export function StatsRadar({
     data,
