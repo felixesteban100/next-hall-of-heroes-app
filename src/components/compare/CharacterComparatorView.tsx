@@ -1,12 +1,11 @@
 "use client"
 
 import { CompareMode } from "@/lib/compare/compareParams";
-import { groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, avgTeamPowerstats, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate, MatchBreakdown } from "@/lib/compare/compare_utls";
-import { StatsRadar } from "@/components/compare/StatRadar";
+import { groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, avgTeamPowerstats, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate, MatchBreakdown, simulateSpar } from "@/lib/compare/compare_utls";
+import { BattlePanel } from "@/components/compare/BattlePanel";
 import { ProfileSlot } from "@/components/compare/ProfileSlot";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
-import { SparPanel } from "@/components/compare/SparPanel";
 import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
 import { TeamProfileSlot } from "@/components/compare/TeamProfileSlot";
 import MatchVerdict from "@/components/compare/MatchVerdict";
@@ -99,6 +98,10 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
 
     const hasBothSides = entitiesA.length > 0 && entitiesB.length > 0;
 
+    // 1. Get the MVP character objects for each team
+    const mvpA = teamA.aceName ?? "";
+    const mvpB = teamB.aceName ?? "";
+
     return (
         <>
             <div className="relative w-full max-w-5xl">
@@ -116,16 +119,35 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                 <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 max-h-[450px] overflow-hidden" : "opacity-100 max-h-none"}`}>
                     <div className="mx-auto space-y-4 mb-4">
                         <MatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA ?? null} teamB={teamB ?? null} entitiesA={entitiesA} entitiesB={entitiesB} />
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="rounded-xl border border-muted-foreground/20 bg-card p-3">
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                                    Stats radar
-                                </h3>
-                                <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                        <BattlePanel
+                            radar={radar}
+                            powerEstimateA={teamA.powerEstimate}
+                            powerEstimateB={teamB.powerEstimate}
+                            nameA={entityAName}
+                            nameB={entityBName}
+                            showRadarA={!!entityA && !showPredictionOverlay}
+                            showRadarB={!!entityB && !showPredictionOverlay}
+                            teamAChars={entitiesA} // 👈 Add this
+                            teamBChars={entitiesB} // 👈 Add this
+                        />
+                        {/*  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="border border-border rounded-xl p-4 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                                        Stats radar
+                                    </h3>
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                                </div>
+                                <RoundDistributionChart
+                                    aWins={result?.aWins}
+                                    bWins={result?.bWins}
+                                    draws={result?.draws}
+                                    nameA={entityAName}
+                                    nameB={entityBName}
+                                />
                             </div>
-                            <SparPanel powerEstimateA={teamA.powerEstimate} powerEstimateB={teamB.powerEstimate} nameA={entityAName} nameB={entityBName} />
-                        </div>
+                            <SparPanel powerEstimateA={teamA.powerEstimate} powerEstimateB={teamB.powerEstimate} nameA={entityAName} nameB={entityBName} teamAChars={entitiesA} teamBChars={entitiesB} />
+                        </div> */}
                     </div>
 
                     {/* max-h-[80vh] overflow-y-auto */}
@@ -143,12 +165,14 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                         variant="primary"
                                         powerEstimate={teamA.powerEstimate}
                                         chemistry={computeTeamChemistry(entitiesA)}
+                                        mvp={mvpA}
                                     />
                                     <TeamProfileSlot
                                         entities={entitiesB}
                                         variant="secondary"
                                         powerEstimate={teamB.powerEstimate}
                                         chemistry={computeTeamChemistry(entitiesB)}
+                                        mvp={mvpB}
                                     />
                                 </>
                             ) : (
@@ -160,7 +184,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                         </div>
 
                         {mode === "team" && (
-                            <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} />
+                            <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} mvpA={mvpA} mvpB={mvpB} />
                         )}
 
                         <RowsHeader text={mode === "team" ? "Combat & Powerstats · team avg" : "Combat & Powerstats"} />

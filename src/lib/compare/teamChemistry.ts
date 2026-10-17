@@ -109,3 +109,32 @@ export function computeTeamChemistry(
         notes,
     };
 }
+
+
+export function getTacticalInsight(aName: string, bName: string, diff: number, leader: string, underdog: string) {
+    if (diff < 5) {
+        const deadlockTemplates = [
+            `Deadlock Matchup: ${aName} and ${bName} are neck-and-neck. Victory rests entirely on clutch triggers, positioning, and team synergy.`,
+            `Razor-Thin Margin: Neither side holds a clear stat advantage. Expect a brutal, high-attrition brawl where split-second decisions decide the winner.`,
+            `Stalemate Warning: Power parity is absolute between ${aName} and ${bName}. Superior synergy or favorable RNG will tip the scales.`
+        ];
+        return deadlockTemplates[Math.floor(Math.random() * deadlockTemplates.length)];
+    }
+
+    if (diff > 15) {
+        const blowoutTemplates = [
+            `Overwhelming Mismatch: ${leader} completely outclasses ${underdog} in raw stat density. Expect a swift, decisive victory.`,
+            `Tier Gap Detected: ${leader}'s sheer combat ceiling leaves ${underdog} fighting an uphill battle just to stay on the board.`,
+            `Dominant Roster Advantage: ${leader} commands a massive +${diff.toFixed(1)} power lead, heavily suppressing ${underdog}'s win conditions.`
+        ];
+        return blowoutTemplates[Math.floor(Math.random() * blowoutTemplates.length)];
+    }
+
+    // Standard variable gap
+    const standardTemplates = [
+        `${leader} holds a +${diff.toFixed(1)} power differential over ${underdog}, leveraging superior stat density to dictate the pace.`,
+        `Tactical Edge: ${leader}'s balanced build gives them a measurable advantage in extended skirmishes against ${underdog}.`,
+        `Stat Superiority: ${leader} edges out ${underdog} by +${diff.toFixed(1)} points, translating into consistent round pressure.`
+    ];
+    return standardTemplates[Math.floor(Math.random() * standardTemplates.length)];
+};

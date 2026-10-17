@@ -1,5 +1,5 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
-import type { Character, CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Team, Universe } from "@/types";
+import type { Character, CharacterWithJoinTeamUniversePowerEnemies, Universe } from "@/types";
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon, getCharacterGenderTextColor, getCharacterRaceIcon } from "../character_utils";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/lib/constants";
 import { getAligmentIcon } from "../characters_utils"; // your paths
 import { ChemistryResult, computeTeamChemistry } from "./teamChemistry";
+import { ROUNDS } from "@/components/compare/BattlePanel";
 
 const STAT_KEYS = [
     "intelligence",
@@ -161,7 +162,7 @@ export function hasNemesisLink(
 
 // lib/compare/compare_utls.ts
 
-export function simulateSpar(scoreA: number, scoreB: number, rounds = 100) {
+export function simulateSpar(scoreA: number, scoreB: number, rounds = ROUNDS) {
     let aWins = 0;
     let bWins = 0;
     let draws = 0;

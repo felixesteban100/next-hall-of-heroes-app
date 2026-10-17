@@ -1,7 +1,6 @@
 import { TeamAddCombobox } from "./TeamAddCombobox";
 import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
-// import { collectionCharacters } from "@/db/mongodb";
 import { searchCharacters } from "@/app/actions";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 

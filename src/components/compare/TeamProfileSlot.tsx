@@ -4,19 +4,22 @@ import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
 import { ChemistryResult } from "@/lib/compare/teamChemistry";
+import { Crown } from "lucide-react";
 
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
     variant: "primary" | "secondary";
     powerEstimate?: number;
     chemistry: ChemistryResult | null;
+    mvp: string
 };
 
 export function TeamProfileSlot({
     entities,
     variant,
     powerEstimate,
-    chemistry
+    chemistry,
+    mvp
 }: Props) {
     const border =
         variant === "primary" ? "border-primary" : "border-secondary";
@@ -41,7 +44,7 @@ export function TeamProfileSlot({
                     <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
                         <div
                             key={e.id}
-                            className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg overflow-hidden border-2 ${border} bg-card shrink-0`}
+                            className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg border-2 ${border} bg-card shrink-0`}
                             title={e.name}
                         >
 
@@ -50,9 +53,18 @@ export function TeamProfileSlot({
                                     src={e.images?.md || e.images?.sm || "/placeholder.png"}
                                     alt={e.name}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover overflow-hidden rounded-lg"
                                     unoptimized
                                 />
+                                {/* MVP Star Badge */}
+                                {(mvp === e.name) && (
+                                    <div
+                                        title="Team MVP"
+                                        className="absolute -top-1.5 -right-1.5 bg-yellow-300 text-black p-0.5 rounded-full shadow-md border border-background "
+                                    >
+                                        <Crown className="size-3 fill-black" /> {/* or <Star className="size-3 fill-black" /> */}
+                                    </div>
+                                )}
                             </ViewTransition>
 
                         </div>

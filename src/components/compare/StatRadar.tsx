@@ -13,8 +13,8 @@ import {
 
 type Point = { stat: string; A: number; B: number; full?: string };
 
-const COLOR_A = "#3b82f6"; // Entity A / primary look
-const COLOR_B = "#a855f7"; // Entity B / secondary look
+const COLOR_A = "#0891b2"; // Entity A / primary look
+const COLOR_B = "#ea580c"; // Entity B / secondary look
 
 export function StatsRadar({
     data,
@@ -96,6 +96,8 @@ export function StatsRadar({
                     />
                 </RadarChart>
             </ResponsiveContainer>
+
+
         </div>
     );
 }

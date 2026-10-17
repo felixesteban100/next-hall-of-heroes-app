@@ -10,9 +10,11 @@ import { computeMatchScore } from "@/lib/compare/compare_utls";
 type Props = {
     entitiesA: CharacterWithJoinTeamUniversePowerEnemies[]
     entitiesB: CharacterWithJoinTeamUniversePowerEnemies[]
+    mvpA: string
+    mvpB: string
 };
 
-export function MemberBreakdown({ entitiesA, entitiesB }: Props) {
+export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
     const [open, setOpen] = useState(true);
 
     const rosterA = entitiesA.map((e) => ({
@@ -52,7 +54,15 @@ export function MemberBreakdown({ entitiesA, entitiesB }: Props) {
                                             key={r.id}
                                             className="flex items-center justify-between gap-2 px-1"
                                         >
-                                            <span className="truncate text-foreground">{r.name}</span>
+                                            <span className="truncate text-foreground">
+                                                {r.name}
+                                                {" "}
+                                                {(mvpA === r.name) && (
+                                                    <span className="text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                                                        MVP
+                                                    </span>
+                                                )}
+                                            </span>
                                             <span className="tabular-nums font-bold text-primary shrink-0">
                                                 {r.overall.toFixed(1)}
                                             </span>
@@ -72,7 +82,15 @@ export function MemberBreakdown({ entitiesA, entitiesB }: Props) {
                                             key={r.id}
                                             className="flex items-center justify-between gap-2 px-1"
                                         >
-                                            <span className="truncate text-foreground">{r.name}</span>
+                                            <span className="truncate text-foreground">
+                                                {r.name}
+                                                {" "}
+                                                {(mvpB === r.name) && (
+                                                    <span className="text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded  bg-secondary/20 text-secondary border border-secondary/30">
+                                                        MVP
+                                                    </span>
+                                                )}
+                                            </span>
                                             <span className="tabular-nums font-bold text-secondary shrink-0">
                                                 {r.overall.toFixed(1)}
                                             </span>
