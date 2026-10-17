@@ -6,7 +6,7 @@ import { LoadingLink } from "@/components/shared/LoadingLink";
 import { Button } from "@/components/ui/button";
 import { Scale } from "lucide-react";
 import { RefreshRandomPageButton } from "@/components/filters/RefreshRandomPageButton";
-import { redirect } from "next/navigation";
+import { UrlParamSyncer } from "@/components/random/UrlParamSyncer";
 
 export const instant = false;
 
@@ -18,7 +18,7 @@ export default async function Random({ searchParams }: PageProps) {
     const resolvedParams = await searchParams;
     let charactersPerPage: CharacterWithJoinTeamUniversePowerEnemies[] = [];
 
-    // 1. If the URL has query parameters (?p=...), load those exact characters
+    // 1. If URL has saved query parameters, load those exact characters
     if (resolvedParams?.p) {
         const ids = resolvedParams.p.split(",").map(id => Number(id)).filter(Boolean);
         if (ids.length > 0) {
@@ -38,10 +38,12 @@ export default async function Random({ searchParams }: PageProps) {
         }
     }
 
-    // 2. If the user navigated to bare `/random` (like clicking Refresh), generate a new set
+    // 2. If no params exist, sample 12 random characters on the server right away (NO redirect!)
+    let isFreshRandom = false;
     if (charactersPerPage.length === 0) {
+        isFreshRandom = true;
         charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>([
-            { $sample: { size: 12 } }, // Optimized: Sample first for speed
+            { $sample: { size: 12 } }, // Sample first for max speed
             {
                 $lookup: {
                     from: "universes",
@@ -53,13 +55,6 @@ export default async function Random({ searchParams }: PageProps) {
             },
             { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
         ]).toArray();
-
-        const randomIds = charactersPerPage.map(c => c.id).join(",");
-
-        // 3. Immediately redirect to include the IDs in the URL. 
-        // Because NavbarActiveLinks watches the pathname, it will now successfully 
-        // capture this exact `?p=...` string into localStorage!
-        redirect(`/random?p=${randomIds}`);
     }
 
     const sanitizedCharacters = sanitize(charactersPerPage);
@@ -67,6 +62,9 @@ export default async function Random({ searchParams }: PageProps) {
 
     return (
         <div className="flex flex-col mt-4 overflow-visible ">
+            {/* 🌟 If this was a fresh batch, silently update URL and localStorage on the client without router lockups */}
+            {isFreshRandom && <UrlParamSyncer paramKey="lastParams_random" query={`p=${characterIdsString}`} />}
+
             <div className="flex items justify-end w-full gap-2">
                 <RefreshRandomPageButton path="/random" />
                 <Button size="sm" variant="outline" asChild>
