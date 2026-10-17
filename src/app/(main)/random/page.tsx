@@ -20,7 +20,7 @@ export default async function Random({ searchParams }: PageProps) {
     const resolvedParams = await searchParams;
     let charactersPerPage: CharacterWithJoinTeamUniversePowerEnemies[] = [];
 
-    // 1. If URL has query params (saved by NavbarActiveLinks or direct link), load those exact IDs
+    // 1. Load exact IDs from URL params
     if (resolvedParams?.p) {
         const ids = resolvedParams.p.split(",").map(id => Number(id)).filter(Boolean);
         if (ids.length > 0) {
@@ -40,10 +40,14 @@ export default async function Random({ searchParams }: PageProps) {
         }
     }
 
-    // 2. If no params exist in URL, generate a brand new random sample
+    // 2. If no params exist, sample efficiently (Sample FIRST, Lookup SECOND)
     if (charactersPerPage.length === 0) {
-        const randomSample = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+        charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
             [
+                // Step A: Pick 12 random documents first (fast if collection has index or is small, 
+                // but still better than joining the whole collection first)
+                { $sample: { size: 12 } },
+                // Step B: ONLY lookup universe data for those 12 selected documents!
                 {
                     $lookup: {
                         from: "universes",
@@ -54,14 +58,12 @@ export default async function Random({ searchParams }: PageProps) {
                     },
                 },
                 { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
-                { $sample: { size: 12 } }
             ]
         ).toArray();
 
-        const randomIds = randomSample.map(c => c.id).join(",");
+        const randomIds = charactersPerPage.map(c => c.id).join(",");
 
-        // 3. Automatically redirect to include the parameters in the URL.
-        // This causes NavbarActiveLinks to instantly pick them up and save them to localStorage!
+        // 3. Redirect with the sampled IDs
         redirect(`/random?p=${randomIds}`);
     }
 
