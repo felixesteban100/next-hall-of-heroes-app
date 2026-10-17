@@ -10,17 +10,15 @@ import { redirect } from "next/navigation";
 
 export const instant = false;
 
-
 type PageProps = {
     searchParams: Promise<{ p?: string }>;
 };
 
-/* this page is very slow */
 export default async function Random({ searchParams }: PageProps) {
     const resolvedParams = await searchParams;
     let charactersPerPage: CharacterWithJoinTeamUniversePowerEnemies[] = [];
 
-    // 1. Load exact IDs from URL params
+    // 1. If the URL has query parameters (?p=...), load those exact characters
     if (resolvedParams?.p) {
         const ids = resolvedParams.p.split(",").map(id => Number(id)).filter(Boolean);
         if (ids.length > 0) {
@@ -40,30 +38,27 @@ export default async function Random({ searchParams }: PageProps) {
         }
     }
 
-    // 2. If no params exist, sample efficiently (Sample FIRST, Lookup SECOND)
+    // 2. If the user navigated to bare `/random` (like clicking Refresh), generate a new set
     if (charactersPerPage.length === 0) {
-        charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
-            [
-                // Step A: Pick 12 random documents first (fast if collection has index or is small, 
-                // but still better than joining the whole collection first)
-                { $sample: { size: 12 } },
-                // Step B: ONLY lookup universe data for those 12 selected documents!
-                {
-                    $lookup: {
-                        from: "universes",
-                        localField: "biography.publisher",
-                        foreignField: "value",
-                        pipeline: [{ $project: { teams: 0 } }],
-                        as: "biography.publisher",
-                    },
+        charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>([
+            { $sample: { size: 12 } }, // Optimized: Sample first for speed
+            {
+                $lookup: {
+                    from: "universes",
+                    localField: "biography.publisher",
+                    foreignField: "value",
+                    pipeline: [{ $project: { teams: 0 } }],
+                    as: "biography.publisher",
                 },
-                { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
-            ]
-        ).toArray();
+            },
+            { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
+        ]).toArray();
 
         const randomIds = charactersPerPage.map(c => c.id).join(",");
 
-        // 3. Redirect with the sampled IDs
+        // 3. Immediately redirect to include the IDs in the URL. 
+        // Because NavbarActiveLinks watches the pathname, it will now successfully 
+        // capture this exact `?p=...` string into localStorage!
         redirect(`/random?p=${randomIds}`);
     }
 
