@@ -15,7 +15,7 @@ type PageProps = {
     searchParams: Promise<{ p?: string }>;
 };
 
-
+/* this page is very slow */
 export default async function Random({ searchParams }: PageProps) {
     const resolvedParams = await searchParams;
     let charactersPerPage: CharacterWithJoinTeamUniversePowerEnemies[] = [];

@@ -13,6 +13,7 @@ import {
 import { getAligmentIcon } from "../characters_utils"; // your paths
 import { ChemistryResult, computeTeamChemistry } from "./teamChemistry";
 import { ROUNDS } from "@/components/compare/BattlePanel";
+import { PointRadar } from "@/components/compare/StatRadar";
 
 const STAT_KEYS = [
     "intelligence",
@@ -216,12 +217,12 @@ export function radarData(
 export function radarDataFromStats(
     statsA: Record<string, number> | null | undefined,
     statsB: Record<string, number> | null | undefined
-) {
+): PointRadar[] {
     return STAT_KEYS.map((key) => ({
         stat: key.slice(0, 3).toUpperCase(),
         full: key,
-        A: Math.min(100, Number(statsA?.[key]) || 0),
-        B: Math.min(100, Number(statsB?.[key]) || 0),
+        A: Math.min(100, Number(statsA?.[key].toFixed(2)) || 0),
+        B: Math.min(100, Number(statsB?.[key].toFixed(2)) || 0),
     }));
 }
 

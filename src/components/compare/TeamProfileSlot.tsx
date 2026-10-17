@@ -5,6 +5,7 @@ import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
 import { ChemistryResult } from "@/lib/compare/teamChemistry";
 import { Crown } from "lucide-react";
+import { computeMatchScore } from "@/lib/compare/compare_utls";
 
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
@@ -40,7 +41,7 @@ export function TeamProfileSlot({
     return (
         <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full">
-                {entities.map((e) => (
+                {entities.map(c => ({ ...c, overall: computeMatchScore(c).overall })).sort((a, b) => b.overall - a.overall).map((e) => (
                     <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
                         <div
                             key={e.id}

@@ -329,18 +329,30 @@ export async function getBestTeamName(entities: any[]): Promise<string | null> {
 
     if (!shared || shared.length === 0) return null;
 
-    // 2. STRICT FILTER: Keep ONLY teams where EVERY selected character is a member
-    // I should make this accept ids also it is just filtering by name but some characters have the id of teams in the connections.groupAffiliation array
-    const strictlyShared = shared/* .filter((team: SharedTeam) => {
+    // 2. STRICT FILTER: Handles affiliation objects ({ name: "..." }) as well as raw strings
+    const strictlyShared = shared.filter((team) => {
+        const teamName = typeof team === "string" ? team : team?.name;
+        if (!teamName) return false;
+
         return entities.every((entity) => {
-            const affiliations: (string | number)[] = entity.connections?.groupAffiliation ?? [];
+            const rawAffiliations = entity.connections?.groupAffiliation ?? [];
+
+            // Parse array of objects or strings safely
+            const affiliations: string[] = Array.isArray(rawAffiliations)
+                ? rawAffiliations.map((item: any) => {
+                    if (typeof item === "string") return item.trim();
+                    if (item && typeof item === "object" && "name" in item) return String(item.name).trim();
+                    return String(item).trim();
+                })
+                : typeof rawAffiliations === "string"
+                    ? rawAffiliations.split(",").map((s) => s.trim())
+                    : [];
+
             return affiliations.some(
-                (aff) => String(aff).toLowerCase() === team.name.toLowerCase() || aff === team.name.toLowerCase()
+                (aff) => aff.toLowerCase() === String(teamName).toLowerCase()
             );
         });
-    }); */
-
-    // console.log("strictlyShared", strictlyShared)
+    });
 
     if (strictlyShared.length === 0) return null;
 

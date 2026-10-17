@@ -21,12 +21,12 @@ export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
         id: e.id,
         name: e.name,
         overall: computeMatchScore(e).overall,
-    }));
+    })).sort((a, b) => b.overall - a.overall);
     const rosterB = entitiesB.map((e) => ({
         id: e.id,
         name: e.name,
         overall: computeMatchScore(e).overall,
-    }));
+    })).sort((a, b) => b.overall - a.overall);
 
     return (
         <>

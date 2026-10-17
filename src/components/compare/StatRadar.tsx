@@ -11,7 +11,7 @@ import {
     Tooltip,
 } from "recharts";
 
-type Point = { stat: string; A: number; B: number; full?: string };
+export type PointRadar = { stat: string; A: number; B: number; full?: string };
 
 const COLOR_A = "#0891b2"; // Entity A / primary look
 const COLOR_B = "#ea580c"; // Entity B / secondary look
@@ -23,7 +23,7 @@ export function StatsRadar({
     showA,
     showB,
 }: {
-    data: Point[];
+    data: PointRadar[];
     nameA?: string;
     nameB?: string;
     showA: boolean;
