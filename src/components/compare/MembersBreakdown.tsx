@@ -54,9 +54,13 @@ export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
                                             key={r.id}
                                             className="flex items-center justify-between gap-2 px-1"
                                         >
-                                            <span className="truncate text-foreground">
-                                                {r.name}
-                                                {" "}
+                                            <span className="flex items-center gap-1 min-w-0">
+                                                {/* Truncate long names so MVP & score always fit */}
+                                                <span className="font-medium text-foreground truncate min-w-0 text-xs">
+                                                    {r.name}
+                                                </span>
+
+                                                {/* MVP Badge */}
                                                 {(mvpA === r.name) && (
                                                     <span className="text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
                                                         MVP
@@ -82,11 +86,15 @@ export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
                                             key={r.id}
                                             className="flex items-center justify-between gap-2 px-1"
                                         >
-                                            <span className="truncate text-foreground">
-                                                {r.name}
-                                                {" "}
+                                            <span className="flex items-center gap-1 min-w-0">
+                                                {/* Truncate long names so MVP & score always fit */}
+                                                <span className="font-medium text-foreground truncate min-w-0 text-xs">
+                                                    {r.name}
+                                                </span>
+
+                                                {/* MVP Badge */}
                                                 {(mvpB === r.name) && (
-                                                    <span className="text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded  bg-secondary/20 text-secondary border border-secondary/30">
+                                                    <span className="text-[9px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded bg-secondary/20 text-secondary border border-secondary/30">
                                                         MVP
                                                     </span>
                                                 )}

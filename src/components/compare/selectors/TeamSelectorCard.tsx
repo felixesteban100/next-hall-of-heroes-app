@@ -3,6 +3,7 @@ import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 import { searchCharacters } from "@/app/actions";
 import { CharacterImage } from "@/components/shared/CharacterImage";
+import { Button } from "@/components/ui/button";
 
 export async function TeamSelectorCard({
     title,
@@ -55,7 +56,7 @@ export async function TeamSelectorCard({
                             <RemoveCharacterOfTeamButton
                                 paramKey={paramKey}
                                 selectedIds={selectedIds}
-                                selectedId={c.id}
+                                idsToRemove={[c.id]}
                             />
                         </div>
                     ))}
@@ -73,6 +74,14 @@ export async function TeamSelectorCard({
                         />
                     )}
                 </div>
+
+                {selectedIds.length > 1 &&
+                    <RemoveCharacterOfTeamButton
+                        paramKey={paramKey}
+                        variant={variant === "primary" ? "default" : "secondary"}
+                        selectedIds={selectedIds}
+                        idsToRemove={selectedIds}
+                    />}
             </div>
         </div>
     );

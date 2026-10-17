@@ -96,8 +96,6 @@ export function StatsRadar({
                     />
                 </RadarChart>
             </ResponsiveContainer>
-
-
         </div>
     );
 }

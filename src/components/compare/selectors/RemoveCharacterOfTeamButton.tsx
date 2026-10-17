@@ -2,8 +2,9 @@
 
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
+import { Button } from "@/components/ui/button";
 
-export default function RemoveCharacterOfTeamButton({ paramKey, selectedIds, selectedId }: { paramKey: string, selectedIds: number[], selectedId: number }) {
+export default function RemoveCharacterOfTeamButton({ variant = "default", paramKey, selectedIds, idsToRemove }: { variant?: "default" | "secondary", paramKey: string, selectedIds: number[], idsToRemove: number[] }) {
     const { pushParams } = useParamLoading()
     const searchParams = useSearchParams();
 
@@ -15,13 +16,23 @@ export default function RemoveCharacterOfTeamButton({ paramKey, selectedIds, sel
         if (ids.length) params.set(paramKey, ids.join(","));
         else params.delete(paramKey);
         pushParams(params);
-    };
+    }
 
+    if (idsToRemove.length > 1) {
+        return (
+            <Button
+                variant={variant}
+                onClick={() => write(selectedIds.filter((id) => !idsToRemove.includes(id)))}
+            >
+                Clear all
+            </Button>
+        )
+    }
     return (
         <button
             type="button"
             className="cursor-pointer p-2"
-            onClick={() => write(selectedIds.filter((id) => id !== selectedId))}
+            onClick={() => write(selectedIds.filter((id) => !idsToRemove.includes(id)))}
         >
             ×
         </button>

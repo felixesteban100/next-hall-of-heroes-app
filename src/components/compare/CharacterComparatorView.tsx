@@ -130,24 +130,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                             teamAChars={entitiesA} // 👈 Add this
                             teamBChars={entitiesB} // 👈 Add this
                         />
-                        {/*  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="border border-border rounded-xl p-4 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                                        Stats radar
-                                    </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
-                                </div>
-                                <RoundDistributionChart
-                                    aWins={result?.aWins}
-                                    bWins={result?.bWins}
-                                    draws={result?.draws}
-                                    nameA={entityAName}
-                                    nameB={entityBName}
-                                />
-                            </div>
-                            <SparPanel powerEstimateA={teamA.powerEstimate} powerEstimateB={teamB.powerEstimate} nameA={entityAName} nameB={entityBName} teamAChars={entitiesA} teamBChars={entitiesB} />
-                        </div> */}
                     </div>
 
                     {/* max-h-[80vh] overflow-y-auto */}

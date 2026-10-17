@@ -1,8 +1,8 @@
 // components/compare/SparPanel.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Dices, Swords, Zap, Shield, Sparkles, Flame, BrainCircuit } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Dices, Swords, Zap, Shield, Sparkles, Flame, BrainCircuit, Skull, Trophy } from "lucide-react";
 import { simulateSpar } from "@/lib/compare/compare_utls";
 import { RoundDistributionChart } from "./RoundDistributionChart";
 import { StatsRadar } from "./StatRadar";
@@ -29,18 +29,19 @@ type Props = {
     showRadarB: boolean;
 };
 
-const COMBAT_ACTIONS = [
-    { text: "landed a devastating heavy strike on", icon: Swords, color: "text-red-400" },
-    { text: "outmaneuvered and blitzed", icon: Zap, color: "text-amber-400" },
-    { text: "predicted the attack vector of", icon: Shield, color: "text-blue-400" },
-    { text: "unleashed an overwhelming energy burst against", icon: Flame, color: "text-purple-400" },
-    { text: "absorbed a massive direct assault from", icon: Sparkles, color: "text-emerald-400" },
+// 🌟 Varied stat-driven action library with unique icons and colors
+const STAT_ACTIONS = [
+    { stat: "strength", text: "crushed defenses with an overwhelming blow against", icon: Swords, color: "text-red-400" },
+    { stat: "speed", text: "blitzed past the guard of", icon: Zap, color: "text-amber-400" },
+    { stat: "intelligence", text: "outsmarted and countered a strike from", icon: Shield, color: "text-blue-400" },
+    { stat: "power", text: "unleashed an explosive energy surge obliterating", icon: Flame, color: "text-purple-400" },
+    { stat: "durability", text: "shrugged off a barrage and countered", icon: Sparkles, color: "text-emerald-400" },
+    { stat: "combat", text: "demonstrated master-class martial supremacy over", icon: Swords, color: "text-rose-400" },
 ];
 
 function getRandomChar(chars?: CharacterInfo[], fallbackName = "Fighter") {
-    if (!chars || chars.length === 0) return fallbackName;
-    const randomItem = chars[Math.floor(Math.random() * chars.length)];
-    return randomItem?.name || fallbackName;
+    if (!chars || chars.length === 0) return { name: fallbackName };
+    return chars[Math.floor(Math.random() * chars.length)];
 }
 
 type Log = { id: number; text: string; icon: any; colorClass: string }
@@ -58,56 +59,104 @@ export function BattlePanel({
 }: Props) {
     const [seed, setSeed] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
-    const [logs, setLogs] = useState<Log[]>([]);
+    const [visibleLogs, setVisibleLogs] = useState<Log[]>([]);
     const [tacticalSummary, setTacticalSummary] = useState<string>(""); // 👈 Handle via state
+
+    const logContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    // Recalculate Tactical Insight ONLY on client-side mount & when seed/names change
+    // 🎬 Finite, narrative-driven combat timeline generation
+    // 🎬 Sequential, timed reveal of combat events
     useEffect(() => {
         if (!isMounted) return;
 
+        setVisibleLogs([]); // Reset log display when seed or teams change
+
+        const fullTimeline: Log[] = [];
+        let timeStep = 1;
+
+        // Generate 5 dynamic exchanges
+        for (let i = 0; i < 5; i++) {
+            const isTeamAAttacking = Math.random() > 0.5;
+            const attackerObj = getRandomChar(isTeamAAttacking ? teamAChars : teamBChars, isTeamAAttacking ? nameA : nameB);
+            const defenderObj = getRandomChar(isTeamAAttacking ? teamBChars : teamAChars, isTeamAAttacking ? nameB : nameA);
+
+            if (attackerObj.name === defenderObj.name) continue;
+
+            const action = STAT_ACTIONS[Math.floor(Math.random() * STAT_ACTIONS.length)];
+            const Icon = action.icon;
+
+            fullTimeline.push({
+                id: timeStep++,
+                text: `[RND ${i * 15 + 5}] ${attackerObj.name} ${action.text} ${defenderObj.name}!`,
+                icon: Icon,
+                colorClass: action.color,
+            });
+        }
+
+        // Knockout event
+        const losingTeamName = powerEstimateA > powerEstimateB ? nameB : nameA;
+        const losingChars = powerEstimateA > powerEstimateB ? teamBChars : teamAChars;
+        const fallenHero = getRandomChar(losingChars, losingTeamName);
+
+        fullTimeline.push({
+            id: timeStep++,
+            text: `💥 [RND 75] ${fallenHero.name} takes critical damage and is forced down!`,
+            icon: Skull,
+            colorClass: "text-orange-500 font-bold",
+        });
+
+        // Conclusion event
+        const winnerName = powerEstimateA > powerEstimateB ? nameA : nameB;
+        const diff = Math.abs(powerEstimateA - powerEstimateB);
+        const winType = diff > 15 ? "Decisive Blowout" : "Hard-Fought Decision";
+
+        fullTimeline.push({
+            id: timeStep++,
+            text: `🏆 [FINISH] Simulation Concluded: ${winnerName} secures victory via ${winType} (${ROUNDS} Rounds)!`,
+            icon: Trophy,
+            colorClass: "text-amber-400 font-black",
+        });
+
+        // Reveal entries one by one every 1.8 seconds
+        let currentIndex = 0;
+        const interval = setInterval(() => {
+            if (currentIndex < fullTimeline.length) {
+                const nextLog = fullTimeline[currentIndex];
+                setVisibleLogs((prev) => [...prev, nextLog]);
+                currentIndex++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 1800);
+
+        return () => clearInterval(interval);
+    }, [teamAChars, teamBChars, nameA, nameB, powerEstimateA, powerEstimateB, seed, isMounted]);
+
+    useEffect(() => {
+        if (!isMounted) return;
         const diff = Math.abs(powerEstimateA - powerEstimateB);
         const leader = powerEstimateA > powerEstimateB ? nameA : nameB;
         const underdog = powerEstimateA > powerEstimateB ? nameB : nameA;
-
         setTacticalSummary(getTacticalInsight(nameA, nameB, diff, leader, underdog));
     }, [isMounted, nameA, nameB, powerEstimateA, powerEstimateB, seed]);
 
-    // Generate Combat Ticker lines
+    // Auto-scroll to bottom as new items arrive
     useEffect(() => {
-        const generateLog = () => {
-            const isTeamAAttacking = Math.random() > 0.5;
-            const attacker = getRandomChar(isTeamAAttacking ? teamAChars : teamBChars, isTeamAAttacking ? nameA : nameB);
-            const defender = getRandomChar(isTeamAAttacking ? teamBChars : teamAChars, isTeamAAttacking ? nameB : nameA);
-
-            if (attacker === defender) return;
-
-            const action = COMBAT_ACTIONS[Math.floor(Math.random() * COMBAT_ACTIONS.length)];
-            const Icon = action.icon;
-
-            const newLog = {
-                id: Date.now() + Math.random(),
-                text: `${attacker} ${action.text} ${defender}!`,
-                icon: Icon,
-                colorClass: action.color,
-            };
-
-            setLogs((prev) => [newLog, ...prev.slice(0, 3)]); // Keeps top lines
-        };
-
-        generateLog();
-        const interval = setInterval(generateLog, 2500);
-        return () => clearInterval(interval);
-    }, [teamAChars, teamBChars, nameA, nameB, seed]);
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+    }, [visibleLogs]);
 
     const result = useMemo(() => {
         if (!isMounted) return null;
         void seed;
         return simulateSpar(powerEstimateA, powerEstimateB, ROUNDS);
     }, [powerEstimateA, powerEstimateB, seed, isMounted]);
+
 
     if (powerEstimateA == null || powerEstimateB == null) {
         return (
@@ -147,14 +196,15 @@ export function BattlePanel({
                 aPct={aPct}
                 drawPct={drawPct}
                 bPct={bPct}
-                logs={logs}
+                logs={visibleLogs}
                 tacticalSummary={tacticalSummary}
+                logContainerRef={logContainerRef}
             />
         </div>
     );
 }
 
-function SparPanel({ setSeed, result, nameA, nameB, aPct, drawPct, bPct, logs, tacticalSummary }: {
+function SparPanel({ setSeed, result, nameA, nameB, aPct, drawPct, bPct, logs, tacticalSummary, logContainerRef }: {
     setSeed: (value: number | ((prev: number) => number)) => void;
     result: {
         aWins: number;
@@ -170,10 +220,12 @@ function SparPanel({ setSeed, result, nameA, nameB, aPct, drawPct, bPct, logs, t
     drawPct: number;
     bPct: number;
     logs: Log[];
-    tacticalSummary: string
+    tacticalSummary: string;
+    logContainerRef: React.RefObject<HTMLDivElement | null>;
 }) {
     return (
-        <div className="rounded-xl border border-muted-foreground/20 p-4 space-y-3 min-h-[140px] flex flex-col justify-between">
+        /* min-h-[140px] */
+        <div className="rounded-xl border border-muted-foreground/20 p-4 space-y-3  flex flex-col justify-between">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Spar simulation ({ROUNDS} rounds)
@@ -222,24 +274,29 @@ function SparPanel({ setSeed, result, nameA, nameB, aPct, drawPct, bPct, logs, t
                 </>
             )}
 
-            {/* ⚔️ LIVE COMBAT TICKER */}
-            <div className="pt-2 border-t border-muted-foreground/10 flex flex-col gap-1.5">
+            {/* ⚔️ BATTLE TIMELINE LOGS (SEQUENTIAL REVEAL & FULL TEXT WRAPPING) */}
+            <div className="pt-2 border-t border-muted-foreground/10 flex flex-col gap-1.5 min-h-[200px]">
                 <div className="flex items-center justify-between text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                     <span className="flex items-center gap-1">
-                        <Swords className="size-3 text-primary animate-pulse" /> Combat Ticker
+                        <Swords className="size-3 text-primary animate-pulse" /> Battle Timeline Log
                     </span>
+                    <span className="text-[9px] text-muted-foreground/60">{logs.length} Events</span>
                 </div>
-                <div className="flex flex-col gap-1 min-h-[140px]">
-                    {logs.map((log, idx) => {
+                <div
+                    ref={logContainerRef}
+                    className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1 scroll-smooth"
+                >
+                    {logs.map((log) => {
                         const Icon = log.icon;
                         return (
                             <div
                                 key={log.id}
-                                className={`flex items-center gap-2 text-[11px] p-1.5 rounded-md bg-muted/30 border border-muted-foreground/10 transition-all duration-300 animate-in fade-in ${idx === 0 ? "opacity-100 font-medium" : "opacity-50 text-[10px]"
-                                    }`}
+                                className="flex items-start gap-2 text-[11px] p-2 rounded-md bg-muted/20 border border-muted-foreground/10 transition-all duration-300 animate-in fade-in slide-in-from-top-1"
                             >
-                                <Icon className={`size-3 shrink-0 ${log.colorClass}`} />
-                                <span className="truncate text-foreground/90">{log.text}</span>
+                                <Icon className={`size-3.5 shrink-0 mt-0.5 ${log.colorClass}`} />
+                                <span className="text-foreground/90 whitespace-normal break-words leading-snug">
+                                    {log.text}
+                                </span>
                             </div>
                         );
                     })}
