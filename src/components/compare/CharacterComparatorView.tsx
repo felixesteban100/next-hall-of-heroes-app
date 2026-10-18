@@ -71,6 +71,15 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
         return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
     }, [mode, entitiesA, entitiesB, entityA, entityB]);
 
+    const nemesisPairs = useMemo(() => {
+        if (mode !== "team") return [];
+        const validA = entitiesA.filter(Boolean);
+        const validB = entitiesB.filter(Boolean);
+        return validA.flatMap(a =>
+            validB.filter(b => hasNemesisLink(a, b)).map(b => ({ nameA: a.name, nameB: b.name }))
+        );
+    }, [mode, entitiesA, entitiesB]);
+
     // Radar: team avg powerstats or single
     const radar =
         mode === "team"
@@ -81,7 +90,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     const hasB = entitiesB.length > 0;
 
     const rowsBadges = [
-        { label: "Publisher", functionGroup: groupPublishers, BadgeComponent: RowGroupedBadges },
+        { label: "Publisher", functionGroup: groupPublishers, BadgeComponent: RowGroupedBadges, images: true },
         { label: "Tier", functionGroup: groupTiers, BadgeComponent: RowGroupedBadges },
         { label: "Class", functionGroup: groupClasses, BadgeComponent: RowGroupedBadges },
         { label: "Alignment", functionGroup: groupAlignments, BadgeComponent: RowGroupedBadges },
@@ -118,7 +127,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
 
                 <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 max-h-[450px] overflow-hidden" : "opacity-100 max-h-none"}`}>
                     <div className="mx-auto space-y-4 mb-4">
-                        <MatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA ?? null} teamB={teamB ?? null} entitiesA={entitiesA} entitiesB={entitiesB} />
+                        <MatchVerdict nameA={entityAName} nameB={entityBName} isNemesis={isNemesis} teamA={teamA ?? null} teamB={teamB ?? null} entitiesA={entitiesA} entitiesB={entitiesB} nemesisPairs={nemesisPairs} />
                         <BattlePanel
                             radar={radar}
                             powerEstimateA={teamA.powerEstimate}
@@ -209,6 +218,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 groupA={row.functionGroup(entitiesA)}
                                 groupB={row.functionGroup(entitiesB)}
                                 showNames={mode === "team"}
+                                images={row.images}
                             />
                         ))}
 

@@ -8,10 +8,10 @@ export function ViewTransitionListener() {
 
     useEffect(() => {
         const handlePopState = () => {
+            if (document.visibilityState !== "visible") return;
+
             startTransition(() => {
                 router.refresh();
-
-                // Slight frame delay to give Next.js time to commit the un-cached DOM
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => { });
                 });

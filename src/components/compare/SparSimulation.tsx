@@ -38,9 +38,9 @@ export default function SparSimulation({ result, nameA, nameB }: {
                 <div className="h-full bg-secondary transition-all" style={{ width: `${bPct}%` }} />
             </div>
 
-            <p className="text-[10px] text-center text-muted-foreground">
+            {/* <p className="text-[10px] text-center text-muted-foreground">
                 Toy model from overall scores — not canon. {nameA} win rate ≈ {Math.round(aPct)}%
-            </p>
+            </p> */}
         </div>
     )
 }

@@ -61,7 +61,7 @@ export function getCharacterRaceIcon(race: string) {
     }
 }
 
-export function getRandom10Ids(ids: number[], count = 10) {
+export function getRandomIds(ids: number[], count = 12) {
     const temp = [...ids];
     const result = [];
     for (let i = 0; i < count; i++) {

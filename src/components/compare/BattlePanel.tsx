@@ -318,26 +318,38 @@ export function BattlePanel({
                 {result && seed > 0 ? (
                     <SparSimulation result={result} nameA={nameA} nameB={nameB} />
                 ) : (
-                    <div className="border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
+                    <div className="h-full border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
                         <Swords className="size-6 animate-bounce text-primary" />
                         <p className="text-xs font-medium">Ready to simulate combat. Click "Replay Battle" above to begin!</p>
                     </div>
                 )}
 
-                <LiveTeamHealthBars
-                    healthA={healthA}
-                    healthB={healthB}
-                    nameA={nameA}
-                    nameB={nameB}
-                />
 
-                <LiveRosterStatus
-                    rosterA={rosterA}
-                    rosterB={rosterB}
-                />
+                {result && seed > 0 ? (
+                    <>
+                        <LiveTeamHealthBars
+                            healthA={healthA}
+                            healthB={healthB}
+                            nameA={nameA}
+                            nameB={nameB}
+                        />
+
+                        <LiveRosterStatus
+                            rosterA={rosterA}
+                            rosterB={rosterB}
+                        />
+                    </>
+                ) : (
+                    <div className="h-full border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
+                        <Swords className="size-6 animate-bounce text-secondary" />
+                        <p className="text-xs font-medium">Ready to simulate combat. Click "Replay Battle" above to begin!</p>
+                    </div>
+                )}
+
+
 
                 {seed === 0 ? (
-                    <div className="border border-dashed border-muted-foreground/30 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
+                    <div className="h-full border border-dashed border-muted-foreground/30 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
                         <Swords className="size-6 text-muted-foreground/60" />
                         <p className="text-xs font-medium">Engagement logs will appear here once the battle starts.</p>
                     </div>
