@@ -8,7 +8,6 @@ import { CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL } from 
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { getRandom10Ids } from "@/lib/character_utils";
 import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;

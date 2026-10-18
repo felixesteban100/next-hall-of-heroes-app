@@ -60,7 +60,7 @@ export default function MatchVerdict({
 
     return (
         /* ${isNemesis
-            ? "border-amber-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
+            ? "border-red-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-red-500/20"
             : "border-muted-foreground/15"
             } */
         <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 bg-card/80 backdrop-blur-sm shadow-sm `}>
@@ -90,12 +90,12 @@ export default function MatchVerdict({
                     {/* Active Nemesis Tag if applicable */}
                     {isNemesis && (
                         <div className="flex flex-col items-center gap-1 mt-2">
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/8">
-                                <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
-                                <span className="text-xs font-semibold tracking-wide text-amber-600 dark:text-amber-400">
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/30 bg-red-500/8">
+                                <Zap className="h-3 w-3 text-red-500 fill-red-500" />
+                                <span className="text-xs font-semibold tracking-wide text-red-600 dark:text-red-400">
                                     Rival matchup
                                 </span>
-                                <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
+                                <Zap className="h-3 w-3 text-red-500 fill-red-500" />
                             </div>
                             {nemesisPairs.map(p => (
                                 <span key={`${p.nameA}-${p.nameB}`} className="text-[11px] text-muted-foreground">
@@ -238,7 +238,7 @@ function EdgeBadge({
         return (
             <div className="flex flex-col items-center gap-1">
                 <span className="rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-2.5 py-1 flex items-center gap-1">
-                    {isNemesis && <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />}
+                    {isNemesis && <Zap className="w-3 h-3 text-red-400 fill-red-400" />}
                     Toss-up
                 </span>
                 <span className="text-[9px] tabular-nums text-muted-foreground">
@@ -256,7 +256,7 @@ function EdgeBadge({
                 className={`rounded-full text-[10px] font-bold px-2.5 py-1 flex items-center gap-1 ${aWins ? "bg-primary/15 text-primary" : "bg-secondary/15 text-secondary"
                     }`}
             >
-                {isNemesis && <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />}
+                {isNemesis && <Zap className="w-3 h-3 text-red-400 fill-red-400" />}
                 {aWins ? "A edge" : "B edge"}
             </span>
             <span className="text-[9px] tabular-nums text-muted-foreground">

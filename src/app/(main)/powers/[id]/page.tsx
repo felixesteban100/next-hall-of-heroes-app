@@ -9,7 +9,6 @@ import { CharacterAccordionList } from "@/components/characters/CharacterAccordi
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { Character } from "@/types";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { getRandom10Ids } from "@/lib/character_utils";
 import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;
