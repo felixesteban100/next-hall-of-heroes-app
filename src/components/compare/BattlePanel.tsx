@@ -346,20 +346,20 @@ export function BattlePanel({
                 } else {
                     defender.isAlive = false;
                     const randomPhrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
-                    const attackDesc = powerTitle && powerTitle !== moveName ? `[${powerTitle}: ${moveName}]` : `[${moveName}]`;
 
                     script.push({
                         targetTeam: defenderTeamTag,
+                        targetName: defender.name, // 🌟 REQUIRED so interval updates roster state!
+                        isKO: true,                // 🌟 REQUIRED to trigger live health/roster drops!
                         log: {
                             id: timeStep++,
-                            type: "attack",
+                            type: "ko",            // 🌟 Set to "ko" so it uses orange styling and custom display
                             attackerName: attacker.name,
                             defenderName: defender.name,
                             powerName: powerTitle || moveName,
-                            actionName: powerTitle && powerTitle !== moveName ? moveName : undefined,
-                            text: `executed [${powerTitle ? `${powerTitle}:${moveName}` : moveName}] against ${defender.name}`,
-                            icon: logIcon,
-                            colorClass: isAttackerA ? "text-primary" : "text-secondary",
+                            text: `${defender.name} ${randomPhrase}`,
+                            icon: Skull,
+                            colorClass: "text-orange-500 font-bold",
                         }
                     });
                 }
@@ -511,19 +511,19 @@ export function BattlePanel({
                             </DialogTrigger>
 
                             {/* Enlarged Desktop Dialog */}
-                            <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[85vh] flex flex-col gap-4 overflow-hidden p-6">
+                            <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[90vh] flex flex-col gap-4 overflow-hidden p-6">
                                 <DialogHeader>
                                     <DialogTitle className="text-base font-bold uppercase tracking-wider flex items-center justify-between gap-2">
                                         <span className="flex gap-2"><Swords className="size-5 text-primary" /> Live Engagement Overview ({nameA} vs {nameB})</span>
                                         <ButtonStartBattle onClick={() => setSeed((s) => s + 1)} isPlaying={isPlaying} />
                                     </DialogTitle>
                                 </DialogHeader>
-                                <CombatView isDialog={true} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} />
+                                <CombatView isDialog={true} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
                             </DialogContent>
                         </Dialog>
                     </div>
                 </div>
-                <CombatView isDialog={false} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} />
+                <CombatView isDialog={false} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
             </div>
         </div>
     );
@@ -550,9 +550,11 @@ type CombatViewProps = {
     powerEstimateB: number,
     seed: number;
     isDialog: boolean,
+    teamAChars: CharacterWithJoinTeamUniversePowerEnemies[],
+    teamBChars: CharacterWithJoinTeamUniversePowerEnemies[]
 }
 
-function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA, rosterB, visibleLogs, isMounted, powerEstimateA, powerEstimateB, seed }: CombatViewProps) {
+function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA, rosterB, visibleLogs, isMounted, powerEstimateA, powerEstimateB, seed, teamAChars, teamBChars }: CombatViewProps) {
     return result && seed > 0 ? (
         isDialog ?
             <div className="flex flex-col gap-6 overflow-y-auto pr-2">
@@ -565,19 +567,35 @@ function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA,
                 <LiveRosterStatus
                     rosterA={rosterA}
                     rosterB={rosterB}
+                    teamAChars={teamAChars}
+                    teamBChars={teamBChars}
+                    nameA={nameA}
+                    nameB={nameB}
+                    latestLog={visibleLogs[visibleLogs.length - 1]}
+                    isDialog={isDialog}
+
                 />
-                <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[260px]" />
+                <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[220px]" />
             </div>
             :
             <>
                 <SparSimulation result={result} nameA={nameA} nameB={nameB} />
                 <LiveTeamHealthBars healthA={healthA} healthB={healthB} nameA={nameA} nameB={nameB} />
-                <LiveRosterStatus rosterA={rosterA} rosterB={rosterB} />
+                <LiveRosterStatus
+                    rosterA={rosterA}
+                    rosterB={rosterB}
+                    teamAChars={teamAChars}
+                    teamBChars={teamBChars}
+                    nameA={nameA}
+                    nameB={nameB}
+                    latestLog={visibleLogs[visibleLogs.length - 1]}
+                    isDialog={isDialog}
+                />
                 <BattleTimelineLogs logs={visibleLogs} />
                 <TacticalSummary isMounted={isMounted} nameA={nameA} nameB={nameB} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} />
             </>
     ) : (
-        <div className="h-full border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20">
+        <div className={`${isDialog ? "h-[75vh]" : "h-full"} border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20`}>
             <div className="flex gap-2">
                 <Swords className="size-6 animate-bounce text-primary" />
                 <Swords className="size-6 animate-bounce text-secondary" />

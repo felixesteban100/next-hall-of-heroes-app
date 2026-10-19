@@ -61,9 +61,9 @@ export function TeamProfileSlot({
                                 {(mvp === e.name) && (
                                     <div
                                         title="Team MVP"
-                                        className="absolute -top-1.5 -right-1.5 bg-yellow-300 text-black p-0.5 rounded-full shadow-md border border-background "
+                                        className="absolute -top-1.5 -right-1.5 bg-yellow-300 text-black p-0.5 rounded-full shadow-md border border-background animate-pulse-gold"
                                     >
-                                        <Crown className="size-3 fill-black" /> {/* or <Star className="size-3 fill-black" /> */}
+                                        <Crown className="size-3 fill-black " /> {/* or <Star className="size-3 fill-black" /> */}
                                     </div>
                                 )}
                             </ViewTransition>
