@@ -99,7 +99,9 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     ]
 
     const rowsPills = [
-        { label: "Special Powers", functionGroup: groupPowers, BadgeComponent: RowGroupedPills },
+        {
+            label: "Special Powers", functionGroup: groupPowers, BadgeComponent: RowGroupedPills
+        },
         { label: "Weaknesses", functionGroup: groupWeaknesses, BadgeComponent: RowGroupedPills },
         { label: "Teams & Affiliations", functionGroup: groupTeams, BadgeComponent: RowGroupedPills },
         { label: "Primary Enemies", functionGroup: groupEnemies, BadgeComponent: RowGroupedPills },

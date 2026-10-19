@@ -1,3 +1,4 @@
+import { PowerAction } from "@/types";
 import { collectionCharacters, collectionPowers, collectionTeams, collectionUniverses } from "./mongodb";
 import { AnyBulkWriteOperation } from "mongodb";
 
@@ -138,7 +139,10 @@ export async function seedTeamLeadersHybrid(leaderMap: Record<string, string[]>)
     }
 }
 
-export async function seedPowers(items: SeedItem[]) {
+export async function seedPowers(items: {
+    name: string;
+    data: Record<string, unknown>;
+}[]) {
     try {
         console.log("Starting powers seed...");
 
@@ -306,10 +310,45 @@ export async function seedPowersCollectionScoreAndTier(data: { name: string, tie
     return seedPowers(
         data.map(({ name, score, tier }) => ({
             name,
-            slug: "",
             data: {
                 tier,
                 score
+            }
+        }))
+    )
+}
+
+export async function seedPowersCollectionNewFields(data: { name: string, id: number, activationType: string, range: string, targetType: string, duration: string }[]) {
+    return seedPowers(
+        data.map(({ name, id, activationType, duration, range, targetType }) => ({
+            name,
+            id,
+            data: {
+                activationType, duration, range, targetType
+            }
+        }))
+    )
+}
+
+export async function seedPowersCollectionActions(data: { [key: string]: any, name: string, id: number, actions: PowerAction[] }[]) {
+    return seedPowers(
+        data.map(({ name, id, actions }) => ({
+            name,
+            id,
+            data: {
+                actions
+            }
+        }))
+    )
+}
+
+export async function seedPowersCollectionCombatRole(data: { [key: string]: any, name: string, id: number, combatRole: string }[]) {
+    return seedPowers(
+        data.map(({ name, id, combatRole }) => ({
+            name,
+            id,
+            data: {
+                combatRole
             }
         }))
     )

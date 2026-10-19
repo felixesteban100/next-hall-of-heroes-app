@@ -18,17 +18,17 @@ export default function SparSimulation({ result, nameA, nameB }: {
     return (
         <div>
             <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
+                <div className='flex items-center gap-2'>
                     <p className="text-lg font-black text-primary">{result.aWins}</p>
                     <p className="text-[10px] text-muted-foreground truncate">{nameA}</p>
                 </div>
                 <div>
-                    <p className="text-lg font-black text-muted-foreground">{result.draws}</p>
-                    <p className="text-[10px] text-muted-foreground">Draws / Toss-ups</p>
+                    <p className="text-sm font-black text-muted-foreground">{result.draws}</p>
+                    <p className="text-[8px] text-muted-foreground">Draws / Toss-ups</p>
                 </div>
-                <div>
-                    <p className="text-lg font-black text-secondary">{result.bWins}</p>
+                <div className='flex justify-end items-center gap-2'>
                     <p className="text-[10px] text-muted-foreground truncate">{nameB}</p>
+                    <p className="text-lg font-black text-secondary">{result.bWins}</p>
                 </div>
             </div>
 

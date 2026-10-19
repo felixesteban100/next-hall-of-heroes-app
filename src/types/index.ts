@@ -105,17 +105,38 @@ export type Team = {
     enemyTeamIds?: number[];
 }
 
+export type PowerAction = {
+    name: string;
+    description: string;
+    activationType?: "Instant" | "Action" | "Passive" | "Channeled";
+    range?: "Self" | "Touch" | "Melee" | "Ranged" | "Global";
+    targetType?: "Self" | "Single Target" | "Area of Effect (AoE)" | "Self / AoE";
+};
+
+export type PowerRole =
+    | "Offensive"      // Direct damage, attacks, and destructive blasts
+    | "Defensive"      // Shields, barriers, durability, and damage mitigation
+    | "Control"        // Crowd control, stuns, gravity/movement restriction, psychic locks
+    | "Utility"        // Movement, sensing, crafting, healing, stealth, and non-combat support
+    | "Hybrid / Versatile"; // Powers that shift equally between multiple roles (e.g., Energy Manipulation, Magic)
+
 export type Power = {
     _id: string;
     id: number;
-    name: string,
-    value: string,
-    img: string,
-    description: string,
-    score: number
-    tier: number
-    logo: string
-}
+    name: string;
+    value: string;
+    img: string;
+    description: string;
+    score: number;
+    tier: number;
+    logo: string;
+    activationType: "Instant" | "Action" | "Passive" | "Channeled";
+    range: "Self" | "Touch" | "Melee" | "Ranged" | "Melee / Ranged" | "Global";
+    targetType: "Self" | "Single Target" | "Area of Effect (AoE)" | "Single Target / AoE" | "Self / AoE";
+    duration: "Instantaneous" | "Timed" | "Persistent";
+    actions?: PowerAction[]; // Optional list of specific moves
+    combatRole: PowerRole
+};
 
 export interface FallbackItem {
     name: string;

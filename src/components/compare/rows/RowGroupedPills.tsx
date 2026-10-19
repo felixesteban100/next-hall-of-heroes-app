@@ -8,7 +8,7 @@ function GroupBlock({
     variant,
     sharedLabel = "Shared",
     pillClass = "",
-    showNames
+    showNames,
 }: {
     group: GroupedItems;
     variant: "primary" | "secondary";
@@ -83,14 +83,14 @@ export function RowGroupedPills({
     groupB,
     hasA,
     hasB,
-    showNames = false
+    showNames = false,
 }: {
     label: string;
     groupA: GroupedItems;
     groupB: GroupedItems;
     hasA: boolean;
     hasB: boolean;
-    showNames?: boolean
+    showNames?: boolean;
 }) {
     return (
         <Row label={label}>

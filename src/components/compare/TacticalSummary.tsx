@@ -16,7 +16,7 @@ export default function TacticalSummary({ isMounted, powerEstimateA, powerEstima
     }, [isMounted, nameA, nameB, powerEstimateA, powerEstimateB, seed]);
 
     return (
-        <div className="pt-2 border-t border-muted-foreground/10 flex flex-col gap-1">
+        <div className="pt-2 flex flex-col gap-1">
             <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                 <BrainCircuit className="size-3 text-cyan-400" /> Tactical Insight
             </div>

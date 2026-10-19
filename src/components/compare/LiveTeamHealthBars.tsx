@@ -2,7 +2,7 @@
 
 export default function LiveTeamHealthBars({ healthA, nameA, healthB, nameB }: { healthA: number, nameA: string, healthB: number, nameB: string }) {
     return (
-        <div className="grid grid-cols-2 gap-3 bg-muted/20 p-2.5 rounded-lg border border-muted-foreground/10">
+        <div className="grid grid-cols-2 gap-3 bg-muted/20 ">
             <div className="space-y-1">
                 <div className="flex justify-between text-[10px] font-bold">
                     <span className="text-primary truncate">{nameA} HP</span>

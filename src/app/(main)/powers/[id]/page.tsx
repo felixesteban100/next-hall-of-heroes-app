@@ -4,7 +4,7 @@ import { ViewTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
-import { Zap } from "lucide-react";
+import { Clock, Crosshair, ShieldAlert, Sparkles, Target, Zap } from "lucide-react";
 import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { Character } from "@/types";
@@ -92,7 +92,6 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
     return (
         <div className="pb-8 space-y-8 mt-4">
             {/* Header */}
-            {/* this one doesn't look good on mobile it looks shinked */}
             <div className="flex flex-col md:flex-row gap-6 items-center w-full">
                 <ViewTransition name={`power-${power.id}`}>
                     <Image
@@ -106,20 +105,59 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                 </ViewTransition>
 
                 <div className="flex-1 space-y-3 w-full">
-                    {/* Tier badge */}
-                    <Badge className={`${tierColors.bg} ${tierColors.foreground}`}>
-                        <TierIcon size={12} />
-                        {POWER_TIER[tierKey]}{" "}
-                        #{tierKey}
-                    </Badge>
+                    {/* Tier and Combat Role Badges */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <Badge className={`${tierColors.bg} ${tierColors.foreground}`}>
+                            <TierIcon size={12} />
+                            {POWER_TIER[tierKey]} #{tierKey}
+                        </Badge>
+
+                        {power.combatRole && (
+                            <Badge variant="secondary" className="gap-1 font-medium">
+                                <ShieldAlert size={12} />
+                                {power.combatRole}
+                            </Badge>
+                        )}
+                    </div>
 
                     <h1 className="text-3xl font-bold">{power.name}</h1>
                     <p className="text-sm text-muted-foreground">#{power.id}</p>
                     <p className="text-muted-foreground">{power.description || "No description available."}</p>
 
+                    {/* New Attributes Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                        <div className="bg-muted/40 border rounded-lg p-2.5 text-xs flex flex-col justify-between">
+                            <span className="text-muted-foreground flex items-center gap-1 font-medium">
+                                <Sparkles size={12} className="text-primary" /> Activation
+                            </span>
+                            <span className="font-semibold text-sm mt-1">{power.activationType || "—"}</span>
+                        </div>
+
+                        <div className="bg-muted/40 border rounded-lg p-2.5 text-xs flex flex-col justify-between">
+                            <span className="text-muted-foreground flex items-center gap-1 font-medium">
+                                <Crosshair size={12} className="text-primary" /> Range
+                            </span>
+                            <span className="font-semibold text-sm mt-1">{power.range || "—"}</span>
+                        </div>
+
+                        <div className="bg-muted/40 border rounded-lg p-2.5 text-xs flex flex-col justify-between">
+                            <span className="text-muted-foreground flex items-center gap-1 font-medium">
+                                <Target size={12} className="text-primary" /> Target
+                            </span>
+                            <span className="font-semibold text-sm mt-1">{power.targetType || "—"}</span>
+                        </div>
+
+                        <div className="bg-muted/40 border rounded-lg p-2.5 text-xs flex flex-col justify-between">
+                            <span className="text-muted-foreground flex items-center gap-1 font-medium">
+                                <Clock size={12} className="text-primary" /> Duration
+                            </span>
+                            <span className="font-semibold text-sm mt-1">{power.duration || "—"}</span>
+                        </div>
+                    </div>
+
                     {/* Score bar */}
                     {normalizedScore !== null && (
-                        <div className="space-y-1 ">
+                        <div className="space-y-1 pt-1">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="flex items-center gap-1 text-muted-foreground">
                                     <Zap size={14} /> Power score
@@ -150,6 +188,38 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     )}
                 </div>
             </div>
+
+            {/* Power Actions Section (Only renders if actions exist) */}
+            {power.actions && power.actions.length > 0 && (
+                <div className="space-y-4 pt-2">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <span>⚡</span> Power Actions & Techniques ({power.actions.length})
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {power.actions.map((action, index) => (
+                            <div key={index} className="bg-muted/30 border rounded-xl p-4 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-semibold text-sm text-primary">{action.name}</h4>
+                                    {action.activationType && (
+                                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                                            {action.activationType}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    {action.description}
+                                </p>
+                                {(action.range || action.targetType) && (
+                                    <div className="flex gap-3 text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                                        {action.range && <span>Range: <strong>{action.range}</strong></span>}
+                                        {action.targetType && <span>Target: <strong>{action.targetType}</strong></span>}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Members */}
             <div className="space-y-4">

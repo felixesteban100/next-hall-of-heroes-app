@@ -434,6 +434,7 @@ export type SharedItem = {
 export type GroupedItems = {
     shared: SharedItem[];
     byCharacter: { id: number; name: string; items: string[] }[];
+    highlightItem?: boolean
 };
 /**
  * itemsForEntity: returns the string list for one character
