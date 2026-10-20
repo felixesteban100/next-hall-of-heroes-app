@@ -522,9 +522,9 @@ export function BattlePanel({
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className=" gap-4">
             {/* Left column: Stats radar + Team synergy + Round distribution */}
-            <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-3 justify-between">
+            {/* <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-3 justify-between">
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                         Stats radar
@@ -546,7 +546,7 @@ export function BattlePanel({
                     nameA={nameA}
                     nameB={nameB}
                 />
-            </div>
+            </div> */}
 
             {/* Right column: Combat simulation */}
             <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-4">
@@ -614,7 +614,10 @@ export function BattlePanel({
                             </Dialog>
                         </div>
                     </div>
+
                 </div>
+
+
 
                 <CombatView
                     isDialog={false}
@@ -632,6 +635,14 @@ export function BattlePanel({
                     seed={seed}
                     teamAChars={teamAChars}
                     teamBChars={teamBChars}
+                />
+
+                <RoundDistributionChart
+                    aWins={result?.aWins}
+                    bWins={result?.bWins}
+                    draws={result?.draws}
+                    nameA={nameA}
+                    nameB={nameB}
                 />
             </div>
         </div>

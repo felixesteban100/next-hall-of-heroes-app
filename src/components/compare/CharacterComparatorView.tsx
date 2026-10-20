@@ -16,6 +16,8 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { MatchPredictionOverlay } from "./MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
+import { TeamTacticalOverview } from "./TeamTacticalOverview";
+import { StatsRadar } from "./StatRadar";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info";
@@ -258,6 +260,29 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     { label: "Overall", key: "overall" },
                                 ]}
                             />
+                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between">
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                                        Stats radar
+                                    </h3>
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                                </div>
+
+                                <TeamTacticalOverview
+                                    entitiesA={entitiesA}
+                                    entitiesB={entitiesB}
+                                    nameA={entityAName}
+                                    nameB={entityBName}
+                                />
+
+                                {/* <RoundDistributionChart
+                                    aWins={result?.aWins}
+                                    bWins={result?.bWins}
+                                    draws={result?.draws}
+                                    nameA={nameA}
+                                    nameB={nameB}
+                                /> */}
+                            </div>
                         </div>
                     )}
 

@@ -26,7 +26,7 @@ export function RoundDistributionChart({
     const clutchB = bWins - decisiveB;
 
     return (
-        <div className="pt-3 border-t border-muted-foreground/10 space-y-2.5">
+        <div className="pt-3 space-y-2.5">
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 <span className="flex items-center gap-1">
                     <Trophy className="size-3 text-amber-400" /> Round Breakdown (100 Matches)
