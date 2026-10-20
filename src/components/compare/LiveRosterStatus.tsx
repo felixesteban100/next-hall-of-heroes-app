@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FighterState, Log } from "./BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
-import { Crown } from "lucide-react";
+import { Crown, Swords } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type Props = {
@@ -59,22 +59,19 @@ export default function LiveRosterStatus({
         const border = variant === "primary" ? "border-primary" : "border-secondary";
         const nameColor = variant === "primary" ? "text-primary" : "text-secondary";
 
-        // Build the team-aware box shadow style using CSS variables
-        const activeStyle = variant === "primary"
-            ? {
-                animation: "combat-surge 1.2s infinite ease-in-out",
-                boxShadow: "0 0 14px 3px hsl(var(--primary) / 0.7), inset 0 0 8px hsl(var(--primary) / 0.5)",
-            }
-            : {
-                animation: "combat-surge 1.2s infinite ease-in-out",
-                boxShadow: "0 0 14px 3px hsl(var(--secondary) / 0.7), inset 0 0 8px hsl(var(--secondary) / 0.5)",
-            };
+        const activeRing = variant === "primary"
+            ? "ring-2 ring-offset-1 ring-primary shadow-lg shadow-primary/50 scale-110 z-20"
+            : "ring-2 ring-offset-1 ring-secondary shadow-lg shadow-secondary/50 scale-110 z-20";
 
         return (
             <div className={`flex flex-wrap ${gapSize} items-center justify-center`}>
                 {fighters.map((fighter, idx) => {
                     const isActive = fighter.name === activeAttacker || fighter.name === activeDefender;
                     const isMvp = fighter.name === teamMvp;
+
+                    // Match conditions for specific log animations
+                    const isDefending = latestLog?.type === "defend" && fighter.name === latestLog?.defenderName;
+                    const isReviving = latestLog?.type === "revive" && fighter.name === latestLog?.defenderName;
 
                     return (
                         <div
@@ -83,14 +80,9 @@ export default function LiveRosterStatus({
                                 }`}
                         >
                             <div
-                                className={`relative ${avatarSize} rounded-md border-2 bg-card shrink-0 overflow-visible transition-all duration-300 ease-out ${isActive ? `z-20 ${border}` : `${border} shadow-sm`}`}
-                                style={
-                                    !fighter.isAlive
-                                        ? { animation: "shake 0.4s ease-in-out both" }
-                                        : isActive
-                                            ? activeStyle
-                                            : undefined
-                                }
+                                className={`relative ${avatarSize} rounded-md border-2 ${border} bg-card shrink-0 overflow-visible transition-all duration-300 ease-out ${isActive ? activeRing : "shadow-sm"
+                                    }`}
+                                style={!fighter.isAlive ? { animation: "shake 0.4s ease-in-out both" } : undefined}
                                 title={fighter.name}
                             >
                                 <Image
@@ -111,13 +103,50 @@ export default function LiveRosterStatus({
                                     </div>
                                 )}
 
-                                {/* Healing Ripple Effect */}
-                                {latestLog?.type === "heal" && isActive && fighter.isAlive && (
-                                    <div className="absolute inset-0 rounded-md border-2 border-emerald-400 animate-ping opacity-75 pointer-events-none z-10" />
+                                {/* 1. Healing Glow & Ripple Effect */}
+                                {/* 1. Healing Glow & Ripple Effect */}
+                                {latestLog &&
+                                    (
+                                        ((latestLog.type && ["heal", "healing", "buff"].includes(latestLog.type.toLowerCase())) ||
+                                            (latestLog.actionName && ["heal", "healing", "buff"].includes(latestLog.actionName.toLowerCase())) ||
+                                            (latestLog.text && latestLog.text.toLowerCase().includes("heal"))) &&
+                                        !(latestLog.text?.toLowerCase().includes("regeneration") || latestLog.text?.toLowerCase().includes("regen"))
+                                    ) &&
+                                    (
+                                        fighter.name === latestLog.defenderName ||
+                                        fighter.name === latestLog.attackerName ||
+                                        fighter.name === (latestLog as any).targetName ||
+                                        fighter.name === (latestLog as any).recipientName
+                                    ) &&
+                                    fighter.isAlive && (
+                                        <>
+                                            {/* Expanding Ping Ripple Wave */}
+                                            <div className="absolute inset-0 rounded-md border-2 border-emerald-400 animate-ping opacity-75 pointer-events-none z-30" />
+                                            {/* Persistent Emerald Glow Frame */}
+                                            <div className="absolute inset-0 rounded-md border-2 border-emerald-400 bg-emerald-400/25 shadow-lg shadow-emerald-500/50 pointer-events-none z-20 animate-pulse" />
+                                        </>
+                                    )
+                                }
+
+                                {/* 2. Defensive Shield Flash Animation */}
+                                {isDefending && fighter.isAlive && (
+                                    <div className="absolute inset-0 rounded-md border-2 border-cyan-400 bg-cyan-400/30 z-30 pointer-events-none animate-shield-flash" />
+                                )}
+
+                                {/* 3. Revive Burst Animation */}
+                                {isReviving && (
+                                    <div className="absolute inset-0 rounded-md border-2 border-amber-400 bg-amber-400/40 z-30 pointer-events-none animate-revive-burst" />
+                                )}
+
+                                {/* 4. Moving Sword Attack Indicator in Corner */}
+                                {latestLog?.type === "attack" && fighter.name === activeAttacker && fighter.isAlive && (
+                                    <div className="absolute -top-2 -left-2 bg-red-600 text-white p-1 rounded-full shadow-md border border-background z-30 animate-corner-sword pointer-events-none flex items-center justify-center">
+                                        <Swords className="size-3 text-white" />
+                                    </div>
                                 )}
 
                                 {/* K.O. Skull Overlay */}
-                                {!fighter.isAlive && (
+                                {!fighter.isAlive && !isReviving && (
                                     <div className="absolute inset-0 bg-background/70 flex items-center justify-center text-[10px] sm:text-xs z-20 animate-in zoom-in-50 duration-200">
                                         💀
                                     </div>
@@ -130,6 +159,14 @@ export default function LiveRosterStatus({
                     );
                 })}
             </div>
+        );
+    };
+
+    const intrinsicRecipientCheck = (log: Log, fighterName: string): boolean => {
+        return Boolean(
+            fighterName === log.attackerName ||
+            fighterName === (log as any).targetName ||
+            fighterName === (log as any).recipientName
         );
     };
 

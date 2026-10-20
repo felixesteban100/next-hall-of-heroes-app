@@ -1,8 +1,8 @@
 // components/compare/BattlePanel.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Swords, Shield, Skull, Trophy, HeartPulse, Ghost, RefreshCw, Lock } from "lucide-react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { Swords, Shield, Skull, Trophy, HeartPulse, Ghost, RefreshCw, Lock, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { simulateSpar, computeMatchScore } from "@/lib/compare/compare_utls";
 import { RoundDistributionChart } from "./RoundDistributionChart";
 import { PointRadar, StatsRadar } from "./StatRadar";
@@ -47,8 +47,8 @@ export type Log = {
     actionName?: string;
     text: string;
     icon: any;
-    colorClass: string
-}
+    colorClass: string;
+};
 
 export type FighterState = {
     name: string;
@@ -56,6 +56,17 @@ export type FighterState = {
     isAlive: boolean;
     powers?: any[];
     hasRevived?: boolean;
+};
+
+type ScriptItem = {
+    log: Log;
+    targetTeam: "A" | "B";
+    targetName?: string;
+    isKO?: boolean;
+    isRevive?: boolean;
+    isHeal?: boolean;
+    healTeam?: "A" | "B";
+    isFinish?: boolean;
 };
 
 const ELIMINATION_PHRASES = [
@@ -80,15 +91,18 @@ export function BattlePanel({
     const [seed, setSeed] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
 
-    const [visibleLogs, setVisibleLogs] = useState<Log[]>([]);
+    // Master script and step execution pointers
+    const [combatScript, setCombatScript] = useState<ScriptItem[]>([]);
+    const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+    // Roster & health dynamic states driven by step execution
     const [rosterA, setRosterA] = useState<FighterState[]>([]);
     const [rosterB, setRosterB] = useState<FighterState[]>([]);
-
     const [dynamicHealthBonusA, setDynamicHealthBonusA] = useState(0);
     const [dynamicHealthBonusB, setDynamicHealthBonusB] = useState(0);
 
-    const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
     const result = useMemo(() => {
         if (!isMounted) return null;
@@ -110,6 +124,7 @@ export function BattlePanel({
         setIsMounted(true);
     }, []);
 
+    // Initialize Rosters
     useEffect(() => {
         if (!isMounted) return;
 
@@ -133,10 +148,12 @@ export function BattlePanel({
         setRosterB(mappedB);
         setDynamicHealthBonusA(0);
         setDynamicHealthBonusB(0);
-        setVisibleLogs([]);
+        setCombatScript([]);
+        setCurrentStepIndex(0);
+        setIsPlaying(false);
     }, [teamAChars, teamBChars, nameA, nameB, isMounted]);
 
-    // 🎬 Simulation Engine with Staggered, Battle-Long Eliminations
+    // 1. Generate Combat Script on Seed Change
     useEffect(() => {
         if (!isMounted || !result || seed === 0) return;
 
@@ -158,22 +175,6 @@ export function BattlePanel({
 
         if (initialA.length === 0 || initialB.length === 0) return;
 
-        setIsPlaying(true);
-        setVisibleLogs([]);
-        setDynamicHealthBonusA(0);
-        setDynamicHealthBonusB(0);
-
-        type ScriptItem = {
-            log: Log;
-            targetTeam: "A" | "B";
-            targetName?: string;
-            isKO?: boolean;
-            isRevive?: boolean;
-            isHeal?: boolean;
-            healTeam?: "A" | "B";
-            isFinish?: boolean;
-        };
-
         const script: ScriptItem[] = [];
         let timeStep = 1;
 
@@ -191,7 +192,6 @@ export function BattlePanel({
             return fighter.powers.filter((p: any) => p && !p.isFallback && p.combatRole === role);
         };
 
-        // Phase 1: Fight rounds (Escalate loop iterations based on roster size)
         let roundNum = 1;
         const maxRounds = Math.max(35, (tempA.length + tempB.length) * 3);
 
@@ -201,13 +201,10 @@ export function BattlePanel({
 
             if (activeTempA.length === 0 || activeTempB.length === 0) break;
 
-            // 🌟 Use losingActive to check if the losing team is completely wiped out
             const losingActive = isTeamAWinner ? activeTempB : activeTempA;
             if (losingActive.length === 0) break;
 
             const isAttackerA = Math.random() < (isTeamAWinner ? 0.65 : 0.35);
-
-            // 🌟 Use isAttackerWinnerTeam to determine if the attacker belongs to the winning team
             const isAttackerWinnerTeam = (isAttackerA && isTeamAWinner) || (!isAttackerA && !isTeamAWinner);
 
             const attackerTeam = isAttackerA ? tempA : tempB;
@@ -222,7 +219,7 @@ export function BattlePanel({
             const attacker = activeAttackers[Math.floor(Math.random() * activeAttackers.length)];
             const defender = activeDefenders[Math.floor(Math.random() * activeDefenders.length)];
 
-            // 1. Healing / Regeneration Check (Restricted primarily to dominant/winning attackers)
+            // Healing Check
             const utilityPowers = getPowersByRole(attacker, "Utility");
             const hasHealingTrait = utilityPowers.some((p: any) => {
                 const txt = `${p.name || ""} ${p.description || ""}`.toLowerCase();
@@ -237,10 +234,13 @@ export function BattlePanel({
 
                 script.push({
                     targetTeam: isAttackerA ? "A" : "B",
+                    isHeal: true,
+                    healTeam: isAttackerA ? "A" : "B",
                     log: {
                         id: timeStep++,
                         type: "heal",
                         attackerName: attacker.name,
+                        defenderName: attacker.name,
                         powerName: healPower.name,
                         text: `${attacker.name} activated [${healPower.name}], restoring vital health to team ${isAttackerA ? nameA : nameB}!`,
                         icon: HeartPulse,
@@ -251,14 +251,14 @@ export function BattlePanel({
                 continue;
             }
 
-            // 2. Power Move Execution
+            // 2. Power Move Execution (Strictly Offensive / Control / Hybrid only)
             const strikingPowers = [
                 ...getPowersByRole(attacker, "Offensive"),
                 ...getPowersByRole(attacker, "Control"),
                 ...getPowersByRole(attacker, "Hybrid / Versatile")
             ];
 
-            const fallbackPowers = attacker.powers?.filter((p: any) => p && !p.isFallback && p.name) ?? [];
+            const fallbackPowers = attacker.powers?.filter((p: any) => p && !p.isFallback && p.name && p.combatRole !== "Defensive" && p.combatRole !== "Utility") ?? [];
             const poolToUse = strikingPowers.length > 0 ? strikingPowers : fallbackPowers;
 
             let moveName = "Direct Strike";
@@ -281,15 +281,11 @@ export function BattlePanel({
                 }
             }
 
-            // 3. Defensive Mitigation Check
+            // Defensive Mitigation
             const isDefenderWinnerTeam = (defenderTeamTag === winningTeamTag);
-            const defensivePowers = [
-                ...getPowersByRole(defender, "Defensive"),
-                ...getPowersByRole(defender, "Utility")
-            ];
+            const defensivePowers = [...getPowersByRole(defender, "Defensive"), ...getPowersByRole(defender, "Utility")];
 
-            const mitigationChance = isDefenderWinnerTeam ? 0.35 : 0.08;
-            if (defensivePowers.length > 0 && Math.random() < mitigationChance) {
+            if (defensivePowers.length > 0 && Math.random() < (isDefenderWinnerTeam ? 0.35 : 0.08)) {
                 const defPower = defensivePowers[Math.floor(Math.random() * defensivePowers.length)];
                 script.push({
                     targetTeam: defenderTeamTag,
@@ -308,20 +304,14 @@ export function BattlePanel({
                 continue;
             }
 
-            // 4. Progressive Knockout Evaluation paired with Attacking Action
+            // Knockout Evaluation
             const powerDiff = attacker.overall - defender.overall;
             const baseKoThreshold = isDefenderWinnerTeam ? 0.12 : 0.40;
             const koChance = powerDiff >= 0 ? baseKoThreshold + 0.18 : baseKoThreshold;
-
             const canEliminate = !isDefenderWinnerTeam || activeDefenders.length > 1;
 
             if (Math.random() < koChance && canEliminate) {
-                const revivalPowers = [
-                    ...getPowersByRole(defender, "Defensive"),
-                    ...getPowersByRole(defender, "Utility"),
-                    ...getPowersByRole(defender, "Hybrid / Versatile")
-                ];
-
+                const revivalPowers = [...getPowersByRole(defender, "Defensive"), ...getPowersByRole(defender, "Utility"), ...getPowersByRole(defender, "Hybrid / Versatile")];
                 const revivalPower = revivalPowers.find((p: any) => {
                     const txt = `${p.name || ""} ${p.description || ""}`.toLowerCase();
                     return txt.includes("immortal") || txt.includes("resurrect") || txt.includes("healing factor") || txt.includes("regeneration") || txt.includes("revive") || txt.includes("indestructible");
@@ -349,11 +339,11 @@ export function BattlePanel({
 
                     script.push({
                         targetTeam: defenderTeamTag,
-                        targetName: defender.name, // 🌟 REQUIRED so interval updates roster state!
-                        isKO: true,                // 🌟 REQUIRED to trigger live health/roster drops!
+                        targetName: defender.name,
+                        isKO: true,
                         log: {
                             id: timeStep++,
-                            type: "ko",            // 🌟 Set to "ko" so it uses orange styling and custom display
+                            type: "ko",
                             attackerName: attacker.name,
                             defenderName: defender.name,
                             powerName: powerTitle || moveName,
@@ -364,7 +354,6 @@ export function BattlePanel({
                     });
                 }
             } else {
-                // Regular combat strike log
                 const moveDesc = powerTitle && powerTitle !== moveName ? `[${powerTitle}: ${moveName}]` : `[${moveName}]`;
                 script.push({
                     targetTeam: defenderTeamTag,
@@ -381,37 +370,30 @@ export function BattlePanel({
                     }
                 });
             }
-
             roundNum++;
         }
 
-        // Phase 2: Dynamic Team Finish (No more bulk listing of individual K.O.s)
+        // Final Rout & Banner
         const losingTeamFinal = isTeamAWinner ? tempB : tempA;
         const remainingLosingFighters = losingTeamFinal.filter(c => c.isAlive);
 
         if (remainingLosingFighters.length > 0) {
-            remainingLosingFighters.forEach(fighter => {
-                fighter.isAlive = false;
-            });
-
-            const loserName = isTeamAWinner ? nameB : nameA;
+            remainingLosingFighters.forEach(fighter => { fighter.isAlive = false; });
             script.push({
                 targetTeam: losingTeamTag,
                 isKO: true,
                 log: {
                     id: timeStep++,
                     type: "rout",
-                    text: `${loserName}'s remaining line fell under overwhelming pressure as ${winnerName} closed the engagement!`,
+                    text: `${isTeamAWinner ? nameB : nameA}'s remaining line fell under overwhelming pressure as ${winnerName} closed the engagement!`,
                     icon: Skull,
                     colorClass: "text-orange-500 font-bold",
                 }
             });
         }
 
-        // Phase 3: Final Banner
         const diff = Math.abs(powerEstimateA - powerEstimateB);
         const winType = diff > 15 ? "Decisive Wipeout" : "Hard-Fought Victory";
-
         script.push({
             targetTeam: losingTeamTag,
             isFinish: true,
@@ -424,44 +406,105 @@ export function BattlePanel({
             }
         });
 
+        // Set initial state for step 0
+        setCombatScript(script);
+        setCurrentStepIndex(-1);
         setRosterA(initialA);
         setRosterB(initialB);
-
-        let currentIndex = 0;
-        const interval = setInterval(() => {
-            if (currentIndex < script.length) {
-                const step = script[currentIndex];
-                setVisibleLogs((prev) => [...prev, step.log]);
-
-                if (step.isKO && step.targetName) {
-                    if (step.targetTeam === "A") {
-                        setRosterA(prev => prev.map(c => c.name === step.targetName ? { ...c, isAlive: false } : c));
-                    } else {
-                        setRosterB(prev => prev.map(c => c.name === step.targetName ? { ...c, isAlive: false } : c));
-                    }
-                }
-
-                if (step.isHeal && step.healTeam) {
-                    if (step.healTeam === "A") {
-                        setDynamicHealthBonusA(prev => Math.min(30, prev + 15));
-                    } else {
-                        setDynamicHealthBonusB(prev => Math.min(30, prev + 15));
-                    }
-                }
-
-                if (step.isFinish) {
-                    setIsPlaying(false);
-                }
-
-                currentIndex++;
-            } else {
-                clearInterval(interval);
-                setIsPlaying(false);
-            }
-        }, 1400);
-
-        return () => clearInterval(interval);
+        setDynamicHealthBonusA(0);
+        setDynamicHealthBonusB(0);
+        setIsPlaying(false);
     }, [seed, isMounted]);
+
+    // 2. Re-calculate Roster & Health whenever currentStepIndex updates
+    useEffect(() => {
+        if (combatScript.length === 0) return;
+
+        const initialA = (teamAChars.length ? teamAChars : []).map(c => ({
+            name: c.name ?? nameA,
+            overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
+            isAlive: true,
+            powers: c.powers ?? [],
+            hasRevived: false,
+        }));
+
+        const initialB = (teamBChars.length ? teamBChars : []).map(c => ({
+            name: c.name ?? nameB,
+            overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
+            isAlive: true,
+            powers: c.powers ?? [],
+            hasRevived: false,
+        }));
+
+        let tempHealthA = 0;
+        let tempHealthB = 0;
+
+        for (let i = 0; i <= currentStepIndex && i < combatScript.length; i++) {
+            const step = combatScript[i];
+            if (step.isKO && step.targetName) {
+                if (step.targetTeam === "A") {
+                    const target = initialA.find(c => c.name === step.targetName);
+                    if (target) target.isAlive = false;
+                } else {
+                    const target = initialB.find(c => c.name === step.targetName);
+                    if (target) target.isAlive = false;
+                }
+            }
+            if (step.isHeal && step.healTeam) {
+                if (step.healTeam === "A") tempHealthA = Math.min(30, tempHealthA + 15);
+                else tempHealthB = Math.min(30, tempHealthB + 15);
+            }
+        }
+
+        setRosterA(initialA);
+        setRosterB(initialB);
+        setDynamicHealthBonusA(tempHealthA);
+        setDynamicHealthBonusB(tempHealthB);
+
+        if (currentStepIndex >= combatScript.length - 1) {
+            setIsPlaying(false);
+        }
+    }, [currentStepIndex, combatScript]);
+
+    // 3. Auto-play Interval Effect
+    useEffect(() => {
+        if (isPlaying) {
+            autoPlayRef.current = setInterval(() => {
+                setCurrentStepIndex(prev => {
+                    if (prev < combatScript.length - 1) {
+                        return prev + 1;
+                    } else {
+                        setIsPlaying(false);
+                        return prev;
+                    }
+                });
+            }, 1400);
+        } else {
+            if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        }
+
+        return () => {
+            if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        };
+    }, [isPlaying, combatScript.length]);
+
+    const visibleLogs = combatScript.slice(0, currentStepIndex + 1).map(s => s.log);
+
+    const handleNextStep = () => {
+        if (currentStepIndex < combatScript.length - 1) {
+            setCurrentStepIndex(prev => prev + 1);
+        } else {
+            setIsPlaying(false);
+        }
+    };
+
+    const togglePlayPause = () => {
+        if (combatScript.length === 0) {
+            setSeed(s => s + 1); // Starts the simulation if it hasn't begun yet
+        } else {
+            setIsPlaying(!isPlaying); // Flips between true/false to run or clear the interval timer
+        }
+    };
 
     if (powerEstimateA == null || powerEstimateB == null || powerEstimateA == 0 || powerEstimateB == 0) {
         return (
@@ -502,20 +545,39 @@ export function BattlePanel({
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Combat simulation ({ROUNDS} rounds)
                     </h3>
-                    <ButtonStartBattle onClick={() => setSeed((s) => s + 1)} isPlaying={isPlaying} />
+
+                    {/* Control Toolbar */}
+                    <ControlToolbar
+                        onReset={() => setSeed(s => s + 1)}
+                        combatScript={combatScript}
+                        currentStepIndex={currentStepIndex}
+                        handleNextStep={handleNextStep}
+                        isPlaying={isPlaying}
+                        togglePlayPause={togglePlayPause}
+                    />
+
                     {/* Desktop Expand Button */}
-                    <div className=" top-2 right-2 z-10 hidden md:block">
+                    <div className="hidden md:block">
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Maximize2 className="size-4" />
+                                <Maximize2 className="size-4 cursor-pointer hover:text-primary transition-colors" />
                             </DialogTrigger>
 
-                            {/* Enlarged Desktop Dialog */}
                             <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[90vh] flex flex-col gap-4 overflow-hidden p-6">
                                 <DialogHeader>
                                     <DialogTitle className="text-base font-bold uppercase tracking-wider flex items-center justify-between gap-2">
-                                        <span className="flex gap-2"><Swords className="size-5 text-primary" /> Live Engagement Overview ({nameA} vs {nameB})</span>
-                                        <ButtonStartBattle onClick={() => setSeed((s) => s + 1)} isPlaying={isPlaying} />
+                                        <span className="flex gap-2 items-center"><Swords className="size-5 text-primary" /> Live Engagement Overview ({nameA} vs {nameB})</span>
+
+                                        <div className="pr-4">
+                                            <ControlToolbar
+                                                onReset={() => setSeed(s => s + 1)}
+                                                combatScript={combatScript}
+                                                currentStepIndex={currentStepIndex}
+                                                handleNextStep={handleNextStep}
+                                                isPlaying={isPlaying}
+                                                togglePlayPause={togglePlayPause}
+                                            />
+                                        </div>
                                     </DialogTitle>
                                 </DialogHeader>
                                 <CombatView isDialog={true} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
@@ -523,6 +585,7 @@ export function BattlePanel({
                         </Dialog>
                     </div>
                 </div>
+
                 <CombatView isDialog={false} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
             </div>
         </div>
@@ -573,7 +636,6 @@ function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA,
                     nameB={nameB}
                     latestLog={visibleLogs[visibleLogs.length - 1]}
                     isDialog={isDialog}
-
                 />
                 <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[220px]" />
             </div>
@@ -600,21 +662,39 @@ function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA,
                 <Swords className="size-6 animate-bounce text-primary" />
                 <Swords className="size-6 animate-bounce text-secondary" />
             </div>
-            <p className="text-xs font-medium">Ready to simulate combat. Click "Replay Battle" above to begin!</p>
+            <p className="text-xs font-medium">Ready to simulate combat. Click "Start Battle" or "Auto Play" above to begin!</p>
         </div>
-    )
+    );
 }
 
-function ButtonStartBattle({ isPlaying, onClick }: { isPlaying: boolean, onClick: () => void }) {
+function ControlToolbar({ onReset, handleNextStep, currentStepIndex, combatScript, togglePlayPause, isPlaying }: { onReset: () => void, handleNextStep: () => void, currentStepIndex: number, combatScript: ScriptItem[], togglePlayPause: () => void, isPlaying: boolean }) {
     return (
-        <button
-            type="button"
-            disabled={isPlaying}
-            onClick={() => onClick()}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50 disabled:pointer-events-none"
-        >
-            <Swords className={`size-3.5 ${isPlaying ? "animate-pulse text-primary" : ""}`} />
-            {isPlaying ? "Simulating..." : "Replay Battle"}
-        </button>
+        <div className="flex items-center gap-1.5">
+            <button
+                type="button"
+                onClick={() => onReset()}
+                title="Reset & Restart"
+                className="inline-flex items-center justify-center size-7 rounded-lg border border-muted-foreground/20 hover:bg-muted transition-colors"
+            >
+                <RotateCcw className="size-3.5" />
+            </button>
+            <button
+                type="button"
+                onClick={handleNextStep}
+                disabled={currentStepIndex >= combatScript.length - 1}
+                title="Next Step"
+                className="inline-flex items-center justify-center size-7 rounded-lg border border-muted-foreground/20 hover:bg-muted transition-colors disabled:opacity-40"
+            >
+                <SkipForward className="size-3.5" />
+            </button>
+            <button
+                type="button"
+                onClick={togglePlayPause}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
+            >
+                {isPlaying ? <Pause className="size-3.5 text-primary animate-pulse" /> : <Play className="size-3.5 text-primary" />}
+                {isPlaying ? "Pause" : combatScript.length === 0 ? "Start" : "Auto Play"}
+            </button>
+        </div>
     )
 }
