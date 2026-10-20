@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Swords, Shield, Skull, Trophy, HeartPulse, Ghost, RefreshCw, Lock, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
+import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { simulateSpar, computeMatchScore } from "@/lib/compare/compare_utls";
 import { RoundDistributionChart } from "./RoundDistributionChart";
 import { PointRadar, StatsRadar } from "./StatRadar";
@@ -10,7 +10,6 @@ import TacticalSummary from "./TacticalSummary";
 import BattleTimelineLogs from "./BattleTimelineLogs";
 import LiveRosterStatus from "./LiveRosterStatus";
 import LiveTeamHealthBars from "./LiveTeamHealthBars";
-import SparSimulation from "./SparSimulation";
 import { TeamTacticalOverview } from "./TeamTacticalOverview";
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
 import { Maximize2 } from "lucide-react";
@@ -91,12 +90,10 @@ export function BattlePanel({
     const [seed, setSeed] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Master script and step execution pointers
     const [combatScript, setCombatScript] = useState<ScriptItem[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-    // Roster & health dynamic states driven by step execution
     const [rosterA, setRosterA] = useState<FighterState[]>([]);
     const [rosterB, setRosterB] = useState<FighterState[]>([]);
     const [dynamicHealthBonusA, setDynamicHealthBonusA] = useState(0);
@@ -128,7 +125,7 @@ export function BattlePanel({
     useEffect(() => {
         if (!isMounted) return;
 
-        const mappedA = (teamAChars.length ? teamAChars : []).map(c => ({
+        const mappedA = teamAChars.map(c => ({
             name: c.name ?? nameA,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -136,7 +133,7 @@ export function BattlePanel({
             hasRevived: false,
         }));
 
-        const mappedB = (teamBChars.length ? teamBChars : []).map(c => ({
+        const mappedB = teamBChars.map(c => ({
             name: c.name ?? nameB,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -157,7 +154,7 @@ export function BattlePanel({
     useEffect(() => {
         if (!isMounted || !result || seed === 0) return;
 
-        const initialA = (teamAChars.length ? teamAChars : []).map(c => ({
+        const initialA = teamAChars.map(c => ({
             name: c.name ?? nameA,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -165,7 +162,7 @@ export function BattlePanel({
             hasRevived: false,
         }));
 
-        const initialB = (teamBChars.length ? teamBChars : []).map(c => ({
+        const initialB = teamBChars.map(c => ({
             name: c.name ?? nameB,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -251,7 +248,7 @@ export function BattlePanel({
                 continue;
             }
 
-            // 2. Power Move Execution (Strictly Offensive / Control / Hybrid only)
+            // Power Move Execution (Offensive / Control / Hybrid only)
             const strikingPowers = [
                 ...getPowersByRole(attacker, "Offensive"),
                 ...getPowersByRole(attacker, "Control"),
@@ -406,7 +403,6 @@ export function BattlePanel({
             }
         });
 
-        // Set initial state for step 0
         setCombatScript(script);
         setCurrentStepIndex(-1);
         setRosterA(initialA);
@@ -420,7 +416,7 @@ export function BattlePanel({
     useEffect(() => {
         if (combatScript.length === 0) return;
 
-        const initialA = (teamAChars.length ? teamAChars : []).map(c => ({
+        const initialA = teamAChars.map(c => ({
             name: c.name ?? nameA,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -428,7 +424,7 @@ export function BattlePanel({
             hasRevived: false,
         }));
 
-        const initialB = (teamBChars.length ? teamBChars : []).map(c => ({
+        const initialB = teamBChars.map(c => ({
             name: c.name ?? nameB,
             overall: c.powerstats ? computeMatchScore(c as any).overall ?? 50 : 50,
             isAlive: true,
@@ -500,9 +496,9 @@ export function BattlePanel({
 
     const togglePlayPause = () => {
         if (combatScript.length === 0) {
-            setSeed(s => s + 1); // Starts the simulation if it hasn't begun yet
+            setSeed(s => s + 1);
         } else {
-            setIsPlaying(!isPlaying); // Flips between true/false to run or clear the interval timer
+            setIsPlaying(!isPlaying);
         }
     };
 
@@ -516,6 +512,7 @@ export function BattlePanel({
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Left column: Stats radar + Team synergy + Round distribution */}
             <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-3 justify-between">
                 <div>
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
@@ -540,57 +537,97 @@ export function BattlePanel({
                 />
             </div>
 
-            <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-3 justify-between">
+            {/* Right column: Combat simulation */}
+            <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-4">
+                {/* Header row */}
                 <div className="flex items-center justify-between gap-2">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Combat simulation ({ROUNDS} rounds)
                     </h3>
 
-                    {/* Control Toolbar */}
-                    <ControlToolbar
-                        onReset={() => setSeed(s => s + 1)}
-                        combatScript={combatScript}
-                        currentStepIndex={currentStepIndex}
-                        handleNextStep={handleNextStep}
-                        isPlaying={isPlaying}
-                        togglePlayPause={togglePlayPause}
-                    />
+                    <div className="flex items-center gap-2 ">
+                        <ControlToolbar
+                            onReset={() => setSeed(s => s + 1)}
+                            combatScript={combatScript}
+                            currentStepIndex={currentStepIndex}
+                            handleNextStep={handleNextStep}
+                            isPlaying={isPlaying}
+                            togglePlayPause={togglePlayPause}
+                        />
 
-                    {/* Desktop Expand Button */}
-                    <div className="hidden md:block">
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Maximize2 className="size-4 cursor-pointer hover:text-primary transition-colors" />
-                            </DialogTrigger>
+                        {/* Desktop expand button */}
+                        <div className="hidden md:block ">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Maximize2 className="size-4 cursor-pointer hover:text-primary transition-colors" />
+                                </DialogTrigger>
 
-                            <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[90vh] flex flex-col gap-4 overflow-hidden p-6">
-                                <DialogHeader>
-                                    <DialogTitle className="text-base font-bold uppercase tracking-wider flex items-center justify-between gap-2">
-                                        <span className="flex gap-2 items-center"><Swords className="size-5 text-primary" /> Live Engagement Overview ({nameA} vs {nameB})</span>
+                                <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[90vh] flex flex-col gap-4 overflow-hidden p-6">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-base font-bold uppercase tracking-wider flex items-center justify-between gap-2">
+                                            <span className="flex gap-2 items-center">
+                                                <Swords className="size-5 text-primary" />
+                                                Live Engagement Overview ({nameA} vs {nameB})
+                                            </span>
+                                            <div className="pr-4">
+                                                <ControlToolbar
+                                                    onReset={() => setSeed(s => s + 1)}
+                                                    combatScript={combatScript}
+                                                    currentStepIndex={currentStepIndex}
+                                                    handleNextStep={handleNextStep}
+                                                    isPlaying={isPlaying}
+                                                    togglePlayPause={togglePlayPause}
+                                                />
+                                            </div>
+                                        </DialogTitle>
+                                    </DialogHeader>
 
-                                        <div className="pr-4">
-                                            <ControlToolbar
-                                                onReset={() => setSeed(s => s + 1)}
-                                                combatScript={combatScript}
-                                                currentStepIndex={currentStepIndex}
-                                                handleNextStep={handleNextStep}
-                                                isPlaying={isPlaying}
-                                                togglePlayPause={togglePlayPause}
-                                            />
-                                        </div>
-                                    </DialogTitle>
-                                </DialogHeader>
-                                <CombatView isDialog={true} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
-                            </DialogContent>
-                        </Dialog>
+                                    <CombatView
+                                        isDialog={true}
+                                        result={result}
+                                        nameA={nameA}
+                                        nameB={nameB}
+                                        healthA={healthA}
+                                        healthB={healthB}
+                                        rosterA={rosterA}
+                                        rosterB={rosterB}
+                                        visibleLogs={visibleLogs}
+                                        isMounted={isMounted}
+                                        powerEstimateA={powerEstimateA}
+                                        powerEstimateB={powerEstimateB}
+                                        seed={seed}
+                                        teamAChars={teamAChars}
+                                        teamBChars={teamBChars}
+                                    />
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                     </div>
                 </div>
 
-                <CombatView isDialog={false} result={result} nameA={nameA} nameB={nameB} healthA={healthA} healthB={healthB} rosterA={rosterA} rosterB={rosterB} visibleLogs={visibleLogs} isMounted={isMounted} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} teamAChars={teamAChars} teamBChars={teamBChars} />
+                <CombatView
+                    isDialog={false}
+                    result={result}
+                    nameA={nameA}
+                    nameB={nameB}
+                    healthA={healthA}
+                    healthB={healthB}
+                    rosterA={rosterA}
+                    rosterB={rosterB}
+                    visibleLogs={visibleLogs}
+                    isMounted={isMounted}
+                    powerEstimateA={powerEstimateA}
+                    powerEstimateB={powerEstimateB}
+                    seed={seed}
+                    teamAChars={teamAChars}
+                    teamBChars={teamBChars}
+                />
             </div>
         </div>
     );
 }
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type CombatViewProps = {
     result: {
@@ -600,48 +637,46 @@ type CombatViewProps = {
         aWinPct: number;
         bWinPct: number;
         drawPct: number;
-    } | null,
-    nameA: string,
-    nameB: string,
-    healthA: number,
-    healthB: number,
-    rosterA: FighterState[],
-    rosterB: FighterState[],
-    visibleLogs: Log[],
-    isMounted: boolean,
-    powerEstimateA: number,
-    powerEstimateB: number,
+    } | null;
+    nameA: string;
+    nameB: string;
+    healthA: number;
+    healthB: number;
+    rosterA: FighterState[];
+    rosterB: FighterState[];
+    visibleLogs: Log[];
+    isMounted: boolean;
+    powerEstimateA: number;
+    powerEstimateB: number;
     seed: number;
-    isDialog: boolean,
-    teamAChars: CharacterWithJoinTeamUniversePowerEnemies[],
-    teamBChars: CharacterWithJoinTeamUniversePowerEnemies[]
-}
+    isDialog: boolean;
+    teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
+    teamBChars: CharacterWithJoinTeamUniversePowerEnemies[];
+};
 
-function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA, rosterB, visibleLogs, isMounted, powerEstimateA, powerEstimateB, seed, teamAChars, teamBChars }: CombatViewProps) {
-    return result && seed > 0 ? (
-        isDialog ?
-            <div className="flex flex-col gap-6 overflow-y-auto pr-2">
-                <LiveTeamHealthBars
-                    healthA={healthA}
-                    healthB={healthB}
-                    nameA={nameA}
-                    nameB={nameB}
-                />
-                <LiveRosterStatus
-                    rosterA={rosterA}
-                    rosterB={rosterB}
-                    teamAChars={teamAChars}
-                    teamBChars={teamBChars}
-                    nameA={nameA}
-                    nameB={nameB}
-                    latestLog={visibleLogs[visibleLogs.length - 1]}
-                    isDialog={isDialog}
-                />
-                <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[220px]" />
-            </div>
-            :
-            <>
-                <SparSimulation result={result} nameA={nameA} nameB={nameB} />
+// ── CombatView ───────────────────────────────────────────────────────────────
+
+function CombatView({
+    isDialog,
+    result,
+    nameA,
+    nameB,
+    healthA,
+    healthB,
+    rosterA,
+    rosterB,
+    visibleLogs,
+    isMounted,
+    powerEstimateA,
+    powerEstimateB,
+    seed,
+    teamAChars,
+    teamBChars,
+}: CombatViewProps) {
+
+    if (isDialog) {
+        return (
+            <div className="flex flex-col gap-5 overflow-y-auto pr-2">
                 <LiveTeamHealthBars healthA={healthA} healthB={healthB} nameA={nameA} nameB={nameB} />
                 <LiveRosterStatus
                     rosterA={rosterA}
@@ -651,23 +686,66 @@ function CombatView({ isDialog, result, nameA, nameB, healthA, healthB, rosterA,
                     nameA={nameA}
                     nameB={nameB}
                     latestLog={visibleLogs[visibleLogs.length - 1]}
-                    isDialog={isDialog}
+                    isDialog={true}
                 />
-                <BattleTimelineLogs logs={visibleLogs} />
-                <TacticalSummary isMounted={isMounted} nameA={nameA} nameB={nameB} powerEstimateA={powerEstimateA} powerEstimateB={powerEstimateB} seed={seed} />
-            </>
-    ) : (
-        <div className={`${isDialog ? "h-[75vh]" : "h-full"} border border-dashed border-muted-foreground/30 rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20`}>
-            <div className="flex gap-2">
-                <Swords className="size-6 animate-bounce text-primary" />
-                <Swords className="size-6 animate-bounce text-secondary" />
+                <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[220px]" />
             </div>
-            <p className="text-xs font-medium">Ready to simulate combat. Click "Start Battle" or "Auto Play" above to begin!</p>
+        );
+    }
+
+    // ── Inline (non-dialog) ──────────────────────────────────────────────────
+    // const total = result.aWins + result.bWins + result.draws || 1;
+
+    return (
+        <div className="flex flex-col gap-4">
+            {/* HP bars */}
+            <LiveTeamHealthBars healthA={healthA} healthB={healthB} nameA={nameA} nameB={nameB} />
+
+            {/* Roster */}
+            <LiveRosterStatus
+                rosterA={rosterA}
+                rosterB={rosterB}
+                teamAChars={teamAChars}
+                teamBChars={teamBChars}
+                nameA={nameA}
+                nameB={nameB}
+                latestLog={visibleLogs[visibleLogs.length - 1]}
+                isDialog={false}
+            />
+
+            {/* Engagement log */}
+            <BattleTimelineLogs logs={visibleLogs} maxHeight="h-[180px]" />
+
+            {/* Tactical insight */}
+            <TacticalSummary
+                isMounted={isMounted}
+                nameA={nameA}
+                nameB={nameB}
+                powerEstimateA={powerEstimateA}
+                powerEstimateB={powerEstimateB}
+                seed={seed}
+            />
         </div>
     );
 }
 
-function ControlToolbar({ onReset, handleNextStep, currentStepIndex, combatScript, togglePlayPause, isPlaying }: { onReset: () => void, handleNextStep: () => void, currentStepIndex: number, combatScript: ScriptItem[], togglePlayPause: () => void, isPlaying: boolean }) {
+// ── ControlToolbar ───────────────────────────────────────────────────────────
+
+function ControlToolbar({
+    onReset,
+    handleNextStep,
+    currentStepIndex,
+    combatScript,
+    togglePlayPause,
+    isPlaying,
+}: {
+    onReset: () => void;
+    handleNextStep: () => void;
+    currentStepIndex: number;
+    combatScript: ScriptItem[];
+    togglePlayPause: () => void;
+    isPlaying: boolean;
+}) {
     return (
         <div className="flex items-center gap-1.5">
             <button
@@ -692,9 +770,11 @@ function ControlToolbar({ onReset, handleNextStep, currentStepIndex, combatScrip
                 onClick={togglePlayPause}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-muted-foreground/20 px-2.5 py-1 text-xs font-medium hover:bg-muted transition-colors"
             >
-                {isPlaying ? <Pause className="size-3.5 text-primary animate-pulse" /> : <Play className="size-3.5 text-primary" />}
+                {isPlaying
+                    ? <Pause className="size-3.5 text-primary animate-pulse" />
+                    : <Play className="size-3.5 text-primary" />}
                 {isPlaying ? "Pause" : combatScript.length === 0 ? "Start" : "Auto Play"}
             </button>
         </div>
-    )
+    );
 }

@@ -59,7 +59,7 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
                             Awaiting Combat Engagement
                         </p>
                         <p className="text-[10px] text-muted-foreground/70 max-w-[200px] leading-tight">
-                            Click <span className="font-semibold text-foreground/90">"Replay Battle"</span> to start streaming live tactical logs.
+                            Click <span className="font-semibold text-foreground/90">"Start"</span> to start streaming live tactical logs.
                         </p>
                     </div>
                 ) : (

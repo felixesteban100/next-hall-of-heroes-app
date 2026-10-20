@@ -658,7 +658,7 @@
   .animate-pulse-gold {
     animation: pulse-gold 1.5s infinite ease-in-out;
   }
-
+  /* 
   @keyframes combat-surge {
     0%,
     100% {
@@ -671,7 +671,7 @@
 
   .animate-combat-surge {
     animation: combat-surge 1.2s infinite ease-in-out;
-  }
+  } */
 
   @keyframes shield-flash {
     0%,
