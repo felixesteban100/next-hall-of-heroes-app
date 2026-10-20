@@ -47,6 +47,7 @@ export type Log = {
     text: string;
     icon: any;
     colorClass: string;
+    variant: "primary" | "secondary"
 };
 
 export type FighterState = {
@@ -242,6 +243,7 @@ export function BattlePanel({
                         text: `${attacker.name} activated [${healPower.name}], restoring vital health to team ${isAttackerA ? nameA : nameB}!`,
                         icon: HeartPulse,
                         colorClass: "text-emerald-400 font-bold",
+                        variant: isAttackerA ? "primary" : "secondary"
                     }
                 });
                 roundNum++;
@@ -295,6 +297,8 @@ export function BattlePanel({
                         text: `${defender.name} activated [${defPower.combatRole}: ${defPower.name}] to mitigate incoming damage from ${attacker.name}!`,
                         icon: Shield,
                         colorClass: "text-cyan-400 font-medium",
+                        variant: isAttackerA ? "primary" : "secondary"
+
                     }
                 });
                 roundNum++;
@@ -328,6 +332,8 @@ export function BattlePanel({
                             text: `${defender.name} cheated defeat using [${revivalPower.name}], surging back into combat!`,
                             icon: RefreshCw,
                             colorClass: "text-amber-400 font-bold",
+                            variant: isAttackerA ? "primary" : "secondary"
+
                         }
                     });
                 } else {
@@ -347,6 +353,8 @@ export function BattlePanel({
                             text: `${defender.name} ${randomPhrase}`,
                             icon: Skull,
                             colorClass: "text-orange-500 font-bold",
+                            variant: isAttackerA ? "primary" : "secondary"
+
                         }
                     });
                 }
@@ -364,6 +372,7 @@ export function BattlePanel({
                         text: `[RND ${roundNum * 3}] ${attacker.name} (${Math.round(attacker.overall)}) executed ${moveDesc} against ${defender.name} (${Math.round(defender.overall)})!`,
                         icon: logIcon,
                         colorClass: isAttackerA ? "text-primary" : "text-secondary",
+                        variant: isAttackerA ? "primary" : "secondary"
                     }
                 });
             }
@@ -385,6 +394,7 @@ export function BattlePanel({
                     text: `${isTeamAWinner ? nameB : nameA}'s remaining line fell under overwhelming pressure as ${winnerName} closed the engagement!`,
                     icon: Skull,
                     colorClass: "text-orange-500 font-bold",
+                    variant: isTeamAWinner ? "secondary" : "primary"
                 }
             });
         }
@@ -400,6 +410,7 @@ export function BattlePanel({
                 text: `Battle Over: ${winnerName} secures victory via ${winType} (${ROUNDS} Rounds)!`,
                 icon: Trophy,
                 colorClass: "text-amber-400 font-black",
+                variant: isTeamAWinner ? "primary" : "secondary"
             }
         });
 

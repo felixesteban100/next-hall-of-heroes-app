@@ -19,7 +19,7 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
     }, [logs]);
 
     // Inside BattleTimelineLogs.tsx -> getLogVariantStyles or direct item rendering:
-    const getLogVariantStyles = (type: string) => {
+    const getLogVariantStyles = (type: string, variant: string) => {
         switch (type) {
             case "heal":
                 return "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 border-l-4 border-l-emerald-400";
@@ -31,17 +31,19 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
                 return "bg-orange-500/15 border-orange-500/40 text-orange-400 border-l-4 border-l-orange-500 shadow-orange-500/10 animate-flash-red";
             case "finish":
             case "rout":
-                return "bg-primary/15 border-primary/50 text-primary font-bold border-l-4 border-l-primary shadow-primary/15 animate-flash-red";
+                return `bg-${variant}/15 border-${variant}/50 text-${variant} font-bold border-l-4 border-l-${variant} shadow-${variant}/15 animate-flash-red`;
             default:
                 return "bg-muted/20 border-muted-foreground/15 text-foreground/90 border-l-2 border-l-muted-foreground/30";
         }
     };
 
+
+
     return (
         <div className="pt-1 flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                 <span className="flex items-center gap-1.5">
-                    <Activity className="size-3 text-primary animate-pulse" /> Live Engagement Log
+                    <Activity className={`size-3 animate-pulse`} /> Live Engagement Log
                 </span>
                 <span className="text-[9px] text-muted-foreground/60 transition-all">
                     {logs.length} Actions
@@ -65,7 +67,8 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
                 ) : (
                     logs.map((log) => {
                         const Icon = log.icon;
-                        const variantStyle = getLogVariantStyles(log.type);
+                        const variantStyle = getLogVariantStyles(log.type, log.variant);
+                        const variant = log.variant ?? "primary"
 
                         return (
                             <div
@@ -82,7 +85,7 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
                                             <span className="font-bold text-foreground">{log.attackerName}</span>
                                             <span className="text-muted-foreground">used</span>
                                             {log.powerName && (
-                                                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold text-[10px] border border-primary/20 shadow-xs">
+                                                <span className={`px-1.5 py-0.5 rounded bg-${variant}/10 text-${variant} font-semibold text-[10px] border border-${variant}/20 shadow-xs`}>
                                                     {log.powerName}{log.actionName && log.actionName !== log.powerName ? `: ${log.actionName}` : ""}
                                                 </span>
                                             )}
