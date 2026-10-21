@@ -69,6 +69,7 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
 
     const filteredTeams = teams.filter(t =>
         t.name.toLowerCase().includes(searchQuery.toLowerCase())
+        && t.totalCount > 1
     );
 
     return (
