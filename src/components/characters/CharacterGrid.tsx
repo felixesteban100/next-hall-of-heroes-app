@@ -1,4 +1,3 @@
-// components/characters/CharacterGrid.tsx
 "use client"
 
 import { useState, useEffect, useRef } from "react";

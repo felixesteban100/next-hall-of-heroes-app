@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ViewTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
+import { POWER_ACTIVATION_TYPE_COLOR, POWER_ACTIVATION_TYPE_ICON, POWER_COMBAT_ROLE_COLOR, POWER_COMBAT_ROLE_ICON, POWER_TIER, POWER_TIER_COLOR, POWER_TIER_ICON } from "@/lib/constants";
 import { Clock, Crosshair, ShieldAlert, Sparkles, Target, Zap } from "lucide-react";
 import { CharacterAccordionList } from "@/components/characters/CharacterAccordionList";
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
@@ -82,6 +82,12 @@ export default async function page({ params }: { params: Promise<{ id: string }>
 
     const normalizedScore = power.score ? Math.min(Math.round(power.score / 1000), 100) : null;
 
+    const CombatRoleIcon = POWER_COMBAT_ROLE_ICON[power.combatRole]
+    const combatRoleColor = POWER_COMBAT_ROLE_COLOR[power.combatRole]
+
+    const ActivationIcon = POWER_ACTIVATION_TYPE_ICON[power.activationType]
+    const activationColor = POWER_ACTIVATION_TYPE_COLOR[power.activationType]
+
     /* Power Tier Badge: Show where this power sits on your tier scale (e.g., Tier 2: Tactical / Basic).
 
 Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 strongest characters who possess this ability before listing everyone else. */
@@ -113,11 +119,19 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                         </Badge>
 
                         {power.combatRole && (
-                            <Badge variant="secondary" className="gap-1 font-medium">
-                                <ShieldAlert size={12} />
+                            <Badge variant="outline" className={`${combatRoleColor.bg} gap-1 font-medium`}>
+                                <CombatRoleIcon size={12} className={``} />
                                 {power.combatRole}
                             </Badge>
                         )}
+
+                        {
+                            power.activationType &&
+                            <Badge className={`${activationColor.bg}`}>
+                                <ActivationIcon size={12} />
+                                {power.activationType || "—"}
+                            </Badge>
+                        }
                     </div>
 
                     <h1 className="text-3xl font-bold">{power.name}</h1>
@@ -128,7 +142,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     <div className="grid grid-cols-2 gap-2.5 pt-1">
                         <div className="bg-muted/40 border rounded-lg p-2.5 text-xs flex flex-col justify-between">
                             <span className="text-muted-foreground flex items-center gap-1 font-medium">
-                                <Sparkles size={12} className="text-primary" /> Activation
+                                <ActivationIcon size={12} className={`${activationColor.text}`} /> Activation
                             </span>
                             <span className="font-semibold text-sm mt-1">{power.activationType || "—"}</span>
                         </div>

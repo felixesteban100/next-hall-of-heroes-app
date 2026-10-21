@@ -30,7 +30,6 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     const TypeIcon = CHARACTER_TYPE_ICON[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
     const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR];
 
-
     return (
         <Card
             className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
@@ -94,7 +93,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Tier">
                         <TierIcon className={`w-3.5 h-3.5 ${tierColor.text}`} />
-                        <span className="text-[10px] font-medium text-muted-foreground">T{character.tier}/{tierLabel}</span>
+                        <span className="text-[10px] font-medium text-muted-foreground">T{character.tier}/{tierLabel.slice(0, 6)}...</span>
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Class">
                         <ClassIcon className={`w-3.5 h-3.5 ${classColor.text}`} />
