@@ -67,8 +67,7 @@ export function RowScoreComparer({
                     <Row key={label} label={label}>
                         {/* Side A */}
                         <Cell
-                            className={`${isAWinning ? "text-primary font-bold" : "text-foreground"
-                                } flex gap-2 items-center justify-end`}
+                            className={`${isAWinning ? "text-primary font-bold" : "text-foreground"} flex gap-2 items-center justify-end`}
                         >
                             <Field className="w-full">
                                 <FieldLabel htmlFor="progress-valB">

@@ -5,12 +5,11 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { simulateSpar, computeMatchScore } from "@/lib/compare/compare_utls";
 import { RoundDistributionChart } from "./RoundDistributionChart";
-import { PointRadar, StatsRadar } from "./StatRadar";
+import { PointRadar } from "./StatRadar";
 import TacticalSummary from "./TacticalSummary";
 import BattleTimelineLogs from "./BattleTimelineLogs";
 import LiveRosterStatus from "./LiveRosterStatus";
 import LiveTeamHealthBars from "./LiveTeamHealthBars";
-import { TeamTacticalOverview } from "./TeamTacticalOverview";
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
 import { Maximize2 } from "lucide-react";
 import {
@@ -31,8 +30,6 @@ type Props = {
     nameB?: string;
     teamAChars?: CharacterWithJoinTeamUniversePowerEnemies[];
     teamBChars?: CharacterWithJoinTeamUniversePowerEnemies[];
-    showRadarA: boolean;
-    showRadarB: boolean;
 };
 
 export type LogType = "attack" | "heal" | "defend" | "revive" | "ko" | "finish" | "rout";
@@ -85,8 +82,6 @@ export function BattlePanel({
     nameB = "Team B",
     teamAChars = [],
     teamBChars = [],
-    showRadarA,
-    showRadarB
 }: Props) {
     const [seed, setSeed] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
@@ -523,37 +518,11 @@ export function BattlePanel({
 
     return (
         <div className=" gap-4">
-            {/* Left column: Stats radar + Team synergy + Round distribution */}
-            {/* <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-3 justify-between">
-                <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                        Stats radar
-                    </h3>
-                    <StatsRadar data={radar} nameA={nameA} nameB={nameB} showA={showRadarA} showB={showRadarB} />
-                </div>
-
-                <TeamTacticalOverview
-                    entitiesA={teamAChars}
-                    entitiesB={teamBChars}
-                    nameA={nameA}
-                    nameB={nameB}
-                />
-
-                <RoundDistributionChart
-                    aWins={result?.aWins}
-                    bWins={result?.bWins}
-                    draws={result?.draws}
-                    nameA={nameA}
-                    nameB={nameB}
-                />
-            </div> */}
-
-            {/* Right column: Combat simulation */}
             <div className="border border-muted-foreground/20 rounded-xl p-4 flex flex-col gap-4">
                 {/* Header row */}
                 <div className="flex items-center justify-between gap-2">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Combat simulation ({ROUNDS} rounds)
+                        Combat simulation {/* ({ROUNDS} rounds) */}
                     </h3>
 
                     <div className="flex items-center gap-2 ">
@@ -795,7 +764,7 @@ function ControlToolbar({
                 {isPlaying
                     ? <Pause className="size-3.5 text-primary animate-pulse" />
                     : <Play className="size-3.5 text-primary" />}
-                {isPlaying ? "Pause" : combatScript.length === 0 ? "Start" : "Auto Play"}
+                {isPlaying ? "Pause" : combatScript.length === 0 ? "Start" : "AutoPlay"}
             </button>
         </div>
     );

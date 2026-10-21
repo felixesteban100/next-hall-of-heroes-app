@@ -37,7 +37,7 @@ export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
                 className={`grid grid-cols-2 duration-300 ease-out border`}
             >
                 {rosterA.length ? (
-                    <Cell className="!block text-left bg-card">
+                    <Cell className="!block text-left bg-card/20">
                         <ul className="w-full space-y-1.5 text-xs sm:text-sm">
                             {rosterA.map((r) => (
                                 <li
@@ -69,7 +69,7 @@ export function MemberBreakdown({ entitiesA, entitiesB, mvpA, mvpB }: Props) {
                 )}
 
                 {rosterB.length ? (
-                    <Cell className="!block text-left bg-card">
+                    <Cell className="!block text-left bg-card/20">
                         <ul className="w-full space-y-1.5 text-xs sm:text-sm">
                             {rosterB.map((r) => (
                                 <li

@@ -18,6 +18,7 @@ import { MatchPredictionOverlay } from "./MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
 import { TeamTacticalOverview } from "./TeamTacticalOverview";
 import { StatsRadar } from "./StatRadar";
+import { Zap } from "lucide-react";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info";
@@ -134,7 +135,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     />
                 )}
 
-                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 max-h-[450px] overflow-hidden" : "opacity-100 max-h-none"}`}>
+                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 max-h-[400px] overflow-hidden" : "opacity-100 max-h-none"}`}>
 
                     {/* Tab bar */}
                     <div className="flex gap-1 mb-4 border-b border-muted-foreground/20">
@@ -169,16 +170,40 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 teamB={teamB ?? null}
                                 entitiesA={entitiesA}
                                 entitiesB={entitiesB}
-                                nemesisPairs={nemesisPairs}
                             />
 
-                            <div className={`mx-auto  border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-0`}>
-                                {/* grid-cols-[88px_1fr_1fr] sm:grid-cols-[140px_1fr_1fr] md:grid-cols-[200px_1fr_1fr] */}
-                                <div className="grid grid-cols-2 bg-card/95 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
-                                    {/* <div className="min-w-0 p-2 sm:p-3 md:p-4 text-[10px] sm:text-xs md:text-sm font-semibold text-foreground uppercase tracking-wider border-r border-muted-foreground/20 flex items-center">
-                                        {mode === "team" ? "Team profile" : "Entity profile"}
-                                    </div> */}
+                            {isNemesis && (
+                                <div className="relative my-4 overflow-hidden rounded-xl border border-red-500/10 bg-gradient-to-r from-red-950/10 via-red-900/10 to-red-950/10 p-3 ">
+                                    {/* Ambient background glow pulse */}
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-600/10 via-transparent to-transparent animate-pulse pointer-events-none" />
 
+                                    <div className="relative flex flex-col items-center gap-2">
+                                        <div className="flex items-center gap-3 px-4 py-1 rounded-full border border-red-500/60 bg-red-500/15">
+                                            <Zap className="h-3.5 w-3.5 text-red-400 fill-red-500 animate-bounce" />
+                                            <span className="text-xs font-black tracking-widest uppercase text-red-400 drop-shadow">
+                                                Rival Matchup Detected
+                                            </span>
+                                            <Zap className="h-3.5 w-3.5 text-red-400 fill-red-500 animate-bounce" />
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
+                                            {nemesisPairs.map(p => (
+                                                <div
+                                                    key={`${p.nameA}-${p.nameB}`}
+                                                    className="flex items-center gap-2 px-3 py-1 rounded-lg bg-background/60 border border-border/60 text-xs font-semibold tracking-wide text-foreground shadow-inner"
+                                                >
+                                                    <span className="text-primary">{p.nameA}</span>
+                                                    <span className="text-red-500 font-mono text-[10px]">VS</span>
+                                                    <span className="text-secondary">{p.nameB}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className={`mx-auto  border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-1`}>
+                                <div className="grid grid-cols-2 bg-card/10 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                                     {mode === "team" ? (
                                         <>
                                             <TeamProfileSlot
@@ -208,6 +233,21 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} mvpA={mvpA} mvpB={mvpB} />
                                 )}
                             </div>
+                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-md">
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                                        Stats radar
+                                    </h3>
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                                </div>
+
+                                <TeamTacticalOverview
+                                    entitiesA={entitiesA}
+                                    entitiesB={entitiesB}
+                                    nameA={entityAName}
+                                    nameB={entityBName}
+                                />
+                            </div>
                         </div>
                     )}
 
@@ -220,8 +260,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 powerEstimateB={teamB.powerEstimate}
                                 nameA={entityAName}
                                 nameB={entityBName}
-                                showRadarA={!!entityA && !showPredictionOverlay}
-                                showRadarB={!!entityB && !showPredictionOverlay}
                                 teamAChars={entitiesA}
                                 teamBChars={entitiesB}
                             />
@@ -230,7 +268,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
 
                     {/* STATS TAB */}
                     {activeTab === "stats" && (
-                        <div className={`mx-auto bg-card border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
+                        <div className={`mx-auto bg-card/40 border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
                             <RowsHeader text={mode === "team" ? "Combat & Powerstats · team avg" : "Combat & Powerstats"} />
                             <RowScoreComparer
                                 scoreA={mode === "team" ? avgTeamPowerstats(entitiesA) : entityA?.powerstats}
@@ -260,35 +298,13 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     { label: "Overall", key: "overall" },
                                 ]}
                             />
-                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between">
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                                        Stats radar
-                                    </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
-                                </div>
 
-                                <TeamTacticalOverview
-                                    entitiesA={entitiesA}
-                                    entitiesB={entitiesB}
-                                    nameA={entityAName}
-                                    nameB={entityBName}
-                                />
-
-                                {/* <RoundDistributionChart
-                                    aWins={result?.aWins}
-                                    bWins={result?.bWins}
-                                    draws={result?.draws}
-                                    nameA={nameA}
-                                    nameB={nameB}
-                                /> */}
-                            </div>
                         </div>
                     )}
 
                     {/* INFO TAB */}
                     {activeTab === "info" && (
-                        <div className={`mx-auto bg-card border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
+                        <div className={`mx-auto bg-card/30 border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
                             <RowsHeader text="General Information" />
                             {rowsBadges.map(row => (
                                 <row.BadgeComponent

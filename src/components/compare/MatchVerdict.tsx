@@ -12,10 +12,6 @@ type Props = {
     isNemesis?: boolean;
     entitiesA?: CharacterWithJoinTeamUniversePowerEnemies[];
     entitiesB?: CharacterWithJoinTeamUniversePowerEnemies[];
-    nemesisPairs: {
-        nameA: string;
-        nameB: string;
-    }[]
 };
 
 export default function MatchVerdict({
@@ -24,7 +20,6 @@ export default function MatchVerdict({
     teamA,
     teamB,
     isNemesis,
-    nemesisPairs
 }: Props) {
     // Calculate winner / draw status
     const scoreA = teamA?.powerEstimate ?? null;
@@ -63,7 +58,7 @@ export default function MatchVerdict({
             ? "border-red-500/40 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] ring-1 ring-red-500/20"
             : "border-muted-foreground/15"
             } */
-        <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 bg-card/80 backdrop-blur-sm shadow-sm `}>
+        <div className={`relative overflow-hidden rounded-2xl border transition-all duration-500 bg-card/10 backdrop-blur-sm  `}>
             {/* Background glow */}
             <div className={`pointer-events-none absolute inset-0 `} />
 
@@ -87,23 +82,6 @@ export default function MatchVerdict({
 
                 <div className="flex flex-col items-center gap-2 shrink-0">
                     <VS />
-                    {/* Active Nemesis Tag if applicable */}
-                    {isNemesis && (
-                        <div className="flex flex-col items-center gap-1 mt-2">
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/30 bg-red-500/8">
-                                <Zap className="h-3 w-3 text-red-500 fill-red-500" />
-                                <span className="text-xs font-semibold tracking-wide text-red-600 dark:text-red-400">
-                                    Rival matchup
-                                </span>
-                                <Zap className="h-3 w-3 text-red-500 fill-red-500" />
-                            </div>
-                            {nemesisPairs.map(p => (
-                                <span key={`${p.nameA}-${p.nameB}`} className="text-[11px] text-muted-foreground">
-                                    {p.nameA} ↔ {p.nameB}
-                                </span>
-                            ))}
-                        </div>
-                    )}
                     <EdgeBadge
                         a={scoreA}
                         b={scoreB}

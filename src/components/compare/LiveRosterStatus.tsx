@@ -33,7 +33,6 @@ function enrichAndSort(
         .map((fighter) => {
             const char = chars.find((c) => c.name === fighter.name)!;
 
-            console.log(char)
             return {
                 ...fighter,
                 id: char?.id ?? 0,

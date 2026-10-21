@@ -51,9 +51,9 @@ export function MatchPredictionOverlay({
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="sticky top-12 flex flex-col items-center gap-4 bg-card border border-border/80 p-6 rounded-2xl shadow-xl max-w-md w-full text-center"
+                className="sticky top-12 flex flex-col items-center gap-4 bg-card border border-border/80 p-6 rounded-2xl  max-w-md w-full text-center"
             >
-                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-muted-foreground/10 px-3 py-1 rounded-full">
                     <Sparkles className="w-3.5 h-3.5" />
                     {entitiesA.length > 1 || entitiesB.length > 1
                         ? "Which Team Takes The Win?"
@@ -84,7 +84,7 @@ export function MatchPredictionOverlay({
                                         </div>
                                     ))}
                                 </div>
-                                <span className="text-sm font-bold truncate w-full text-primary/50 group-hover:text-primary">
+                                <span className="text-sm font-bold truncate w-full text-primary">
                                     {entityAName}
                                 </span>
                                 <span className="text-xs font-semibold truncate w-full group-hover:text-primary ">
@@ -113,7 +113,7 @@ export function MatchPredictionOverlay({
                                         </div>
                                     ))}
                                 </div>
-                                <span className="text-sm font-bold truncate w-full text-secondary/50 group-hover:text-secondary">
+                                <span className="text-sm font-bold truncate w-full text-secondary">
                                     {entityBName}
                                 </span>
                                 <span className="text-xs font-semibold truncate w-full group-hover:text-secondary">
