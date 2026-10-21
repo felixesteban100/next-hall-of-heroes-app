@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Sparkles, Handshake } from "lucide-react";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { CharacterImage } from "../shared/CharacterImage";
+import { CharacterImage } from "@/components/shared/CharacterImage";
 
 interface MatchPredictionOverlayProps {
     entityAName: string;

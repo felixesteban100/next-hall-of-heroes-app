@@ -1,10 +1,9 @@
 "use client"
 
 import { useSearchParams } from 'next/navigation'
-import { Input } from "../ui/input";
 import { Button } from '../ui/button';
 import { useCallback, useMemo, useState } from 'react';
-import { Mars, SearchIcon, SlidersHorizontal, Venus, X } from 'lucide-react';
+import { Mars, SlidersHorizontal, Venus, X } from 'lucide-react';
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 // import { Power, Team, Universe } from '@/types';
 import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, MultiSelectTrigger, MultiSelectValue } from "@/components/ui/multi-select"

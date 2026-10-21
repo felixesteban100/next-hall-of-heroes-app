@@ -25,9 +25,18 @@ import {
     BookOpen,
     User,
     Clapperboard,
-    type LucideIcon,
     FileQuestionMark,
+    Sword,
+    ShieldAlert,
+    Workflow,
+    Layers,
+    Play,
+    Pause,
+    Clock,
+    type LucideIcon,
 } from "lucide-react";
+
+import { PowerRole } from "@/types";
 
 export const CHARACTER_CLASS_ICON: Record<number, LucideIcon> = {
     0: HelpCircle,      // Unassigned — unknown/unclassified
@@ -376,3 +385,48 @@ export const POWER_TIER_SCORE: Record<number, number> = {
     9: 96,  // Universal / Transcendent
     10: 100, // Absolute / Omnipotent
 };
+
+export const POWER_COMBAT_ROLE_ICON: Record<PowerRole, LucideIcon> = {
+    "Offensive": Sword,                 // Direct damage / attacks
+    "Defensive": ShieldAlert,           // Shields / damage mitigation
+    "Control": Workflow,                // Crowd control / restriction
+    "Utility": Sparkles,                // Movement / healing / support
+    "Hybrid / Versatile": Layers,       // Multi-role / shifting
+};
+
+export const POWER_COMBAT_ROLE_COLOR = {
+    "Offensive": {
+        bg: "bg-rose-500 dark:bg-rose-700",
+        text: "text-rose-600 dark:text-rose-400",
+    },
+    "Defensive": {
+        bg: "bg-blue-500 dark:bg-blue-700",
+        text: "text-blue-600 dark:text-blue-400",
+    },
+    "Control": {
+        bg: "bg-purple-500 dark:bg-purple-700",
+        text: "text-purple-600 dark:text-purple-400",
+    },
+    "Utility": {
+        bg: "bg-emerald-500 dark:bg-emerald-700",
+        text: "text-emerald-600 dark:text-emerald-400",
+    },
+    "Hybrid / Versatile": {
+        bg: "bg-amber-500 dark:bg-amber-700",
+        text: "text-amber-600 dark:text-amber-400",
+    },
+} as const;
+
+export const POWER_ACTIVATION_TYPE_ICON: Record<string, LucideIcon> = {
+    "Instant": Zap,
+    "Action": Play,
+    "Passive": Pause,
+    "Channeled": Clock,
+};
+
+export const POWER_ACTIVATION_TYPE_COLOR = {
+    "Instant": { text: "text-amber-500" },
+    "Action": { text: "text-blue-500" },
+    "Passive": { text: "text-emerald-500" },
+    "Channeled": { text: "text-purple-500" },
+} as const;

@@ -7,7 +7,7 @@ import { TeamAddCombobox } from "@/components/compare/selectors/TeamAddCombobox"
 import { CharacterOption } from "@/types";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { MAX_BRACKET_SIZE } from "@/app/(main)/compare/page";
-import RemoveCharacterOfTeamButton from "./selectors/RemoveCharacterOfTeamButton";
+import RemoveCharacterOfTeamButton from "../selectors/RemoveCharacterOfTeamButton";
 
 type Props = {
     ids: number[];
@@ -45,6 +45,17 @@ export function BracketPicker({
     };
 
     // Map selected IDs to match the selected array structure used by TeamSelectorCard
+    // const selectedCharacters = ids.map((id) => {
+    //     const char = characters.find((c) => c.id === id);
+    //     return {
+    //         id,
+    //         name: char ? char.name : `ID: ${id}`,
+    //         slug: char?.slug || "",
+    //         image: char?.images?.md,
+    //         imageFocus: char?.imageFocus || "",
+    //     };
+    // });
+
     const selectedCharacters = ids.map((id) => {
         const char = characters.find((c) => c.id === id);
         return {
@@ -80,19 +91,13 @@ export function BracketPicker({
                         <div key={c.id} className="group relative flex flex-col items-center gap-0.5 w-12">
                             {/* Portrait */}
                             <div className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 ${avatarRing} shrink-0 bg-card`}>
-                                {c.image ? (
-                                    <CharacterImage
-                                        src={c.image}
-                                        alt={c.name}
-                                        imageFocus={c.imageFocus}
-                                        fill
-                                        className="w-12 h-12 rounded-md shrink-0 object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-card/20 text-card-foreground text-[10px] font-bold">
-                                        #
-                                    </div>
-                                )}
+                                <CharacterImage
+                                    src={c.image}
+                                    alt={c.name}
+                                    imageFocus={c.imageFocus}
+                                    fill
+                                    className="w-12 h-12 rounded-md shrink-0 object-cover"
+                                />
                                 {/* Remove button on hover */}
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
                                     <RemoveCharacterOfTeamButton

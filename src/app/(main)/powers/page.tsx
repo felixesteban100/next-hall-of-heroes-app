@@ -20,6 +20,8 @@ export default async function page({
         sortOrientation?: string,
         name?: string,
         tier?: string,
+        combatRole?: string,
+        activationType?: string,
     }>;
 }) {
     const params = await searchParams;
@@ -30,10 +32,14 @@ export default async function page({
     const sortOrientation = params.sortOrientation?.toString() || "desc";
     const name = params.name?.toString() || "";
     const tier = parseInt(params.tier?.toString() || "");
+    const combatRole = params.combatRole?.toString() || "";
+    const activationType = params.activationType?.toString() || "";
 
     const query: Record<string, string | number | object> = {};
     if (name) query.name = { $regex: name, $options: "i" };
     if (!Number.isNaN(tier)) query.tier = tier;
+    if (combatRole) query.combatRole = combatRole;
+    if (activationType) query.activationType = activationType;
 
     const powersPerPage = await collectionPowers
         .find(query)

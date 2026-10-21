@@ -1,5 +1,6 @@
 "use server"
 
+import { MAX_BRACKET_SIZE } from "@/app/(main)/compare/page";
 import { collectionCharacters } from "@/db/mongodb";
 import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
@@ -41,7 +42,7 @@ export async function fetchCharactersJoinedById(ids: number[]): Promise<Characte
             "id",
             "desc",
             0,
-            24,
+            MAX_BRACKET_SIZE,
             { includeEnemies: true }
         )
     )

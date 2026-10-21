@@ -93,6 +93,8 @@ export function CompareModeToggle() {
                 Number(searchParams.get("id2")),
             ].filter((n) => typeof n === "number" && !Number.isNaN(n) && n > 0);
 
+            console.log(seed)
+
 
             // Unique deduplicated participant IDs
             const unique = Array.from(new Set(seed));

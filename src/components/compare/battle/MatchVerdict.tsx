@@ -1,8 +1,8 @@
 // components/compare/matchesVerdict/TeamMatchVerdict.tsx
 import type { TeamAggregate } from "@/lib/compare/compare_utls";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import VS from "./VS";
 import { Zap, Trophy, ShieldAlert } from "lucide-react";
+import VS from "../VS";
 
 type Props = {
     nameA?: string;

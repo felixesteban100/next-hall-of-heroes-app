@@ -1,24 +1,24 @@
 "use client"
 
 import { CompareMode } from "@/lib/compare/compareParams";
-import { groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, avgTeamPowerstats, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate, MatchBreakdown, simulateSpar } from "@/lib/compare/compare_utls";
-import { BattlePanel } from "@/components/compare/BattlePanel";
-import { ProfileSlot } from "@/components/compare/ProfileSlot";
+import { groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, avgTeamPowerstats, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/compare/compare_utls";
+import { BattlePanel } from "@/components/compare/battle/BattlePanel";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
 import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
-import { TeamProfileSlot } from "@/components/compare/TeamProfileSlot";
-import MatchVerdict from "@/components/compare/MatchVerdict";
 import { RowGroupedPills } from "@/components/compare/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/compare/rows/RowGroupedBadges";
 import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { MatchPredictionOverlay } from "./MatchPredictionOverlay";
+import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
-import { TeamTacticalOverview } from "./TeamTacticalOverview";
-import { StatsRadar } from "./StatRadar";
+import { TeamTacticalOverview } from "./battle/TeamTacticalOverview";
+import { StatsRadar } from "./stats/StatRadar";
 import { Zap } from "lucide-react";
+import MatchVerdict from "./battle/MatchVerdict";
+import { TeamProfileSlot } from "./stats/TeamProfileSlot";
+import { ProfileSlot } from "./stats/ProfileSlot";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info";

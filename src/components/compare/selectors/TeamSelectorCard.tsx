@@ -3,7 +3,7 @@ import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 import { getAllTeamsWithMembers, searchCharacters } from "@/app/actions";
 import { CharacterImage } from "@/components/shared/CharacterImage";
-import { LoadAllTeamsDropdown } from "../LoadAllTeamsDropdown";
+import { LoadAllTeamsDropdown } from "./LoadAllTeamsDropdown";
 
 export async function TeamSelectorCard({
     title,

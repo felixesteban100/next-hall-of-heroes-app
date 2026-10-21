@@ -1,4 +1,4 @@
-import { ComparisonHeader } from "@/components/compare/ComparisonHeader";
+import { ComparisonHeader } from "@/components/compare/stats/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
 import { aggregateTeamScores } from "@/lib/compare/compare_utls";
 import { detectMode, parseIdList } from "@/lib/compare/compareParams";
@@ -8,11 +8,11 @@ import VS from "@/components/compare/VS";
 import { CompareModeToggle } from "@/components/compare/CompareModeToggle";
 import { CopySummaryButton } from "@/components/compare/CopySummaryButton";
 import { RandomFillButton } from "@/components/compare/RandomFillButton";
-import { BracketPicker } from "@/components/compare/BracketAddCombobox";
-import { DynamicBracketView } from "@/components/compare/BracketView";
+import { DynamicBracketView } from "@/components/compare/bracket/BracketView";
 import { getBestTeamName, searchCharacters } from "@/app/actions";
 import { sanitize } from "@/lib/utils";
 import CharacterComparatorView from "@/components/compare/CharacterComparatorView";
+import { BracketPicker } from "@/components/compare/bracket/BracketAddCombobox";
 
 export const instant = false;
 

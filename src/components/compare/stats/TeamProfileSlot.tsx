@@ -1,11 +1,12 @@
 // components/compare/TeamProfileSlot.tsx
 import Image from "next/image";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
 import { ChemistryResult } from "@/lib/compare/teamChemistry";
 import { Crown } from "lucide-react";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { LoadingLink } from "@/components/shared/LoadingLink";
+import { CharacterImage } from "@/components/shared/CharacterImage";
 
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
@@ -50,12 +51,13 @@ export function TeamProfileSlot({
                         >
 
                             <ViewTransition name={`character-${e.id}`}>
-                                <Image
+                                <CharacterImage
                                     src={e.images?.md || e.images?.sm || "/placeholder.png"}
                                     alt={e.name}
                                     fill
                                     className="object-cover overflow-hidden rounded-lg"
                                     unoptimized
+                                    imageFocus={e.imageFocus}
                                 />
                                 {/* MVP Star Badge */}
                                 {(mvp === e.name) && (

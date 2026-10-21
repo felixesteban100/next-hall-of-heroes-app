@@ -20,6 +20,8 @@ export function useIsMobile() {
     );
 }
 
+/* focusedIndex is not getting used here, I feel it should be used */
+
 export function CharacterGrid({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] }) {
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);

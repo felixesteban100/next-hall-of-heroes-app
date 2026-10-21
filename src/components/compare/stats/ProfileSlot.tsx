@@ -1,7 +1,7 @@
+import { LoadingLink } from "@/components/shared/LoadingLink";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import Image from "next/image";
 import { ViewTransition } from "react";
-import { LoadingLink } from "../shared/LoadingLink";
 
 export function ProfileSlot({
     entity,

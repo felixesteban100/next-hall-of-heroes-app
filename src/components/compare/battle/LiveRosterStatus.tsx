@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import { Crown, Shield, Skull, Swords } from "lucide-react";
-import { FighterState, Log } from "./BattlePanel";
+import { FighterState, Log } from "./battle/BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
 import { cn } from "@/lib/utils";

@@ -4,11 +4,9 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { simulateSpar, computeMatchScore } from "@/lib/compare/compare_utls";
-import { RoundDistributionChart } from "./RoundDistributionChart";
-import { PointRadar } from "./StatRadar";
+import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
 import TacticalSummary from "./TacticalSummary";
 import BattleTimelineLogs from "./BattleTimelineLogs";
-import LiveRosterStatus from "./LiveRosterStatus";
 import LiveTeamHealthBars from "./LiveTeamHealthBars";
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
 import { Maximize2 } from "lucide-react";
@@ -19,6 +17,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import LiveRosterStatus from "./LiveRosterStatus";
 
 export const ROUNDS = 100;
 

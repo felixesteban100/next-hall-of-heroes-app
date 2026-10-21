@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { BracketFighter, Bout, buildDynamicBracket } from "@/lib/compare/bracket";
 import { shuffleArray } from "@/lib/utils";
-import { CopySummaryButton } from "./CopySummaryButton";
-import { CharacterImage } from "../shared/CharacterImage";
-import { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { CopySummaryButton } from "../CopySummaryButton";
+import { CharacterImage } from "../../shared/CharacterImage";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
 function FighterLine({
     c,
@@ -101,6 +101,7 @@ function BoutCard({
 
     return (
         <motion.div
+            data-active-bout={isCurrentStep ? "true" : undefined}
             ref={cardRef}
             animate={{
                 opacity: isVisible || isPendingVote ? 1 : 0.35,
@@ -190,7 +191,6 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-    // 🚀 NEW: Mode toggle state ("predict" for manual voting, "autoplay" for hands-free simulation)
     const [simMode, setSimMode] = useState<"predict" | "autoplay">("predict");
 
     const [userPredictions, setUserPredictions] = useState<Record<string, number>>({});
@@ -201,6 +201,27 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
     const maxSteps = allBouts.length;
 
     const activeCardRef = useRef<HTMLDivElement | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const frameId = requestAnimationFrame(() => {
+            if (scrollContainerRef.current) {
+                const container = scrollContainerRef.current;
+                // Find the active card directly from the container DOM
+                const activeCard = container.querySelector('[data-active-bout="true"]');
+
+                if (activeCard) {
+                    activeCard.scrollIntoView({
+                        behavior: "smooth",
+                        inline: "center",
+                        block: "nearest",
+                    });
+                }
+            }
+        });
+
+        return () => cancelAnimationFrame(frameId);
+    }, [currentStep, pendingVoteBoutId]);
 
     useEffect(() => {
         if (!isPlaying) return;
@@ -372,8 +393,8 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
             </div>
 
             {/* Horizontal scroll container with larger cards */}
-            <div className="w-full max-w-full overflow-x-auto pb-6 pt-2 px-2">
-                <div className="flex flex-row gap-3 sm:gap-6 justify-start lg:justify-center items-center min-w-max px-4">
+            <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-6 pt-2 px-2 scroll-smooth snap-x snap-mandatory">
+                <div className="flex flex-row gap-3 sm:gap-6 justify-start items-center min-w-max px-4">
                     {rounds.map((roundBouts, rIdx) => {
 
                         const roundName = roundBouts[0]?.roundName ?? `Round ${rIdx + 1}`;

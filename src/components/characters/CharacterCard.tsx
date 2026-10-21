@@ -7,7 +7,7 @@ import { getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib
 import CharacterBadge from "./CharacterBadge";
 import { ViewTransition } from 'react'
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
 import { Mars, Venus } from "lucide-react";
 import { useIsMobile } from "./CharacterGrid";
 import { CharacterImage } from "../shared/CharacterImage";
@@ -21,6 +21,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
 
     const TierIcon = CHARACTER_TIER_ICON[character.tier] ?? CHARACTER_TIER_ICON[0];
     const tierColor = CHARACTER_TIER_COLOR[character.tier as keyof typeof CHARACTER_TIER_COLOR] ?? CHARACTER_TIER_COLOR[0];
+    const tierLabel = CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER].split("/")[0]
 
     const ClassIcon = CHARACTER_CLASS_ICON[character.class] ?? CHARACTER_CLASS_ICON[0];
     const classColor = CHARACTER_CLASS_COLOR[character.class as keyof typeof CHARACTER_CLASS_COLOR] ?? CHARACTER_CLASS_COLOR[0];
@@ -93,11 +94,11 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Tier">
                         <TierIcon className={`w-3.5 h-3.5 ${tierColor.text}`} />
-                        <span className="text-[10px] font-medium text-muted-foreground">T{character.tier}</span>
+                        <span className="text-[10px] font-medium text-muted-foreground">T{character.tier}/{tierLabel}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Class">
                         <ClassIcon className={`w-3.5 h-3.5 ${classColor.text}`} />
-                        <span className="text-[10px] font-medium text-muted-foreground">{characterClass?.split("/")[0].split(" ")[0] ?? "?"}</span>
+                        <span className="text-[10px] font-medium text-muted-foreground">C-{characterClass?.split("/")[0].split(" ")[0] ?? "?"}</span>
                     </div>
                 </div>
             </CardFooter>

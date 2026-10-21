@@ -12,8 +12,8 @@ import {
 } from "@/lib/constants";
 import { getAligmentIcon } from "../characters_utils"; // your paths
 import { ChemistryResult, computeTeamChemistry } from "./teamChemistry";
-import { ROUNDS } from "@/components/compare/BattlePanel";
-import { PointRadar } from "@/components/compare/StatRadar";
+import { ROUNDS } from "@/components/compare/battle/BattlePanel";
+import { PointRadar } from "@/components/compare/stats/StatRadar";
 
 const STAT_KEYS = [
     "intelligence",
