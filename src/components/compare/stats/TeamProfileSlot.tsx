@@ -1,5 +1,3 @@
-// components/compare/TeamProfileSlot.tsx
-import Image from "next/image";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
 import { ChemistryResult } from "@/lib/compare/teamChemistry";
@@ -46,16 +44,15 @@ export function TeamProfileSlot({
                     <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
                         <div
                             key={e.id}
-                            className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg border-2 ${border} bg-card shrink-0`}
+                            className={`relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 border-2 ${border} bg-card shrink-0 rounded-lg`}
                             title={e.name}
                         >
-
                             <ViewTransition name={`character-${e.id}`}>
                                 <CharacterImage
-                                    src={e.images?.md || e.images?.sm || "/placeholder.png"}
+                                    src={e.images.md}
                                     alt={e.name}
                                     fill
-                                    className="object-cover overflow-hidden rounded-lg"
+                                    className="w-full h-full object-cover overflow-hidden rounded-md"
                                     unoptimized
                                     imageFocus={e.imageFocus}
                                 />
