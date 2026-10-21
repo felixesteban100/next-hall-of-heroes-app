@@ -24,6 +24,8 @@ type SearchParamsPromise = Promise<{
     p?: string;
     mode?: string;
     size?: string;
+    a_name?: string;
+    b_name?: string;
 }>;
 
 export const MAX_TEAM_SIZE = 12; // one constant
@@ -66,22 +68,21 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const teamA = aggregateTeamScores(entitiesA);
     const teamB = aggregateTeamScores(entitiesB);
 
-    const bestTeamNameA = await getBestTeamName(entitiesA);
-    const bestTeamNameB = await getBestTeamName(entitiesB);
+    const explicitTeamNameA = params.a_name;
+    const explicitTeamNameB = params.b_name;
+
+    const bestTeamNameA = await getBestTeamName(entitiesA, 1);
+    const bestTeamNameB = await getBestTeamName(entitiesB, 1);
 
     const entityAName =
-        mode === "team" && entitiesA.length > 1
-            ? (bestTeamNameA ?? "Team A")
-            : mode === "team"
-                ? "Team A"
-                : entityA?.name;
+        mode === "team"
+            ? (explicitTeamNameA ?? bestTeamNameA ?? "Team A")
+            : entityA?.name;
 
     const entityBName =
-        mode === "team" && entitiesB.length > 1
-            ? (bestTeamNameB ?? "Team B")
-            : mode === "team"
-                ? "Team B"
-                : entityB?.name;
+        mode === "team"
+            ? (explicitTeamNameB ?? bestTeamNameB ?? "Team B")
+            : entityB?.name;
 
     // after scores are computed:
     const aceAInfo =

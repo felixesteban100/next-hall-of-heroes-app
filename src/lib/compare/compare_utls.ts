@@ -516,9 +516,12 @@ export function groupEnemies(entities: CharacterWithJoinTeamUniversePowerEnemies
     );
 }
 
-export function groupTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[]) {
-    return groupItemsByCharacter(entities, (e) =>
-        getTeamNames(e.connections?.groupAffiliation), "teams"
+export function groupTeams(entities: CharacterWithJoinTeamUniversePowerEnemies[], shareThreshold?: number) {
+    return groupItemsByCharacter(
+        entities,
+        (e) => getTeamNames(e.connections?.groupAffiliation),
+        "teams",
+        shareThreshold ?? 2
     );
 }
 

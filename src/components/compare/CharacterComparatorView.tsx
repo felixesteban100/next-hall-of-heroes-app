@@ -255,7 +255,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     {activeTab === "combat" && (
                         <div className="mb-4">
                             <BattlePanel
-                                radar={radar}
                                 powerEstimateA={teamA.powerEstimate}
                                 powerEstimateB={teamB.powerEstimate}
                                 nameA={entityAName}

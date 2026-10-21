@@ -713,25 +713,33 @@
   }
 
   @keyframes sword-slash {
+    /* The active slash animation (0% to 40%) */
     0% {
       transform: translate(0, 0) rotate(-25deg) scale(0.8);
-      opacity: 0;
+      /* opacity: 0; */
     }
-    30% {
+    12% {
       transform: translate(-2px, -2px) rotate(15deg) scale(1.2);
-      opacity: 1;
+      /* opacity: 1; */
     }
-    70% {
+    28% {
       transform: translate(2px, -1px) rotate(-10deg) scale(1.1);
-      opacity: 1;
+      /* opacity: 1; */
     }
+    40% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+      /* opacity: 1; */
+    }
+
+    /* Resting pause window (40% to 100%): stays still in its resting position */
     100% {
       transform: translate(0, 0) rotate(0deg) scale(1);
-      opacity: 1;
+      /* opacity: 1; */
     }
   }
 
   .animate-corner-sword {
-    animation: sword-slash 0.4s ease-out forwards;
+    /* 1.2s total duration means the 0.4s slash plays, followed by a 0.8s pause */
+    animation: sword-slash 1.2s infinite ease-out;
   }
 }

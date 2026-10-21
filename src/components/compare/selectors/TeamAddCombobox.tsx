@@ -103,6 +103,8 @@ export function TeamAddCombobox({
             params.delete("id2");
             params.delete("p");
             params.delete("size");
+            params.delete("a_name");
+            params.delete("b_name");
         }
 
         pushParams(params);

@@ -23,7 +23,6 @@ import {
 export const ROUNDS = 100;
 
 type Props = {
-    radar: PointRadar[]
     powerEstimateA: number;
     powerEstimateB: number;
     nameA?: string;
@@ -75,7 +74,6 @@ const ELIMINATION_PHRASES = [
 ];
 
 export function BattlePanel({
-    radar,
     powerEstimateA,
     powerEstimateB,
     nameA = "Team A",
@@ -649,7 +647,6 @@ type CombatViewProps = {
 
 function CombatView({
     isDialog,
-    result,
     nameA,
     nameB,
     healthA,
@@ -667,7 +664,7 @@ function CombatView({
 
     if (isDialog) {
         return (
-            <div className="flex flex-col gap-5 overflow-y-auto pr-2">
+            <div className="flex flex-col gap-5 overflow-y-auto pr-2 p-5">
                 <LiveTeamHealthBars healthA={healthA} healthB={healthB} nameA={nameA} nameB={nameB} />
                 <LiveRosterStatus
                     rosterA={rosterA}

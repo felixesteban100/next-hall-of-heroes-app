@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
-import { Crown, Skull, Swords } from "lucide-react";
+import { Crown, Shield, Skull, Swords } from "lucide-react";
 import { FighterState, Log } from "./BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
@@ -84,7 +84,7 @@ export default function LiveRosterStatus({
     const mvpB = enrichedB.find((f) => f.isAlive)?.name;
 
     // Derive animation signals from the latest log
-    const activeAttacker = latestLog?.type === "attack" ? latestLog.attackerName : undefined;
+    const activeAttacker = latestLog?.type === "attack" || latestLog?.type === "ko" ? latestLog.attackerName : undefined;
     const activeDefender = latestLog?.type === "attack" ? latestLog.defenderName : undefined;
     const latestKO = latestLog?.type === "ko" ? latestLog.defenderName : undefined;
     const latestRevive = latestLog?.type === "revive" ? latestLog.defenderName : undefined;
@@ -169,9 +169,15 @@ export default function LiveRosterStatus({
                         </div>
                     )}
 
+                    {isDefending && fighter.isAlive && (
+                        <div className="absolute -top-2 -left-2 bg-cyan-400 text-white p-1 rounded-full shadow-md border border-background z-30 animate-corner-sword pointer-events-none flex items-center justify-center">
+                            <Shield className="size-3 text-white" />
+                        </div>
+                    )}
+
                     {/* Being-hit impact flash */}
                     {isBeingHit && fighter.isAlive && (
-                        <div className="absolute inset-0 bg-red-400/20 animate-ping pointer-events-none rounded-md" />
+                        <div className="absolute inset-0 bg-red-400 animate-ping pointer-events-none rounded-md" />
                     )}
 
                     {/* Heal glow overlay */}
@@ -186,7 +192,7 @@ export default function LiveRosterStatus({
 
                     {/* Shield flash overlay */}
                     {isDefending && fighter.isAlive && (
-                        <div className="absolute inset-0 bg-cyan-400/15 pointer-events-none rounded-md" />
+                        <div className="absolute inset-0 bg-cyan-400/60 pointer-events-none rounded-md animate-shield-flash" />
                     )}
                 </div>
 

@@ -52,7 +52,7 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
 
             <div
                 ref={logContainerRef}
-                className={`flex flex-col gap-2 ${maxHeight} overflow-y-auto pr-1 scroll-smooth`}
+                className={`flex flex-col gap-2 ${maxHeight} overflow-x-hidden overflow-y-auto pr-1 scroll-smooth`}
             >
                 {logs.length === 0 ? (
                     <div className="h-full min-h-[100px] border border-dashed border-muted-foreground/25 rounded-lg p-4 text-center flex flex-col items-center justify-center gap-1.5 bg-muted/10 text-muted-foreground transition-all">

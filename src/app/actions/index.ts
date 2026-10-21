@@ -1,7 +1,7 @@
 "use server";
 
 import { collectionCharacters, collectionTeams } from "@/db/mongodb";
-import { groupTeams } from "@/lib/compare/compare_utls";
+import { groupAlignments, groupTeams } from "@/lib/compare/compare_utls";
 import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -321,11 +321,13 @@ type SharedTeam = {
     members?: any[];
 };
 
-export async function getBestTeamName(entities: any[]): Promise<string | null> {
+export async function getBestTeamName(entities: any[], shareThreshold = 2): Promise<string | null> {
     if (!entities || entities.length === 0) return null;
 
     // 1. Get raw candidate teams from groupTeams
-    const { shared } = groupTeams(entities);
+    const { shared } = groupTeams(entities, shareThreshold);
+
+    console.log(shared)
 
     if (!shared || shared.length === 0) return null;
 
@@ -422,4 +424,81 @@ export async function getBestTeamName(entities: any[]): Promise<string | null> {
     scoredTeams.sort((a, b) => b.score - a.score);
 
     return scoredTeams[0]?.name ?? null;
+}
+
+
+export async function getAllTeamsWithMembers() {
+    // 1. Fetch team documents to map numeric IDs to team names
+    const teamsDocs = await collectionTeams.find({}).project({ _id: 0, id: 1, name: 1 }).toArray();
+    const teamIdToNameMap = new Map<number, string>();
+    for (const t of teamsDocs) {
+        if (t.id && t.name) {
+            teamIdToNameMap.set(Number(t.id), t.name);
+        }
+    }
+
+    // 2. Fetch characters with group affiliations
+    const characters = await collectionCharacters.find({}).project({
+        _id: 0,
+        id: 1,
+        "connections.groupAffiliation": 1
+    }).toArray();
+
+    // 3. Group character IDs by resolved team name
+    const teamMap: Record<string, number[]> = {};
+
+    for (const char of characters) {
+        const affiliations = char.connections?.groupAffiliation;
+
+        const rawTeams = Array.isArray(affiliations)
+            ? affiliations
+            : typeof affiliations === "string"
+                ? affiliations.split(",").map((t: string) => t.trim())
+                : [];
+
+        for (const rawTeam of rawTeams) {
+            if (!rawTeam && rawTeam !== 0) continue;
+
+            let teamName = "";
+            const numericId = Number(rawTeam);
+
+            if (!isNaN(numericId) && teamIdToNameMap.has(numericId)) {
+                teamName = teamIdToNameMap.get(numericId)!;
+            } else if (isNaN(numericId) && typeof rawTeam === "string") {
+                teamName = rawTeam.trim();
+            }
+
+            if (!teamName) continue;
+
+            if (!teamMap[teamName]) {
+                teamMap[teamName] = [];
+            }
+            if (!teamMap[teamName].includes(char.id)) {
+                teamMap[teamName].push(char.id);
+            }
+        }
+    }
+
+    // 4. Convert map into sorted array format. 
+    // If a team has more than 12 members, shuffle them and take a random subset of 12!
+    const MAX_TEAM_LIMIT = 12;
+
+    return Object.entries(teamMap)
+        .map(([name, ids]) => {
+            const totalCount = ids.length; // Keep track of the actual full roster size
+
+            // Fisher-Yates shuffle for random variety
+            const shuffled = [...ids];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            return {
+                name,
+                totalCount,                          // Display this in the dropdown badge (e.g. 102)
+                ids: shuffled.slice(0, MAX_TEAM_LIMIT) // Load this into the team slot (capped at 12)
+            };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
 }

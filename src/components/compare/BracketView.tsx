@@ -190,13 +190,17 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
     const [currentStep, setCurrentStep] = useState<number>(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+    // 🚀 NEW: Mode toggle state ("predict" for manual voting, "autoplay" for hands-free simulation)
+    const [simMode, setSimMode] = useState<"predict" | "autoplay">("predict");
+
     const [userPredictions, setUserPredictions] = useState<Record<string, number>>({});
     const [predictionResults, setPredictionResults] = useState<Record<string, boolean>>({});
     const [pendingVoteBoutId, setPendingVoteBoutId] = useState<string | null>(null);
 
     const charactersIdsKey = useMemo(() => characters.map((f) => f.id).join(","), [characters]);
-    const activeCardRef = useRef<HTMLDivElement | null>(null);
     const maxSteps = allBouts.length;
+
+    const activeCardRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (!isPlaying) return;
@@ -209,7 +213,7 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
         const currentBout = allBouts[currentStep - 1];
 
         if (currentBout) {
-            // 🚀 AUTOMATIC BYE RESOLUTION: If one side is null, auto-advance instantly!
+            // Auto Bye Resolution
             if (!currentBout.a || !currentBout.b) {
                 const autoWinner = currentBout.a || currentBout.b;
                 if (autoWinner && !userPredictions[currentBout.id]) {
@@ -217,15 +221,24 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
                 }
                 const timer = setTimeout(() => {
                     setCurrentStep((prev) => prev + 1);
-                }, 300); // Quick transition for byes
+                }, 300);
                 return () => clearTimeout(timer);
             }
 
-            // Normal match requiring prediction vote
-            if (!userPredictions[currentBout.id]) {
-                setIsPlaying(false);
-                setPendingVoteBoutId(currentBout.id);
-                return;
+            // 🚀 MODE CHECK: If in "predict" mode, pause for manual voting. If "autoplay", auto-simulate!
+            if (simMode === "predict") {
+                if (!userPredictions[currentBout.id]) {
+                    setIsPlaying(false);
+                    setPendingVoteBoutId(currentBout.id);
+                    return;
+                }
+            } else {
+                // Autoplay mode: automatically lock in the simulation engine's winner
+                if (!userPredictions[currentBout.id] && currentBout.winner) {
+                    const autoChosenId = Number(currentBout.winner.id);
+                    setUserPredictions((prev) => ({ ...prev, [currentBout.id]: autoChosenId }));
+                    setPredictionResults((prev) => ({ ...prev, [currentBout.id]: true }));
+                }
             }
         }
 
@@ -234,7 +247,7 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
         }, 900);
 
         return () => clearTimeout(timer);
-    }, [isPlaying, currentStep, maxSteps, allBouts, userPredictions]);
+    }, [isPlaying, currentStep, maxSteps, allBouts, userPredictions, simMode]);
 
     useEffect(() => {
         handleReset();
@@ -278,7 +291,7 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
 
     return (
         <div className="flex flex-col items-center py-3 sm:py-4 gap-4 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card border border-border p-4 rounded-xl shadow-sm w-full ">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card border border-border p-4 rounded-xl w-full ">
                 <div>
                     <h2 className="text-base font-bold">Tournament Bracket Simulation</h2>
                     <p className="text-xs text-muted-foreground">
@@ -304,29 +317,65 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
                 />
             </div>
 
-            <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-full border border-border/80 shadow-2xs">
-                <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    disabled={isComplete && !isPlaying}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
-                >
-                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                    {isPlaying ? "Pause" : isComplete ? "Finished" : "Play"}
-                </button>
+            {/* Control Bar */}
+            {/*  bg-card border border-border shadow-sm*/}
+            <div className="flex flex-wrap items-center justify-center gap-3 p-2 rounded-2xl ">
+                {/* Mode Selector Toggle */}
+                <div className="flex items-center bg-muted p-1 rounded-xl border border-border/60 text-xs font-semibold">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setSimMode("predict");
+                            handleReset();
+                        }}
+                        className={`px-3 py-1 rounded-lg transition-all ${simMode === "predict"
+                            ? "bg-background text-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                    >
+                        Interactive Predict
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setSimMode("autoplay");
+                            handleReset();
+                        }}
+                        className={`px-3 py-1 rounded-lg transition-all ${simMode === "autoplay"
+                            ? "bg-background text-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                    >
+                        Auto Simulation
+                    </button>
+                </div>
 
-                <button
-                    onClick={handleReset}
-                    className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                    title="Reset Bracket"
-                >
-                    <RotateCcw className="w-4 h-4" />
-                </button>
+                {/* Play / Pause & Reset Controls */}
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-xl border border-border/80">
+                    <button
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        disabled={isComplete && !isPlaying}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
+                    >
+                        {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        {isPlaying ? "Pause" : isComplete ? "Finished" : "Start"}
+                    </button>
+
+                    <button
+                        onClick={handleReset}
+                        className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Reset Bracket"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* Horizontal scroll container with larger cards */}
             <div className="w-full max-w-full overflow-x-auto pb-6 pt-2 px-2">
                 <div className="flex flex-row gap-3 sm:gap-6 justify-start lg:justify-center items-center min-w-max px-4">
                     {rounds.map((roundBouts, rIdx) => {
+
                         const roundName = roundBouts[0]?.roundName ?? `Round ${rIdx + 1}`;
                         return (
                             <div key={rIdx} className="flex flex-col gap-3 justify-center">
@@ -335,8 +384,10 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
                                 </span>
                                 {roundBouts.map((bout) => {
                                     const boutIndex = allBouts.findIndex((x) => x.id === bout.id);
+                                    // Inside your rounds render map:
                                     const isCurrentStep = boutIndex === currentStep - 1;
-                                    const isPendingVote = pendingVoteBoutId === bout.id;
+                                    // Only show pending vote UI if NOT currently autoplaying
+                                    const isPendingVote = simMode === "predict" && pendingVoteBoutId === bout.id;
 
                                     return (
                                         <BoutCard

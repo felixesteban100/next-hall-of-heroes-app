@@ -13,6 +13,7 @@ export default function RemoveCharacterOfTeamButton({ variant = "default", param
         params.set("mode", "team");
         params.delete("id1");
         params.delete("id2");
+        params.delete(variant === "default" ? "a_name" : "b_name");
         if (ids.length) params.set(paramKey, ids.join(","));
         else params.delete(paramKey);
         pushParams(params);

@@ -16,12 +16,12 @@ export default function LiveTeamHealthBars({ healthA, healthB, nameA, nameB }: P
 
     return (
         // <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-3 bg-muted/20 ">
+        <div className="grid grid-cols-2 gap-3">
             {/* Team A */}
             <div className="space-y-1">
                 <div className="flex items-center justify-between text-[10px] font-semibold">
-                    <span className="text-primary truncate max-w-[60%]">{nameA}</span>
-                    <span className="text-muted-foreground tabular-nums">HP {healthA}%</span>
+                    {/* <span className="text-primary truncate max-w-[60%]">{nameA}</span> */}
+                    <span className="text-primary tabular-nums">HP {healthA}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
@@ -34,8 +34,8 @@ export default function LiveTeamHealthBars({ healthA, healthB, nameA, nameB }: P
             {/* Team B */}
             <div className="space-y-1">
                 <div className="flex items-center justify-between text-[10px] font-semibold">
-                    <span className="text-secondary truncate max-w-[60%]">{nameB}</span>
-                    <span className="text-muted-foreground tabular-nums">HP {healthB}%</span>
+                    {/* <span className="text-secondary truncate max-w-[60%]">{nameB}</span> */}
+                    <span className="text-secondary tabular-nums">HP {healthB}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div

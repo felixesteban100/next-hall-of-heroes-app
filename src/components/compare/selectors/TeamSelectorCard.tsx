@@ -1,8 +1,9 @@
 import { TeamAddCombobox } from "./TeamAddCombobox";
 import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
-import { searchCharacters } from "@/app/actions";
+import { getAllTeamsWithMembers, searchCharacters } from "@/app/actions";
 import { CharacterImage } from "@/components/shared/CharacterImage";
+import { LoadAllTeamsDropdown } from "../LoadAllTeamsDropdown";
 
 export async function TeamSelectorCard({
     title,
@@ -35,11 +36,16 @@ export async function TeamSelectorCard({
                 <span className={`text-xs font-bold uppercase tracking-widest ${accentText}`}>
                     {title}
                 </span>
+                <LoadAllTeamsDropdown
+                    paramKey={paramKey}
+                    maxSize={max}
+                    fetchTeamsAction={getAllTeamsWithMembers}
+                />
+
                 <span className="text-xs text-muted-foreground tabular-nums">
                     {selectedIds.length} / {max}
                 </span>
             </div>
-
             {/* Roster grid — portrait cards */}
             {selected.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
