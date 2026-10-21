@@ -28,8 +28,8 @@ type SearchParamsPromise = Promise<{
     b_name?: string;
 }>;
 
-export const MAX_TEAM_SIZE = 12; // one constant
-export const MAX_BRACKET_SIZE = 24; // one constant
+export const MAX_TEAM_SIZE = 14; // one constant
+export const MAX_BRACKET_SIZE = 28; // one constant
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;

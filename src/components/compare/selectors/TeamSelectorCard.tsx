@@ -38,7 +38,7 @@ export async function TeamSelectorCard({
                 </span>
                 <LoadAllTeamsDropdown
                     paramKey={paramKey}
-                    maxSize={max}
+                    excludeIds={excludeIds}
                     fetchTeamsAction={getAllTeamsWithMembers}
                 />
 

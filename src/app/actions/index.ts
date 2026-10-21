@@ -1,7 +1,7 @@
 "use server";
 
 import { collectionCharacters, collectionTeams } from "@/db/mongodb";
-import { groupAlignments, groupTeams } from "@/lib/compare/compare_utls";
+import { groupTeams } from "@/lib/compare/compare_utls";
 import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -327,8 +327,6 @@ export async function getBestTeamName(entities: any[], shareThreshold = 2): Prom
     // 1. Get raw candidate teams from groupTeams
     const { shared } = groupTeams(entities, shareThreshold);
 
-    console.log(shared)
-
     if (!shared || shared.length === 0) return null;
 
     // 2. STRICT FILTER: Handles affiliation objects ({ name: "..." }) as well as raw strings
@@ -405,7 +403,6 @@ export async function getBestTeamName(entities: any[], shareThreshold = 2): Prom
     ]).toArray();
 
     const teamSizeMap = new Map(sharedTeamsDB.map(t => [t.name, t.totalMembersCount]));
-    const selectedCount = entities.length;
 
     // 5. Score valid teams (favoring tighter/smaller core teams)
     const scoredTeams = strictlyShared.map((team: SharedTeam) => {
@@ -480,25 +477,11 @@ export async function getAllTeamsWithMembers() {
     }
 
     // 4. Convert map into sorted array format. 
-    // If a team has more than 12 members, shuffle them and take a random subset of 12!
-    const MAX_TEAM_LIMIT = 12;
-
     return Object.entries(teamMap)
-        .map(([name, ids]) => {
-            const totalCount = ids.length; // Keep track of the actual full roster size
-
-            // Fisher-Yates shuffle for random variety
-            const shuffled = [...ids];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-
-            return {
-                name,
-                totalCount,                          // Display this in the dropdown badge (e.g. 102)
-                ids: shuffled.slice(0, MAX_TEAM_LIMIT) // Load this into the team slot (capped at 12)
-            };
-        })
+        .map(([name, ids]) => ({
+            name,
+            totalCount: ids.length,
+            ids // Send the full list of IDs to the client
+        }))
         .sort((a, b) => a.name.localeCompare(b.name));
 }

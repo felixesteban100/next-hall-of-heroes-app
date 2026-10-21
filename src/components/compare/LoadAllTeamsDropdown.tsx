@@ -13,6 +13,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 type TeamOption = {
     name: string;
@@ -22,12 +23,12 @@ type TeamOption = {
 
 type Props = {
     paramKey: "a" | "b";
-    maxSize: number;
+    excludeIds: number[];
     // Pass a server-fetched list or fetch on open
     fetchTeamsAction: () => Promise<TeamOption[]>;
 };
 
-export function LoadAllTeamsDropdown({ paramKey, maxSize, fetchTeamsAction }: Props) {
+export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }: Props) {
     const searchParams = useSearchParams();
     const { pushParams } = useParamLoading();
     const [teams, setTeams] = useState<TeamOption[]>([]);
@@ -46,13 +47,22 @@ export function LoadAllTeamsDropdown({ paramKey, maxSize, fetchTeamsAction }: Pr
         }
     };
 
-    const handleSelectTeam = (teamName: string, teamIds: number[]) => {
-        const params = new URLSearchParams(searchParams.toString());
-        const slicedIds = teamIds.slice(0, 12);
+    const handleSelectTeam = (teamName: string, allTeamIds: number[]) => {
+        // 1. Filter out any characters that are already selected on the OPPOSITE team
+        const availableIds = allTeamIds.filter(id => !excludeIds.includes(id));
 
-        // Set the IDs and the exact team name in the URL search params
-        params.set(paramKey, slicedIds.join(","));
-        params.set(`${paramKey}_name`, teamName); // e.g. ?a_name=The+Avengers
+        // 2. Fisher-Yates shuffle on the filtered pool
+        const shuffled = [...availableIds];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        const selectedIds = shuffled.slice(0, MAX_TEAM_SIZE);
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.set(paramKey, selectedIds.join(","));
+        params.set(`${paramKey}_name`, teamName);
 
         pushParams(params);
     };
