@@ -1,9 +1,9 @@
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { FighterState, Log } from "../BattlePanel";
-import LiveTeamHealthBars from "../LiveTeamHealthBars";
-import LiveRosterStatus from "../LiveRosterStatus";
-import BattleTimelineLogs from "../BattleTimelineLogs";
-import TacticalSummary from "../TacticalSummary";
+import LiveTeamHealthBars from "./combatView/LiveTeamHealthBars";
+import LiveRosterStatus from "./combatView/LiveRosterStatus";
+import BattleTimelineLogs from "./combatView/BattleTimelineLogs";
+import TacticalSummary from "./combatView/TacticalSummary";
 
 type CombatViewProps = {
     result: {

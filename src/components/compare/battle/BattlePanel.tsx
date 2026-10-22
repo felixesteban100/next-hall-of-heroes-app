@@ -90,7 +90,7 @@ export function BattlePanel({
     const {
         combatScript, currentStepIndex, isPlaying,
         rosterA, rosterB, healthA, healthB, visibleLogs,
-        loadScript, handleNextStep, togglePlayPause,
+        loadScript, handleNextStep, handlePrevStep, togglePlayPause,
     } = useCombatPlayback(teamAChars, teamBChars, nameA, nameB);
 
     // Generate a new script whenever seed bumps (and result is ready)
@@ -133,6 +133,7 @@ export function BattlePanel({
             combatScript={combatScript}
             currentStepIndex={currentStepIndex}
             handleNextStep={handleNextStep}
+            handlePrevStep={handlePrevStep}
             isPlaying={isPlaying}
             togglePlayPause={handleToggle}
         />

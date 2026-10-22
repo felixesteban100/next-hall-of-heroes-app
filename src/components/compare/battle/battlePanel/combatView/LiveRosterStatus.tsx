@@ -6,7 +6,9 @@ import { Crown, Shield, Skull, Swords } from "lucide-react";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare/compare_utls";
 import { cn } from "@/lib/utils";
-import { FighterState, Log } from "./BattlePanel";
+import { FighterState, Log } from "../../BattlePanel";
+import { CharacterImage } from "@/components/shared/CharacterImage";
+
 
 type Props = {
     rosterA: FighterState[];
@@ -23,6 +25,7 @@ type EnrichedFighter = FighterState & {
     id: number;
     image: string;
     overall: number;
+    imageFocus: string;
 };
 
 function enrichAndSort(
@@ -40,6 +43,7 @@ function enrichAndSort(
                 overall: char?.powerstats
                     ? computeMatchScore(char as any).overall ?? fighter.overall
                     : fighter.overall,
+                imageFocus: char.imageFocus
             };
         })
         .sort((a, b) => b.overall - a.overall);
@@ -108,7 +112,7 @@ export default function LiveRosterStatus({
         const defenderShadow = variant === "primary" ? "shadow-secondary/50" : "shadow-primary/50";
 
         return (
-            <div key={fighter.name} className="flex flex-col items-center gap-0.5">
+            <div key={fighter.id} className="flex flex-col items-center gap-0.5">
                 <div
                     className={cn(
                         "relative rounded-lg border-2 transition-all duration-300 shrink-0",
@@ -118,7 +122,7 @@ export default function LiveRosterStatus({
                             : isKO
                                 ? "border-orange-500 shadow-[0_0_10px_2px] shadow-orange-500/50 scale-95"
                                 : isReviving
-                                    ? "border-amber-300 shadow-[0_0_12px_3px] shadow-amber-300/70 animate-pulse"
+                                    ? "border-purple-300 shadow-[0_0_12px_3px] shadow-purple-300/90 animate-pulse"
                                     : isHealing
                                         ? "border-emerald-400 shadow-[0_0_8px_2px] shadow-emerald-400/50"
                                         : isDefending
@@ -133,12 +137,12 @@ export default function LiveRosterStatus({
                     )}
                     style={isKO ? { animation: "shake 0.4s ease-in-out both" } : undefined}
                 >
-                    <Image
+                    <CharacterImage
                         src={fighter.image}
                         alt={fighter.name}
                         fill
-                        className="object-cover object-top rounded-md"
-                        sizes="64px"
+                        className="w-13 h-13 object-cover object-top rounded-md"
+                        imageFocus={fighter.imageFocus}
                     />
 
                     {isMvp && (
@@ -187,7 +191,7 @@ export default function LiveRosterStatus({
 
                     {/* Revive burst overlay */}
                     {isReviving && fighter.isAlive && (
-                        <div className="absolute inset-0 bg-amber-300/20 animate-ping pointer-events-none rounded-md" />
+                        <div className="absolute inset-0 bg-purple-300 animate-ping pointer-events-none rounded-md" />
                     )}
 
                     {/* Shield flash overlay */}

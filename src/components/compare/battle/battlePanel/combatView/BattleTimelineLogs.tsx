@@ -2,8 +2,8 @@
 "use client"
 
 import { Activity, Swords } from "lucide-react";
-import { Log } from "./BattlePanel";
 import { useEffect, useRef } from "react";
+import { Log, LogType } from "../../BattlePanel";
 
 export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { logs: Log[], maxHeight?: string }) {
     const logContainerRef = useRef<HTMLDivElement>(null);
@@ -19,14 +19,19 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
     }, [logs]);
 
     // Inside BattleTimelineLogs.tsx -> getLogVariantStyles or direct item rendering:
-    const getLogVariantStyles = (type: string, variant: string) => {
+    const getLogVariantStyles = (type: LogType, variant: "primary" | "secondary") => {
         switch (type) {
+            case "attack":
+                /* ${variant == "primary" ? "border-l-primary" : "border-l-secondary"} */
+                /* ${variant == "primary" ? "border-primary" : "border-secondary"} */
+                /* border-l-red-500  */
+                return `bg-${variant}/5  text-${variant} font-bold border-l-4 ${variant == "primary" ? "border-primary" : "border-secondary"} shadow-${variant}/15 animate-flash-red`
             case "heal":
                 return "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 border-l-4 border-l-emerald-400";
             case "defend":
                 return "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 border-l-4 border-l-cyan-400";
             case "revive":
-                return "bg-amber-500/10 border-amber-500/30 text-amber-400 border-l-4 border-l-amber-400";
+                return "bg-purple-500/10 border-purple-500/30 text-purple-400 border-l-4 border-l-purple-400";
             case "ko":
                 return "bg-orange-500/15 border-orange-500/40 text-orange-400 border-l-4 border-l-orange-500 shadow-orange-500/10 animate-flash-red";
             case "finish":
@@ -86,17 +91,48 @@ export default function BattleTimelineLogs({ logs, maxHeight = "h-[140px]" }: { 
                                             <span className="text-muted-foreground">used</span>
                                             {log.powerName && (
                                                 <span className={`px-1.5 py-0.5 rounded bg-${variant}/10 text-${variant} font-semibold text-[10px] border border-${variant}/20 shadow-xs`}>
-                                                    {log.powerName}{log.actionName && log.actionName !== log.powerName ? `: ${log.actionName}` : ""}
+                                                    {log.powerName}{log.actionName ? `: ${log.actionName}` : ""}
                                                 </span>
                                             )}
                                             <span className="text-muted-foreground">vs</span>
                                             <span className="font-semibold text-foreground">{log.defenderName}</span>
                                         </div>
+                                    ) : log.type === "heal" ? (
+                                        <div className="flex flex-wrap items-center gap-1 leading-snug">
+                                            <span className="font-bold text-emerald-400">HEAL</span>
+                                            <span className="font-bold text-foreground">{log.attackerName}</span>
+                                            <span className="text-muted-foreground">recovered health</span>
+                                            {log.powerName && (
+                                                <span className="text-xs text-muted-foreground font-medium">({log.powerName})</span>
+                                            )}
+                                        </div>
+                                    ) : log.type === "defend" ? (
+                                        <div className="flex flex-wrap items-center gap-1 leading-snug">
+                                            <span className="font-bold text-blue-400">DEFEND</span>
+                                            <span className="font-bold text-foreground">{log.defenderName || log.attackerName}</span>
+                                            <span className="text-muted-foreground">braced and blocked incoming damage</span>
+                                        </div>
+                                    ) : log.type === "revive" ? (
+                                        <div className="flex flex-wrap items-center gap-1 leading-snug">
+                                            <span className="font-bold text-purple-400">REVIVE</span>
+                                            <span className="font-bold text-foreground">{log.defenderName}</span>
+                                            <span className="text-muted-foreground">was brought back into the fight!</span>
+                                        </div>
                                     ) : log.type === "ko" && log.attackerName ? (
                                         <div className="flex flex-wrap items-center gap-1 leading-snug">
                                             <span className="font-bold text-orange-400">K.O.</span>
                                             <span className="font-bold text-foreground">{log.defenderName}</span>
-                                            <span className="text-muted-foreground">was taken down by {log.attackerName}'s {log.powerName}</span>
+                                            <span className="text-muted-foreground">was taken down by <span className="font-bold text-foreground">{log.attackerName}'s</span> {`${log.powerName}${log.actionName ? `: ${log.actionName}` : ""}` || "attack"}</span>
+                                        </div>
+                                    ) : log.type === "finish" ? (
+                                        <div className="flex flex-wrap items-center gap-1 leading-snug">
+                                            <span className={`font-bold text-${log.colorClass}`}>FINISH</span>
+                                            <span className="text-muted-foreground">{log.text}</span>
+                                        </div>
+                                    ) : log.type === "rout" ? (
+                                        <div className="flex flex-wrap items-center gap-1 leading-snug">
+                                            <span className="font-bold text-red-500">ROUT</span>
+                                            <span className="text-muted-foreground">{log.text || "The opposing side has been completely routed!"}</span>
                                         </div>
                                     ) : (
                                         <span className="leading-snug font-medium text-foreground">

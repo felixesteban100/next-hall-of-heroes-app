@@ -111,21 +111,7 @@ export default function PowersFilterBar() {
                                         objectLabels={c.objectLabels}
                                     />
                                 ))}
-                                <div className="space-y-2 pt-2 border-t">
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Special Moves</h4>
-                                    <DrawerClose asChild>
-                                        <Button
-                                            size="sm"
-                                            variant={activeHasActions ? "default" : "ghost"}
-                                            onClick={() => updateParam("hasActions", activeHasActions ? "" : "true")}
-                                            className={`w-full justify-start ${activeHasActions ? "font-bold bg-muted/50" : ""}`}
-                                        >
-                                            ⚡ Has Specific Actions Array
-                                        </Button>
-                                    </DrawerClose>
-                                </div>
                             </div>
-
                         </DrawerContent>
                     </Drawer>
 
@@ -157,11 +143,6 @@ export default function PowersFilterBar() {
                 {activeTier && (
                     <span className={`inline-flex items-center gap-1 text-xs font-bold ${POWER_TIER_COLOR[parseInt(activeTier) as keyof typeof POWER_TIER].bg} rounded-full px-3 py-1`}>
                         <ActiveTierIcon size={12} /> Tier #{activeTier} {POWER_TIER[parseInt(activeTier) as keyof typeof POWER_TIER]}
-                    </span>
-                )}
-                {activeHasActions && (
-                    <span className={`inline-flex items-center gap-1 text-xs font-bold bg-red-500 rounded-full px-3 py-1`}>
-                        <Zap size={12} /> With actions
                     </span>
                 )}
             </div>

@@ -219,7 +219,7 @@ export function useCombatScript(
                             powerName: revivalPower.name,
                             text: `${defender.name} cheated defeat using [${revivalPower.name}], surging back into combat!`,
                             icon: RefreshCw,
-                            colorClass: "text-amber-400 font-bold",
+                            colorClass: "text-purple-400 font-bold",
                             variant,
                         },
                     });
@@ -236,6 +236,7 @@ export function useCombatScript(
                             attackerName: attacker.name,
                             defenderName: defender.name,
                             powerName: powerTitle || moveName,
+                            actionName: moveName,
                             text: `${defender.name} ${phrase}`,
                             icon: Skull,
                             colorClass: "text-orange-500 font-bold",
@@ -294,7 +295,8 @@ export function useCombatScript(
             log: {
                 id: timeStep++,
                 type: "finish",
-                text: `Battle Over: ${winnerName} secures victory via ${winType} (${ROUNDS} Rounds)!`,
+                /* (${ROUNDS} Rounds) */
+                text: `Battle Over: ${winnerName} secures victory via ${winType}!`,
                 icon: Trophy,
                 colorClass: "text-amber-400 font-black",
                 variant: isTeamAWinner ? "primary" : "secondary",

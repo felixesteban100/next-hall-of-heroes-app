@@ -118,6 +118,13 @@ export function useCombatPlayback(
         if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
     }, [combatScript.length, currentStepIndex]);
 
+    const handlePrevStep = useCallback(() => {
+        setCurrentStepIndex((prev) =>
+            prev < combatScript.length - 1 ? prev - 1 : prev
+        );
+        if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
+    }, [combatScript.length, currentStepIndex]);
+
     const togglePlayPause = useCallback(() => {
         setIsPlaying((p) => !p);
     }, []);
@@ -146,6 +153,7 @@ export function useCombatPlayback(
         // actions
         loadScript,
         handleNextStep,
+        handlePrevStep,
         togglePlayPause,
     };
 }

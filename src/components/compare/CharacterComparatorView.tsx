@@ -234,13 +234,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 )}
                             </div>
                             <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-md">
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                                        Stats radar
-                                    </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
-                                </div>
-
                                 <TeamTacticalOverview
                                     entitiesA={entitiesA}
                                     entitiesB={entitiesB}
@@ -297,7 +290,14 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     { label: "Overall", key: "overall" },
                                 ]}
                             />
-
+                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-b-md">
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                                        Stats radar
+                                    </h3>
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                                </div>
+                            </div>
                         </div>
                     )}
 

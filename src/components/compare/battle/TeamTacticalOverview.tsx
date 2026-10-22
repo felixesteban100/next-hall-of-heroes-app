@@ -44,7 +44,7 @@ export function TeamTacticalOverview({ entitiesA, entitiesB, nameA, nameB }: Pro
     const primaryVector = Math.abs(totalA - totalB) > 20 ? "Stat Density Gap" : "Clutch Synergy";
 
     return (
-        <div className="py-2.5 border-t border-muted-foreground/10 space-y-2.5">
+        <div className="py-2.5 space-y-2.5">
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 <span>Team Synergy & Advantages</span>
                 <span className="text-cyan-400 font-extrabold">Dynamic Analysis</span>

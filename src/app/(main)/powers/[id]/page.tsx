@@ -88,6 +88,8 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     const ActivationIcon = POWER_ACTIVATION_TYPE_ICON[power.activationType]
     const activationColor = POWER_ACTIVATION_TYPE_COLOR[power.activationType]
 
+    console.log(power.activationType)
+
     /* Power Tier Badge: Show where this power sits on your tier scale (e.g., Tier 2: Tactical / Basic).
 
 Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 strongest characters who possess this ability before listing everyone else. */
@@ -119,19 +121,18 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                         </Badge>
 
                         {power.combatRole && (
-                            <Badge variant="outline" className={`${combatRoleColor.bg} gap-1 font-medium`}>
-                                <CombatRoleIcon size={12} className={``} />
+                            <Badge className={`${combatRoleColor.bg} gap-1 font-medium`}>
+                                <CombatRoleIcon size={12} />
                                 {power.combatRole}
                             </Badge>
                         )}
 
-                        {
-                            power.activationType &&
+                        {power.activationType && (
                             <Badge className={`${activationColor.bg}`}>
                                 <ActivationIcon size={12} />
-                                {power.activationType || "—"}
+                                {power.activationType}
                             </Badge>
-                        }
+                        )}
                     </div>
 
                     <h1 className="text-3xl font-bold">{power.name}</h1>
