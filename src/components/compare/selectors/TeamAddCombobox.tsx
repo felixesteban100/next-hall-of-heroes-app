@@ -96,6 +96,9 @@ export function TeamAddCombobox({
             params.delete("b");
             params.delete("id1");
             params.delete("id2");
+            params.delete("a_name");
+            params.delete("b_name");
+
         } else {
             params.set("mode", "team");
             params.set(paramKey, nextIds.join(","));

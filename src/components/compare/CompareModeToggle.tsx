@@ -36,6 +36,8 @@ export function CompareModeToggle() {
             params.delete("b");
             params.delete("p");
             params.delete("size");
+            params.delete("a_name");
+            params.delete("b_name");
 
             // Prefer existing id1/id2; otherwise seed from team/bracket
             const hasId1 = params.get("id1");
@@ -79,6 +81,8 @@ export function CompareModeToggle() {
 
             params.delete("id1");
             params.delete("id2");
+            params.delete("a_name");
+            params.delete("b_name");
             pushParams(params);
             return;
         }
@@ -93,7 +97,6 @@ export function CompareModeToggle() {
                 Number(searchParams.get("id2")),
             ].filter((n) => typeof n === "number" && !Number.isNaN(n) && n > 0);
 
-            console.log(seed)
 
 
             // Unique deduplicated participant IDs
@@ -123,6 +126,8 @@ export function CompareModeToggle() {
             params.delete("b");
             params.delete("id1");
             params.delete("id2");
+            params.delete("a_name");
+            params.delete("b_name");
 
             pushParams(params);
             return;
