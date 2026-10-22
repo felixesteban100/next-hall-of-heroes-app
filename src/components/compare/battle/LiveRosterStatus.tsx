@@ -29,9 +29,9 @@ function enrichAndSort(
     roster: FighterState[],
     chars: CharacterWithJoinTeamUniversePowerEnemies[]
 ): EnrichedFighter[] {
-    return roster
-        .map((fighter) => {
-            const char = chars.find((c) => c.name === fighter.name)!;
+    return chars
+        .map((char) => {
+            const fighter = roster.find((c) => c.name === char.name)!;
 
             return {
                 ...fighter,
@@ -64,18 +64,18 @@ export default function LiveRosterStatus({
         [rosterB, teamBChars]
     );
 
-    const totalFighters = enrichedA.length + enrichedB.length;
+    // const totalFighters = enrichedA.length + enrichedB.length;
 
     // Dynamic avatar size based on team size and context
-    const avatarSize = isDialog
-        ? "w-14 h-14"
-        : totalFighters <= 4
-            ? "w-12 h-12"
-            : totalFighters <= 10
-                ? "w-10 h-10"
-                : totalFighters <= 16
-                    ? "w-9 h-9"
-                    : "w-8 h-8";
+    const avatarSize = "w-14 h-14" /* isDialog
+        ?"w-14 h-14"
+    : totalFighters <= 4
+        ? "w-12 h-12"
+        : totalFighters <= 10
+            ? "w-10 h-10"
+            : totalFighters <= 16
+                ? "w-9 h-9"
+                : "w-8 h-8"; */
 
     const nameTextSize = isDialog ? "text-[10px] max-w-[72px]" : "text-[9px] max-w-[56px]";
 

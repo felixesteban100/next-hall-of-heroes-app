@@ -136,7 +136,6 @@ export function CharacterCombobox({
                 onBlur={() => {
                     requestAnimationFrame(() => setInputText(null));
                 }}
-                className="w-full bg-transparent rounded-lg text-sm p-3 outline-none focus:border-primary border-none shadow-none"
             />
             <ComboboxContent>
                 <ComboboxEmpty>

@@ -131,7 +131,6 @@ export function TeamAddCombobox({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 disabled={disabled || ids.length >= max}
-                className="w-full bg-transparent rounded-lg text-sm p-3 outline-none focus:border-primary border-none shadow-none"
             />
             <ComboboxContent>
                 <ComboboxEmpty>
