@@ -75,12 +75,12 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const bestTeamNameB = await getBestTeamName(entitiesB, 1);
 
     const entityAName =
-        mode === "team"
+        (mode === "team" && entitiesA.length > 1)
             ? (explicitTeamNameA ?? bestTeamNameA ?? "Team A")
             : entityA?.name;
 
     const entityBName =
-        mode === "team"
+        (mode === "team" && entitiesB.length > 1)
             ? (explicitTeamNameB ?? bestTeamNameB ?? "Team B")
             : entityB?.name;
 
