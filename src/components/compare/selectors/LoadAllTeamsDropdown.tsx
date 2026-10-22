@@ -17,6 +17,7 @@ import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 
 type TeamOption = {
     name: string;
+    team_id?: number;
     ids: number[];
     totalCount: number;
 };
@@ -116,7 +117,7 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
                             className="flex items-center justify-between cursor-pointer py-1.5 px-2 text-xs"
                         >
                             <span className="font-medium text-foreground truncate max-w-[160px]">
-                                {team.name}
+                                {team.name} <span className="font-semibold">{team.team_id && `#${team.team_id}`}</span>
                             </span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
                                 {team.totalCount}

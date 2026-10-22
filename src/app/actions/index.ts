@@ -481,6 +481,7 @@ export async function getAllTeamsWithMembers() {
         .map(([name, ids]) => ({
             name,
             totalCount: ids.length,
+            team_id: teamsDocs.find(t => t.name === name)?.id,
             ids // Send the full list of IDs to the client
         }))
         .sort((a, b) => a.name.localeCompare(b.name));

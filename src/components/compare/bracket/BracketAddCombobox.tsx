@@ -129,7 +129,7 @@ export function BracketPicker({
                         excludeIds={excludeIds}
                         initialOptions={initialOptions}
                         max={size}
-                        placeholder={`Add fighter ${ids.length} of ${size}…`}
+                        placeholder={`Add fighter ${ids.length + 1} of ${size}…`}
                     />
                 </div>
             )}
