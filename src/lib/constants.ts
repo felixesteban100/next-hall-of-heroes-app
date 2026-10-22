@@ -425,8 +425,8 @@ export const POWER_ACTIVATION_TYPE_ICON: Record<string, LucideIcon> = {
 };
 
 export const POWER_ACTIVATION_TYPE_COLOR = {
-    "Instant": { text: "text-amber-500", bg: "bg-amber-500 text-white" },
-    "Action": { text: "text-blue-500", bg: "bg-blue-500 text-white" },
-    "Passive": { text: "text-emerald-500", bg: "bg-emeral-500 text-white" },
-    "Channeled": { text: "text-purple-500", bg: "bg-purple-500 text-white" },
+    "Instant": { text: "text-amber-500 dark:text-amber-500", bg: "bg-amber-500 text-white" },
+    "Action": { text: "text-blue-500 dark:text-blue-500", bg: "bg-blue-500 text-white" },
+    "Passive": { text: "text-emerald-500 dark:text-emerald-500", bg: "bg-emeral-500 text-white" },
+    "Channeled": { text: "text-purple-500 dark:text-purple-500", bg: "bg-purple-500 text-white" },
 } as const;

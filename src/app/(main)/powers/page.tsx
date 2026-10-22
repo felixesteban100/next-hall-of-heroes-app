@@ -22,6 +22,7 @@ export default async function page({
         tier?: string,
         combatRole?: string,
         activationType?: string,
+        hasActions?: string,
     }>;
 }) {
     const params = await searchParams;
@@ -34,12 +35,16 @@ export default async function page({
     const tier = parseInt(params.tier?.toString() || "");
     const combatRole = params.combatRole?.toString() || "";
     const activationType = params.activationType?.toString() || "";
+    const hasActions = params.hasActions?.toString() === "true";
 
     const query: Record<string, string | number | object> = {};
     if (name) query.name = { $regex: name, $options: "i" };
     if (!Number.isNaN(tier)) query.tier = tier;
     if (combatRole) query.combatRole = combatRole;
     if (activationType) query.activationType = activationType;
+    if (hasActions) {
+        query.actions = { $exists: true, $not: { $size: 0 } };
+    }
 
     const powersPerPage = await collectionPowers
         .find(query)
