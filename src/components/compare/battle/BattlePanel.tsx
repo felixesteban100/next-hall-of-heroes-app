@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Swords, Maximize2 } from "lucide-react";
-import { simulateSpar } from "@/lib/compare/compare_utls";
+import { simulateSpar } from "@/lib/compare";
 import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import {

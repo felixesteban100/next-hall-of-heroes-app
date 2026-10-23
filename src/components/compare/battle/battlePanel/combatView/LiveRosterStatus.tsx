@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import Image from "next/image";
 import { Crown, Shield, Skull, Swords } from "lucide-react";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { computeMatchScore } from "@/lib/compare";
+
 import { cn } from "@/lib/utils";
 import { FighterState, Log } from "../../BattlePanel";
 import { CharacterImage } from "@/components/shared/CharacterImage";
@@ -139,7 +139,7 @@ export default function LiveRosterStatus({
                 >
                     <CharacterImage
                         src={fighter.image}
-                        alt={fighter.name}
+                        alt={`${fighter.name}-${fighter.id}`}
                         fill
                         className="w-13 h-13 object-cover object-top rounded-md"
                         imageFocus={fighter.imageFocus}
@@ -253,7 +253,7 @@ export default function LiveRosterStatus({
 // import Image from "next/image";
 // import { FighterState, Log } from "./BattlePanel";
 // import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-// import { computeMatchScore } from "@/lib/compare/compare_utls";
+// import { computeMatchScore } from "@/lib/compare";
 // import { Crown, Swords } from "lucide-react";
 // import { useEffect, useRef, useState } from "react";
 

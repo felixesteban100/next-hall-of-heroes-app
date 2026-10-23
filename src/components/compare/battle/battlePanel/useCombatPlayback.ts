@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FighterState, ScriptItem } from "../BattlePanel";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { computeMatchScore } from "@/lib/compare";
 
 const STEP_INTERVAL_MS = 1400;
 
@@ -120,9 +120,9 @@ export function useCombatPlayback(
 
     const handlePrevStep = useCallback(() => {
         setCurrentStepIndex((prev) =>
-            prev < combatScript.length - 1 ? prev - 1 : prev
+            prev > 0 ? prev - 1 : prev
         );
-        if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
+        if (currentStepIndex <= 1) setIsPlaying(false);
     }, [combatScript.length, currentStepIndex]);
 
     const togglePlayPause = useCallback(() => {

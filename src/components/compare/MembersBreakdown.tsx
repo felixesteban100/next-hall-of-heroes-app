@@ -1,11 +1,10 @@
 // components/compare/MemberBreakdown.tsx
 "use client";
 
-import { useState } from "react";
-import { Row } from "@/components/compare/rows/Row";
 import { Cell, EmptyCell } from "@/components/compare/rows/Cell";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { computeMatchScore } from "@/lib/compare";
+
 
 type Props = {
     entitiesA: CharacterWithJoinTeamUniversePowerEnemies[]

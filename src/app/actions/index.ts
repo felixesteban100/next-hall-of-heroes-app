@@ -1,7 +1,7 @@
 "use server";
 
 import { collectionCharacters, collectionTeams } from "@/db/mongodb";
-import { groupTeams } from "@/lib/compare/compare_utls";
+import { groupTeams } from "@/lib/compare";
 import { CharacterOption } from "@/types";
 import { revalidatePath, revalidateTag } from 'next/cache';
 

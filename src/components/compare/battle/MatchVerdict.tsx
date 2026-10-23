@@ -1,5 +1,5 @@
 // components/compare/matchesVerdict/TeamMatchVerdict.tsx
-import type { TeamAggregate } from "@/lib/compare/compare_utls";
+import type { TeamAggregate } from "@/lib/compare";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Zap, Trophy, ShieldAlert } from "lucide-react";
 import VS from "../VS";

@@ -15,7 +15,8 @@ import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIc
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { computeMatchScore } from "@/lib/compare";
+
 import CompareWithButton from "@/components/shared/CompareWithButton";
 
 export const instant = false;

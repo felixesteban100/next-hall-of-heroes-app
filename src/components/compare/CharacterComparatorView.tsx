@@ -1,7 +1,6 @@
 "use client"
 
 import { CompareMode } from "@/lib/compare/compareParams";
-import { groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, avgTeamPowerstats, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/compare/compare_utls";
 import { BattlePanel } from "@/components/compare/battle/BattlePanel";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
@@ -19,15 +18,18 @@ import { Zap } from "lucide-react";
 import MatchVerdict from "./battle/MatchVerdict";
 import { TeamProfileSlot } from "./stats/TeamProfileSlot";
 import { ProfileSlot } from "./stats/ProfileSlot";
+import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/compare";
+import { PowerFormulaTab } from "./PowerFormulaTab";
 
 
-type CompareTab = "overview" | "combat" | "stats" | "info";
+type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
 
 const TABS: { id: CompareTab; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "combat", label: "Combat" },
     { id: "stats", label: "Stats" },
     { id: "info", label: "Info" },
+    { id: "calculations", label: "Calculations" },
 ];
 
 type CharacterComparatorViewProps = {
@@ -331,6 +333,16 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 />
                             ))}
                         </div>
+                    )}
+
+                    {/* FORMULA TAB */}
+                    {activeTab === "calculations" && (
+                        <PowerFormulaTab
+                            sideA={entitiesA}
+                            sideB={entitiesB}
+                            labelA={entityAName}
+                            labelB={entityBName}
+                        />
                     )}
 
                 </div>

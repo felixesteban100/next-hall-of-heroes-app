@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock } from "lucide-react";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { computeMatchScore } from "@/lib/compare";
+
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
 import { FighterState, Log, ScriptItem, ROUNDS } from "../BattlePanel";
 

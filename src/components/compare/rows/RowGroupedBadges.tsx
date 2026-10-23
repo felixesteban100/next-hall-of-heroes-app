@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { Row } from "./Row";
 import { Cell, EmptyCell } from "./Cell";
-import type { GroupedBadges, BadgeMeta, SharedBadge } from "@/lib/compare/compare_utls";
+import type { GroupedBadges, BadgeMeta, SharedBadge } from "@/lib/compare";
 
 function BadgeVisual({ item }: { item: BadgeMeta }) {
     const Icon = item.icon;

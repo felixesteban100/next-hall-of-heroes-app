@@ -1,6 +1,6 @@
 import { ComparisonHeader } from "@/components/compare/stats/ComparisonHeader";
 import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
-import { aggregateTeamScores } from "@/lib/compare/compare_utls";
+import { aggregateTeamScores } from "@/lib/compare";
 import { detectMode, parseIdList } from "@/lib/compare/compareParams";
 import { fetchCharactersByIds, fetchCharactersJoinedById } from "@/lib/compare/fetchCompareEntities";
 import { TeamSelectorCard } from "@/components/compare/selectors/TeamSelectorCard";

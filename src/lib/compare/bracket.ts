@@ -1,5 +1,5 @@
-import { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { computeMatchScore } from "./compare_utls";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { computeMatchScore } from "./scoringUtils";
 
 export type BracketFighter = {
     id: string | number;

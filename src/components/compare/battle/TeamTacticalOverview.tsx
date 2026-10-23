@@ -1,7 +1,7 @@
 // components/compare/TeamTacticalOverview.tsx
 "use client";
 
-import { avgTeamPowerstats } from "@/lib/compare/compare_utls";
+import { avgTeamPowerstats } from "@/lib/compare";
 
 type CharacterInfo = {
     name: string;

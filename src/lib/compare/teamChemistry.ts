@@ -1,5 +1,5 @@
 import type { CharacterWithJoinTeamUniversePowerEnemies, Team, Universe } from "@/types";
-import { getPowerNames, getTeamNames } from "@/lib/compare/compare_utls"; // your paths
+import { getPowerNames, getTeamNames } from "./formatters";
 
 function publisherName(c: CharacterWithJoinTeamUniversePowerEnemies) {
     const p: Universe = c.biography?.publisher;

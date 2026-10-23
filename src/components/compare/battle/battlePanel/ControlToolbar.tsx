@@ -41,7 +41,7 @@ export default function ControlToolbar({
             <button
                 type="button"
                 onClick={handlePrevStep}
-                disabled={currentStepIndex <= 0}
+                disabled={currentStepIndex < 1}
                 title="Previous Step"
                 className="inline-flex items-center justify-center size-7 rounded-lg border border-muted-foreground/20 hover:bg-muted transition-colors disabled:opacity-40"
             >

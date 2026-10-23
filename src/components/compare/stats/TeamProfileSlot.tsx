@@ -2,7 +2,8 @@ import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
 import { ChemistryResult } from "@/lib/compare/teamChemistry";
 import { Crown } from "lucide-react";
-import { computeMatchScore } from "@/lib/compare/compare_utls";
+import { computeMatchScore } from "@/lib/compare";
+
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 
