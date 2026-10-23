@@ -156,10 +156,10 @@ function Side({
                         )}
                     </div>
                 )}
-                {team.supportBoost > 0 && (
+                {team.rosterMedian > 0 && (
                     <>
                         {team.chemistry ? <span className="mx-1 text-muted-foreground/40">·</span> : null}
-                        Support +{team.supportBoost.toFixed(1)}
+                        Median Depth +{(team.rosterMedian * 0.35).toFixed(1)}
                     </>
                 )}
                 <span className="mx-1 text-muted-foreground/40">·</span>
