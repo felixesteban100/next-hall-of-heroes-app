@@ -106,7 +106,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                         Gallery
                     </p>
 
-                    <MasonryGallery images={Object.fromEntries(universe.comics.map((comic, index) => [String(index), comic]))} characterName={universe.name} />
+                    <MasonryGallery images={{ "background": universe.background, ...Object.fromEntries(universe.comics.map((comic, index) => [String(index), comic])) }} characterName={universe.name} />
                 </div>
             }
         </div>
