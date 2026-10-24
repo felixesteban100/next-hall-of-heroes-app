@@ -3,7 +3,6 @@ import { EnrichedFighter } from "@/components/compare/battle/battlePanel/Cinemat
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { Atom, Lock, Shield, Sparkles, Swords } from "lucide-react";
 
-
 export const ROLE_STYLE: Record<PowerRole, {
     Icon: React.ElementType;
     text: string;
@@ -59,6 +58,17 @@ export const ROLE_FALLBACK_ELEMENT: Partial<Record<PowerRole, ElementType>> = {
     "Utility": "cosmic",
     "Hybrid / Versatile": "shadow",
 };
+
+
+// Type guard to ensure a power item is a full Power and not a FallbackItem
+function isRealPower(power: any): power is Power {
+    return (
+        power !== null &&
+        typeof power === "object" &&
+        !("isFallback" in power) &&
+        "combatRole" in power
+    );
+}
 
 export function detectElement(power?: Power): ElementType {
     if (!power) return "none";

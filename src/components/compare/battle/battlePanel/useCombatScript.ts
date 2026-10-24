@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock } from "lucide-react";
 import { computeMatchScore } from "@/lib/compare";
 
-import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole, Power } from "@/types";
 import { FighterState, Log, ScriptItem, ROUNDS } from "../BattlePanel";
 
 const ELIMINATION_PHRASES = [
@@ -13,23 +13,37 @@ const ELIMINATION_PHRASES = [
     "was breached and knocked out of the engagement!",
 ];
 
+// 🚀 Type guard helper to filter out FallbackItem objects
+function isRealPower(power: any): power is Power {
+    return (
+        power !== null &&
+        typeof power === "object" &&
+        !("isFallback" in power) &&
+        "combatRole" in power
+    );
+}
+
 function toFighterState(
     c: CharacterWithJoinTeamUniversePowerEnemies,
     fallbackName: string
 ): FighterState {
+    // 🚀 Filter powers to guarantee Power[] type compatibility
+    const validPowers = Array.isArray(c.powers) ? c.powers.filter(isRealPower) : [];
     return {
         name: c.name ?? fallbackName,
+        image: c.images.md ?? "",
+        imageFocus: c.imageFocus ?? "center",
         overall: c.powerstats ? (computeMatchScore(c as any).overall ?? 50) : 50,
         isAlive: true,
-        powers: c.powers ?? [],
+        powers: validPowers,
         hasRevived: false,
     };
 }
 
 function getPowersByRole(fighter: FighterState, role: PowerRole) {
     if (!Array.isArray(fighter.powers)) return [];
-    return fighter.powers.filter(
-        (p: any) => p && !p.isFallback && p.combatRole === role
+    return fighter.powers.filter(isRealPower).filter(
+        (p) => p.combatRole === role
     );
 }
 
@@ -98,14 +112,14 @@ export function useCombatScript(
 
             // ── Heal check ───────────────────────────────────────────────────
             const utilityPowers = getPowersByRole(attacker, "Utility");
-            const hasHealingTrait = utilityPowers.some((p: any) => {
+            const hasHealingTrait = utilityPowers.some((p) => {
                 const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
                 return txt.includes("heal") || txt.includes("regenerat") || txt.includes("recovery");
             });
 
             if (isAttackerWinnerTeam && hasHealingTrait && Math.random() < 0.25) {
                 const healPower =
-                    utilityPowers.find((p: any) => {
+                    utilityPowers.find((p) => {
                         const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
                         return txt.includes("heal") || txt.includes("regenerat");
                     }) ?? utilityPowers[0];
@@ -136,8 +150,13 @@ export function useCombatScript(
                 ...getPowersByRole(attacker, "Hybrid / Versatile"),
             ];
             const fallbackPowers = (attacker.powers ?? []).filter(
-                (p: any) =>
-                    p && !p.isFallback && p.name && p.combatRole !== "Defensive" && p.combatRole !== "Utility"
+                (p): p is Power =>
+                    p !== null &&
+                    typeof p === "object" &&
+                    !("isFallback" in p) &&
+                    Boolean(p.name) &&
+                    p.combatRole !== "Defensive" &&
+                    p.combatRole !== "Utility"
             );
             const pool = strikingPowers.length > 0 ? strikingPowers : fallbackPowers;
 
@@ -184,14 +203,12 @@ export function useCombatScript(
             }
 
             // ── Knockout evaluation ──────────────────────────────────────────
-            // ── Knockout evaluation ──────────────────────────────────────────
             const powerDiff = attacker.overall - defender.overall;
             const baseKoThreshold = isDefenderWinnerTeam ? 0.12 : 0.40;
             const koChance = powerDiff >= 0 ? baseKoThreshold + 0.18 : baseKoThreshold;
             const canEliminate = !isDefenderWinnerTeam || activeDefenders.length > 1;
 
             if (Math.random() < koChance && canEliminate) {
-                // First, issue the K.O. event and set isAlive to false
                 defender.isAlive = false;
                 const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
 
@@ -213,13 +230,12 @@ export function useCombatScript(
                     },
                 });
 
-                // Check for revival power ONLY AFTER being taken down
                 const revivalPowers = [
                     ...getPowersByRole(defender, "Defensive"),
                     ...getPowersByRole(defender, "Utility"),
                     ...getPowersByRole(defender, "Hybrid / Versatile"),
                 ];
-                const revivalPower = revivalPowers.find((p: any) => {
+                const revivalPower = revivalPowers.find((p) => {
                     const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
                     return (
                         txt.includes("immortal") ||
@@ -231,7 +247,6 @@ export function useCombatScript(
                     );
                 });
 
-                // Trigger revive in a subsequent step if eligible
                 if (!defender.hasRevived && revivalPower && Math.random() < 0.85) {
                     defender.hasRevived = true;
                     defender.isAlive = true;
@@ -243,7 +258,7 @@ export function useCombatScript(
                         log: {
                             id: timeStep++,
                             type: "revive",
-                            attackerName: defender.name, // 🚀 Set attackerName so the card knows who activated the revive!
+                            attackerName: defender.name,
                             defenderName: defender.name,
                             powerName: revivalPower.name,
                             text: `${defender.name} cheated death using [${revivalPower.name}], surging back into combat!`,
@@ -277,7 +292,6 @@ export function useCombatScript(
             roundNum++;
         }
 
-        // ── Final rout & banner ───────────────────────────────────────────────
         const losingTeamFinal = isTeamAWinner ? tempB : tempA;
         const remaining = losingTeamFinal.filter((c) => c.isAlive);
         if (remaining.length > 0) {
@@ -304,7 +318,6 @@ export function useCombatScript(
             log: {
                 id: timeStep++,
                 type: "finish",
-                /* (${ROUNDS} Rounds) */
                 text: `Battle Over: ${winnerName} secures victory via ${winType}!`,
                 icon: Trophy,
                 colorClass: "text-amber-400 font-black",
