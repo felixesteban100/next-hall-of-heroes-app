@@ -16,6 +16,7 @@ import ControlToolbar from "./battlePanel/ControlToolbar";
 import CombatView from "./battlePanel/CombatView";
 import { useCombatScript } from "./battlePanel/useCombatScript";
 import { useCombatPlayback } from "./battlePanel/useCombatPlayback";
+import CinematicCombatView from "./battlePanel/CinematicCombatView";
 
 export const ROUNDS = 100;
 
@@ -166,14 +167,20 @@ export function BattlePanel({
                                             <div className="pr-4">{toolbar}</div>
                                         </DialogTitle>
                                     </DialogHeader>
-                                    <CombatView {...sharedCombatViewProps} isDialog />
+                                    <CinematicCombatView
+                                        {...sharedCombatViewProps}
+                                        isDialog
+                                    />
                                 </DialogContent>
                             </Dialog>
                         </div>
                     </div>
                 </div>
 
-                <CombatView {...sharedCombatViewProps} isDialog={false} />
+                {/* <CombatView {...sharedCombatViewProps} isDialog={false} /> */}
+                <CinematicCombatView
+                    {...sharedCombatViewProps}
+                />
 
                 <RoundDistributionChart
                     aWins={result?.aWins}

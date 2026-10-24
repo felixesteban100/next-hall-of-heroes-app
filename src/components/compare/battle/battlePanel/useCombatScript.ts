@@ -184,12 +184,36 @@ export function useCombatScript(
             }
 
             // ── Knockout evaluation ──────────────────────────────────────────
+            // ── Knockout evaluation ──────────────────────────────────────────
             const powerDiff = attacker.overall - defender.overall;
             const baseKoThreshold = isDefenderWinnerTeam ? 0.12 : 0.40;
             const koChance = powerDiff >= 0 ? baseKoThreshold + 0.18 : baseKoThreshold;
             const canEliminate = !isDefenderWinnerTeam || activeDefenders.length > 1;
 
             if (Math.random() < koChance && canEliminate) {
+                // First, issue the K.O. event and set isAlive to false
+                defender.isAlive = false;
+                const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
+
+                script.push({
+                    targetTeam: defenderTeamTag,
+                    targetName: defender.name,
+                    isKO: true,
+                    log: {
+                        id: timeStep++,
+                        type: "ko",
+                        attackerName: attacker.name,
+                        defenderName: defender.name,
+                        powerName: powerTitle || moveName,
+                        actionName: moveName,
+                        text: `${defender.name} ${phrase}`,
+                        icon: Skull,
+                        colorClass: "text-orange-500 font-bold",
+                        variant,
+                    },
+                });
+
+                // Check for revival power ONLY AFTER being taken down
                 const revivalPowers = [
                     ...getPowersByRole(defender, "Defensive"),
                     ...getPowersByRole(defender, "Utility"),
@@ -207,8 +231,11 @@ export function useCombatScript(
                     );
                 });
 
-                if (!defender.hasRevived && revivalPower) {
+                // Trigger revive in a subsequent step if eligible
+                if (!defender.hasRevived && revivalPower && Math.random() < 0.85) {
                     defender.hasRevived = true;
+                    defender.isAlive = true;
+
                     script.push({
                         targetTeam: defenderTeamTag,
                         targetName: defender.name,
@@ -216,31 +243,12 @@ export function useCombatScript(
                         log: {
                             id: timeStep++,
                             type: "revive",
+                            attackerName: defender.name, // 🚀 Set attackerName so the card knows who activated the revive!
                             defenderName: defender.name,
                             powerName: revivalPower.name,
-                            text: `${defender.name} cheated defeat using [${revivalPower.name}], surging back into combat!`,
+                            text: `${defender.name} cheated death using [${revivalPower.name}], surging back into combat!`,
                             icon: RefreshCw,
                             colorClass: "text-purple-400 font-bold",
-                            variant,
-                        },
-                    });
-                } else {
-                    defender.isAlive = false;
-                    const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
-                    script.push({
-                        targetTeam: defenderTeamTag,
-                        targetName: defender.name,
-                        isKO: true,
-                        log: {
-                            id: timeStep++,
-                            type: "ko",
-                            attackerName: attacker.name,
-                            defenderName: defender.name,
-                            powerName: powerTitle || moveName,
-                            actionName: moveName,
-                            text: `${defender.name} ${phrase}`,
-                            icon: Skull,
-                            colorClass: "text-orange-500 font-bold",
                             variant,
                         },
                     });
