@@ -60,16 +60,6 @@ export const ROLE_FALLBACK_ELEMENT: Partial<Record<PowerRole, ElementType>> = {
 };
 
 
-// Type guard to ensure a power item is a full Power and not a FallbackItem
-function isRealPower(power: any): power is Power {
-    return (
-        power !== null &&
-        typeof power === "object" &&
-        !("isFallback" in power) &&
-        "combatRole" in power
-    );
-}
-
 export function detectElement(power?: Power): ElementType {
     if (!power) return "none";
     const haystack = [

@@ -17,6 +17,24 @@ interface OverlayConfig {
 
 // 🎨 Highly Iconic & Instantly Recognizable Visual Signatures
 const THEMES: Record<string, OverlayConfig> = {
+    // 🧠 Psychic / Telekinesis / Telepathy / Mind Control (Expanding Psi-Wave Rings)
+    psychic: {
+        gradient: "bg-gradient-to-t from-fuchsia-950/90 via-pink-600/80 to-violet-400/60",
+        border: "border-pink-300 shadow-[0_0_35px_#ec4899,inset_0_0_30px_#d946ef]",
+        glow: "animate-pulse",
+        extraEffects: (
+            <>
+                {/* Concentric Telekinetic Psi-Shockwaves */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-pink-200 shadow-[0_0_25px_#ec4899] animate-ping" style={{ animationDuration: "1s" }} />
+                    <div className="absolute w-10 h-10 rounded-full border border-fuchsia-100 shadow-[0_0_15px_#d946ef] animate-ping" style={{ animationDelay: "300ms", animationDuration: "0.8s" }} />
+                </div>
+                {/* Mind Distortion Aura */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(236,72,153,0.3)_0%,_transparent_70%)] animate-pulse" style={{ animationDuration: "0.6s" }} />
+            </>
+        ),
+    },
+
     // 👊 Heavy Melee / Martial Arts / Superhuman Strength (Impact Shockwaves & Kinetic Sparks)
     combat: {
         gradient: "bg-gradient-to-tr from-red-950/90 via-orange-600/80 to-amber-300/60",
