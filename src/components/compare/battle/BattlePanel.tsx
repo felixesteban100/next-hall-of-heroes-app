@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Swords, Maximize2 } from "lucide-react";
 import { simulateSpar } from "@/lib/compare";
 import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
-import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power } from "@/types";
 import {
     Dialog,
     DialogContent,
@@ -40,7 +40,7 @@ export type FighterState = {
     overall: number;
     isAlive: boolean;
     image: string;
-    powers?: any[];
+    powers?: (Power | FallbackItem)[];
     hasRevived?: boolean;
     imageFocus: string;
 };

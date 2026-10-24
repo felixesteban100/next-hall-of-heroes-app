@@ -15,6 +15,8 @@ function buildInitialRoster(
         isAlive: true,
         powers: c.powers ?? [],
         hasRevived: false,
+        imageFocus: c.imageFocus,
+        image: c.images.md
     }));
 }
 
