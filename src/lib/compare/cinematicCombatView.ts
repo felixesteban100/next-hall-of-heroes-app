@@ -79,7 +79,10 @@ export function detectElement(power?: Power): ElementType {
 export function getRealPowers(char: CharacterWithJoinTeamUniversePowerEnemies): Power[] {
     return (char.powers ?? []).filter(
         (p): p is Power =>
-            p !== null && typeof p === "object" && !("isFallback" in p) && "combatRole" in p
+            p !== null &&
+            typeof p === "object" &&
+            !("isFallback" in p) &&
+            "combatRole" in p
     );
 }
 
@@ -105,12 +108,22 @@ export function resolveActivePower(
 
     // 2. Fallback: use the attacker's own powers array from FighterState
     if (Array.isArray(attacker.powers) && attacker.powers.length > 0) {
-        if (log.powerName) {
-            const exact = attacker.powers.find((p: any) => p?.name === log.powerName);
-            if (exact) return exact;
+        // 🚀 Type Guard to filter out FallbackItem types completely
+        const validPowers = attacker.powers.filter(
+            (p): p is Power =>
+                p !== null &&
+                typeof p === "object" &&
+                !("isFallback" in p) &&
+                "combatRole" in p
+        );
+
+        if (validPowers.length > 0) {
+            if (log.powerName) {
+                const exact = validPowers.find((p) => p.name === log.powerName);
+                if (exact) return exact;
+            }
+            return validPowers.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
         }
-        const validPowers = attacker.powers.filter((p: any) => p && !p.isFallback && p.combatRole);
-        return validPowers.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] ?? attacker.powers[0];
     }
 
     return undefined;
