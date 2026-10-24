@@ -1,0 +1,270 @@
+import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
+import {
+    Crown, Skull, Shield, Swords,
+    ChevronRight, ChevronLeft,
+} from "lucide-react";
+import { ActionEvent } from "../CinematicCombatView";
+import { motion } from "framer-motion";
+import {
+    ACTIVATION_VERB,
+    RANGE_SUFFIX,
+    resolveActivePower,
+    ROLE_STYLE
+} from "@/lib/compare/cinematicCombatView";
+import { cn } from "@/lib/utils";
+import { CharacterImage } from "@/components/shared/CharacterImage";
+import { FighterState } from "../../BattlePanel";
+import PowerOverlay, { CombatActionType } from "./PowerOverlay";
+
+// ── 1. Reusable Fighter Slot Component ───────────────────────────────────────
+
+interface FighterSlotProps {
+    fighter?: FighterState;
+    roleLabel: string;
+    isTeamA: boolean;
+    isKO?: boolean;
+    action?: CombatActionType;
+    showOverlay?: boolean;
+    badgeColorClass?: string;
+    activePower: Power | undefined
+}
+
+function FighterSlot({
+    fighter,
+    roleLabel,
+    isTeamA,
+    isKO = false,
+    action,
+    showOverlay = false,
+    badgeColorClass,
+    activePower
+}: FighterSlotProps) {
+    if (!fighter) return <div className="w-17" />;
+
+    const teamTextClass = isTeamA ? "text-primary" : "text-secondary";
+    const teamBorderClass = isTeamA ? "border-primary shadow-primary/40" : "border-secondary shadow-secondary/40";
+
+    return (
+        <div className="flex flex-col items-center gap-1 min-w-18">
+            {/* Header Tag */}
+            <span className={cn("text-[8px] font-black uppercase tracking-wider", badgeColorClass ?? (isTeamA ? "text-primary" : "text-muted-foreground/70"))}>
+                {roleLabel}
+            </span>
+
+            {/* Standardized Portrait Frame (Fixed 68x68) */}
+            <div
+                className={cn(
+                    "relative w-17 h-17 rounded-xl overflow-hidden border-2 transition-all shrink-0 shadow-md",
+                    isKO ? "border-orange-500 shadow-orange-500/40 grayscale" : teamBorderClass
+                )}
+            >
+                <CharacterImage src={fighter.image} alt={fighter.name} imageFocus={fighter.imageFocus} fill className="w-full h-full" />
+
+                {/* 🚀 Action-Specific Power Overlay Integration */}
+                {showOverlay && action && (
+                    <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} />
+                )}
+
+                {isKO && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-lg z-20">
+                        <Skull className="size-6 text-orange-400" />
+                    </div>
+                )}
+            </div>
+
+            {/* Fighter Name */}
+            <span className={cn("font-bold text-[9.5px] truncate text-center max-w-[72px]", isTeamA ? teamTextClass : "text-muted-foreground")}>
+                {fighter.name}
+            </span>
+        </div>
+    );
+}
+
+// ── 2. Main ClashCard Component ─────────────────────────────────────────────
+
+export default function ClashCard({
+    event,
+    allChars,
+    teamAChars,
+}: {
+    event: ActionEvent | null;
+    allChars: CharacterWithJoinTeamUniversePowerEnemies[];
+    teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
+}) {
+    if (!event) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 h-full text-muted-foreground/30 py-8">
+                <Swords className="size-8 animate-pulse" />
+                <span className="text-[10px] uppercase tracking-widest font-semibold">Awaiting Combat</span>
+            </div>
+        );
+    }
+
+    const { log, attacker, defender } = event;
+    const activePower = resolveActivePower(log, attacker, allChars);
+    const role = activePower ? ROLE_STYLE[activePower.combatRole] : null;
+    const RoleIcon = role?.Icon ?? Swords;
+
+    const flavorLine = activePower
+        ? `${ACTIVATION_VERB[activePower.activationType] ?? "Uses"} ${activePower.name} ${RANGE_SUFFIX[activePower.range] ?? ""}`
+        : null;
+
+    // ── FINISH / ROUT ──────────────────────────────────────────────────────────
+    if (log.type === "finish" || log.type === "rout") {
+        return (
+            <div className="flex flex-col items-center justify-center gap-3 py-6 px-4">
+                <motion.div
+                    initial={{ scale: 0.4, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className={cn(
+                        "p-4 rounded-full border-2",
+                        log.type === "finish" ? "bg-amber-400/15 border-amber-400/50" : "bg-red-500/15 border-red-500/50"
+                    )}
+                >
+                    {log.type === "finish" ? <Crown className="size-8 text-amber-400" /> : <Skull className="size-8 text-red-400" />}
+                </motion.div>
+                <p className="text-[11px] font-bold text-center text-foreground/95 leading-relaxed">{log.text}</p>
+            </div>
+        );
+    }
+
+    if (log.type === "heal" || log.type === "revive") {
+        const isHeal = log.type === "heal";
+        const char = isHeal ? attacker : (defender ?? attacker);
+        const accentColor = isHeal ? "emerald-400" : "purple-400";
+
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 py-4 px-4 w-full h-full">
+                {char && (
+                    <FighterSlot
+                        fighter={char}
+                        roleLabel={isHeal ? "HEALING" : "REVIVED"}
+                        isTeamA={teamAChars.some((c) => c.name === char.name)}
+                        action={isHeal ? "heal" : "revive"} // 🚀 Passes action type
+                        showOverlay={true}
+                        badgeColorClass={accentColor}
+                        activePower={activePower}
+                    />
+                )}
+                {log.powerName && <p className="text-[9px] text-muted-foreground font-medium">{log.powerName}</p>}
+            </div>
+        );
+    }
+
+    const isKO = log.type === "ko";
+    const isDefend = log.type === "defend";
+
+    // Side determination
+    const defenderChar = defender ?? attacker;
+    const attackerChar = attacker ?? defender;
+
+    const isDefenderInTeamA = teamAChars.some((c) => c.name === defenderChar?.name);
+    const isAttackerInTeamA = log.variant === "primary";
+
+    const leftFighter = isDefend
+        ? (isDefenderInTeamA ? defenderChar : attackerChar)
+        : (isAttackerInTeamA ? attacker : defender);
+
+    const rightFighter = isDefend
+        ? (isDefenderInTeamA ? attackerChar : defenderChar)
+        : (isAttackerInTeamA ? defender : attacker);
+
+    const leftIsAttacker = isDefend ? !isDefenderInTeamA : isAttackerInTeamA;
+    const rightIsAttacker = !leftIsAttacker;
+
+    const leftIsKO = isKO && !isAttackerInTeamA;
+    const rightIsKO = isKO && isAttackerInTeamA;
+
+    const ArrowIcon = leftIsAttacker ? ChevronRight : ChevronLeft;
+
+    return (
+        <div className="flex flex-col items-center justify-between gap-2.5 py-3 px-3 w-full h-full">
+            {/* Top Banner */}
+            <div className="flex flex-col items-center gap-0.5">
+                <span className={cn(
+                    "text-[10px] font-black tracking-wider uppercase",
+                    isKO ? "text-orange-400" : isDefend ? "text-cyan-400" : "text-muted-foreground"
+                )}>
+                    {isKO ? "💥 K.O. ELIMINATION" : isDefend ? "🛡 SHIELD BLOCK" : "STRIKE ENGAGEMENT"}
+                </span>
+                {flavorLine && <p className="text-[9px] text-muted-foreground/80 text-center truncate max-w-[260px]">{flavorLine}</p>}
+            </div>
+
+            {/* Standardized 3-Column Arena Layout */}
+            <div className="flex items-center justify-between gap-2 w-full px-1">
+                {/* Left Fighter (Team A) */}
+                <FighterSlot
+                    fighter={leftFighter}
+                    roleLabel={isDefend ? (isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (leftIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
+                    isTeamA={true}
+                    isKO={leftIsKO}
+                    action={isDefend ? (isDefenderInTeamA ? "defend" : "attack") : (leftIsAttacker ? "attack" : "defend")}
+                    showOverlay={leftIsAttacker || isDefend} // 🚀 Shows overlay for active attacker or blocker
+                    badgeColorClass={isDefend && isDefenderInTeamA ? "text-cyan-400" : undefined}
+                    activePower={activePower}
+                />
+
+                {/* Center Stage Action Hub */}
+                <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                    <div className={cn(
+                        "p-2 rounded-full border shadow-sm shrink-0",
+                        isDefend ? "bg-cyan-500/15 border-cyan-500/40" : role ? `${role.bg} ${role.border}` : "bg-muted/20 border-muted-foreground/20"
+                    )}>
+                        {isDefend ? <Shield className="size-4 text-cyan-400" /> : <RoleIcon className={cn("size-4", role?.text ?? "text-muted-foreground")} />}
+                    </div>
+
+                    {!isDefend && (
+                        <motion.div
+                            animate={{ x: leftIsAttacker ? [0, 3, 0] : [0, -3, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <ArrowIcon className={cn("size-4", leftIsAttacker ? "text-primary" : "text-secondary")} />
+                        </motion.div>
+                    )}
+
+                    {log.powerName && (
+                        <span className={cn(
+                            "text-[8px] font-bold text-center px-2 py-0.5 rounded-full border truncate max-w-[110px]",
+                            isDefend ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-400" : role ? `${role.bg} ${role.border} ${role.text}` : "bg-primary/10 border-primary/30 text-primary"
+                        )}>
+                            {log.powerName}
+                        </span>
+                    )}
+
+                    {log.actionName && (
+                        <span className="text-[8px] font-light border-1 border-muted-foreground/10 rounded-lg px-2">
+                            {log.actionName}
+                        </span>
+                    )}
+                </div>
+
+                {/* Right Fighter (Team B) */}
+                <FighterSlot
+                    fighter={rightFighter}
+                    roleLabel={isDefend ? (!isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (rightIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
+                    isTeamA={false}
+                    isKO={rightIsKO}
+                    action={isDefend ? (!isDefenderInTeamA ? "defend" : "attack") : (rightIsAttacker ? "attack" : "defend")}
+                    showOverlay={rightIsAttacker || isDefend} // 🚀 Shows overlay for active attacker or blocker
+                    badgeColorClass={isDefend && !isDefenderInTeamA ? "text-cyan-400" : undefined}
+                    activePower={activePower}
+                />
+            </div>
+
+            {/* Bottom Footer Tags */}
+            {activePower && !isDefend && (
+                <div className="flex items-center gap-1.5 justify-center flex-wrap pt-0.5">
+                    <span className={cn("px-2 py-0.5 rounded-full text-[8px] font-bold uppercase border", role?.bg, role?.border, role?.text)}>
+                        {role?.label}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[8px] font-semibold uppercase border bg-muted/20 border-muted-foreground/20 text-muted-foreground">
+                        {activePower.activationType}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[8px] font-semibold uppercase border bg-muted/20 border-muted-foreground/20 text-muted-foreground">
+                        {activePower.range}
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+}

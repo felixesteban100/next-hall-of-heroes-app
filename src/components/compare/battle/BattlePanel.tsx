@@ -13,7 +13,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import ControlToolbar from "./battlePanel/ControlToolbar";
-import CombatView from "./battlePanel/CombatView";
 import { useCombatScript } from "./battlePanel/useCombatScript";
 import { useCombatPlayback } from "./battlePanel/useCombatPlayback";
 import CinematicCombatView from "./battlePanel/CinematicCombatView";
@@ -40,8 +39,10 @@ export type FighterState = {
     name: string;
     overall: number;
     isAlive: boolean;
+    image: string;
     powers?: any[];
     hasRevived?: boolean;
+    imageFocus: string;
 };
 
 export type ScriptItem = {
