@@ -1,9 +1,10 @@
 import { useCallback } from "react";
-import { Swords, Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock } from "lucide-react";
+import { Shield, Skull, Trophy, HeartPulse, RefreshCw, Lock, HandFist } from "lucide-react";
 import { computeMatchScore } from "@/lib/compare";
 
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole, Power } from "@/types";
-import { FighterState, Log, ScriptItem, ROUNDS } from "../BattlePanel";
+import { FighterState, ScriptItem } from "../BattlePanel";
+import { isRealPower } from "@/lib/compare/cinematicCombatView";
 
 const ELIMINATION_PHRASES = [
     "was overwhelmed by the sustained pressure!",
@@ -12,16 +13,6 @@ const ELIMINATION_PHRASES = [
     "could no longer withstand the onslaught!",
     "was breached and knocked out of the engagement!",
 ];
-
-// 🚀 Type guard helper to filter out FallbackItem objects
-function isRealPower(power: any): power is Power {
-    return (
-        power !== null &&
-        typeof power === "object" &&
-        !("isFallback" in power) &&
-        "combatRole" in power
-    );
-}
 
 function toFighterState(
     c: CharacterWithJoinTeamUniversePowerEnemies,
@@ -110,8 +101,35 @@ export function useCombatScript(
             const defender = activeDefenders[Math.floor(Math.random() * activeDefenders.length)];
             const variant: "primary" | "secondary" = isAttackerA ? "primary" : "secondary";
 
-            // ── Heal check ───────────────────────────────────────────────────
+            // ── Active Tactical / Utility Maneuver Check ─────────────────────
             const utilityPowers = getPowersByRole(attacker, "Utility");
+            // Give characters with utility/genius powers a 25% chance to execute a tactical move
+            if (utilityPowers.length > 0 && Math.random() < 0.25) {
+                const utilPower = utilityPowers[Math.floor(Math.random() * utilityPowers.length)];
+                const moveName = Array.isArray(utilPower.actions) && utilPower.actions.length > 0
+                    ? utilPower.actions[0].name
+                    : utilPower.name;
+
+                script.push({
+                    targetTeam: defenderTeamTag,
+                    log: {
+                        id: timeStep++,
+                        type: "attack", // Uses standard clash card layout so overlays render perfectly
+                        attackerName: attacker.name,
+                        defenderName: defender.name,
+                        powerName: utilPower.name,
+                        actionName: moveName,
+                        text: `${attacker.name} executed tactical calculation using [${utilPower.name}] against ${defender.name}!`,
+                        icon: HandFist,
+                        colorClass: isAttackerA ? "text-primary" : "text-secondary",
+                        variant,
+                    },
+                });
+                roundNum++;
+                continue;
+            }
+
+            // ── Heal check ───────────────────────────────────────────────────
             const hasHealingTrait = utilityPowers.some((p) => {
                 const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
                 return txt.includes("heal") || txt.includes("regenerat") || txt.includes("recovery");
@@ -161,8 +179,8 @@ export function useCombatScript(
             const pool = strikingPowers.length > 0 ? strikingPowers : fallbackPowers;
 
             let moveName = "Direct Strike";
-            let powerTitle = "";
-            let logIcon: any = Swords;
+            let powerTitle = "Hand-to-Hand Combat";
+            let logIcon: any = HandFist;
 
             if (pool.length > 0) {
                 const chosen = pool[Math.floor(Math.random() * pool.length)];

@@ -1,18 +1,16 @@
 "use client"
 
-import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import {
     Crown, Skull, Shield, Swords,
     ChevronRight, ChevronLeft,
+    Sparkles,
+    Atom,
+    Lock,
 } from "lucide-react";
 import { ActionEvent } from "../CinematicCombatView";
 import { motion } from "framer-motion";
-import {
-    ACTIVATION_VERB,
-    RANGE_SUFFIX,
-    resolveActivePower,
-    ROLE_STYLE
-} from "@/lib/compare/cinematicCombatView";
+import { resolveActivePower } from "@/lib/compare/cinematicCombatView";
 import { cn } from "@/lib/utils";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { FighterState } from "../../BattlePanel";
@@ -31,6 +29,37 @@ interface FighterSlotProps {
     badgeColorClass?: string;
     activePower: Power | undefined
 }
+
+const ACTIVATION_VERB: Record<string, string> = {
+    Instant: "Unleashes",
+    Action: "Channels",
+    Passive: "Triggers",
+    Channeled: "Sustains",
+};
+
+const RANGE_SUFFIX: Record<string, string> = {
+    Self: "on self",
+    Touch: "up close",
+    Melee: "in melee",
+    Ranged: "from a distance",
+    "Melee / Ranged": "across the field",
+    Global: "across dimensions",
+};
+
+const ROLE_STYLE: Record<PowerRole, {
+    Icon: React.ElementType;
+    text: string;
+    glow: string;
+    bg: string;
+    border: string;
+    label: string;
+}> = {
+    "Offensive": { Icon: Swords, text: "text-red-400", glow: "shadow-red-500/50", bg: "bg-red-500/15", border: "border-red-500/40", label: "Offensive" },
+    "Defensive": { Icon: Shield, text: "text-cyan-400", glow: "shadow-cyan-500/40", bg: "bg-cyan-500/15", border: "border-cyan-500/40", label: "Defensive" },
+    "Control": { Icon: Lock, text: "text-violet-400", glow: "shadow-violet-500/40", bg: "bg-violet-500/15", border: "border-violet-500/40", label: "Control" },
+    "Utility": { Icon: Sparkles, text: "text-emerald-400", glow: "shadow-emerald-500/40", bg: "bg-emerald-500/15", border: "border-emerald-500/40", label: "Utility" },
+    "Hybrid / Versatile": { Icon: Atom, text: "text-amber-400", glow: "shadow-amber-500/40", bg: "bg-amber-500/15", border: "border-amber-500/40", label: "Hybrid" },
+};
 
 function FighterSlot({
     fighter,

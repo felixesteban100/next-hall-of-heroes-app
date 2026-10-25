@@ -1,6 +1,36 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+
+// Lightweight sound player cache to prevent network lag
+const audioCache: Record<string, HTMLAudioElement> = {};
+
+function playOverlaySound(themeKey: string) {
+    if (typeof window === "undefined") return;
+
+    // Map theme keys to lightweight public audio assets
+    const soundMap: Record</* ThemeKey */ string, string> = {
+        fire: "/sounds/fire.mp3",
+    };
+
+    const soundPath = soundMap[themeKey] || "/sounds/hit.mp3";
+
+    try {
+        if (!audioCache[soundPath]) {
+            audioCache[soundPath] = new Audio(soundPath);
+            audioCache[soundPath].volume = 0.25; // Gentle low volume so it's not jarring
+        }
+
+        const audio = audioCache[soundPath];
+        audio.currentTime = 0; // Rewind to start for rapid playback
+        audio.play().catch(() => {
+            // Catches browser auto-play restriction errors silently without crashing app
+        });
+    } catch (e) {
+        // Fallback safety
+    }
+}
 
 export type CombatActionType = "attack" | "defend" | "heal" | "revive";
 
@@ -567,6 +597,12 @@ export default function PowerOverlay({ action, powerName, visible = true }: Powe
     const key = getThemeKey(action, powerName);
     const t = THEMES[key] ?? THEMES.combat;
     // const isDark = key === "shadow" || key === "gravity";
+
+    useEffect(() => {
+        if (visible) {
+            playOverlaySound(key);
+        }
+    }, [visible, key]);
 
     return (
         <div

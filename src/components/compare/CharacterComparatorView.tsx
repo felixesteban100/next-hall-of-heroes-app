@@ -14,7 +14,7 @@ import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
 import { TeamTacticalOverview } from "./battle/TeamTacticalOverview";
 import { StatsRadar } from "./stats/StatRadar";
-import { Zap } from "lucide-react";
+import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
 import MatchVerdict from "./battle/MatchVerdict";
 import { TeamProfileSlot } from "./stats/TeamProfileSlot";
 import { ProfileSlot } from "./stats/ProfileSlot";
@@ -24,12 +24,12 @@ import { PowerFormulaTab } from "./PowerFormulaTab";
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
 
-const TABS: { id: CompareTab; label: string }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "combat", label: "Combat" },
-    { id: "stats", label: "Stats" },
-    { id: "info", label: "Info" },
-    { id: "calculations", label: "Calculations" },
+const TABS: { id: CompareTab; label: string, icon: LucideIcon }[] = [
+    { id: "overview", label: "Overview", icon: List },
+    { id: "combat", label: "Combat", icon: Swords },
+    { id: "stats", label: "Stats", icon: ChartArea },
+    { id: "info", label: "Info", icon: BookText },
+    { id: "calculations", label: "Calculations", icon: Calculator },
 ];
 
 type CharacterComparatorViewProps = {
@@ -153,7 +153,8 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                         : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                {tab.label}
+                                <span className="hidden lg:inline">{tab.label}</span>
+                                <tab.icon />
                                 {activeTab === tab.id && (
                                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
                                 )}

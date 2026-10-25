@@ -3,7 +3,7 @@ import { FighterState, ScriptItem } from "../BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare";
 
-const STEP_INTERVAL_MS = 1400;
+const STEP_INTERVAL_MS = 3000;
 
 function buildInitialRoster(
     chars: CharacterWithJoinTeamUniversePowerEnemies[],
