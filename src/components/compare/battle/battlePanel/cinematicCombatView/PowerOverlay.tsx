@@ -565,6 +565,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     const n = powerName.toLowerCase();
 
     if (/\b(fourth wall|4th wall|meta|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
+    if (/\b(wind|air control|weather|teleportation)/.test(n)) return "wind";
     if (/\b(web|spider|elastic)/.test(n)) return "web";
     if (/\b(omnitrix|alien|transformation|metamorph)/.test(n)) return "omnitrix";
     if (/\b(ice|cryo|frost|freeze|blizzard|arctic)/.test(n)) return "ice";
@@ -582,7 +583,6 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(sonic|sound|vibrat|scream)/.test(n)) return "sonic";
     if (/\b(poison|toxin|venom|acid|toxic)/.test(n)) return "poison";
     if (/\b(plant|nature|vine|chlorophyll)/.test(n)) return "nature";
-    if (/\b(wind|air control|weather|teleportation)/.test(n)) return "wind";
     if (/\b(earth|geo|stone|rock|seismic)/.test(n)) return "earth";
     if (/\b(radiation|gamma|radioactive)/.test(n)) return "radiation";
     if (/\b(blood|vampir|life drain)/.test(n)) return "blood";
