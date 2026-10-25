@@ -565,7 +565,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     const n = powerName.toLowerCase();
 
     if (/\b(fourth wall|4th wall|meta|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
-    if (/\b(wind|air control|weather|teleportation)/.test(n)) return "wind";
+    if (/\b(wind|air control|weather|teleportation|aero|air manipulation)/.test(n)) return "wind";
     if (/\b(web|spider|elastic)/.test(n)) return "web";
     if (/\b(omnitrix|alien|transformation|metamorph)/.test(n)) return "omnitrix";
     if (/\b(ice|cryo|frost|freeze|blizzard|arctic)/.test(n)) return "ice";
