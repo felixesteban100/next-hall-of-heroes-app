@@ -219,7 +219,7 @@ export default function CinematicCombatView({
                     ref={logRef}
                     className={cn(
                         "flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth",
-                        isDialog ? "h-[160px]" : "h-[140px]"
+                        isDialog ? "h-[130px]" : "h-[110px]"
                     )}
                 >
                     {visibleLogs.length === 0 ? (

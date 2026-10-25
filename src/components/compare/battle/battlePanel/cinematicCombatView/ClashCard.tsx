@@ -1,3 +1,5 @@
+"use client"
+
 import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
 import {
     Crown, Skull, Shield, Swords,
@@ -15,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { FighterState } from "../../BattlePanel";
 import PowerOverlay, { CombatActionType } from "./PowerOverlay";
+import { useEffect, useState } from "react";
 
 // ── 1. Reusable Fighter Slot Component ───────────────────────────────────────
 
@@ -39,13 +42,36 @@ function FighterSlot({
     badgeColorClass,
     activePower
 }: FighterSlotProps) {
+    const FADE_MS = 800;
+
+    const [show, setShow] = useState(true);
+    const [renderOverlay, setRenderOverlay] = useState(false);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        if (show) {
+            setRenderOverlay(true);
+            setVisible(false); // ensure starting point is 0
+
+            const id = requestAnimationFrame(() => {
+                requestAnimationFrame(() => setVisible(true)); // paint 0, then → 1
+            });
+            return () => cancelAnimationFrame(id);
+        }
+
+        // hide: visible false → transition → unmount
+        setVisible(false);
+        const t = setTimeout(() => setRenderOverlay(false), FADE_MS);
+        return () => clearTimeout(t);
+    }, [show]);
+
     if (!fighter) return <div className="w-17" />;
 
     const teamTextClass = isTeamA ? "text-primary" : "text-secondary";
     const teamBorderClass = isTeamA ? "border-primary shadow-primary/40" : "border-secondary shadow-secondary/40";
 
     return (
-        <div className="flex flex-col items-center gap-1 min-w-18">
+        <div onClick={() => setShow((v) => !v)} className="flex flex-col items-center gap-1 min-w-18">
             {/* Header Tag */}
             <span className={cn("text-[8px] font-black uppercase tracking-wider", badgeColorClass ?? (isTeamA ? "text-primary" : "text-muted-foreground/70"))}>
                 {roleLabel}
@@ -61,8 +87,8 @@ function FighterSlot({
                 <CharacterImage src={fighter.image} alt={fighter.name} imageFocus={fighter.imageFocus} fill className="w-full h-full" />
 
                 {/* 🚀 Action-Specific Power Overlay Integration */}
-                {showOverlay && action && (
-                    <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} />
+                {renderOverlay && showOverlay && action && (
+                    <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} visible={visible} />
                 )}
 
                 {isKO && (

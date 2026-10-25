@@ -24,7 +24,7 @@ export default function TeamColumn({
 
     return (
         <div className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0">
-            <div className="flex flex-wrap gap-2 justify-center max-h-[120px] md:max-h-none overflow-y-auto no-scrollbar w-full p-1 pt-3">
+            <div className="flex flex-wrap gap-2 justify-center max-h-[170px] md:max-h-none overflow-y-auto no-scrollbar w-full p-1 pt-3">
                 {fighters.map((f) => (
                     <Avatar
                         key={f.id}
