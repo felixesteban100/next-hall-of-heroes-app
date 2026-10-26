@@ -148,9 +148,9 @@ function FighterSlot({
                             stiffness: 300,
                             damping: 20
                         }}
-                        className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-md z-20"
+                        className="absolute inset-0 bg-foreground/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-md z-20"
                     >
-                        <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse" />
+                        <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-foreground" />
                         {/* <span className="text-[7px] font-black tracking-widest uppercase mt-0.5">K.O.</span> */}
                     </motion.div>
                 )}

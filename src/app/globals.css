@@ -686,6 +686,19 @@
     animation: po-shake 0.4s ease-in-out infinite;
   }
 
+  @keyframes po-stretch {
+    0%,
+    100% {
+      transform: scaleX(1);
+    }
+    50% {
+      transform: scaleX(1.06);
+    }
+  }
+  .animate-po-stretch {
+    animation: po-stretch 0.8s ease-in-out infinite;
+  }
+
   /*  @keyframes po-appear-cycle {
     0%,
     15% {
