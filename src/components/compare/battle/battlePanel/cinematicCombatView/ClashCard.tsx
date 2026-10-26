@@ -101,14 +101,14 @@ function FighterSlot({
     return (
         <div onClick={() => setShow((v) => !v)} className="flex flex-col items-center gap-1 min-w-18">
             {/* Header Tag */}
-            <span className={cn("text-[8px] font-black uppercase tracking-wider", badgeColorClass ?? (isTeamA ? "text-primary" : "text-muted-foreground/70"))}>
+            <span className={cn("text-[8px] font-black uppercase tracking-wider", badgeColorClass ?? (isTeamA ? "text-primary" : "text-secondary"))}>
                 {roleLabel}
             </span>
 
             {/* Standardized Portrait Frame (Fixed 68x68) */}
             <div
                 className={cn(
-                    "relative w-17 h-17 rounded-xl overflow-hidden border-2 shrink-0 shadow-md transition-colors duration-300",
+                    "relative w-17 h-17 rounded-lg overflow-hidden border-2 shrink-0 shadow-md transition-colors duration-300",
                     isKO ? "border-white shadow-black/60" : teamBorderClass
                 )}
             >
@@ -148,16 +148,16 @@ function FighterSlot({
                             stiffness: 300,
                             damping: 20
                         }}
-                        className="absolute inset-0 bg-foreground/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-md z-20"
+                        className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-lg z-20"
                     >
-                        <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-foreground" />
+                        <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-white" />
                         {/* <span className="text-[7px] font-black tracking-widest uppercase mt-0.5">K.O.</span> */}
                     </motion.div>
                 )}
             </div>
 
             {/* Fighter Name */}
-            <span className={cn("font-bold text-[9.5px] truncate text-center max-w-[72px]", isTeamA ? teamTextClass : "text-muted-foreground")}>
+            <span className={cn("font-bold text-[9.5px] truncate text-center max-w-[72px]", teamTextClass)}>
                 {fighter.name}
             </span>
         </div>
