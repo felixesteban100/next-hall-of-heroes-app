@@ -3,7 +3,7 @@ import { FighterState, ScriptItem } from "../BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare";
 
-const STEP_INTERVAL_MS = 3000;
+const STEP_INTERVAL_MS = 4500;
 
 function buildInitialRoster(
     chars: CharacterWithJoinTeamUniversePowerEnemies[],
@@ -38,6 +38,8 @@ export function useCombatPlayback(
     const [rosterB, setRosterB] = useState<FighterState[]>([]);
     const [dynamicHealthBonusA, setDynamicHealthBonusA] = useState(0);
     const [dynamicHealthBonusB, setDynamicHealthBonusB] = useState(0);
+    const [accumulatedDamageA, setAccumulatedDamageA] = useState(0);
+    const [accumulatedDamageB, setAccumulatedDamageB] = useState(0);
 
     const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -60,18 +62,42 @@ export function useCombatPlayback(
         const snapB = buildInitialRoster(teamBChars, nameB);
         let bonusA = 0;
         let bonusB = 0;
+        let damageA = 0;
+        let damageB = 0;
 
         for (let i = 0; i <= currentStepIndex && i < combatScript.length; i++) {
             const step = combatScript[i];
+
+            // Handle K.O.
             if (step.isKO && step.targetName) {
                 const target = step.targetTeam === "A"
                     ? snapA.find((c) => c.name === step.targetName)
                     : snapB.find((c) => c.name === step.targetName);
                 if (target) target.isAlive = false;
             }
+
+            // 🚀 Handle Revive (Bring character back to life & boost health!)
+            if (step.isRevive && step.targetName) {
+                const target = step.targetTeam === "A"
+                    ? snapA.find((c) => c.name === step.targetName)
+                    : snapB.find((c) => c.name === step.targetName);
+                if (target) {
+                    target.isAlive = true;
+                    if (step.targetTeam === "A") bonusA += 15;
+                    else bonusB += 15;
+                }
+            }
+
+            // Handle Heals
             if (step.isHeal && step.healTeam) {
-                if (step.healTeam === "A") bonusA = Math.min(30, bonusA + 15);
-                else bonusB = Math.min(30, bonusB + 15);
+                if (step.healTeam === "A") bonusA = Math.min(40, bonusA + 15);
+                else bonusB = Math.min(40, bonusB + 15);
+            }
+
+            // Accumulate minor chip damage
+            if (step.damage !== undefined && step.targetTeam) {
+                if (step.targetTeam === "A") damageA += step.damage;
+                if (step.targetTeam === "B") damageB += step.damage;
             }
         }
 
@@ -79,6 +105,8 @@ export function useCombatPlayback(
         setRosterB(snapB);
         setDynamicHealthBonusA(bonusA);
         setDynamicHealthBonusB(bonusB);
+        setAccumulatedDamageA(damageA);
+        setAccumulatedDamageB(damageB);
 
         if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
     }, [currentStepIndex, combatScript, teamAChars, teamBChars, nameA, nameB]);
@@ -134,11 +162,17 @@ export function useCombatPlayback(
     // ── Derived health values ─────────────────────────────────────────────────
     const totalA = rosterA.length || 1;
     const aliveA = rosterA.filter((c) => c.isAlive).length;
-    const healthA = Math.min(100, Math.max(0, Math.round((aliveA / totalA) * 100) + dynamicHealthBonusA));
+    // Health is driven primarily by alive/total ratio, adjusted lightly by damage and heals/revives
+    const healthA = aliveA > 0
+        ? Math.min(100, Math.max(10, Math.round((aliveA / totalA) * 100) - Math.floor(accumulatedDamageA * 0.15) + dynamicHealthBonusA))
+        : 0;
 
     const totalB = rosterB.length || 1;
     const aliveB = rosterB.filter((c) => c.isAlive).length;
-    const healthB = Math.min(100, Math.max(0, Math.round((aliveB / totalB) * 100) + dynamicHealthBonusB));
+    const healthB = aliveB > 0
+        ? Math.min(100, Math.max(10, Math.round((aliveB / totalB) * 100) - Math.floor(accumulatedDamageB * 0.15) + dynamicHealthBonusB))
+        : 0;
+
 
     const visibleLogs = combatScript.slice(0, currentStepIndex + 1).map((s) => s.log);
 

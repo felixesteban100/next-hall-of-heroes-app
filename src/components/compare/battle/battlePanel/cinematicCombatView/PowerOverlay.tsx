@@ -6,15 +6,48 @@ import { useEffect } from "react";
 // Lightweight sound player cache to prevent network lag
 const audioCache: Record<string, HTMLAudioElement> = {};
 
-function playOverlaySound(themeKey: string) {
+function playOverlaySound(themeKey: ThemeKey) {
     if (typeof window === "undefined") return;
 
     // Map theme keys to lightweight public audio assets
-    const soundMap: Record</* ThemeKey */ string, string> = {
+    const soundMap: Record<ThemeKey, string> = {
+        blood: "/sounds/blood.mp3",
+        claws: "/sounds/claws.mp3",
+        combat: "/sounds/combat.mp3",
+        cosmic: "/sounds/cosmic.mp3",
+        defend: "/sounds/defend.mp3",
+        diamond: "/sounds/diamond.mp3",
+        earth: "/sounds/earth.mp3",
+        energy: "/sounds/energy.mp3",
         fire: "/sounds/fire.mp3",
+        firearms: "/sounds/firearms.mp3",
+        fourthWall: "/sounds/fourthWall.mp3",
+        genius: "/sounds/genius.mp3",
+        gravity: "/sounds/gravity.mp3",
+        heal: "/sounds/heal.mp3",
+        ice: "/sounds/ice.mp3",
+        light: "/sounds/light.mp3",
+        lightning: "/sounds/lightning.mp3",
+        magnetic: "/sounds/magnetic.mp3",
+        mystic: "/sounds/mystic.mp3",
+        nature: "/sounds/nature.mp3",
+        omnitrix: "/sounds/omnitrix.mp3",
+        poison: "/sounds/poison.mp3",
+        psychic: "/sounds/psychic.mp3",
+        radiation: "/sounds/radiation.mp3",
+        revive: "/sounds/revive.mp3",
+        shadow: "/sounds/shadow.mp3",
+        sonic: "/sounds/sonic.mp3",
+        sword: "/sounds/sword.mp3",
+        tech: "/sounds/tech.mp3",
+        temporal: "/sounds/temporal.mp3",
+        water: "/sounds/water.mp3",
+        web: "/sounds/web.mp3",
+        wind: "/sounds/wind.mp3",
+        speed: "/sounds/speed.mp3",
     };
 
-    const soundPath = soundMap[themeKey] || "/sounds/hit.mp3";
+    const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
 
     try {
         if (!audioCache[soundPath]) {
@@ -45,8 +78,8 @@ type ThemeKey =
     | "psychic" | "combat" | "ice" | "water" | "fire" | "lightning"
     | "mystic" | "temporal" | "diamond" | "tech" | "shadow" | "light"
     | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature"
-    | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix"
-    | "defend" | "heal" | "revive" | "genius" | "fourthWall";
+    | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix" | "speed"
+    | "defend" | "heal" | "revive" | "genius" | "fourthWall" | "energy" | "claws" | "sword" | "firearms";
 
 interface OverlayConfig {
     plate: string;
@@ -56,6 +89,205 @@ interface OverlayConfig {
 }
 
 const THEMES: Record<ThemeKey, OverlayConfig> = {
+    speed: {
+        plate:
+            "bg-gradient-to-r from-sky-950/85 via-blue-500/45 to-yellow-200/30",
+        bloom:
+            "bg-[radial-gradient(ellipse_at_left,rgba(56,189,248,0.5)_0%,transparent_55%)]",
+        rim:
+            "border-sky-200/90 shadow-[0_0_32px_#38bdf8,inset_0_0_26px_rgba(250,204,21,0.25)]",
+        motion: (
+            <>
+                {/* Horizontal speed lines */}
+                <div className="absolute top-[22%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white to-sky-200/80 shadow-[0_0_10px_#fff] animate-po-sweep" style={{ animationDuration: "0.55s" }} />
+                <div className="absolute top-[38%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-sky-100 to-transparent shadow-[0_0_12px_#7dd3fc] animate-po-sweep" style={{ animationDuration: "0.45s", animationDelay: "0.05s" }} />
+                <div className="absolute top-[52%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-100/90 to-transparent shadow-[0_0_10px_#fef08a] animate-po-sweep" style={{ animationDuration: "0.5s", animationDelay: "0.1s" }} />
+                <div className="absolute top-[68%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent animate-po-sweep" style={{ animationDuration: "0.4s", animationDelay: "0.08s" }} />
+
+                {/* Afterimage chevrons — direction of travel */}
+                <div className="absolute top-1/2 left-[12%] -translate-y-1/2 w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-sky-200/70 animate-po-pulse-soft" style={{ animationDuration: "0.35s" }} />
+                <div className="absolute top-1/2 left-[22%] -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-white/50 animate-po-pulse-soft" style={{ animationDuration: "0.35s", animationDelay: "0.06s" }} />
+
+                {/* Blur streak body */}
+                <div className="absolute inset-y-[30%] left-0 w-2/3 bg-gradient-to-r from-sky-400/25 to-transparent animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} />
+
+                {/* Spark trail */}
+                {[15, 30, 45, 60].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute top-[48%] w-1 h-1 rounded-full bg-yellow-100 shadow-[0_0_8px_#fde047] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            animationDelay: `${i * 0.04}s`,
+                            animationDuration: "0.45s",
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    firearms: {
+        plate:
+            "bg-gradient-to-t from-zinc-950/90 via-orange-900/40 to-yellow-400/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_70%_45%,rgba(253,224,71,0.55)_0%,transparent_45%)]",
+        rim:
+            "border-zinc-400/80 shadow-[0_0_28px_rgba(161,161,170,0.45),inset_0_0_24px_rgba(0,0,0,0.45)]",
+        motion: (
+            <>
+                {/* Muzzle flash — bright core */}
+                <div className="absolute top-1/2 right-[18%] -translate-y-1/2 w-5 h-5 rounded-full bg-yellow-100 shadow-[0_0_24px_#fde047,0_0_40px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.2s" }} />
+                <div className="absolute top-1/2 right-[14%] -translate-y-1/2 w-9 h-9 rounded-full border border-orange-300/90 animate-po-ring-out" style={{ animationDuration: "0.4s" }} />
+
+                {/* Tracer / bullet path */}
+                <div className="absolute top-1/2 left-[8%] right-[22%] h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-yellow-200 to-orange-200 shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.15s" }} />
+                <div className="absolute top-[46%] left-[20%] right-[28%] h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent animate-po-bolt" style={{ animationDuration: "0.12s", animationDelay: "0.03s" }} />
+
+                {/* Crosshair ticks — marksmanship */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative w-12 h-12">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-2.5 bg-yellow-200/90" />
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-2.5 bg-yellow-200/90" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-px w-2.5 bg-yellow-200/90" />
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-px w-2.5 bg-yellow-200/90" />
+                        <div className="absolute inset-1 rounded-full border border-yellow-500/50 animate-po-pulse-soft" style={{ animationDuration: "0.9s" }} />
+                    </div>
+                </div>
+
+                {/* Shell / spark ejects */}
+                {[
+                    ["62%", "38%"],
+                    ["68%", "52%"],
+                    ["58%", "58%"],
+                ].map(([left, top], i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-sm bg-amber-300 shadow-[0_0_8px_#fbbf24] animate-po-ember"
+                        style={{ left, top, animationDelay: `${i * 0.05}s`, animationDuration: "0.5s" }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    sword: {
+        plate:
+            "bg-gradient-to-br from-slate-950/90 via-blue-900/45 to-zinc-200/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.5)_0%,transparent_45%)]",
+        rim:
+            "border-zinc-200/85 shadow-[0_0_30px_rgba(226,232,240,0.5),inset_0_0_26px_rgba(30,58,138,0.35)]",
+        motion: (
+            <>
+                {/* Main blade cut — long diagonal */}
+                <div
+                    className="absolute top-[8%] left-[18%] w-[3px] h-[85%] rotate-[-28deg] origin-top bg-gradient-to-b from-white via-slate-200 to-transparent shadow-[0_0_16px_#fff,0_0_8px_#93c5fd] animate-po-bolt"
+                    style={{ animationDuration: "0.22s" }}
+                />
+                {/* Edge gleam */}
+                <div
+                    className="absolute top-[12%] left-[22%] w-[2px] h-[70%] rotate-[-28deg] origin-top bg-gradient-to-b from-sky-100/90 to-transparent animate-po-pulse-soft"
+                    style={{ animationDuration: "0.5s" }}
+                />
+
+                {/* Slash trail */}
+                <div className="absolute top-[40%] inset-x-[10%] h-[2px] rotate-[-28deg] bg-gradient-to-r from-transparent via-white/95 to-transparent shadow-[0_0_14px_#e2e8f0] animate-po-bolt" style={{ animationDuration: "0.28s", animationDelay: "0.05s" }} />
+
+                {/* Spark at contact point */}
+                <div className="absolute top-[42%] left-[48%] w-3 h-3 rounded-full bg-white shadow-[0_0_20px_#fff] animate-po-pulse-soft" style={{ animationDuration: "0.35s" }} />
+                <div className="absolute top-[40%] left-[46%] w-5 h-5 rounded-full border border-sky-200/80 animate-po-ring-out" style={{ animationDuration: "0.55s" }} />
+
+                {/* Small steel sparks */}
+                {[
+                    ["55%", "38%"],
+                    ["60%", "48%"],
+                    ["42%", "52%"],
+                ].map(([left, top], i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-sky-100 shadow-[0_0_8px_#7dd3fc] animate-po-ember"
+                        style={{ left, top, animationDelay: `${i * 0.06}s`, animationDuration: "0.55s" }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    claws: {
+        plate:
+            "bg-gradient-to-tr from-zinc-950/90 via-slate-700/50 to-cyan-400/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_60%_40%,rgba(226,232,240,0.4)_0%,transparent_50%)]",
+        rim:
+            "border-slate-300/80 shadow-[0_0_28px_rgba(148,163,184,0.55),inset_0_0_24px_rgba(15,23,42,0.5)]",
+        motion: (
+            <>
+                {/* Triple claw arcs */}
+                <div className="absolute top-[18%] left-[12%] w-[70%] h-[2px] rotate-[-22deg] bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_12px_#fff] animate-po-bolt" style={{ animationDuration: "0.28s" }} />
+                <div className="absolute top-[32%] left-[10%] w-[75%] h-[2.5px] rotate-[-18deg] bg-gradient-to-r from-transparent via-slate-100 to-transparent shadow-[0_0_14px_#e2e8f0] animate-po-bolt" style={{ animationDuration: "0.26s", animationDelay: "0.04s" }} />
+                <div className="absolute top-[46%] left-[14%] w-[68%] h-[2px] rotate-[-14deg] bg-gradient-to-r from-transparent via-cyan-100/90 to-transparent shadow-[0_0_12px_#cffafe] animate-po-bolt" style={{ animationDuration: "0.3s", animationDelay: "0.08s" }} />
+
+                {/* Opposite slash (X) */}
+                <div className="absolute bottom-[28%] right-[8%] w-[60%] h-[2px] rotate-[28deg] bg-gradient-to-r from-transparent via-white/90 to-transparent shadow-[0_0_10px_#fff] animate-po-bolt" style={{ animationDuration: "0.25s", animationDelay: "0.1s" }} />
+
+                {/* Metal glints */}
+                {[20, 45, 70].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute top-[25%] w-1 h-1 rounded-full bg-white shadow-[0_0_8px_#fff] animate-po-ember"
+                        style={{ left: `${left}%`, animationDelay: `${i * 0.07}s`, animationDuration: "0.6s" }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    /*  Energy —  */
+    energy: {
+        // Treat as generic energy blast (fallback attack)
+        plate:
+            "bg-gradient-to-t from-violet-950/90 via-fuchsia-600/75 to-cyan-300/40",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.55)_0%,rgba(232,121,249,0.35)_40%,transparent_65%)]",
+        rim:
+            "border-cyan-200/90 shadow-[0_0_36px_#22d3ee,0_0_20px_#e879f9,inset_0_0_30px_rgba(167,139,250,0.45)]",
+        motion: (
+            <>
+                {/* Core nova */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-white/90 shadow-[0_0_28px_#fff,0_0_48px_#22d3ee] animate-po-pulse-soft" style={{ animationDuration: "0.45s" }} />
+                    <div className="absolute w-14 h-14 rounded-full border-2 border-cyan-200/90 animate-po-ring-out" style={{ animationDuration: "0.7s" }} />
+                    <div className="absolute w-14 h-14 rounded-full border border-fuchsia-300/80 animate-po-ring-out" style={{ animationDuration: "0.7s", animationDelay: "0.2s" }} />
+                    <div className="absolute w-14 h-14 rounded-full border border-violet-200/60 animate-po-ring-out" style={{ animationDuration: "0.7s", animationDelay: "0.4s" }} />
+                </div>
+
+                {/* Energy beams (cross) */}
+                <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-cyan-100 to-transparent shadow-[0_0_14px_#22d3ee] animate-po-pulse-soft" style={{ animationDuration: "0.35s" }} />
+                <div className="absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-fuchsia-200 to-transparent shadow-[0_0_14px_#e879f9] animate-po-pulse-soft" style={{ animationDuration: "0.4s", animationDelay: "0.08s" }} />
+
+                {/* Diagonal blast streaks */}
+                <div className="absolute top-[20%] left-[15%] w-[55%] h-[2px] rotate-[-28deg] bg-gradient-to-r from-transparent via-white/90 to-transparent shadow-[0_0_10px_#fff] animate-po-bolt" style={{ animationDuration: "0.22s" }} />
+                <div className="absolute bottom-[22%] right-[12%] w-[50%] h-[2px] rotate-[32deg] bg-gradient-to-r from-transparent via-cyan-100/90 to-transparent shadow-[0_0_10px_#67e8f9] animate-po-bolt" style={{ animationDuration: "0.2s", animationDelay: "0.05s" }} />
+
+                {/* Plasma motes outward */}
+                {[0, 60, 120, 180, 240, 300].map((deg, i) => (
+                    <span
+                        key={i}
+                        className="absolute left-1/2 top-1/2 w-1.5 h-1.5 -ml-0.5 -mt-0.5 rounded-full bg-cyan-100 shadow-[0_0_10px_#22d3ee] animate-po-ember"
+                        style={{
+                            // nudge start position by angle via transform on a wrapper feel — simple offsets:
+                            transform: `rotate(${deg}deg) translateY(-18px)`,
+                            animationDelay: `${i * 0.06}s`,
+                            animationDuration: `${0.7 + (i % 3) * 0.1}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    // breaking the fourth wall
     fourthWall: {
         plate:
             "bg-gradient-to-br from-white/25 via-rose-500/20 to-sky-500/25",
@@ -233,19 +465,55 @@ const THEMES: Record<ThemeKey, OverlayConfig> = {
         ),
     },
 
-    /* 👊 Combat — impact rings + slash streaks */
+    /*  Combat —  */
     combat: {
-        plate: "bg-gradient-to-tr from-red-950/92 via-orange-600/80 to-amber-300/40",
-        bloom: "bg-[radial-gradient(circle_at_center,rgba(253,186,116,0.55)_0%,transparent_55%)]",
-        rim: "border-orange-400 shadow-[0_0_36px_#f97316,inset_0_0_32px_rgba(239,68,68,0.45)]",
+        plate:
+            "bg-gradient-to-tr from-stone-950/90 via-orange-800/75 to-amber-400/35",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.5)_0%,transparent_55%)]",
+        rim:
+            "border-amber-400/90 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(180,83,9,0.5)]",
         motion: (
             <>
+                {/* Heavy impact rings — fast, punchy */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full border-2 border-orange-200/90 animate-po-ring-out" style={{ animationDuration: "0.55s" }} />
-                    <div className="absolute w-14 h-14 rounded-full border-2 border-yellow-200/80 animate-po-ring-out" style={{ animationDuration: "0.55s", animationDelay: "0.18s" }} />
+                    <div
+                        className="w-16 h-16 rounded-full border-[3px] border-amber-200/95 animate-po-ring-out"
+                        style={{ animationDuration: "0.45s" }}
+                    />
+                    <div
+                        className="absolute w-16 h-16 rounded-full border-2 border-orange-400/80 animate-po-ring-out"
+                        style={{ animationDuration: "0.45s", animationDelay: "0.12s" }}
+                    />
+                    <div
+                        className="absolute w-6 h-6 rounded-full bg-yellow-100/90 shadow-[0_0_22px_#fde047] animate-po-pulse-soft"
+                        style={{ animationDuration: "0.35s" }}
+                    />
                 </div>
-                <div className="absolute top-[28%] inset-x-0 h-1 bg-gradient-to-r from-transparent via-yellow-200 to-transparent -skew-y-12 opacity-90" />
-                <div className="absolute bottom-[32%] inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-300 to-transparent skew-y-12 opacity-90" />
+
+                {/* Shock streaks — short, violent */}
+                <div className="absolute top-[30%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-200 to-transparent -skew-y-[14deg] shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.18s" }} />
+                <div className="absolute bottom-[34%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange-300 to-transparent skew-y-[12deg] shadow-[0_0_12px_#fdba74] animate-po-bolt" style={{ animationDuration: "0.16s", animationDelay: "0.04s" }} />
+
+                {/* Vertical “crush” lines — super strength */}
+                <div className="absolute top-[15%] left-[22%] w-[3px] h-[45%] bg-gradient-to-b from-yellow-100 via-orange-500/80 to-transparent -skew-x-6 shadow-[0_0_10px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} />
+                <div className="absolute top-[18%] right-[24%] w-[3px] h-[40%] bg-gradient-to-b from-amber-100 via-red-600/70 to-transparent skew-x-6 shadow-[0_0_10px_#ef4444] animate-po-pulse-soft" style={{ animationDuration: "0.45s", animationDelay: "0.08s" }} />
+
+                {/* Debris / dust kicks at bottom */}
+                {[18, 35, 50, 65, 80].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute bottom-1 w-1.5 h-1.5 rounded-sm bg-amber-200/90 shadow-[0_0_8px_#fcd34d] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            animationDelay: `${i * 0.05}s`,
+                            animationDuration: `${0.55 + i * 0.04}s`,
+                        }}
+                    />
+                ))}
+
+                {/* Screen shake feel on the plate edge */}
+                <div className="absolute inset-0 rounded-lg border border-yellow-400/30 animate-po-shake" style={{ animationDuration: "0.4s" }} />
             </>
         ),
     },
@@ -363,14 +631,14 @@ const THEMES: Record<ThemeKey, OverlayConfig> = {
 
     /* 🔊 Sonic — concentric sound rings */
     sonic: {
-        plate: "bg-gradient-to-r from-violet-900/88 via-fuchsia-500/70 to-violet-900/88",
+        plate: "bg-gradient-to-r from-white-900 via-white-500 to-white-900",
         bloom: "bg-[radial-gradient(circle,rgba(232,121,249,0.5)_0%,transparent_55%)]",
-        rim: "border-fuchsia-300 shadow-[0_0_34px_#e879f9,inset_0_0_28px_rgba(192,38,211,0.45)]",
+        rim: "border-cyan-300 shadow-[0_0_34px_#e879f9,inset_0_0_28px_rgba(192,38,211,0.45)]",
         motion: (
             <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full border-2 border-fuchsia-100 animate-po-ring-out" style={{ animationDuration: "0.85s" }} />
-                <div className="absolute w-10 h-10 rounded-full border border-fuchsia-200/90 animate-po-ring-out" style={{ animationDuration: "0.85s", animationDelay: "0.28s" }} />
-                <div className="absolute w-10 h-10 rounded-full border border-violet-200/80 animate-po-ring-out" style={{ animationDuration: "0.85s", animationDelay: "0.56s" }} />
+                <div className="w-10 h-10 rounded-full border-2 border-cyan-100 animate-po-ring-out" style={{ animationDuration: "0.85s" }} />
+                <div className="absolute w-10 h-10 rounded-full border border-cyan-200/90 animate-po-ring-out" style={{ animationDuration: "0.85s", animationDelay: "0.28s" }} />
+                <div className="absolute w-10 h-10 rounded-full border border-cyan-200/80 animate-po-ring-out" style={{ animationDuration: "0.85s", animationDelay: "0.56s" }} />
             </div>
         ),
     },
@@ -556,7 +824,7 @@ const THEMES: Record<ThemeKey, OverlayConfig> = {
 };
 
 function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
-    // return "fourthWall"
+    // return "water"
 
     if (action === "defend") return "defend";
     if (action === "heal") return "heal";
@@ -564,14 +832,18 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (!powerName) return "combat";
     const n = powerName.toLowerCase();
 
+    if (/\b(speed|superspeed|super speed|speedster|velocity|fast|quickness|speed force)/.test(n)) return "speed";
+    if (/\b(firearm|gun|pistol|rifle|sniper|marksmanship|marksman|shooting|bullet|ammo|revolver|shotgun|machine.?gun|blaster gun)/.test(n)) return "firearms";
+    if (/\b(claw|claws|adamantium claw|talon|scratch)/.test(n)) return "claws";
+    if (/\b(sword|blade|katana|saber|slash|cutlass|excalibur|dagger|knife)/.test(n)) return "sword";
     if (/\b(fourth wall|4th wall|meta|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
     if (/\b(wind|air control|weather|teleportation|aero|air manipulation)/.test(n)) return "wind";
     if (/\b(web|spider|elastic)/.test(n)) return "web";
-    if (/\b(omnitrix|alien|transformation|metamorph)/.test(n)) return "omnitrix";
+    if (/\b(omnitrix|alien)/.test(n)) return "omnitrix";
     if (/\b(ice|cryo|frost|freeze|blizzard|arctic)/.test(n)) return "ice";
     if (/\b(water|hydro|aqua|ocean|tidal|aquatic)/.test(n)) return "water";
     if (/\b(fire|flame|pyro|heat vision|inferno|magma)/.test(n)) return "fire";
-    if (/\b(lightning|electric|electro|thunder|speed force|superspeed)/.test(n)) return "lightning";
+    if (/\b(lightning|electric|electro|thunder)/.test(n)) return "lightning";
     if (/\b(time|temporal|chron)/.test(n)) return "temporal";
     if (/\b(magic|mystic|sorcery|spell|chaos magic)/.test(n)) return "mystic";
     if (/\b(telepath|telekin|psychic|mind control|illusion)/.test(n)) return "psychic";
@@ -588,7 +860,8 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(blood|vampir|life drain)/.test(n)) return "blood";
     if (/\b(diamond|crystal|invulnerab|force.?field)/.test(n)) return "diamond";
     if (/\b(tech|cyber|android|gadget|repulsor|nanite)/.test(n)) return "tech";
-    if (/\b(strength|hand-to-hand|martial|claw|brawl|punch|melee|combat)/.test(n)) return "combat";
+    if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive|energy)/.test(n)) return "energy";
+    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat"; // optional new theme
     if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strategy|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
     return "combat";
 }

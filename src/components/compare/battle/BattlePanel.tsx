@@ -45,8 +45,7 @@ export type FighterState = {
     imageFocus: string;
 };
 
-export type ScriptItem = {
-    log: Log;
+export interface ScriptItem {
     targetTeam: "A" | "B";
     targetName?: string;
     isKO?: boolean;
@@ -54,7 +53,9 @@ export type ScriptItem = {
     isHeal?: boolean;
     healTeam?: "A" | "B";
     isFinish?: boolean;
-};
+    damage?: number;
+    log: Log;
+}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 type Props = {

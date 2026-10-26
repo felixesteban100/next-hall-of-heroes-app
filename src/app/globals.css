@@ -670,6 +670,22 @@
     animation: po-page-tear 0.9s ease-in-out infinite;
   }
 
+  @keyframes po-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2px);
+    }
+    75% {
+      transform: translateX(2px);
+    }
+  }
+  .animate-po-shake {
+    animation: po-shake 0.4s ease-in-out infinite;
+  }
+
   /*  @keyframes po-appear-cycle {
     0%,
     15% {

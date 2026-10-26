@@ -112,9 +112,10 @@ export function useCombatScript(
 
                 script.push({
                     targetTeam: defenderTeamTag,
+                    damage: 1,
                     log: {
                         id: timeStep++,
-                        type: "attack", // Uses standard clash card layout so overlays render perfectly
+                        type: "attack",
                         attackerName: attacker.name,
                         defenderName: defender.name,
                         powerName: utilPower.name,
@@ -179,7 +180,7 @@ export function useCombatScript(
             const pool = strikingPowers.length > 0 ? strikingPowers : fallbackPowers;
 
             let moveName = "Direct Strike";
-            let powerTitle = "Hand-to-Hand Combat";
+            let powerTitle = "Attack";
             let logIcon: any = HandFist;
 
             if (pool.length > 0) {
@@ -204,6 +205,7 @@ export function useCombatScript(
                 const defPower = defensivePowers[Math.floor(Math.random() * defensivePowers.length)];
                 script.push({
                     targetTeam: defenderTeamTag,
+                    damage: 0, // 🚀 0 damage taken because the attack was blocked!
                     log: {
                         id: timeStep++,
                         type: "defend",
@@ -229,11 +231,14 @@ export function useCombatScript(
             if (Math.random() < koChance && canEliminate) {
                 defender.isAlive = false;
                 const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
+                const koDamage = Math.floor(Math.random() * 8) + 10; // 10% to 18% HP damage on K.O.
 
                 script.push({
                     targetTeam: defenderTeamTag,
                     targetName: defender.name,
                     isKO: true,
+                    // damage: koDamage,
+                    damage: 3,
                     log: {
                         id: timeStep++,
                         type: "ko",
@@ -291,8 +296,12 @@ export function useCombatScript(
                     powerTitle && powerTitle !== moveName
                         ? `[${powerTitle}: ${moveName}]`
                         : `[${moveName}]`;
+
+                const attackDamage = Math.floor(Math.random() * 6) + 3; // 🚀 3% to 8% chip damage per attack
+
                 script.push({
                     targetTeam: defenderTeamTag,
+                    damage: attackDamage, // 🚀 Passes damage to playback state
                     log: {
                         id: timeStep++,
                         type: "attack",

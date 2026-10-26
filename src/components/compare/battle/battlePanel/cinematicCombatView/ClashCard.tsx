@@ -80,15 +80,14 @@ function FighterSlot({
     useEffect(() => {
         if (show) {
             setRenderOverlay(true);
-            setVisible(false); // ensure starting point is 0
+            setVisible(false);
 
             const id = requestAnimationFrame(() => {
-                requestAnimationFrame(() => setVisible(true)); // paint 0, then → 1
+                requestAnimationFrame(() => setVisible(true));
             });
             return () => cancelAnimationFrame(id);
         }
 
-        // hide: visible false → transition → unmount
         setVisible(false);
         const t = setTimeout(() => setRenderOverlay(false), FADE_MS);
         return () => clearTimeout(t);
@@ -109,21 +108,51 @@ function FighterSlot({
             {/* Standardized Portrait Frame (Fixed 68x68) */}
             <div
                 className={cn(
-                    "relative w-17 h-17 rounded-xl overflow-hidden border-2 transition-all shrink-0 shadow-md",
-                    isKO ? "border-orange-500 shadow-orange-500/40 grayscale" : teamBorderClass
+                    "relative w-17 h-17 rounded-xl overflow-hidden border-2 shrink-0 shadow-md transition-colors duration-300",
+                    isKO ? "border-white shadow-black/60" : teamBorderClass
                 )}
             >
-                <CharacterImage src={fighter.image} alt={fighter.name} imageFocus={fighter.imageFocus} fill className="w-full h-full" />
+                {/* 🚀 Portrait Image with Timed Grayscale Animation */}
+                <motion.div
+                    className="w-full h-full relative"
+                    initial={{ filter: "grayscale(0%) contrast(100%)" }}
+                    animate={
+                        isKO
+                            ? { filter: "grayscale(100%) contrast(125%)" }
+                            : { filter: "grayscale(0%) contrast(100%)" }
+                    }
+                    transition={{ delay: isKO ? 1.5 : 0, duration: 0.35 }}
+                >
+                    <CharacterImage
+                        src={fighter.image}
+                        alt={fighter.name}
+                        imageFocus={fighter.imageFocus}
+                        fill
+                        className="w-full h-full object-cover"
+                    />
+                </motion.div>
 
-                {/* 🚀 Action-Specific Power Overlay Integration */}
+                {/* Action-Specific Power Overlay Integration */}
                 {renderOverlay && showOverlay && action && (
                     <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} visible={visible} />
                 )}
 
+                {/* 💥 Dramatic Animated K.O. Overlay */}
                 {isKO && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-lg z-20">
-                        <Skull className="size-6 text-orange-400" />
-                    </div>
+                    <motion.div
+                        initial={{ scale: 2.2, opacity: 0, rotate: -15 }}
+                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                        transition={{
+                            delay: 1, // Waits for the strike impact before slamming down
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20
+                        }}
+                        className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-md z-20"
+                    >
+                        <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse" />
+                        {/* <span className="text-[7px] font-black tracking-widest uppercase mt-0.5">K.O.</span> */}
+                    </motion.div>
                 )}
             </div>
 
@@ -245,22 +274,42 @@ export default function ClashCard({
                 {flavorLine && <p className="text-[9px] text-muted-foreground/80 text-center truncate max-w-[260px]">{flavorLine}</p>}
             </div>
 
-            {/* Standardized 3-Column Arena Layout */}
-            <div className="flex items-center justify-between gap-2 w-full px-1">
-                {/* Left Fighter (Team A) */}
-                <FighterSlot
-                    fighter={leftFighter}
-                    roleLabel={isDefend ? (isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (leftIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
-                    isTeamA={true}
-                    isKO={leftIsKO}
-                    action={isDefend ? (isDefenderInTeamA ? "defend" : "attack") : (leftIsAttacker ? "attack" : "defend")}
-                    showOverlay={leftIsAttacker || isDefend} // 🚀 Shows overlay for active attacker or blocker
-                    badgeColorClass={isDefend && isDefenderInTeamA ? "text-cyan-400" : undefined}
-                    activePower={activePower}
-                />
+            {/* Standardized 3-Column Arena Layout with Cinematic Collision */}
+            <div className="flex items-center justify-between gap-2 w-full px-1 overflow-hidden">
+                {/* Left Fighter (Team A) - Lunges right if attacking */}
+                <motion.div
+                    initial={{ x: -40, opacity: 0, scale: 0.9 }}
+                    animate={{ x: 0, opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }} // Appears instantly together
+                >
+                    <motion.div
+                        animate={leftIsAttacker ? { x: [0, 0, 200, 0] } : { x: 0 }}
+                        transition={{
+                            duration: 1,
+                            times: [0, 0.4, 0.75, 1], // Waits 40% of the time, then lunges forward
+                            ease: [0.175, 0.885, 0.32, 1.275]
+                        }}
+                    >
+                        <FighterSlot
+                            fighter={leftFighter}
+                            roleLabel={isDefend ? (isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (leftIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
+                            isTeamA={true}
+                            isKO={leftIsKO}
+                            action={isDefend ? (isDefenderInTeamA ? "defend" : "attack") : (leftIsAttacker ? "attack" : "defend")}
+                            showOverlay={leftIsAttacker || isDefend}
+                            badgeColorClass={isDefend && isDefenderInTeamA ? "text-cyan-400" : undefined}
+                            activePower={activePower}
+                        />
+                    </motion.div>
+                </motion.div>
 
                 {/* Center Stage Action Hub */}
-                <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.08, type: "spring", stiffness: 400, damping: 20 }}
+                    className="flex flex-col items-center gap-1.5 flex-1 min-w-0"
+                >
                     <div className={cn(
                         "p-2 rounded-full border shadow-sm shrink-0",
                         isDefend ? "bg-cyan-500/15 border-cyan-500/40" : role ? `${role.bg} ${role.border}` : "bg-muted/20 border-muted-foreground/20"
@@ -270,8 +319,8 @@ export default function ClashCard({
 
                     {!isDefend && (
                         <motion.div
-                            animate={{ x: leftIsAttacker ? [0, 3, 0] : [0, -3, 0] }}
-                            transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+                            animate={{ x: leftIsAttacker ? [0, 4, 0] : [0, -4, 0] }}
+                            transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}
                         >
                             <ArrowIcon className={cn("size-4", leftIsAttacker ? "text-primary" : "text-secondary")} />
                         </motion.div>
@@ -291,19 +340,34 @@ export default function ClashCard({
                             {log.actionName}
                         </span>
                     )}
-                </div>
+                </motion.div>
 
-                {/* Right Fighter (Team B) */}
-                <FighterSlot
-                    fighter={rightFighter}
-                    roleLabel={isDefend ? (!isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (rightIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
-                    isTeamA={false}
-                    isKO={rightIsKO}
-                    action={isDefend ? (!isDefenderInTeamA ? "defend" : "attack") : (rightIsAttacker ? "attack" : "defend")}
-                    showOverlay={rightIsAttacker || isDefend} // 🚀 Shows overlay for active attacker or blocker
-                    badgeColorClass={isDefend && !isDefenderInTeamA ? "text-cyan-400" : undefined}
-                    activePower={activePower}
-                />
+                {/* Right Fighter (Team B) - Lunges left if attacking */}
+                <motion.div
+                    initial={{ x: 40, opacity: 0, scale: 0.9 }}
+                    animate={{ x: 0, opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }} // Appears instantly together
+                >
+                    <motion.div
+                        animate={rightIsAttacker ? { x: [0, 0, -200, 0] } : { x: 0 }}
+                        transition={{
+                            duration: 1,
+                            times: [0, 0.4, 0.75, 1], // Waits 40% of the time, then lunges forward
+                            ease: [0.175, 0.885, 0.32, 1.275]
+                        }}
+                    >
+                        <FighterSlot
+                            fighter={rightFighter}
+                            roleLabel={isDefend ? (!isDefenderInTeamA ? "🛡 BLOCKS" : "⚔ ATTACKER") : (rightIsAttacker ? "⚔ ATTACKER" : "🎯 TARGET")}
+                            isTeamA={false}
+                            isKO={rightIsKO}
+                            action={isDefend ? (!isDefenderInTeamA ? "defend" : "attack") : (rightIsAttacker ? "attack" : "defend")}
+                            showOverlay={rightIsAttacker || isDefend}
+                            badgeColorClass={isDefend && !isDefenderInTeamA ? "text-cyan-400" : undefined}
+                            activePower={activePower}
+                        />
+                    </motion.div>
+                </motion.div>
             </div>
 
             {/* Bottom Footer Tags */}

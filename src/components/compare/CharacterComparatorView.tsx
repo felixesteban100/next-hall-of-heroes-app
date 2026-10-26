@@ -153,8 +153,10 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                         : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                <span className="hidden lg:inline">{tab.label}</span>
-                                <tab.icon />
+                                <div className="flex gap-1 items-center justify-center">
+                                    <span className="hidden lg:inline">{tab.label}</span>
+                                    <tab.icon className="size-5 md:size-3" />
+                                </div>
                                 {activeTab === tab.id && (
                                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
                                 )}

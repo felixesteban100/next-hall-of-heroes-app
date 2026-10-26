@@ -12,6 +12,7 @@ import HPBar from "./cinematicCombatView/HPBar";
 import ClashCard from "./cinematicCombatView/ClashCard";
 import TeamColumn from "./cinematicCombatView/TeamColumn";
 import LogRow from "./cinematicCombatView/LogRow";
+import VS from "../../VS";
 
 export type EnrichedFighter = FighterState & {
     id: number;
@@ -132,9 +133,7 @@ export default function CinematicCombatView({
             {/* HP bars */}
             <div className="flex items-center gap-3 sm:gap-5 px-1">
                 <HPBar health={healthA} name={nameA} variant="primary" />
-                <div className="shrink-0 p-1.5 sm:p-2 rounded-full border border-muted-foreground/20 bg-muted/30">
-                    <Zap className="size-3 sm:size-3.5 animate-pulse text-green-400" />
-                </div>
+                <VS />
                 <HPBar health={healthB} name={nameB} variant="secondary" />
             </div>
 
