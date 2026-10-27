@@ -4,10 +4,10 @@ import { Navbar } from "@/components/layout/navbar";
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+// 🚀 Inner layout component that safely uses usePathname()
+function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
-    // 🚀 Exact match check for base listing routes
     const isLockedRoute = [
         "/characters",
         "/powers",
@@ -16,7 +16,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         "/teams"
     ].includes(pathname);
 
-    // 🚀 Helper to determine the display page name dynamically
     const getPageTitle = (path: string) => {
         if (path === "/") return "Home";
         if (path.startsWith("/characters")) return path === "/characters" ? "Characters" : "Character Details";
@@ -25,7 +24,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         if (path.startsWith("/teams")) return path === "/teams" ? "Teams" : "Team Details";
         if (path.startsWith("/random")) return "Random Explorer";
 
-        // Default fallback: capitalize first segment
         const segment = path.split("/")[1];
         return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : "Hall of Heroes";
     };
@@ -56,22 +54,28 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 "
             />
 
-            {/* Sticky Header */}
             <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/80 shrink-0" />}>
                 <Navbar />
             </Suspense>
 
-            {/* 🚀 Dynamic Page Title Banner */}
             <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 flex items-center justify-between shrink-0">
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
                     {pageTitle}
                 </h1>
             </div>
 
-            {/* Main Content Flow */}
             <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 flex flex-col min-h-0" data-page-content>
                 {children}
             </main>
         </div>
+    );
+}
+
+// 🚀 Main layout wrapper with Suspense to satisfy build-time prerendering requirements
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <Suspense fallback={<div className="min-h-[100dvh] w-full bg-background" />}>
+            <LayoutContent>{children}</LayoutContent>
+        </Suspense>
     );
 }
