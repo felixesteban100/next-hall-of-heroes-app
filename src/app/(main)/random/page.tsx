@@ -1,6 +1,5 @@
 import { collectionCharacters } from "@/db/mongodb";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { Button } from "@/components/ui/button";
@@ -74,7 +73,6 @@ export default async function Random({ searchParams }: PageProps) {
                     </LoadingLink>
                 </Button>
             </div>
-            {/* <CharacterGrid characters={sanitizedCharacters} /> */}
             <SwipeGrid
                 items={sanitizedCharacters}
                 currentPage={1}

@@ -9,8 +9,20 @@ import { ViewTransition } from 'react'
 import { CharacterBadgeIcon } from "@/lib/characters_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON } from "@/lib/constants";
 import { Mars, Venus } from "lucide-react";
-import { useIsMobile } from "./CharacterGrid";
 import { CharacterImage } from "../shared/CharacterImage";
+import { useSyncExternalStore } from "react";
+
+function useIsMobile() {
+    return useSyncExternalStore(
+        (callback) => {
+            window.addEventListener("resize", callback);
+            return () => window.removeEventListener("resize", callback);
+        },
+        () => window.innerWidth < 640,
+        () => false // Server fallback
+    );
+}
+
 
 type CharacterCardProps = {
     character: CharacterWithJoinTeamUniversePowerEnemies;
@@ -33,7 +45,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     return (
         <Card
             // 🚀 Set card to fill parent height cleanly with responsive constraints
-            className="group h-full sm:max-h-none w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
+            className="group h-[90%] sm:max-h-none w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
         >
             {/* 🚀 Image container dynamically expands using flex-1 and min-h-0 so it shrinks/grows cleanly */}
             <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden flex items-center justify-center`}>
