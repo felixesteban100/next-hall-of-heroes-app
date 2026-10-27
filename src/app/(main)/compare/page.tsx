@@ -101,8 +101,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
     return (
         <div className="space-y-4 mt-4 ">
-            <ComparisonHeader />
-            <div className="flex flex-wrap gap-2 items-center">
+            {/* <ComparisonHeader /> */}
+            <div className="flex flex-wrap gap-2 items-center justify-end">
                 <CompareModeToggle />
                 <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? MAX_BRACKET_SIZE : MAX_TEAM_SIZE} />
                 {
