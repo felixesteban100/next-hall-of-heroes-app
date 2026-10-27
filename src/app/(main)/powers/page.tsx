@@ -56,7 +56,7 @@ export default async function page({
     seedPowersCollectionActions(powersToUpdate) */
 
     return (
-        <div className="overflow-hidden sm:overflow-visible">
+        <div className="">
             <Suspense fallback={<FilterBarSkeleton />} >
                 <PowersFilterBar />
             </Suspense>

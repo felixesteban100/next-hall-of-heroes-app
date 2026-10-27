@@ -61,7 +61,7 @@ export default async function Random({ searchParams }: PageProps) {
     const characterIdsString = charactersPerPage.map(c => c.id).join(",");
 
     return (
-        <div className="overflow-hidden sm:overflow-visible">
+        <div className="">
             {/* 🌟 If this was a fresh batch, silently update URL and localStorage on the client without router lockups */}
             {isFreshRandom && <UrlParamSyncer paramKey="lastParams_random" query={`p=${characterIdsString}`} />}
 

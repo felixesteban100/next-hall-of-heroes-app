@@ -110,7 +110,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className="overflow-hidden sm:overflow-visible">
+        <div className="">
             {/* <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
