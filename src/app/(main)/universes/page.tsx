@@ -7,6 +7,7 @@ import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { sanitize } from "@/lib/utils";
+import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
 export const instant = false;
 
@@ -43,7 +44,7 @@ export default async function page({
     const sanitizedUniverses = sanitize(universesPerPage);
 
     const totalUniverses = await collectionUniverses.countDocuments(query);
-
+    const totalPages = Math.ceil(totalUniverses / pageSize);
     // console.log((await collectionUniverses.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
 
     return (
@@ -60,7 +61,7 @@ export default async function page({
                     sortOptions={sortOptions}
                 />
             </Suspense>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {sanitizedUniverses.map((universe) => (
                     <LoadingLink key={universe.id} href={`/universes/${universe.id}`}>
                         <UniverseCard universe={universe} size="default" />
@@ -72,8 +73,16 @@ export default async function page({
                         <p className="font-medium">No universes found.</p>
                     </div>
                 )}
-            </div>
-            <div className="flex justify-center">
+            </div> */}
+
+            <SwipeGrid
+                items={sanitizedUniverses}
+                currentPage={page}
+                totalPages={totalPages}
+                type={"universe"}
+                emptyMessage="No universes found."
+            />
+            <div className="hidden sm:flex justify-center pb-4">
                 <PaginationPages currentPage={page} totalPages={Math.ceil(totalUniverses / pageSize)} />
             </div>
         </div>

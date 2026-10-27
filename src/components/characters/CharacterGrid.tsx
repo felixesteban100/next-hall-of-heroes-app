@@ -22,14 +22,11 @@ export function useIsMobile() {
 /* focusedIndex is not getting used here, I feel it should be used */
 
 export function CharacterGrid({ characters }: { characters: CharacterWithJoinTeamUniversePowerEnemies[] }) {
-    const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const isMobile = useIsMobile();
 
     // Instant reset on characters/page change without visible scrolling animation
     useEffect(() => {
-        setFocusedIndex(0);
-
         if (containerRef.current) {
             // Instantly jump to top bypassing smooth animation
             containerRef.current.scrollTo({
@@ -74,14 +71,13 @@ export function CharacterGrid({ characters }: { characters: CharacterWithJoinTea
         return (
             <div
                 ref={containerRef}
-                className="sm:hidden h-[80vh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="sm:hidden h-[65vh] w-full flex flex-col self-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
-                {characters.map((character, i) => (
+                {characters.map((character) => (
                     <LoadingLink
                         key={character.id}
                         href={`/characters/${character.id}`}
                         className="snap-card snap-center snap-always shrink-0 h-full w-full flex items-center justify-center p-0 transition-all duration-300 scale-95 "
-                        onFocus={() => setFocusedIndex(i)}
                     >
                         <CharacterCard character={character} />
                     </LoadingLink>

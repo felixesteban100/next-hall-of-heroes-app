@@ -7,6 +7,7 @@ import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import TeamCard from "@/components/teams/TeamCard";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { sanitize } from "@/lib/utils";
+import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
 export const instant = false;
 
@@ -41,8 +42,8 @@ export default async function page({
         .toArray();
 
     const sanitizedTeams = sanitize(teamsPerPage);
-
     const totalTeams = await collectionTeams.countDocuments(query);
+    const totalPages = Math.ceil(totalTeams / pageSize);
 
     // console.log((await collectionTeams.find({}).toArray()).map(c => ({ name: c.name, id: c.id })))
 
@@ -60,7 +61,7 @@ export default async function page({
                     sortOptions={sortOptions}
                 />
             </Suspense>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {sanitizedTeams.map((team) => (
                     <LoadingLink key={team.id} href={`/teams/${team.id}`}>
                         <TeamCard team={team} size="default" />
@@ -72,8 +73,15 @@ export default async function page({
                         <p className="font-medium">No teams found.</p>
                     </div>
                 )}
-            </div>
-            <div className="flex justify-center mt-4">
+            </div> */}
+            <SwipeGrid
+                items={sanitizedTeams}
+                currentPage={page}
+                totalPages={totalPages}
+                type={"team"}
+                emptyMessage="No teams found."
+            />
+            <div className="hidden sm:flex justify-center pb-4">
                 <PaginationPages currentPage={page} totalPages={Math.ceil(totalTeams / pageSize)} />
             </div>
         </div>

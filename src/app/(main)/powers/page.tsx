@@ -1,12 +1,12 @@
 import { PaginationPages } from "@/components/filters/Pagination";
-import PowerCard from "@/components/powers/PowerCard";
 import { collectionPowers } from "@/db/mongodb";
 import { Suspense } from "react";
 import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
-import { LoadingLink } from "@/components/shared/LoadingLink";
 import { sanitize } from "@/lib/utils";
 import { seedPowersCollectionActions, seedPowersCollectionCombatRole } from "@/db/seeds";
+import { SwipeGrid } from "@/components/shared/SwipeGrid";
+import PowerCard from "@/components/powers/PowerCard";
 
 export const instant = false;
 
@@ -49,27 +49,19 @@ export default async function page({
         .toArray();
 
     const sanitizedPowers = sanitize(powersPerPage);
-
     const totalPowers = await collectionPowers.countDocuments(query);
+    const totalPages = Math.ceil(totalPowers / pageSize);
 
     /* const powersToUpdate: Parameters<typeof seedPowersCollectionActions>[0] = []
-
     seedPowersCollectionActions(powersToUpdate) */
 
     return (
         <div className="space-y-2 mt-4">
-            {/* <div>
-                <h1 className="text-2xl font-bold">Powers</h1>
-                <p className="text-muted-foreground font-light">
-                    {totalPowers} powers across all universes
-                </p>
-            </div> */}
-
             <Suspense fallback={<FilterBarSkeleton />} >
                 <PowersFilterBar />
             </Suspense>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
                 {sanitizedPowers.map((power) => (
                     <LoadingLink key={power.id} href={`/powers/${power.id}`}>
                         <PowerCard power={power} size="default" />
@@ -80,10 +72,17 @@ export default async function page({
                         No powers found.
                     </div>
                 )}
-            </div>
+            </div> */}
+            <SwipeGrid
+                items={sanitizedPowers}
+                currentPage={page}
+                totalPages={totalPages}
+                type="power"
+                emptyMessage="No powers found."
+            />
 
-            <div className="flex justify-center">
-                <PaginationPages currentPage={page} totalPages={Math.ceil(totalPowers / pageSize)} />
+            <div className="hidden sm:flex justify-center pb-4">
+                <PaginationPages currentPage={page} totalPages={totalPages} />
             </div>
         </div>
     )

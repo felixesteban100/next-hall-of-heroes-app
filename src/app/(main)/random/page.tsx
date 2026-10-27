@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Scale } from "lucide-react";
 import { RefreshRandomPageButton } from "@/components/filters/RefreshRandomPageButton";
 import { UrlParamSyncer } from "@/components/random/UrlParamSyncer";
+import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
 export const instant = false;
 
@@ -73,7 +74,14 @@ export default async function Random({ searchParams }: PageProps) {
                     </LoadingLink>
                 </Button>
             </div>
-            <CharacterGrid characters={sanitizedCharacters} />
+            {/* <CharacterGrid characters={sanitizedCharacters} /> */}
+            <SwipeGrid
+                items={sanitizedCharacters}
+                currentPage={1}
+                totalPages={1}
+                type="character"
+                emptyMessage="No characters found."
+            />
         </div>
     );
 }

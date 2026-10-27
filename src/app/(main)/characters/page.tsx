@@ -11,6 +11,7 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { CharacterGrid } from "@/components/characters/CharacterGrid";
 import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";
+import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
 
 export const instant = false;
@@ -104,12 +105,13 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const sanitizedUniverses = sanitize(universes);
     const sanitizedTeams = sanitize(teams);
     const sanitizedPowers = sanitize(powers);
+    const totalPages = Math.ceil(totalCharacters / pageSize);
 
     // const charactersToUpdate = 
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className="space-y-2 mt-4 flex flex-col justify-center overflow-visible">
+        <div className=" mt-4 flex flex-col justify-center overflow-visible">
             {/* <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
@@ -136,9 +138,16 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                 }}
             />
 
-            <CharacterGrid characters={sanitizedCharacters} />
+            {/* <CharacterGrid characters={sanitizedCharacters} /> */}
+            <SwipeGrid
+                items={sanitizedCharacters}
+                currentPage={page}
+                totalPages={totalPages}
+                type="character"
+                emptyMessage="No characters found."
+            />
 
-            <div className="flex justify-center">
+            <div className="hidden md:flex justify-center pb-4">
                 <PaginationPages
                     currentPage={page}
                     totalPages={Math.ceil(totalCharacters / pageSize)}
