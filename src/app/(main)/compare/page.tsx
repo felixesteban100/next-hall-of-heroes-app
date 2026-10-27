@@ -100,7 +100,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 : null;
 
     return (
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4 mt-4 overflow-hidden sm:overflow-visible">
             <ComparisonHeader />
             <div className="flex flex-wrap gap-2 items-center">
                 <CompareModeToggle />

@@ -27,7 +27,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </Suspense>
 
             {/* 🚀 Allow main content to flow naturally on desktop, flex-1 on mobile */}
-            <main className="w-full max-w-5xl mx-auto py-0 mt-3 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 sm:flex-none flex flex-col overflow-hidden sm:overflow-visible" data-page-content>
+            <main className="w-full max-w-5xl mx-auto py-0 mt-3 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 sm:flex-none flex flex-col " data-page-content>
                 {children}
             </main>
         </div>
