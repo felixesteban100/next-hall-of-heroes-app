@@ -16,7 +16,7 @@ export default function UniverseCard({ universe, size }: UniverseCardProps) {
 
     return (
         <Card className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl">
-            <div className={`${size === "sm" ? "h-30" : "h-40"} relative bg-muted/20 overflow-hidden flex items-center justify-center p-4`}>
+            <div className={`${size === "sm" ? "h-30" : "h-full md:max-h-50"} relative bg-muted/20 overflow-hidden flex items-center justify-center p-4`}>
                 <ViewTransition name={`universe-${universe.id}`} share="morph">
                     {universe.background !== "" && (
                         <Image

@@ -129,7 +129,7 @@ export default function PowersFilterBar() {
             </div>
 
             {/* Active Filters Badges Row */}
-            <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 ">
                 {activeRole && (
                     <span className={`inline-flex items-center gap-1 text-xs font-bold ${POWER_COMBAT_ROLE_COLOR[activeRole as keyof typeof POWER_COMBAT_ROLE_COLOR].bg} rounded-full px-3 py-1`}>
                         <ActiveRoleIcon size={12} /> Role: {activeRole}

@@ -56,7 +56,7 @@ export default async function page({
     seedPowersCollectionActions(powersToUpdate) */
 
     return (
-        <div className="space-y-2 mt-4">
+        <div>
             <Suspense fallback={<FilterBarSkeleton />} >
                 <PowersFilterBar />
             </Suspense>

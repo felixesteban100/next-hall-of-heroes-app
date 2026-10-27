@@ -111,7 +111,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className=" mt-4 flex flex-col justify-center overflow-visible">
+        <div className="">
             {/* <div>
                 <h1 className="text-2xl font-bold">Characters</h1>
                 <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
@@ -147,7 +147,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                 emptyMessage="No characters found."
             />
 
-            <div className="hidden md:flex justify-center pb-4">
+            <div className="hidden md:flex justify-center py-4">
                 <PaginationPages
                     currentPage={page}
                     totalPages={Math.ceil(totalCharacters / pageSize)}

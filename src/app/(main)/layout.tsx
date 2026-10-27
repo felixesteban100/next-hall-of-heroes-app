@@ -3,7 +3,8 @@ import { Suspense } from "react";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="relative w-full max-w-full overflow-x-hidden bg-background isolate">
+        // 🚀 Only apply h-[100dvh] and overflow-hidden on mobile; allow normal height & scroll on desktop (sm:)
+        <div className="relative w-full max-w-full overflow-x-hidden bg-background isolate h-[100dvh] sm:h-auto overflow-hidden sm:overflow-auto flex flex-col">
             <div
                 className="
                     animate animate-pulse fixed top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] 
@@ -21,11 +22,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 "
             />
             {/* Sticky Header MUST be a top-level block sibling of the main content */}
-            <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/80" />}>
+            <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/80 shrink-0" />}>
                 <Navbar />
             </Suspense>
 
-            <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6 " data-page-content>
+            {/* 🚀 Allow main content to flow naturally on desktop, flex-1 on mobile */}
+            <main className="w-full max-w-5xl mx-auto py-0 mt-3 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 sm:flex-none flex flex-col overflow-hidden sm:overflow-visible" data-page-content>
                 {children}
             </main>
         </div>

@@ -7,7 +7,6 @@ import { ArrowBigLeftIcon, ArrowBigRightIcon, BrushCleaning } from "lucide-react
 import { useSyncExternalStore } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 
-// Import your card components here
 import PowerCard from "@/components/powers/PowerCard";
 import CharacterCard from "@/components/characters/CharacterCard";
 import UniverseCard from "../universes/UniverseCard";
@@ -39,7 +38,7 @@ export function SwipeGrid({
     totalPages,
     type,
     emptyMessage = "No items found.",
-    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch",
+    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch mt-3",
 }: SwipeGridProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -49,18 +48,15 @@ export function SwipeGrid({
 
     const isNavigatingRef = useRef(false);
     const touchStartYRef = useRef<number | null>(null);
-
-    // 🚀 Tracks whether we came from a next or previous page transition
     const targetIndexRef = useRef<number | null>(null);
 
-    const x = useMotionValue(0);
-    const prevOpacity = useTransform(x, (val) => (val > 20 && currentPage > 1 ? Math.min(val / 100, 1) : 0));
-    const nextOpacity = useTransform(x, (val) => (val < -20 && currentPage < totalPages ? Math.min(Math.abs(val) / 100, 1) : 0));
+    const y = useMotionValue(0);
+    const topArrowOpacity = useTransform(y, [0, 50], [0, currentPage > 1 ? 1 : 0]);
+    const bottomArrowOpacity = useTransform(y, [0, -50], [0, currentPage < totalPages ? 1 : 0]);
 
-    // Handle initial load or page change scroll alignment accurately
     useEffect(() => {
         isNavigatingRef.current = false;
-        animate(x, 0, { duration: 0 });
+        animate(y, 0, { duration: 0 });
 
         if (containerRef.current && items.length > 0) {
             const newIndex = targetIndexRef.current !== null
@@ -70,46 +66,73 @@ export function SwipeGrid({
             setActiveIndex(newIndex);
             targetIndexRef.current = null;
 
-            // 🚀 Force precise pixel alignment to bypass snap interference
             requestAnimationFrame(() => {
                 const container = containerRef.current;
                 if (!container) return;
-
                 const cards = container.querySelectorAll<HTMLElement>(".snap-card");
                 const targetCard = cards[newIndex];
 
                 if (targetCard) {
-                    const cardTop = targetCard.offsetTop;
-                    const cardHeight = targetCard.offsetHeight;
-                    const containerHeight = container.clientHeight;
-
-                    // Calculate exact scroll position to center the target card perfectly
-                    const centeredScrollTop = cardTop - (containerHeight / 2) + (cardHeight / 2);
-
                     container.scrollTo({
-                        top: Math.max(0, centeredScrollTop),
-                        behavior: "instant" // Instant prevents jitter during page loads
+                        top: targetCard.offsetTop,
+                        behavior: "instant"
                     });
                 }
             });
         }
-    }, [items, x]);
+    }, [items, y]);
 
+    const triggerPageChange = (direction: "next" | "prev") => {
+        if (isNavigatingRef.current) return;
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (direction === "next" && currentPage < totalPages) {
+            isNavigatingRef.current = true;
+            targetIndexRef.current = 0;
+            params.set("page", (currentPage + 1).toString());
+            router.push(`?${params.toString()}`);
+        } else if (direction === "prev" && currentPage > 1) {
+            isNavigatingRef.current = true;
+            targetIndexRef.current = items.length - 1;
+            params.set("page", (currentPage - 1).toString());
+            router.push(`?${params.toString()}`);
+        }
+    };
+
+    // Native non-passive touch move handler to control edge boundaries & pull-to-refresh
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
 
         const onTouchMove = (e: TouchEvent) => {
             if (touchStartYRef.current === null || isNavigatingRef.current) return;
-            const touchY = e.touches[0].clientY;
-            const deltaY = touchStartYRef.current - touchY;
-            const { scrollTop, scrollHeight, clientHeight } = el;
+            const currentY = e.touches[0].clientY;
+            const deltaY = touchStartYRef.current - currentY; // positive = pulling up, negative = pulling down
 
-            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
-            const isAtTop = scrollTop <= 2;
+            const isAtTopCard = activeIndex === 0;
+            const isAtBottomCard = activeIndex === items.length - 1;
 
-            if ((isAtBottom && deltaY > 40) || (isAtTop && deltaY < -40)) {
-                e.preventDefault();
+            if (isAtTopCard && deltaY < 0) {
+                if (currentPage > 1) {
+                    e.preventDefault();
+                    y.set(Math.abs(deltaY)); // Drive top arrow opacity
+                    if (Math.abs(deltaY) > 70) {
+                        triggerPageChange("prev");
+                    }
+                } else {
+                    // Block pull-to-refresh on page 1 top
+                    e.preventDefault();
+                }
+            } else if (isAtBottomCard && deltaY > 0) {
+                if (currentPage < totalPages) {
+                    e.preventDefault();
+                    y.set(-deltaY); // Drive bottom arrow opacity
+                    if (deltaY > 70) {
+                        triggerPageChange("next");
+                    }
+                }
+            } else {
+                y.set(0);
             }
         };
 
@@ -117,21 +140,30 @@ export function SwipeGrid({
         return () => {
             el.removeEventListener("touchmove", onTouchMove);
         };
-    }, [currentPage, totalPages]);
+    }, [activeIndex, currentPage, totalPages, items.length, y]);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+        touchStartYRef.current = null;
+        animate(y, 0, { type: "spring", stiffness: 300, damping: 25 });
+    };
 
     const handleScroll = () => {
         const container = containerRef.current;
-        if (!container || isNavigatingRef.current) return;
+        if (!container) return;
 
-        const containerCenter = container.scrollTop + container.clientHeight / 2;
+        const containerTop = container.scrollTop;
         const cards = Array.from(container.querySelectorAll<HTMLElement>(".snap-card"));
 
         let closestIndex = 0;
         let minDistance = Infinity;
 
         cards.forEach((card, index) => {
-            const cardCenter = card.offsetTop + card.offsetHeight / 2;
-            const distance = Math.abs(containerCenter - cardCenter);
+            const cardTop = card.offsetTop;
+            const distance = Math.abs(containerTop - cardTop);
             if (distance < minDistance) {
                 minDistance = distance;
                 closestIndex = index;
@@ -140,62 +172,6 @@ export function SwipeGrid({
 
         if (closestIndex !== activeIndex) {
             setActiveIndex(closestIndex);
-        }
-    };
-
-    const triggerPageChange = (direction: "next" | "prev") => {
-        if (isNavigatingRef.current) return;
-        const params = new URLSearchParams(searchParams.toString());
-
-        if (direction === "next" && currentPage < totalPages) {
-            isNavigatingRef.current = true;
-            targetIndexRef.current = 0; // 🚀 Focus first item when going forward to next page
-            params.set("page", (currentPage + 1).toString());
-            router.push(`?${params.toString()}`);
-        } else if (direction === "prev" && currentPage > 1) {
-            isNavigatingRef.current = true;
-            targetIndexRef.current = items.length - 1; // 🚀 Focus last item when going backward to previous page
-            params.set("page", (currentPage - 1).toString());
-            router.push(`?${params.toString()}`);
-        }
-    };
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        touchStartYRef.current = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        const el = containerRef.current;
-        if (!el || touchStartYRef.current === null || isNavigatingRef.current) return;
-
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchStartYRef.current - touchY;
-        const { scrollTop, scrollHeight, clientHeight } = el;
-
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
-        const isAtTop = scrollTop <= 2;
-
-        if (isAtBottom && deltaY > 30 && currentPage < totalPages) {
-            e.preventDefault();
-            triggerPageChange("next");
-        } else if (isAtTop && deltaY < -30 && currentPage > 1) {
-            e.preventDefault();
-            triggerPageChange("prev");
-        }
-    };
-
-    const handleWheel = (e: React.WheelEvent) => {
-        const el = containerRef.current;
-        if (!el || isNavigatingRef.current) return;
-
-        const { scrollTop, scrollHeight, clientHeight } = el;
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
-        const isAtTop = scrollTop <= 2;
-
-        if (isAtBottom && e.deltaY > 25) {
-            triggerPageChange("next");
-        } else if (isAtTop && e.deltaY < -25) {
-            triggerPageChange("prev");
         }
     };
 
@@ -231,74 +207,52 @@ export function SwipeGrid({
     }
 
     if (isMobile) {
-        const leftConstraint = currentPage < totalPages ? -120 : 0;
-        const rightConstraint = currentPage > 1 ? 120 : 0;
-
         return (
-            <div className="w-full flex flex-col items-center relative overflow-hidden">
-                {totalPages > 1 && <div className="text-xs text-muted-foreground font-medium mt-1 mx-auto">
+            <div className="w-full h-[calc(100dvh-150px)] flex flex-col items-center relative overflow-hidden select-none">
+
+                {/* Top Edge Arrow Indicator */}
+                <div className="absolute inset-x-0 top-1 flex justify-center items-center pointer-events-none z-30">
+                    {currentPage > 1 ? (
+                        <motion.span style={{ opacity: topArrowOpacity }} className="font-black tracking-wider uppercase text-primary flex items-center bg-background/80 px-3 py-1 rounded-full shadow">
+                            <ArrowBigLeftIcon className="w-6 h-6 rotate-90 mr-1" /> Prev Page
+                        </motion.span>
+                    ) : null}
+                </div>
+
+                {/* Bottom Edge Arrow Indicator */}
+                <div className="absolute inset-x-0 bottom-1 flex justify-center items-center pointer-events-none z-30">
+                    {currentPage < totalPages ? (
+                        <motion.span style={{ opacity: bottomArrowOpacity }} className="font-black tracking-wider uppercase text-primary flex items-center bg-background/80 px-3 py-1 rounded-full shadow">
+                            Next Page <ArrowBigRightIcon className="w-6 h-6 rotate-90 ml-1" />
+                        </motion.span>
+                    ) : null}
+                </div>
+
+                {totalPages > 1 && <div className="text-xs text-muted-foreground font-medium my-1 shrink-0">
                     Page {currentPage} of {totalPages}
                 </div>}
 
-                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center pointer-events-none px-2 z-20">
-                    {currentPage > 1 ? (
-                        <motion.span style={{ opacity: prevOpacity }} className="font-black tracking-wider uppercase text-primary flex items-center">
-                            <ArrowBigLeftIcon className="w-10 h-10 drop-shadow-md" />
-                        </motion.span>
-                    ) : <span />}
-
-                    {currentPage < totalPages ? (
-                        <motion.span style={{ opacity: nextOpacity }} className="font-black tracking-wider uppercase text-primary flex items-center">
-                            <ArrowBigRightIcon className="w-10 h-10 drop-shadow-md" />
-                        </motion.span>
-                    ) : <span />}
-                </div>
-
-                <motion.div
-                    drag="x"
-                    dragConstraints={{ left: leftConstraint, right: rightConstraint }}
-                    dragElastic={0.3}
-                    style={{ x }}
-                    onDragEnd={(_e, info) => {
-                        const threshold = 80;
-                        if (info.offset.x < -threshold && currentPage < totalPages) {
-                            triggerPageChange("next");
-                        } else if (info.offset.x > threshold && currentPage > 1) {
-                            triggerPageChange("prev");
-                        } else {
-                            animate(x, 0, { type: "spring", stiffness: 400, damping: 30 });
-                        }
-                    }}
-                    className="w-full touch-pan-y"
+                {/* Main Vertical Feed Container */}
+                <div
+                    ref={containerRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onScroll={handleScroll}
+                    className="w-full h-full flex flex-col items-center overflow-x-hidden overflow-y-auto snap-y snap-mandatory scroll-smooth overscroll-behavior-y-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative px-2 py-2"
                 >
-                    <div
-                        ref={containerRef}
-                        onScroll={handleScroll}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onWheel={handleWheel}
-                        className="sm:hidden max-h-[68vh] w-full flex flex-col items-center overflow-x-hidden overflow-y-scroll snap-y snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-6 relative"
-                    >
-                        {items.map((item, index) => {
-                            const isActive = activeIndex === index;
-                            return (
-                                <div
-                                    key={item.id}
-                                    className={`snap-card snap-center snap-always shrink-0 w-full flex flex-col items-center justify-center py-4 px-3 transition-all duration-300 ease-out relative ${isActive
-                                        ? "scale-100 opacity-100 z-10 filter-none"
-                                        : "scale-75 opacity-30 z-0 blur-[1px]"
-                                        }`}
-                                >
-                                    <div className="w-full max-w-lg px-2 flex justify-center z-10 mx-auto">
-                                        <LoadingLink href={getItemHref(item)} className="w-full block pointer-events-auto">
-                                            {renderCard(item)}
-                                        </LoadingLink>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
+                    {items.map((item, index) => (
+                        <div
+                            key={item.id}
+                            className="snap-card snap-center snap-always shrink-0 w-full h-full flex flex-col items-center justify-center relative py-1"
+                        >
+                            <div className="w-full h-full flex items-center justify-center max-w-md mx-auto">
+                                <LoadingLink href={getItemHref(item)} className="w-full h-full flex items-center justify-center pointer-events-auto">
+                                    {renderCard(item)}
+                                </LoadingLink>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }

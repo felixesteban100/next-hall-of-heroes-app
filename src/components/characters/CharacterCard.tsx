@@ -32,9 +32,11 @@ export default function CharacterCard({ character }: CharacterCardProps) {
 
     return (
         <Card
-            className="group h-[65vh] w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
+            // 🚀 Set card to fill parent height cleanly with responsive constraints
+            className="group h-full sm:max-h-none w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
         >
-            <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden`}>
+            {/* 🚀 Image container dynamically expands using flex-1 and min-h-0 so it shrinks/grows cleanly */}
+            <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden flex items-center justify-center`}>
                 <ViewTransition name={`character-${character.id}`}>
                     <CharacterImage
                         src={character.images.md}
@@ -42,20 +44,19 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                         imageFocus={character.imageFocus}
                         width={400}
                         height={500}
-                        className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl h-full"
+                        className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl h-full w-full"
                     />
                 </ViewTransition>
             </div>
 
-            {/* Card Header, Description, and Footer remain unchanged */}
-            <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-5 shrink-0">
-                <CardTitle className="text-lg font-bold transition-all duration-500">{character.name}</CardTitle>
+            <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-5 py-2 shrink-0">
+                <CardTitle className="text-lg font-bold transition-all duration-500 truncate">{character.name}</CardTitle>
                 <CharacterBadge icon={CharacterBadgeIcon(character.biography.alignment)} text={getCharacterAlignmentText(character.biography.alignment)} color={`${getCharacterAlignmentTextColor(character.biography.alignment)} bg-transparent font-bold`} />
             </CardHeader>
 
-            <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 shrink-0">
+            <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
                 <div className="flex items-center gap-1.5 min-w-0">
-                    <p className="truncate">
+                    <p className="truncate text-xs">
                         {character.biography.fullName === "-" || character.biography.fullName === ""
                             ? "Unknown"
                             : character.biography.fullName}
@@ -65,7 +66,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </span>
                 </div>
 
-                <div className="h-8 w-16 sm:h-9 sm:w-20 shrink-0 flex items-center justify-center">
+                <div className="h-6 w-14 sm:h-9 sm:w-20 shrink-0 flex items-center justify-center">
                     <Image
                         src={character.biography.publisher?.logo ?? ""}
                         alt={`${character.biography.publisher?.name ?? "publisher"} logo`}
@@ -77,7 +78,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                 </div>
             </CardDescription>
 
-            <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0">
+            <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-2">
                 <div className="grid grid-cols-4 w-full divide-x divide-foreground/50 text-center text-xs">
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Gender">
                         {character.appearance.gender === "Female" ? (
@@ -89,7 +90,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Type">
                         <TypeIcon className={`w-3.5 h-3.5 ${typeColor?.text ?? "text-muted-foreground"}`} />
-                        <span className="text-[10px] font-medium text-muted-foreground capitalize">{character.character_type || "Type"}</span>
+                        <span className="text-[10px] font-medium text-muted-foreground capitalize truncate max-w-[60px]">{character.character_type || "Type"}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center gap-0.5" title="Tier">
                         <TierIcon className={`w-3.5 h-3.5 ${tierColor.text}`} />

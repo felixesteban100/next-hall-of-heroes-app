@@ -2,11 +2,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export function UrlParamSyncer({ paramKey, query }: { paramKey: string; query: string }) {
-    const router = useRouter();
-
     useEffect(() => {
         // Save to localStorage for NavbarActiveLinks
         localStorage.setItem(paramKey, query);

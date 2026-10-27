@@ -21,7 +21,7 @@ export default function TeamCard({ team, size }: TeamCardProps) {
 
     return (
         <Card className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl">
-            <div className={`${size === "sm" ? "h-30" : "h-40"} relative bg-muted/20 overflow-hidden flex items-center justify-center p-4`}>
+            <div className={`${size === "sm" ? "h-30" : "h-full md:max-h-50"} relative bg-muted/20 overflow-hidden flex items-center justify-center p-4`}>
                 <ViewTransition name={`team-${team.id}`} share="morph">
                     <Image
                         src={`${team.logo}`}
@@ -46,7 +46,7 @@ export default function TeamCard({ team, size }: TeamCardProps) {
                 {team.description || "No description available."}
             </CardDescription>
 
-            <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-0">
+            <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-2">
                 <div className="grid grid-cols-3 w-full divide-x divide-foreground/50 text-center text-xs">
                     <div className="flex flex-col items-center justify-center gap-0.5 py-2" title="Alignment">
                         <IconAligment className={`w-3.5 h-3.5 ${alignmentColor}`} />
