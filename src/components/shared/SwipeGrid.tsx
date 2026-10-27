@@ -258,7 +258,7 @@ export function SwipeGrid({
     }
 
     return (
-        <div className={desktopGridClassName}>
+        <div className={`${desktopGridClassName} mb-4`}>
             {items.map((item) => (
                 <LoadingLink key={item.id} href={getItemHref(item)}>
                     {renderCard(item)}

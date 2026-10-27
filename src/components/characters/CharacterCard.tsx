@@ -45,7 +45,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
     return (
         <Card
             // 🚀 Set card to fill parent height cleanly with responsive constraints
-            className="group h-[90%] sm:max-h-none w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
+            className="group h-full sm:max-h-none w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl"
         >
             {/* 🚀 Image container dynamically expands using flex-1 and min-h-0 so it shrinks/grows cleanly */}
             <div className={`relative ${isMobile ? "flex-1 min-h-0 w-full" : "aspect-4/4"} bg-muted/20 overflow-hidden flex items-center justify-center`}>
