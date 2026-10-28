@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare/scoringUtils";
 import { aggregateTeamScores } from "@/lib/compare/teamUtils";
-import { Shield, Zap, Skull, Award, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
-import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, TIER_SCORE } from "@/lib/constants";
+import { Shield, Zap, Skull, Award, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp, Cpu, Activity } from "lucide-react";
+import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { CharacterImage } from "../shared/CharacterImage";
 
 interface PowerFormulaTabProps {
@@ -11,6 +11,7 @@ interface PowerFormulaTabProps {
     sideB: CharacterWithJoinTeamUniversePowerEnemies[];
     labelA?: string;
     labelB?: string;
+    variant: string;
 }
 
 export const PowerFormulaTab: React.FC<PowerFormulaTabProps> = ({
@@ -18,6 +19,7 @@ export const PowerFormulaTab: React.FC<PowerFormulaTabProps> = ({
     sideB,
     labelA = "Team A",
     labelB = "Team B",
+    variant
 }) => {
     const isTeamA = sideA.length > 1;
     const isTeamB = sideB.length > 1;
@@ -26,14 +28,17 @@ export const PowerFormulaTab: React.FC<PowerFormulaTabProps> = ({
     const teamBData = aggregateTeamScores(sideB);
 
     return (
-        <div className="w-full space-y-8 py-4">
-            {/* Mode Header */}
-            <div className="text-center space-y-1">
-                <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-                    Power &amp; Scoring Calculation Breakdown
+        <div className="w-full space-y-6 py-2">
+            {/* Cinematic Section Header */}
+            <div className="text-center space-y-1 mb-2">
+                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-${variant}/10 border border-${variant}/20 text-${variant} text-xs font-bold tracking-wider uppercase mb-1`}>
+                    <Activity className="w-3.5 h-3.5 animate-pulse" /> Power Matrix Breakdown
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+                    Battle Analytics &amp; Scoring Engine
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Individual scores computed via <code className="text-cyan-600 font-mono">computeMatchScore</code> &amp; team aggregates via <code className="text-cyan-600 font-mono">teamUtils</code>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    Deep dive into squad composition weightings, member attributes, and synergy multipliers.
                 </p>
             </div>
 
@@ -83,80 +88,73 @@ const SideFormulaCard = ({
     const medianRaw = aggregate.rosterMedian || 0;
     const medianContribution = (medianRaw * 0.35).toFixed(1);
 
-    const badgeBg =
-        variant === "primary"
-            ? "bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-300"
-            : "bg-teal-50/70 dark:bg-teal-950/30 border-teal-200 dark:border-teal-800/50 text-teal-700 dark:text-teal-300";
+    const isPrimary = variant === "primary";
+    const accentBorder = isPrimary ? "border-primary" : "border-secondary";
+    const accentBg = isPrimary ? "bg-primary/5" : "bg-secondary/5";
+    const accentText = isPrimary ? "text-primary" : "text-secondary";
 
     const toggleMember = (id: number) => {
         setExpandedMemberId(expandedMemberId === id ? null : id);
     };
 
     return (
-        <div className="bg-card/20 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-6">
-            {/* Top Header & Final Power Estimate */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className={`bg-card/80 backdrop-blur-md border ${accentBorder}/30 ${accentBg} rounded-2xl p-5 space-y-5 `}>
+            {/* Header & Final Power Estimate */}
+            <div className="flex items-center justify-between border-b border-border/40 pb-4">
                 <div>
-                    <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider">Side Analysis</span>
-                    <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">{title}</h4>
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground block">Squad Analysis</span>
+                    <h4 className="text-xl font-black text-foreground tracking-tight">{title}</h4>
                 </div>
-                <div className="text-right">
-                    <span className="text-xs text-slate-400 font-mono block">Final Estimate</span>
-                    <span className={`text-3xl font-black text-${variant}`}>
+                <div className="text-right bg-background/50 border border-border/40 px-4 py-2 rounded-xl">
+                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">Power Rating</span>
+                    <span className={`text-2xl sm:text-3xl font-black ${accentText}`}>
                         {isTeam ? aggregate.powerEstimate : (computeMatchScore(entities[0])?.overall ?? 0)}
                     </span>
                 </div>
             </div>
 
-            {/* TEAM SYNERGY SUMMARY (If Team Mode) */}
             {/* TEAM SQUAD MATRIX SUMMARY */}
             {isTeam && (
-                <div className="space-y-3 bg-card/30 backdrop-blur-md p-4 rounded-xl border border-muted-foreground/30 ">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                        <Users className="w-4 h-4 text-cyan-500" /> Weighted Squad Matrix
-                        Formula
-                    </div>
-
-                    <div className="text-[10px] font-mono font-medium text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-900/80 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 text-center shadow-inner">
-                        Power Estimate = Ace (65%) + Median Depth (35%) + Chemistry
+                <div className="space-y-3 bg-card/60 backdrop-blur-sm p-4 rounded-xl border border-border/60 ">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-primary" /> Squad Composition Matrix
+                        </span>
+                        <span className="text-[10px] font-semibold text-muted-foreground">
+                            Ace (65%) + Median (35%) + Chemistry
+                        </span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center">
                         {/* Ace Card */}
-                        <div
-                            className={`p-2.5 rounded-xl border backdrop-blur-sm ${badgeBg}`}
-                        >
-                            <div className="text-[9px] font-bold uppercase opacity-80">
-                                Ace (65%)
+                        <div className="p-2.5 rounded-xl border border-primary/30 bg-primary/10 backdrop-blur-sm flex flex-col justify-between">
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-primary opacity-90">
+                                Lead Ace (65%)
                             </div>
-                            <div className="text-sm font-black">+{aceContribution}</div>
-                            <div className="text-[9px] opacity-75 truncate">
-                                {aggregate.aceName ?? "N/A"} ({aceRaw})
+                            <div className="text-base font-black text-foreground my-0.5">+{aceContribution}</div>
+                            <div className="text-[10px] font-medium text-muted-foreground truncate px-1">
+                                {aggregate.aceName ?? "N/A"}
                             </div>
                         </div>
 
                         {/* Median Depth */}
-                        <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-2.5 rounded-xl backdrop-blur-sm">
-                            <div className="text-[9px] text-blue-700 dark:text-blue-400 font-bold uppercase">
-                                Median (35%)
+                        <div className="p-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm flex flex-col justify-between">
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-blue-400 opacity-90">
+                                Roster Depth (35%)
                             </div>
-                            <div className="text-sm font-black text-blue-600 dark:text-blue-300">
-                                +{medianContribution}
-                            </div>
-                            <div className="text-[9px] text-slate-500">
-                                Depth ({medianRaw})
+                            <div className="text-base font-black text-foreground my-0.5">+{medianContribution}</div>
+                            <div className="text-[10px] font-medium text-muted-foreground">
+                                Median ({medianRaw})
                             </div>
                         </div>
 
                         {/* Chemistry */}
-                        <div className="bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 p-2.5 rounded-xl backdrop-blur-sm">
-                            <div className="text-[9px] text-purple-700 dark:text-purple-400 font-bold uppercase">
+                        <div className="p-2.5 rounded-xl border border-purple-500/30 bg-purple-500/10 backdrop-blur-sm flex flex-col justify-between">
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-purple-400 opacity-90">
                                 Chemistry
                             </div>
-                            <div className="text-sm font-black text-purple-600 dark:text-purple-300">
-                                +{aggregate.chemistryBoost}
-                            </div>
-                            <div className="text-[9px] text-slate-500">
+                            <div className="text-base font-black text-foreground my-0.5">+{aggregate.chemistryBoost}</div>
+                            <div className="text-[10px] font-medium text-muted-foreground">
                                 {aggregate.chemistry?.score ?? 0}% Synergy
                             </div>
                         </div>
@@ -164,16 +162,18 @@ const SideFormulaCard = ({
                 </div>
             )}
 
-            {/* INDIVIDUAL MEMBER BREAKDOWNS (computeMatchScore) */}
+            {/* INDIVIDUAL MEMBER BREAKDOWNS */}
             <div className="space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                     <span className="flex items-center gap-1.5">
-                        <Zap className="w-4 h-4 text-amber-500" /> Member Scores (`computeMatchScore`)
+                        <Cpu className="w-4 h-4 text-amber-500" /> Roster Breakdown
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">{entities.length} Character(s)</span>
+                    <span className="text-[10px] font-semibold bg-muted/60 px-2 py-0.5 rounded-md">
+                        {entities.length} Fighter{entities.length === 1 ? "" : "s"}
+                    </span>
                 </div>
 
-                <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
                     {entities.sort((e1, e2) => computeMatchScore(e2).overall - computeMatchScore(e1).overall).map((entity) => {
                         const score = computeMatchScore(entity);
                         const isExpanded = expandedMemberId === entity.id;
@@ -185,47 +185,58 @@ const SideFormulaCard = ({
                         return (
                             <div
                                 key={entity.id}
-                                className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all bg-slate-50/50 dark:bg-slate-800/30"
+                                className="border border-border/60 rounded-xl overflow-hidden transition-all bg-card/40 hover:bg-card/70 "
                             >
                                 {/* Member Row Header */}
                                 <button
                                     onClick={() => toggleMember(entity.id)}
-                                    className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-colors"
+                                    className="w-full flex items-center justify-between p-3.5 text-left transition-colors"
                                 >
-                                    <div className="flex items-center space-x-3">
-                                        <CharacterImage
-                                            src={entity.images?.md || "/placeholder.png"}
-                                            alt={entity.name}
-                                            imageFocus={entity.imageFocus}
-                                            className={`w-8 h-8 rounded-full object-cover border border-${variant}`}
-                                        />
-                                        <div>
-                                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{entity.name}</div>
-                                            <div className="text-[10px] text-slate-400 font-mono flex gap-2">
-                                                <span className="flex items-center gap-0.5">T-{entity.tier ?? 0} <TierIcon size="8" className={CHARACTER_TIER_COLOR[entity.tier as keyof typeof CHARACTER_TIER_COLOR].text} /> {tierName} </span>
-                                                <span className="flex items-center gap-0.5">C-{entity.class ?? 0} <ClassIcon size="8" className={CHARACTER_CLASS_COLOR[entity.class as keyof typeof CHARACTER_CLASS_COLOR].text} /> {classCharName}</span>
+                                    <div className="flex items-center space-x-3 min-w-0">
+                                        <div className={`relative w-10 h-10 rounded-xl overflow-hidden border-2 ${accentBorder} shrink-0 bg-background/50 `}>
+                                            <CharacterImage
+                                                src={entity.images?.md || "/placeholder.png"}
+                                                alt={entity.name}
+                                                imageFocus={entity.imageFocus}
+                                                fill
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-bold text-foreground truncate">{entity.name}</div>
+                                            <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-2 mt-0.5 truncate">
+                                                <span className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+                                                    <TierIcon size="10" className={CHARACTER_TIER_COLOR[entity.tier as keyof typeof CHARACTER_TIER_COLOR]?.text ?? ""} />
+                                                    T-{entity.tier ?? 0} {tierName}
+                                                </span>
+                                                <span className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded truncate">
+                                                    <ClassIcon size="10" className={CHARACTER_CLASS_COLOR[entity.class as keyof typeof CHARACTER_CLASS_COLOR]?.text ?? ""} />
+                                                    C-{entity.class ?? 0} {classCharName}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center space-x-3">
+                                    <div className="flex items-center space-x-3 shrink-0 pl-2">
                                         <div className="text-right">
-                                            <span className="text-[10px] uppercase text-slate-400 block font-mono">Overall</span>
-                                            <span className={`text-sm font-extrabold text-${variant}`}>{score.overall}</span>
+                                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground block font-semibold">Overall</span>
+                                            <span className={`text-base font-black ${accentText}`}>{score.overall}</span>
                                         </div>
-                                        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                                        <div className="w-6 h-6 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground">
+                                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                        </div>
                                     </div>
                                 </button>
 
                                 {/* Expanded Mathematical Weights Breakdown */}
                                 {isExpanded && (
-                                    <div className="p-3 border-t border-slate-200 dark:border-slate-800  space-y-3 text-xs">
-                                        <div className="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 p-1.5 rounded text-center">
-                                            Overall = (Stats &times; 0.35) + (Tier &times; 0.22) + (Powers &times; 0.25) + (Threat &times; 0.10) + (Class &times; 0.08) - Weakness
+                                    <div className="p-4 border-t border-border/40 space-y-3.5 bg-background/30 text-xs">
+                                        <div className="text-[10px] font-semibold text-muted-foreground bg-card/60 p-2 rounded-lg border border-border/40 text-center">
+                                            Formula: (Stats &times; 35%) + (Tier &times; 22%) + (Powers &times; 25%) + (Threat &times; 10%) + (Class &times; 8%)
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-2.5">
                                             <WeightBar
-                                                icon={<Zap className="w-3 h-3 text-blue-500" />}
+                                                icon={<Zap className="w-3.5 h-3.5 text-blue-400" />}
                                                 label="Powerstats Average"
                                                 weight="35%"
                                                 raw={score.averagePowerStats}
@@ -233,7 +244,7 @@ const SideFormulaCard = ({
                                                 color="bg-blue-500"
                                             />
                                             <WeightBar
-                                                icon={<Award className="w-3 h-3 text-purple-500" />}
+                                                icon={<Award className="w-3.5 h-3.5 text-purple-400" />}
                                                 label="Power Tier Score"
                                                 weight="22%"
                                                 raw={score.tier}
@@ -241,7 +252,7 @@ const SideFormulaCard = ({
                                                 color="bg-purple-500"
                                             />
                                             <WeightBar
-                                                icon={<Sparkles className="w-3 h-3 text-cyan-500" />}
+                                                icon={<Sparkles className="w-3.5 h-3.5 text-cyan-400" />}
                                                 label="Powers Score"
                                                 weight="25%"
                                                 raw={score.powers}
@@ -249,16 +260,16 @@ const SideFormulaCard = ({
                                                 color="bg-cyan-500"
                                             />
                                             <WeightBar
-                                                icon={<Skull className="w-3 h-3 text-red-500" />}
+                                                icon={<Skull className="w-3.5 h-3.5 text-rose-400" />}
                                                 label="Threat / Enemies"
                                                 weight="10%"
                                                 raw={score.threat}
                                                 calculated={score.threat * 0.10}
-                                                color="bg-red-500"
+                                                color="bg-rose-500"
                                             />
                                             <WeightBar
-                                                icon={<Shield className="w-3 h-3 text-emerald-500" />}
-                                                label="Character Class Score"
+                                                icon={<Shield className="w-3.5 h-3.5 text-emerald-400" />}
+                                                label="Character Class"
                                                 weight="8%"
                                                 raw={score.class}
                                                 calculated={score.class * 0.08}
@@ -266,11 +277,11 @@ const SideFormulaCard = ({
                                             />
 
                                             {score.weaknessPenalty > 0 && (
-                                                <div className="flex justify-between items-center bg-rose-50 dark:bg-rose-950/30 p-2 rounded border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 text-xs">
-                                                    <span className="flex items-center gap-1 font-medium">
-                                                        <AlertTriangle className="w-3 h-3" /> Weakness Penalty (-3 per weakness)
+                                                <div className="flex justify-between items-center bg-destructive/10 p-2.5 rounded-xl border border-destructive/20 text-destructive text-xs font-semibold">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <AlertTriangle className="w-3.5 h-3.5" /> Weakness Vulnerability Penalty
                                                     </span>
-                                                    <span className="font-mono font-bold">-{score.weaknessPenalty} pts</span>
+                                                    <span className="font-mono">-{score.weaknessPenalty} pts</span>
                                                 </div>
                                             )}
                                         </div>
@@ -302,16 +313,16 @@ const WeightBar = ({
 }) => {
     return (
         <div className="space-y-1">
-            <div className="flex justify-between items-center text-slate-600 dark:text-slate-300 text-[11px]">
+            <div className="flex justify-between items-center text-foreground/80 text-[11px]">
                 <span className="flex items-center gap-1.5 font-medium">
-                    {icon} {label} <span className="text-[10px] text-slate-400 font-mono">({weight})</span>
+                    {icon} {label} <span className="text-[10px] text-muted-foreground font-semibold">({weight})</span>
                 </span>
-                <span className="font-mono text-slate-400 text-[11px]">
-                    {raw.toFixed(1)} &rarr; <span className="font-bold text-slate-800 dark:text-slate-100">+{calculated.toFixed(1)}</span>
+                <span className="font-mono text-muted-foreground text-[11px]">
+                    {raw.toFixed(1)} &rarr; <span className="font-bold text-foreground">+{calculated.toFixed(1)}</span>
                 </span>
             </div>
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className={`h-full ${color} transition-all duration-300`} style={{ width: `${Math.min(100, raw)}%` }} />
+            <div className="w-full h-1.5 bg-muted/60 rounded-full overflow-hidden">
+                <div className={`h-full ${color} transition-all duration-300 rounded-full`} style={{ width: `${Math.min(100, raw)}%` }} />
             </div>
         </div>
     );

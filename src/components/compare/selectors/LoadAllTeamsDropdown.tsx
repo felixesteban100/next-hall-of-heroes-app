@@ -81,7 +81,7 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted/30 hover:bg-muted text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-all"
                 >
                     <Users className="size-3.5" />
-                    <span>Load Team...</span>
+                    {/* <span>Load Team...</span> */}
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto p-2">

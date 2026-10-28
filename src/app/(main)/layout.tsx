@@ -19,8 +19,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <div
             className={`relative w-full max-w-full overflow-x-hidden bg-background isolate flex flex-col ${isLockedRoute
-                    ? "h-[100dvh] overflow-hidden sm:h-auto sm:min-h-[100dvh] sm:overflow-y-auto" // 🚀 Locked on mobile, fully scrollable on desktop
-                    : "min-h-[100dvh] overflow-y-auto"
+                ? "h-[100dvh] overflow-hidden sm:h-auto sm:min-h-[100dvh] sm:overflow-y-auto" // 🚀 Locked on mobile, fully scrollable on desktop
+                : "min-h-[100dvh] overflow-y-auto"
                 }`}
         >
             <div
@@ -44,7 +44,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 <Navbar />
             </Suspense>
 
-            <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 flex flex-col min-h-0" data-page-content>
+            <main className="w-full max-w-5xl mx-auto py-0 px-4 sm:px-6 lg:px-8 md:py-6 flex-1 flex flex-col min-h-0 mt-4" data-page-content>
                 {children}
             </main>
         </div>

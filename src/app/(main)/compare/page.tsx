@@ -28,8 +28,8 @@ type SearchParamsPromise = Promise<{
     b_name?: string;
 }>;
 
-export const MAX_TEAM_SIZE = 14; // one constant
-export const MAX_BRACKET_SIZE = 28; // one constant
+export const MAX_TEAM_SIZE = 14;
+export const MAX_BRACKET_SIZE = 28;
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
@@ -37,7 +37,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
     const ids = parseIdList(params.p);
     const characters = await fetchCharactersJoinedById(ids);
-    const characterOptions = await searchCharacters("", ids)
+    const characterOptions = await searchCharacters("", ids);
 
     const idsA =
         mode === "team"
@@ -58,7 +58,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         sanitize(await fetchCharactersByIds(idsB)),
     ]);
 
-    // 1v1 convenience aliases (first member or null)
     const entityA = entitiesA[0] ?? null;
     const entityB = entitiesB[0] ?? null;
 
@@ -84,7 +83,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             ? (explicitTeamNameB ?? bestTeamNameB ?? "Team B")
             : entityB?.name;
 
-    // after scores are computed:
     const aceAInfo =
         mode === "team" && teamA?.ace
             ? { name: teamA.aceName ?? "Ace", overall: teamA.ace.overall }
@@ -100,35 +98,37 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 : null;
 
     return (
-        <div className="space-y-4 mt-4 ">
-            {/* <ComparisonHeader /> */}
-            <div className="flex flex-wrap gap-2 items-center justify-end">
+        // 🚀 Added pb-28 to give bottom breathing room so cards never get clipped
+        <div className="space-y-4 ">
+
+            {/* 🚀 Streamlined toolbar: Mode toggle and actions aligned cleanly */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card/40 p-2 rounded-xl border border-border/40 backdrop-blur-sm">
                 <CompareModeToggle />
-                <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? MAX_BRACKET_SIZE : MAX_TEAM_SIZE} />
-                {
-                    mode != "bracket"
-                    &&
-                    <CopySummaryButton
-                        mode={mode}
-                        nameA={entityAName ?? "Side A"}
-                        nameB={entityBName ?? "Side B"}
-                        powerEstimateA={teamA?.powerEstimate}
-                        powerEstimateB={teamB?.powerEstimate}
-                        aceA={mode === "team" ? aceAInfo : null}
-                        aceB={mode === "team" ? aceBInfo : null}
-                        fighterCount={characters.length}
-                    />
-                }
+                <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
+                    <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? MAX_BRACKET_SIZE : MAX_TEAM_SIZE} />
+                    {mode !== "bracket" && (
+                        <CopySummaryButton
+                            mode={mode}
+                            nameA={entityAName ?? "Side A"}
+                            nameB={entityBName ?? "Side B"}
+                            powerEstimateA={teamA?.powerEstimate}
+                            powerEstimateB={teamB?.powerEstimate}
+                            aceA={mode === "team" ? aceAInfo : null}
+                            aceB={mode === "team" ? aceBInfo : null}
+                            fighterCount={characters.length}
+                        />
+                    )}
+                </div>
             </div>
 
-            {mode === "bracket" ?
+            {mode === "bracket" ? (
                 <>
                     <BracketPicker size={MAX_BRACKET_SIZE} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={sanitize(characters)} />
                     <DynamicBracketView characters={sanitize(characters)} />
                 </>
-                :
+            ) : (
                 <>
-                    <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center mb-4 overflow-visible">
+                    <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center mb-4 overflow-visible">
                         {mode === "team" ? (
                             <>
                                 <TeamSelectorCard
@@ -198,7 +198,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         entityBName={entityBName}
                     />
                 </>
-            }
+            )}
         </div>
     );
 }

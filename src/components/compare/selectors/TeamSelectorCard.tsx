@@ -30,168 +30,85 @@ export async function TeamSelectorCard({
     const avatarRing = variant === "primary" ? "border-primary/40" : "border-secondary/40";
 
     return (
-        <div className={`bg-card border ${accentBorder} ${accentBg} rounded-xl p-4 flex flex-col gap-3`}>
+        <div className={`bg-card/80 backdrop-blur-md border ${accentBorder} ${accentBg} rounded-2xl p-4 flex flex-col gap-3 `}>
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <span className={`text-xs font-bold uppercase tracking-widest ${accentText}`}>
-                    {title}
-                </span>
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <div className="flex items-center gap-2">
+                    <span className={`text-xs font-black uppercase tracking-wider ${accentText}`}>
+                        {title}
+                    </span>
+                    <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground font-semibold tabular-nums">
+                        {selectedIds.length}/{max}
+                    </span>
+                </div>
                 <LoadAllTeamsDropdown
                     paramKey={paramKey}
                     excludeIds={excludeIds}
                     fetchTeamsAction={getAllTeamsWithMembers}
                 />
-
-                <span className="text-xs text-muted-foreground tabular-nums">
-                    {selectedIds.length} / {max}
-                </span>
             </div>
-            {/* Roster grid — portrait cards */}
+
+            {/* Roster Grid with Controlled Max Height & Scroll for Large Teams */}
             {selected.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                    {selected.map((c) => (
-                        <div key={c.id} className="group relative flex flex-col items-center gap-0.5 w-12">
-                            {/* Portrait */}
-                            <div className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 ${avatarRing} shrink-0`}>
-                                <CharacterImage
-                                    src={c.image}
-                                    alt={c.name}
-                                    imageFocus={c.imageFocus}
-                                    fill
-                                    className="w-12 h-12 rounded-md shrink-0"
-                                />
-                                {/* Remove button on hover */}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                                    <RemoveCharacterOfTeamButton
-                                        paramKey={paramKey}
-                                        selectedIds={selectedIds}
-                                        idsToRemove={[c.id]}
-                                    // iconOnly
+                <div className="max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+                        {selected.map((c) => (
+                            <div key={c.id} className="group relative flex flex-col items-center gap-1">
+                                {/* Portrait */}
+                                <div className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 ${avatarRing} shrink-0 bg-background/50`}>
+                                    <CharacterImage
+                                        src={c.image}
+                                        alt={c.name}
+                                        imageFocus={c.imageFocus}
+                                        fill
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                     />
+                                    {/* Remove overlay on hover / touch */}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] rounded-xl">
+                                        <RemoveCharacterOfTeamButton
+                                            paramKey={paramKey}
+                                            selectedIds={selectedIds}
+                                            idsToRemove={[c.id]}
+                                        />
+                                    </div>
                                 </div>
+                                {/* Name */}
+                                <span className="text-[9px] text-muted-foreground text-center leading-tight truncate w-full font-medium">
+                                    {c.name}
+                                </span>
                             </div>
-                            {/* Name */}
-                            <span className="text-[9px] text-muted-foreground text-center leading-tight truncate w-full font-medium">
-                                {c.name}
-                            </span>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             ) : (
-                <div className="flex items-center justify-center py-4 border border-dashed border-muted-foreground/20 rounded-lg">
-                    <p className="text-xs text-muted-foreground/50">No characters added yet</p>
+                <div className="flex items-center justify-center py-6 border border-dashed border-muted-foreground/20 rounded-xl bg-background/20">
+                    <p className="text-xs text-muted-foreground/50 font-medium">No characters added yet</p>
                 </div>
             )}
 
-            {/* Add combobox */}
-            {selectedIds.length < max && (
-                <TeamAddCombobox
-                    excludeIds={excludeIds}
-                    initialOptions={characterOptions}
-                    paramKey={paramKey}
-                    ids={selectedIds}
-                    placeholder="Add character…"
-                />
-            )}
+            {/* Footer Actions: Combobox & Clear */}
+            <div className="flex flex-col gap-2 pt-1">
+                {selectedIds.length < max && (
+                    <TeamAddCombobox
+                        excludeIds={excludeIds}
+                        initialOptions={characterOptions}
+                        paramKey={paramKey}
+                        ids={selectedIds}
+                        placeholder="Add character to team…"
+                    />
+                )}
 
-            {/* Clear all */}
-            {selectedIds.length > 1 && (
-                <RemoveCharacterOfTeamButton
-                    paramKey={paramKey}
-                    variant={variant === "primary" ? "default" : "secondary"}
-                    selectedIds={selectedIds}
-                    idsToRemove={selectedIds}
-                />
-            )}
+                {selectedIds.length > 1 && (
+                    <div className="flex justify-end">
+                        <RemoveCharacterOfTeamButton
+                            paramKey={paramKey}
+                            variant={variant === "primary" ? "default" : "secondary"}
+                            selectedIds={selectedIds}
+                            idsToRemove={selectedIds}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
-
-// import { TeamAddCombobox } from "./TeamAddCombobox";
-// import RemoveCharacterOfTeamButton from "./RemoveCharacterOfTeamButton";
-// import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
-// import { searchCharacters } from "@/app/actions";
-// import { CharacterImage } from "@/components/shared/CharacterImage";
-// import { Button } from "@/components/ui/button";
-
-// export async function TeamSelectorCard({
-//     title,
-//     selected,
-//     selectedIds,
-//     excludeIds,
-//     paramKey,
-//     variant,
-//     max = MAX_TEAM_SIZE,
-// }: {
-//     title: string;
-//     selected: { id: number; name: string; slug: string, image: string, imageFocus: string }[];
-//     selectedIds: number[];
-//     excludeIds: number[];
-//     paramKey: "a" | "b";
-//     variant: "primary" | "secondary";
-//     max?: number;
-// }) {
-
-
-//     // Fetch lightweight index options for the combobox
-//     const characterOptions = await searchCharacters("", excludeIds, selectedIds)
-
-//     return (
-//         <div className="bg-card border border-muted-foreground/20 rounded-xl p-5 flex flex-col gap-3">
-//             <div className="flex justify-between text-xs">
-//                 <span className={`${variant === "primary" ? "text-primary" : "text-secondary"} uppercase font-bold tracking-widest`}>
-//                     {title}
-//                 </span>
-//                 <span className="text-muted-foreground">
-//                     {selectedIds.length} / {max}
-//                 </span>
-//             </div>
-
-//             <div className="flex flex-col gap-2 items-center">
-//                 <div className="flex flex-wrap gap-2">
-//                     {selected.map((c) => (
-//                         <div
-//                             key={c.id}
-//                             className={`rounded-full px-1 py-[3px] flex gap-2 justify-start items-center ${variant === "primary" ? "bg-primary/10 border border-primary" : "bg-secondary/10 border border-secondary"}`}
-//                         >
-//                             <CharacterImage
-//                                 src={c.image}
-//                                 alt={c.name}
-//                                 imageFocus={c.imageFocus}
-//                                 fill
-//                                 className="w-12 h-12 rounded-full shrink-0"
-//                             />
-//                             <span>{c.name}</span>
-//                             <RemoveCharacterOfTeamButton
-//                                 paramKey={paramKey}
-//                                 selectedIds={selectedIds}
-//                                 idsToRemove={[c.id]}
-//                             />
-//                         </div>
-//                     ))}
-//                 </div>
-
-//                 <div className="flex-1 w-full">
-//                     {selectedIds.length < max && (
-//                         <TeamAddCombobox
-//                             excludeIds={excludeIds}
-//                             initialOptions={characterOptions} // optional from server
-//                             paramKey={paramKey}
-//                             ids={selectedIds}
-//                             // onAdd={(id) => write([...selectedIds, id])}
-//                             placeholder="Add character…"
-//                         />
-//                     )}
-//                 </div>
-
-//                 {selectedIds.length > 1 &&
-//                     <RemoveCharacterOfTeamButton
-//                         paramKey={paramKey}
-//                         variant={variant === "primary" ? "default" : "secondary"}
-//                         selectedIds={selectedIds}
-//                         idsToRemove={selectedIds}
-//                     />}
-//             </div>
-//         </div>
-//     );
-// }

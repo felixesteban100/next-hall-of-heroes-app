@@ -345,6 +345,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                             sideB={entitiesB}
                             labelA={entityAName}
                             labelB={entityBName}
+                            variant={actualWinner === "A" ? "primary" : actualWinner === "B" ? "secondary" : "muted"}
                         />
                     )}
 
