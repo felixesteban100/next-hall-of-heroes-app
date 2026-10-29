@@ -7,10 +7,8 @@ import { ArrowBigLeftIcon, ArrowBigRightIcon, BrushCleaning } from "lucide-react
 import { useSyncExternalStore } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 
-import PowerCard from "@/components/powers/PowerCard";
-import CharacterCard from "@/components/characters/CharacterCard";
-import UniverseCard from "../universes/UniverseCard";
-import TeamCard from "../teams/TeamCard";
+import { EntityCard } from "./EntityCard";
+import { getCardProps } from "./getCardProps";
 
 export function useIsMobile() {
     return useSyncExternalStore(
@@ -23,11 +21,13 @@ export function useIsMobile() {
     );
 }
 
+export type EntityType = "power" | "character" | "team" | "universe"
+
 interface SwipeGridProps {
     items: any[];
     currentPage: number;
     totalPages: number;
-    type: "power" | "character" | "team" | "universe";
+    type: EntityType;
     emptyMessage?: string;
     desktopGridClassName?: string;
 }
@@ -38,7 +38,9 @@ export function SwipeGrid({
     totalPages,
     type,
     emptyMessage = "No items found.",
-    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch mt-3",
+    /* 2xl:grid-cols-4 */
+    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3  gap-4 items-start mt-3",
+    // desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-start mt-3",
 }: SwipeGridProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -185,16 +187,6 @@ export function SwipeGrid({
         }
     };
 
-    const renderCard = (item: any) => {
-        switch (type) {
-            case "power": return <PowerCard power={item} size="default" />;
-            case "character": return <CharacterCard character={item} />;
-            case "universe": return <UniverseCard universe={item} size="default" />;
-            case "team": return <TeamCard team={item} size="default" />;
-            default: return null;
-        }
-    };
-
     if (items.length === 0) {
         return (
             <div className="col-span-full text-center text-muted-foreground font-bold mt-5">
@@ -247,7 +239,7 @@ export function SwipeGrid({
                         >
                             <div className="w-full h-full flex items-center justify-center max-w-md mx-auto">
                                 <LoadingLink href={getItemHref(item)} className="w-full h-full flex items-center justify-center pointer-events-auto">
-                                    {renderCard(item)}
+                                    <EntityCard {...getCardProps(item, type)} />
                                 </LoadingLink>
                             </div>
                         </div>
@@ -261,7 +253,7 @@ export function SwipeGrid({
         <div className={`${desktopGridClassName} mb-4`}>
             {items.map((item) => (
                 <LoadingLink key={item.id} href={getItemHref(item)}>
-                    {renderCard(item)}
+                    <EntityCard {...getCardProps(item, type)} />
                 </LoadingLink>
             ))}
         </div>

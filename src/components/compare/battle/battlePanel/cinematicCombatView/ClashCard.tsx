@@ -99,59 +99,52 @@ function FighterSlot({
     const teamBorderClass = isTeamA ? "border-primary shadow-primary/40" : "border-secondary shadow-secondary/40";
 
     return (
-        <div onClick={() => setShow((v) => !v)} className="flex flex-col items-center gap-1 min-w-18">
+        <div onClick={() => setShow((v) => !v)} className="flex flex-col items-center gap-1 min-w-18 relative">
             {/* Header Tag */}
             <span className={cn("text-[8px] font-black uppercase tracking-wider", badgeColorClass ?? (isTeamA ? "text-primary" : "text-secondary"))}>
                 {roleLabel}
             </span>
 
-            {/* Standardized Portrait Frame (Fixed 68x68) */}
-            <div
-                className={cn(
-                    "relative w-17 h-17 rounded-lg overflow-hidden border-2 shrink-0 shadow-md transition-colors duration-300",
+            {/* Standardized Outer Frame (Allows overlay to burst out!) */}
+            <div className="relative w-17 h-17 shrink-0">
+
+                {/* 1. Character Image Container (Clips image edges) */}
+                <div className={cn(
+                    "w-full h-full rounded-lg overflow-hidden border-2 shadow-md relative transition-colors duration-300 z-0",
                     isKO ? "border-white shadow-black/60" : teamBorderClass
-                )}
-            >
-                {/* 🚀 Portrait Image with Timed Grayscale Animation */}
-                <motion.div
-                    className="w-full h-full relative"
-                    initial={{ filter: "grayscale(0%) contrast(100%)" }}
-                    animate={
-                        isKO
-                            ? { filter: "grayscale(100%) contrast(125%)" }
-                            : { filter: "grayscale(0%) contrast(100%)" }
-                    }
-                    transition={{ delay: isKO ? 1.5 : 0, duration: 0.35 }}
-                >
-                    <CharacterImage
-                        src={fighter.image}
-                        alt={fighter.name}
-                        imageFocus={fighter.imageFocus}
-                        fill
-                        className="w-full h-full object-cover"
-                    />
-                </motion.div>
+                )}>
+                    <motion.div
+                        className="w-full h-full relative"
+                        initial={{ filter: "grayscale(0%) contrast(100%)" }}
+                        animate={isKO ? { filter: "grayscale(100%) contrast(125%)" } : { filter: "grayscale(0%) contrast(100%)" }}
+                        transition={{ delay: isKO ? 1.5 : 0, duration: 0.35 }}
+                    >
+                        <CharacterImage
+                            src={fighter.image}
+                            alt={fighter.name}
+                            imageFocus={fighter.imageFocus}
+                            fill
+                            className="w-full h-full object-cover"
+                        />
+                    </motion.div>
+                </div>
 
-                {/* Action-Specific Power Overlay Integration */}
+                {/* 2. Action-Specific Power Overlay (Extends OUTSIDE the image frame!) */}
                 {renderOverlay && showOverlay && action && (
-                    <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} visible={visible} />
+                    <div className="absolute inset-0 z-20 pointer-events-none overflow-visible">
+                        <PowerOverlay action={action} powerName={activePower?.name} side={isTeamA ? "left" : "right"} visible={visible} />
+                    </div>
                 )}
 
-                {/* 💥 Dramatic Animated K.O. Overlay */}
+                {/* 3. Dramatic K.O. Overlay */}
                 {isKO && (
                     <motion.div
                         initial={{ scale: 2.2, opacity: 0, rotate: -15 }}
-                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                        transition={{
-                            delay: 1, // Waits for the strike impact before slamming down
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 20
-                        }}
-                        className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-lg z-20"
+                        animate={{ scale: 0.95, opacity: 1, rotate: 0 }}
+                        transition={{ delay: 1, type: "spring", stiffness: 300, damping: 20 }}
+                        className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-lg z-30"
                     >
                         <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-white" />
-                        {/* <span className="text-[7px] font-black tracking-widest uppercase mt-0.5">K.O.</span> */}
                     </motion.div>
                 )}
             </div>
@@ -162,6 +155,72 @@ function FighterSlot({
             </span>
         </div>
     );
+}
+
+// 🚀 Fine-tuned physics: Reaches center to touch, target flinches inside frame & returns
+function getFighterMotionProfile(
+    role?: PowerRole,
+    isAttacker?: boolean,
+    isTeamA: boolean = true,
+    isDefending: boolean = false
+) {
+    const dir = isTeamA ? 1 : -1;
+
+    // 🎯 TARGET / DEFENDER BEHAVIOR
+    if (!isAttacker) {
+        if (isDefending) {
+            // 🛡️ UNFAZED BLOCK: Firm flex in place, no offset
+            return {
+                x: [0, -3 * dir, 0],
+                scale: [1, 1.05, 1],
+                rotate: 0,
+            };
+        }
+
+        // 💥 KNOCKED BACK & RETURN: Waits for impact at 0.4s, flinches back 18px, then smoothly returns to 0
+        return {
+            x: [0, 0, -18 * dir, 0],
+            scale: [1, 1, 0.92, 1],
+            rotate: [0, 0, -6 * dir, 0], // Flinches slightly backward
+        };
+    }
+
+    // ⚔️ ATTACKER LUNGE (Reaches the center to touch the target, then returns)
+    switch (role) {
+        case "Offensive":
+            return {
+                x: [0, 0, 48 * dir, 0], // Reaches across to touch target at 0.4s, returns to 0 at 1s
+                scale: [1, 1.05, 1.15, 1],
+                rotate: [0, 0, 5 * dir, 0],
+            };
+        case "Control":
+            return {
+                x: [0, 0, 42 * dir, 0],
+                y: [0, -20, -20, 0],
+                scale: [1, 1.08, 1.15, 1],
+                rotate: [0, -8 * dir, 8 * dir, 0],
+            };
+        case "Utility":
+            return {
+                x: [0, 0, 38 * dir, 0],
+                y: [0, -12, 0],
+                scale: [1, 1.05, 1.1, 1],
+                rotate: 0,
+            };
+        case "Defensive":
+            return {
+                x: [0, 0, 36 * dir, 0],
+                scale: [1, 1.08, 1.12, 1],
+                rotate: 0,
+            };
+        case "Hybrid / Versatile":
+        default:
+            return {
+                x: [0, 0, 45 * dir, 0],
+                scale: [1, 1.05, 1.12, 1],
+                rotate: 0,
+            };
+    }
 }
 
 // ── 2. Main ClashCard Component ─────────────────────────────────────────────
@@ -278,16 +337,21 @@ export default function ClashCard({
             <div className="flex items-center justify-between gap-2 w-full px-1 overflow-hidden">
                 {/* Left Fighter (Team A) - Lunges right if attacking */}
                 <motion.div
-                    initial={{ x: -40, opacity: 0, scale: 0.9 }}
+                    initial={{ x: -40, opacity: 1, scale: 0.2 }}
                     animate={{ x: 0, opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }} // Appears instantly together
+                    transition={{ duration: 0.25, ease: "easeOut" }}
                 >
                     <motion.div
-                        animate={leftIsAttacker ? { x: [0, 0, 200, 0] } : { x: 0 }}
+                        animate={getFighterMotionProfile(
+                            activePower?.combatRole,
+                            leftIsAttacker,
+                            true,        // Team A
+                            isDefend     // Is this action a shield block?
+                        )}
                         transition={{
                             duration: 1,
-                            times: [0, 0.4, 0.75, 1], // Waits 40% of the time, then lunges forward
-                            ease: [0.175, 0.885, 0.32, 1.275]
+                            times: [0, 0.4, 0.75, 1], // Impact lands precisely at 0.4s
+                            ease: [0.175, 0.885, 0.32, 1.275],
                         }}
                     >
                         <FighterSlot
@@ -344,16 +408,21 @@ export default function ClashCard({
 
                 {/* Right Fighter (Team B) - Lunges left if attacking */}
                 <motion.div
-                    initial={{ x: 40, opacity: 0, scale: 0.9 }}
+                    initial={{ x: 40, opacity: 1, scale: 0.2 }}
                     animate={{ x: 0, opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }} // Appears instantly together
+                    transition={{ duration: 0.25, ease: "easeOut" }}
                 >
                     <motion.div
-                        animate={rightIsAttacker ? { x: [0, 0, -200, 0] } : { x: 0 }}
+                        animate={getFighterMotionProfile(
+                            activePower?.combatRole,
+                            rightIsAttacker,
+                            false,       // Team B
+                            isDefend     // Is this action a shield block?
+                        )}
                         transition={{
                             duration: 1,
-                            times: [0, 0.4, 0.75, 1], // Waits 40% of the time, then lunges forward
-                            ease: [0.175, 0.885, 0.32, 1.275]
+                            times: [0, 0.4, 0.75, 1], // Impact lands precisely at 0.4s
+                            ease: [0.175, 0.885, 0.32, 1.275],
                         }}
                     >
                         <FighterSlot

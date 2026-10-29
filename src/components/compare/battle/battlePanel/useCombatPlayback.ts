@@ -52,6 +52,7 @@ export function useCombatPlayback(
         setIsPlaying(false);
     }, [teamAChars, teamBChars, nameA, nameB]);
 
+    // ── Delayed roster updates so health drops AFTER clash animation ──────────
     useEffect(() => {
         if (combatScript.length === 0) return;
 
@@ -63,7 +64,6 @@ export function useCombatPlayback(
         for (let i = 0; i <= currentStepIndex && i < combatScript.length; i++) {
             const step = combatScript[i];
 
-            // Handle K.O.
             if (step.isKO && step.targetName) {
                 const target = step.targetTeam === "A"
                     ? snapA.find((c) => c.name === step.targetName)
@@ -71,7 +71,6 @@ export function useCombatPlayback(
                 if (target) target.isAlive = false;
             }
 
-            // Handle Revive (Brings character back to life naturally)
             if (step.isRevive && step.targetName) {
                 const target = step.targetTeam === "A"
                     ? snapA.find((c) => c.name === step.targetName)
@@ -79,19 +78,23 @@ export function useCombatPlayback(
                 if (target) target.isAlive = true;
             }
 
-            // Handle Heals
             if (step.isHeal && step.healTeam) {
                 if (step.healTeam === "A") bonusA = Math.min(30, bonusA + 15);
                 else bonusB = Math.min(30, bonusB + 15);
             }
         }
 
-        setRosterA(snapA);
-        setRosterB(snapB);
-        setDynamicHealthBonusA(bonusA);
-        setDynamicHealthBonusB(bonusB);
+        // 🚀 Wait 400ms into the step animation before applying the roster state change (HP drop)
+        const timer = setTimeout(() => {
+            setRosterA(snapA);
+            setRosterB(snapB);
+            setDynamicHealthBonusA(bonusA);
+            setDynamicHealthBonusB(bonusB);
+        }, 1500);
 
         if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
+
+        return () => clearTimeout(timer);
     }, [currentStepIndex, combatScript, teamAChars, teamBChars, nameA, nameB]);
 
     // ── Auto-play interval ────────────────────────────────────────────────────

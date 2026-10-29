@@ -2,7 +2,6 @@ import { Suspense, ViewTransition } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import CharacterBadge from "@/components/characters/CharacterBadge";
 import { CharacterImageCarousel } from "@/components/characters/CharacterImageCarousel";
 
 import { collectionCharacters } from "@/db/mongodb";
@@ -137,7 +136,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                 <div className="w-full flex flex-col gap-4">
                     <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
-                            <CharacterBadge icon={CharacterBadgeIcon(biography.alignment)} text={getCharacterAlignmentText(biography.alignment)} color={getCharacterAlignmentColor(biography.alignment)} />
+                            <Badge className={`${getCharacterAlignmentColor(biography.alignment)}`}>{CharacterBadgeIcon(biography.alignment)} {getCharacterAlignmentText(biography.alignment)}</Badge>
                             <Badge className={`${typeColors.bg} ${typeColors.foreground}`}><TypeIcon size={16} className="mr-1" /> Type {CHARACTER_TYPE_LABEL[character.character_type as keyof typeof CHARACTER_TYPE_LABEL]}</Badge>
                             <Badge className={`${tierColors.bg} ${tierColors.foreground}`}><TierIcon size={16} className="mr-1" /> Tier {CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER]}</Badge>
                             <Badge className={`${classColors.bg} ${classColors.foreground}`}><ClassIcon size={16} className="mr-1" /> Class {CHARACTER_CLASS[character.class as keyof typeof CHARACTER_CLASS]}</Badge>

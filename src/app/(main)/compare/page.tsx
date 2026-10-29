@@ -102,7 +102,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         <div className="space-y-4 ">
 
             {/* 🚀 Streamlined toolbar: Mode toggle and actions aligned cleanly */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card/40 p-2 rounded-xl border border-border/40 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 backdrop-blur-sm">
                 <CompareModeToggle />
                 <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
                     <RandomFillButton mode={mode} idsA={idsA} idsB={idsB} bracketSize={mode === "bracket" ? MAX_BRACKET_SIZE : MAX_TEAM_SIZE} />

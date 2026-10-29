@@ -98,7 +98,7 @@ const SideFormulaCard = ({
     };
 
     return (
-        <div className={`bg-card/80 backdrop-blur-md border ${accentBorder}/30 ${accentBg} rounded-2xl p-5 space-y-5 `}>
+        <div className={`bg-card/80 backdrop-blur-md border ${accentBorder}/30  ${accentBg} rounded-2xl p-5 space-y-5 `}>
             {/* Header & Final Power Estimate */}
             <div className="flex items-center justify-between border-b border-border/40 pb-4">
                 <div>

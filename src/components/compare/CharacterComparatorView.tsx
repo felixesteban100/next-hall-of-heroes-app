@@ -20,6 +20,7 @@ import { TeamProfileSlot } from "./stats/TeamProfileSlot";
 import { ProfileSlot } from "./stats/ProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/compare";
 import { PowerFormulaTab } from "./PowerFormulaTab";
+import { RivalryMatrixCard } from "./RivalryMatrixCard";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
@@ -83,15 +84,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
         const validB = entitiesB.filter(Boolean);
         return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
     }, [mode, entitiesA, entitiesB, entityA, entityB]);
-
-    const nemesisPairs = useMemo(() => {
-        if (mode !== "team") return [];
-        const validA = entitiesA.filter(Boolean);
-        const validB = entitiesB.filter(Boolean);
-        return validA.flatMap(a =>
-            validB.filter(b => hasNemesisLink(a, b)).map(b => ({ nameA: a.name, nameB: b.name }))
-        );
-    }, [mode, entitiesA, entitiesB]);
 
     // Radar: team avg powerstats or single
     const radar =
@@ -167,6 +159,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     {/* OVERVIEW TAB */}
                     {activeTab === "overview" && (
                         <div className="space-y-4 mb-4">
+                            {/* 1. The High-Level Headline / Verdict */}
                             <MatchVerdict
                                 nameA={entityAName}
                                 nameB={entityBName}
@@ -177,37 +170,8 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 entitiesB={entitiesB}
                             />
 
-                            {isNemesis && (
-                                <div className="relative my-4 overflow-hidden rounded-xl border border-red-500/10 bg-gradient-to-r from-red-950/10 via-red-900/10 to-red-950/10 p-3 ">
-                                    {/* Ambient background glow pulse */}
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-600/10 via-transparent to-transparent animate-pulse pointer-events-none" />
-
-                                    <div className="relative flex flex-col items-center gap-2">
-                                        <div className="flex items-center gap-3 px-4 py-1 rounded-full border border-red-500/60 bg-red-500/15">
-                                            <Zap className="h-3.5 w-3.5 text-red-400 fill-red-500 animate-bounce" />
-                                            <span className="text-xs font-black tracking-widest uppercase text-red-400 drop-shadow">
-                                                Rival Matchup Detected
-                                            </span>
-                                            <Zap className="h-3.5 w-3.5 text-red-400 fill-red-500 animate-bounce" />
-                                        </div>
-
-                                        <div className="flex flex-wrap items-center justify-center gap-3 mt-1">
-                                            {nemesisPairs.map(p => (
-                                                <div
-                                                    key={`${p.nameA}-${p.nameB}`}
-                                                    className="flex items-center gap-2 px-3 py-1 rounded-lg bg-background/60 border border-border/60 text-xs font-semibold tracking-wide text-foreground shadow-inner"
-                                                >
-                                                    <span className="text-primary">{p.nameA}</span>
-                                                    <span className="text-red-500 font-mono text-[10px]">VS</span>
-                                                    <span className="text-secondary">{p.nameB}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className={`mx-auto  border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-1`}>
+                            {/* 2. Team Profiles & Avatars (Who is fighting) */}
+                            <div className={`mx-auto border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-1`}>
                                 <div className="grid grid-cols-2 bg-card/10 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
                                     {mode === "team" ? (
                                         <>
@@ -238,6 +202,17 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} mvpA={mvpA} mvpB={mvpB} />
                                 )}
                             </div>
+
+                            {/* 3. The Hype Factor: Grouped Rival Matchups */}
+                            <RivalryMatrixCard
+                                entitiesA={entitiesA}
+                                entitiesB={entitiesB}
+                                entityAName={entityAName}
+                                entityBName={entityBName}
+                                mode={mode}
+                            />
+
+                            {/* 4. Tactical Overview / Summary at the bottom */}
                             <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-md">
                                 <TeamTacticalOverview
                                     entitiesA={entitiesA}

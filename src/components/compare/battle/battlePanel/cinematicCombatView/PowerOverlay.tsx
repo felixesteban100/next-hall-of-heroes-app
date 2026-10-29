@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { THEMES } from "./powerOverlay/themes";
 
-// Lightweight sound player cache to prevent network lag
+// Global singleton tracker to ensure only one overlay sound plays at any time
+let activeAudioInstance: HTMLAudioElement | null = null;
 const audioCache: Record<string, HTMLAudioElement> = {};
 
 function playOverlaySound(themeKey: ThemeKey) {
     if (typeof window === "undefined") return;
 
-    // Map theme keys to lightweight public audio assets
     const soundMap: Record<ThemeKey, string> = {
         blood: "/sounds/blood.mp3",
         claws: "/sounds/claws.mp3",
@@ -56,15 +56,24 @@ function playOverlaySound(themeKey: ThemeKey) {
     const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
 
     try {
+        // 🚀 Interrupted immediately: Stop any previously active sound playing right now
+        if (activeAudioInstance) {
+            activeAudioInstance.pause();
+            activeAudioInstance.currentTime = 0;
+            activeAudioInstance = null;
+        }
+
         if (!audioCache[soundPath]) {
             audioCache[soundPath] = new Audio(soundPath);
-            audioCache[soundPath].volume = 0.25; // Gentle low volume so it's not jarring
+            audioCache[soundPath].volume = 0.25;
         }
 
         const audio = audioCache[soundPath];
-        audio.currentTime = 0; // Rewind to start for rapid playback
+        activeAudioInstance = audio;
+        audio.currentTime = 0;
+
         audio.play().catch(() => {
-            // Catches browser auto-play restriction errors silently without crashing app
+            // Silently handle browser autoplay limitations
         });
     } catch (e) {
         // Fallback safety
@@ -86,7 +95,6 @@ export type ThemeKey =
     | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature" | "elastic" | "wings"
     | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix" | "speed" | "breathing" | "detective"
     | "defend" | "heal" | "revive" | "genius" | "fourthWall" | "energy" | "claws" | "sword" | "firearms";
-
 
 function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (action === "defend") return "defend";
@@ -127,9 +135,9 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(radiation|gamma|radioactive)/.test(n)) return "radiation";
     if (/\b(blood|vampir|life drain)/.test(n)) return "blood";
     if (/\b(diamond|crystal|invulnerab|force.?field)/.test(n)) return "diamond";
-    if (/\b(techology|cyber|android|gadget|repulsor|nanite)/.test(n)) return "tech";
+    if (/\b(techology|cyber|android|gadget|repulsor|nanite|tech)/.test(n)) return "tech";
     if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive|energy)/.test(n)) return "energy";
-    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat"; // optional new theme
+    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat";
     if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strategy|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
     return "combat";
 }
@@ -137,27 +145,23 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
 export default function PowerOverlay({ action, powerName, visible = true }: PowerOverlayProps) {
     const key = getThemeKey(action, powerName);
     const t = THEMES[key] ?? THEMES.combat;
-    // const isDark = key === "shadow" || key === "gravity";
-
-    useEffect(() => {
-        if (visible) {
-            playOverlaySound(key);
-        }
-    }, [visible, key]);
 
     return (
         <div
             className={cn(
-                "absolute inset-0 z-10 overflow-hidden rounded-lg pointer-events-none po-fade",
-                // "animate-po-appear-cycle", // pulse in/out
-                // "animate-po-fade-in",  // use instead if you only want appear once
+                // 🚀 Absolute positioning snug to the card, but overflowing visible for motion
+                "absolute inset-0 z-35 overflow-visible pointer-events-none po-fade",
                 visible && "po-fade-in",
-                /* !isDark && visible && "mix-blend-screen" */
             )}
         >
-            <div className={cn("absolute inset-0", t.plate)} />
-            <div className={cn("absolute inset-0", t.bloom)} />
+            {/* 1. Snug background elements (stay inside the card box) */}
+            <div className={cn("absolute inset-0 rounded-lg blur-sm opacity-75", t.plate)} />
+            <div className={cn("absolute inset-0 rounded-lg", t.bloom)} />
+
+            {/* 2. Motion layer (bursts/overflows outside the card freely) */}
             {t.motion}
+
+            {/* 3. Snug border rim (stays inside the card box) */}
             <div className={cn("absolute inset-0 rounded-lg border-2", t.rim)} />
         </div>
     );

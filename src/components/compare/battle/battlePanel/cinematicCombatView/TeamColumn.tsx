@@ -26,7 +26,6 @@ export default function TeamColumn({
         [activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend].filter(Boolean)
     );
 
-    // 🚀 Precise bounding-rect calculation to scroll ONLY the inner container without moving the page
     useEffect(() => {
         if (involvedNames.size > 0 && scrollContainerRef.current) {
             const container = scrollContainerRef.current;
@@ -38,7 +37,6 @@ export default function TeamColumn({
                     const containerRect = container.getBoundingClientRect();
                     const elRect = el.getBoundingClientRect();
 
-                    // Calculate current relative difference and current scroll position
                     const relativeTop = elRect.top - containerRect.top;
                     const relativeLeft = elRect.left - containerRect.left;
 
@@ -57,10 +55,11 @@ export default function TeamColumn({
     }, [activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend]);
 
     return (
-        <div className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0 overflow-x-hidden">
+        <div className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0 overflow-hidden">
             <div
                 ref={scrollContainerRef}
-                className="flex flex-wrap gap-3 justify-center max-h-[190px] md:max-h-none overflow-y-auto overflow-x-hidden w-full p-2 pt-3 custom-scrollbar relative"
+                /* 🚀 Changed overflow-y-scroll to overflow-y-auto md:overflow-visible and hid scrollbars on desktop */
+                className="flex flex-wrap gap-3 justify-center max-h-[190px] md:max-h-none overflow-y-auto md:overflow-y-visible overflow-x-hidden w-full p-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative"
             >
                 {fighters.map((f) => {
                     const isInvolved = involvedNames.has(f.name);
@@ -74,7 +73,7 @@ export default function TeamColumn({
                                     avatarRefsMap.current.delete(f.name);
                                 }
                             }}
-                            className={`inline-flex flex-col items-center transition-all duration-300 ${isInvolved ? "scale-110 z-10 drop-shadow-md" : "scale-100 opacity-90"
+                            className={`inline-flex flex-col items-center transition-all duration-300 transform-gpu ${isInvolved ? "scale-110 z-10" : "scale-100 opacity-90"
                                 }`}
                         >
                             <Avatar
