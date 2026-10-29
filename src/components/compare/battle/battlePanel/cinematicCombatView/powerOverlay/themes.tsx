@@ -1336,37 +1336,22 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
     //         <div className="absolute inset-4 rounded-full border border-yellow-100/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
     //     ),
     // },
+    /* ✨ Light — Smooth Prismatic Photon Waves */
     light: {
-        plate: "bg-gradient-to-tr from-yellow-100/50 via-white to-cyan-200/60",
-        bloom: "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.98)_0%,rgba(56,189,248,0.4)_40%,transparent_70%)] animate-po-pulse-soft",
-        rim: "border-white shadow-[0_0_45px_#fef08a,0_0_25px_#38bdf8,inset_0_0_40px_rgba(255,255,255,0.8)]",
+        plate: "bg-gradient-to-tr from-yellow-100/40 via-white to-cyan-200/50",
+        bloom: "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.9)_0%,rgba(56,189,248,0.35)_45%,transparent_75%)] animate-po-pulse-soft",
+        rim: "border-white shadow-[0_0_40px_#fef08a,0_0_20px_#38bdf8,inset_0_0_35px_rgba(255,255,255,0.7)]",
         motion: (
             <>
-                {/* Blinding expanding prismatic rings */}
+                {/* Smooth expanding light ripples (no flicker, gentle pulse) */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="absolute w-36 h-36 rounded-full border-2 border-white/95 animate-po-ring-out" style={{ animationDuration: "0.9s" }} />
-                    <div className="absolute w-36 h-36 rounded-full border border-sky-300/80 animate-po-ring-out" style={{ animationDuration: "0.9s", animationDelay: "0.25s" }} />
-                    <div className="absolute w-20 h-20 rounded-full bg-white shadow-[0_0_50px_#fff,0_0_80px_#7dd3fc] animate-po-pulse-soft" style={{ animationDuration: "0.3s" }} />
+                    <div className="absolute w-36 h-36  border border-white/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
+                    <div className="absolute w-36 h-36  border border-sky-200/60 animate-po-ring-out" style={{ animationDuration: "1.2s", animationDelay: "0.4s" }} />
+                    <div className="w-16 h-16  bg-white/90 shadow-[0_0_40px_#fff,0_0_70px_#7dd3fc] animate-po-pulse-soft" style={{ animationDuration: "1s" }} />
                 </div>
 
-                {/* Spectral diffraction diagonal light shards / prism beams */}
-                <div className="absolute -top-4 left-[15%] w-[3px] h-[130%] rotate-[-35deg] bg-gradient-to-b from-white via-cyan-200 to-transparent shadow-[0_0_16px_#fff] animate-po-bolt" style={{ animationDuration: "0.25s" }} />
-                <div className="absolute -top-4 right-[20%] w-[3px] h-[130%] rotate-[35deg] bg-gradient-to-b from-white via-pink-200 to-transparent shadow-[0_0_16px_#f472b6] animate-po-bolt" style={{ animationDuration: "0.28s", animationDelay: "0.08s" }} />
-                <div className="absolute top-1/2 -inset-x-6 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff] animate-po-sweep" style={{ animationDuration: "0.6s" }} />
-
-                {/* Floating prismatic refraction motes */}
-                {[20, 40, 60, 80].map((left, i) => (
-                    <span
-                        key={i}
-                        className="absolute w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#fff,0_0_18px_#38bdf8] animate-po-ember"
-                        style={{
-                            left: `${left}%`,
-                            top: `${15 + (i % 2) * 50}%`,
-                            animationDelay: `${i * 0.08}s`,
-                            animationDuration: "0.7s",
-                        }}
-                    />
-                ))}
+                {/* Gentle horizontal light sweep */}
+                <div className="absolute top-1/2 -inset-x-6 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-white/80 to-transparent shadow-[0_0_15px_#fff] animate-po-sweep" style={{ animationDuration: "1s" }} />
             </>
         ),
     },
