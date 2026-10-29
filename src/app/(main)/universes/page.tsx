@@ -1,11 +1,8 @@
 import { PaginationPages } from "@/components/filters/Pagination";
-import UniverseCard from "@/components/universes/UniverseCard";
 import { collectionUniverses } from "@/db/mongodb";
 import { Suspense } from "react";
 import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
-import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
-import { LoadingLink } from "@/components/shared/LoadingLink";
 import { sanitize } from "@/lib/utils";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
@@ -49,31 +46,12 @@ export default async function page({
 
     return (
         <div className="">
-            {/* <div>
-                <h1 className="text-2xl font-bold">Universes</h1>
-                <p className="text-muted-foreground font-light">
-                    {totalUniverses} universes
-                </p>
-            </div> */}
             <Suspense fallback={<FilterBarSkeleton />}  >
                 <SimpleFilterBar
                     placeholder="Search universes..."
                     sortOptions={sortOptions}
                 />
             </Suspense>
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {sanitizedUniverses.map((universe) => (
-                    <LoadingLink key={universe.id} href={`/universes/${universe.id}`}>
-                        <UniverseCard universe={universe} size="default" />
-                    </LoadingLink>
-                ))}
-                {sanitizedUniverses.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-                        <BrushCleaning />
-                        <p className="font-medium">No universes found.</p>
-                    </div>
-                )}
-            </div> */}
 
             <SwipeGrid
                 items={sanitizedUniverses}

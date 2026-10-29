@@ -2,10 +2,7 @@ import { PaginationPages } from "@/components/filters/Pagination";
 import { collectionTeams } from "@/db/mongodb";
 import { Suspense } from "react";
 import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
-import { BrushCleaning } from "lucide-react";
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
-import TeamCard from "@/components/teams/TeamCard";
-import { LoadingLink } from "@/components/shared/LoadingLink";
 import { sanitize } from "@/lib/utils";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
 
@@ -49,31 +46,12 @@ export default async function page({
 
     return (
         <div className="">
-            {/* <div>
-                <h1 className="text-2xl font-bold">Teams</h1>
-                <p className="text-muted-foreground font-light">
-                    {totalTeams} teams across all universes
-                </p>
-            </div> */}
             <Suspense fallback={<FilterBarSkeleton />}>
                 <SimpleFilterBar
                     placeholder="Search teams..."
                     sortOptions={sortOptions}
                 />
             </Suspense>
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {sanitizedTeams.map((team) => (
-                    <LoadingLink key={team.id} href={`/teams/${team.id}`}>
-                        <TeamCard team={team} size="default" />
-                    </LoadingLink>
-                ))}
-                {sanitizedTeams.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-                        <BrushCleaning />
-                        <p className="font-medium">No teams found.</p>
-                    </div>
-                )}
-            </div> */}
             <SwipeGrid
                 items={sanitizedTeams}
                 currentPage={page}

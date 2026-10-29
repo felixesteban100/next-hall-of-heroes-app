@@ -4,9 +4,8 @@ import { Suspense } from "react";
 import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
 import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { sanitize } from "@/lib/utils";
-import { seedPowersCollectionActions, seedPowersCollectionCombatRole } from "@/db/seeds";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
-import PowerCard from "@/components/powers/PowerCard";
+import { seedPowersCollectionActions, seedPowersCollectionCombatRole } from "@/db/seeds";
 
 export const instant = false;
 
@@ -61,18 +60,6 @@ export default async function page({
                 <PowersFilterBar />
             </Suspense>
 
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 gap-4 items-stretch">
-                {sanitizedPowers.map((power) => (
-                    <LoadingLink key={power.id} href={`/powers/${power.id}`}>
-                        <PowerCard power={power} size="default" />
-                    </LoadingLink>
-                ))}
-                {sanitizedPowers.length === 0 && (
-                    <div className="col-span-full text-center text-muted-foreground py-12">
-                        No powers found.
-                    </div>
-                )}
-            </div> */}
             <SwipeGrid
                 items={sanitizedPowers}
                 currentPage={page}
