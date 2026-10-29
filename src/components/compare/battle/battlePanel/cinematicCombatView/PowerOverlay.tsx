@@ -50,7 +50,9 @@ function playOverlaySound(themeKey: ThemeKey) {
         elastic: "/sounds/elastic.mp3",
         detective: "/sounds/detective.mp3",
         explosion: "/sounds/explosion.mp3",
-        wings: "/sounds/wings.mp3"
+        wings: "/sounds/wings.mp3",
+        transform: "/sounds/cosmic.mp3",
+        construct: "/sounds/cosmic.mp3",
     };
 
     const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
@@ -89,8 +91,8 @@ interface PowerOverlayProps {
 }
 
 export type ThemeKey =
-    | "psychic" | "combat" | "ice" | "water" | "fire" | "lightning"
-    | "mystic" | "temporal" | "diamond" | "tech" | "shadow" | "light" | "explosion"
+    | "psychic" | "combat" | "ice" | "water" | "fire" | "lightning" | "construct"
+    | "mystic" | "temporal" | "diamond" | "tech" | "shadow" | "light" | "explosion" | "transform"
     | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature" | "elastic" | "wings"
     | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix" | "speed" | "breathing" | "detective"
     | "defend" | "heal" | "revive" | "genius" | "fourthWall" | "energy" | "claws" | "sword" | "firearms";
@@ -102,6 +104,8 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (!powerName) return "combat";
     const n = powerName.toLowerCase();
 
+    if (/\b(lantern ring|power ring|energy construct|hard.?light|construct|green lantern|star sapphire|sinestro|orange lantern|blue lantern)/.test(n)) return "construct";
+    if (/\b(transform|transformation|shapeshift|shape.?shift|metamorph|metamorphosis|morph|change form|alter form|polymorph)/.test(n)) return "transform";
     if (/\b(wing|wings|gale|feather|bird)/.test(n)) return "wings";
     if (/\b(explosion|explosive|explode|detonate|bomb|grenade|blast wave|kaboom|demolition|combustion burst)/.test(n)) return "explosion";
     if (/\b(detective|deduction|investigation|forensic|insight|criminology|sleuth|observation|evidence|batman.?detective|world.?greatest.?detective)/.test(n)) return "detective";
@@ -111,7 +115,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(firearm|gun|pistol|rifle|sniper|marksmanship|marksman|shooting|bullet|ammo|revolver|shotgun|machine.?gun|blaster gun)/.test(n)) return "firearms";
     if (/\b(claw|claws|adamantium claw|talon|scratch)/.test(n)) return "claws";
     if (/\b(sword|blade|katana|saber|slash|cutlass|excalibur|dagger|knife)/.test(n)) return "sword";
-    if (/\b(fourth wall|4th wall|meta|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
+    if (/\b(fourth wall|4th wall|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
     if (/\b(wind|air control|weather|teleportation|aero|air manipulation|tornado|hurricane|flight|air|sky|breeze|cyclone|airflow|wind)/.test(n)) return "wind";
     if (/\b(web|spider)/.test(n)) return "web";
     if (/\b(omnitrix|alien)/.test(n)) return "omnitrix";
@@ -142,7 +146,8 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
 }
 
 export default function PowerOverlay({ action, powerName, visible = true }: PowerOverlayProps) {
-    const key = "light"//getThemeKey(action, powerName);
+    // const key = "construct"
+    const key = getThemeKey(action, powerName);
     const t = THEMES[key] ?? THEMES.combat;
 
     // 🚀 Restored audio playback trigger on visibility change

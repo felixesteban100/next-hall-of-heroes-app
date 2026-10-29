@@ -5,14 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
-import { FighterState, Log } from "../BattlePanel";
 import { computeMatchScore } from "@/lib/compare";
 import { resolveActivePower } from "@/lib/compare/cinematicCombatView";
-import HPBar from "./cinematicCombatView/HPBar";
 import ClashCard from "./cinematicCombatView/ClashCard";
 import TeamColumn from "./cinematicCombatView/TeamColumn";
 import LogRow from "./cinematicCombatView/LogRow";
-import VS from "../../VS";
+import { FighterState, Log } from "./useCombatScript";
 
 export type EnrichedFighter = FighterState & {
     id: number;
@@ -42,6 +40,32 @@ function isFighterAliveCurrently(fighterName: string, logs: Log[]): boolean {
     return true;
 }
 
+function getLiveFighterHp(fighterName: string, initialMaxHp: number, visibleLogs: Log[]): { currentHp: number; maxHp: number; isAlive: boolean } {
+    let currentHp = initialMaxHp;
+    let isAlive = true;
+
+    for (const log of visibleLogs) {
+        // If this character took damage or was hit
+        if ((log.type === "attack" || log.type === "ko") && log.defenderName === fighterName && log.damage) {
+            currentHp = Math.max(0, currentHp - log.damage);
+            if (currentHp === 0) isAlive = false;
+        }
+        // If this character was healed - 🚀 Use exact script log.healing amount!
+        if (log.type === "heal" && log.defenderName === fighterName) {
+            const healVal = log.healing ?? Math.round(initialMaxHp * 0.25);
+            currentHp = Math.min(initialMaxHp, currentHp + healVal);
+            isAlive = true;
+        }
+        // If this character revived
+        if (log.type === "revive" && log.defenderName === fighterName) {
+            currentHp = Math.round(initialMaxHp * 0.45);
+            isAlive = true;
+        }
+    }
+
+    return { currentHp, maxHp: initialMaxHp, isAlive };
+}
+
 function enrich(
     roster: FighterState[],
     chars: CharacterWithJoinTeamUniversePowerEnemies[],
@@ -49,14 +73,23 @@ function enrich(
 ): EnrichedFighter[] {
     return chars.map((char) => {
         const currentlyAlive = isFighterAliveCurrently(char.name, visibleLogs);
+        const durability = char.powerstats?.durability ?? 50;
+        const maxHp = durability * 2;
+
         const fighter = roster.find((c) => c.name === char.name) ?? {
             name: char.name ?? "Unknown",
             overall: 50,
             isAlive: currentlyAlive,
+            maxHp,
+            currentHp: currentlyAlive ? maxHp : 0,
+            hasRevived: false,
         };
+
         return {
             ...fighter,
             isAlive: currentlyAlive,
+            maxHp: fighter.maxHp ?? maxHp,
+            currentHp: fighter.currentHp ?? (currentlyAlive ? maxHp : 0),
             id: char.id ?? 0,
             image: char.images?.md ?? "",
             imageFocus: char.imageFocus ?? "50% 18%",
@@ -72,8 +105,6 @@ type Props = {
     teamBChars: CharacterWithJoinTeamUniversePowerEnemies[];
     nameA: string;
     nameB: string;
-    healthA: number;
-    healthB: number;
     visibleLogs: Log[];
     isDialog?: boolean;
 };
@@ -82,12 +113,18 @@ export default function CinematicCombatView({
     rosterA, rosterB,
     teamAChars, teamBChars,
     nameA, nameB,
-    healthA, healthB,
     visibleLogs,
     isDialog = false,
 }: Props) {
-    const enrichedA = enrich(rosterA, teamAChars, visibleLogs);
-    const enrichedB = enrich(rosterB, teamBChars, visibleLogs);
+    const enrichedA = enrich(rosterA, teamAChars, visibleLogs).map(f => {
+        const stats = getLiveFighterHp(f.name, f.maxHp || 100, visibleLogs);
+        return { ...f, ...stats };
+    });
+
+    const enrichedB = enrich(rosterB, teamBChars, visibleLogs).map(f => {
+        const stats = getLiveFighterHp(f.name, f.maxHp || 100, visibleLogs);
+        return { ...f, ...stats };
+    });
     const allChars = [...teamAChars, ...teamBChars];
     const logRef = useRef<HTMLDivElement>(null);
 
@@ -130,13 +167,6 @@ export default function CinematicCombatView({
 
     return (
         <div className="flex flex-col gap-4 p-2 sm:p-4 w-full max-w-full overflow-hidden">
-            {/* HP bars */}
-            <div className="flex items-center gap-3 sm:gap-5 px-1">
-                <HPBar health={healthA} name={nameA} variant="primary" />
-                <VS />
-                <HPBar health={healthB} name={nameB} variant="secondary" />
-            </div>
-
             {/* 📱 MOBILE VIEW */}
             <div className="flex flex-col gap-4 w-full md:hidden">
                 <div className="w-full rounded-2xl border border-muted-foreground/25 bg-card/85 backdrop-blur-md overflow-hidden min-h-[180px] flex items-center justify-center">

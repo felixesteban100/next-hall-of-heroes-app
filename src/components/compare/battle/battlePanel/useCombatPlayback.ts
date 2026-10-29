@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FighterState, ScriptItem } from "../BattlePanel";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { computeMatchScore } from "@/lib/compare";
+import { FighterState, ScriptItem } from "./useCombatScript";
 
 const STEP_INTERVAL_MS = 4500;
 
@@ -16,13 +16,14 @@ function buildInitialRoster(
         powers: c.powers ?? [],
         hasRevived: false,
         imageFocus: c.imageFocus,
-        image: c.images.md
+        image: c.images.md,
+        maxHp: c.powerstats.durability * 2,
+        currentHp: c.powerstats.durability * 2
     }));
 }
 
 /**
- * Manages all playback state: play/pause, step index, roster snapshots,
- * and the derived health values.
+ * Manages all playback state: play/pause, step index, and roster snapshots.
  */
 export function useCombatPlayback(
     teamAChars: CharacterWithJoinTeamUniversePowerEnemies[],
@@ -36,8 +37,6 @@ export function useCombatPlayback(
 
     const [rosterA, setRosterA] = useState<FighterState[]>([]);
     const [rosterB, setRosterB] = useState<FighterState[]>([]);
-    const [dynamicHealthBonusA, setDynamicHealthBonusA] = useState(0);
-    const [dynamicHealthBonusB, setDynamicHealthBonusB] = useState(0);
 
     const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -45,8 +44,6 @@ export function useCombatPlayback(
     useEffect(() => {
         setRosterA(buildInitialRoster(teamAChars, nameA));
         setRosterB(buildInitialRoster(teamBChars, nameB));
-        setDynamicHealthBonusA(0);
-        setDynamicHealthBonusB(0);
         setCombatScript([]);
         setCurrentStepIndex(-1);
         setIsPlaying(false);
@@ -58,8 +55,6 @@ export function useCombatPlayback(
 
         const snapA = buildInitialRoster(teamAChars, nameA);
         const snapB = buildInitialRoster(teamBChars, nameB);
-        let bonusA = 0;
-        let bonusB = 0;
 
         for (let i = 0; i <= currentStepIndex && i < combatScript.length; i++) {
             const step = combatScript[i];
@@ -68,29 +63,28 @@ export function useCombatPlayback(
                 const target = step.targetTeam === "A"
                     ? snapA.find((c) => c.name === step.targetName)
                     : snapB.find((c) => c.name === step.targetName);
-                if (target) target.isAlive = false;
+                if (target) {
+                    target.isAlive = false;
+                    target.currentHp = 0;
+                }
             }
 
             if (step.isRevive && step.targetName) {
                 const target = step.targetTeam === "A"
                     ? snapA.find((c) => c.name === step.targetName)
                     : snapB.find((c) => c.name === step.targetName);
-                if (target) target.isAlive = true;
-            }
-
-            if (step.isHeal && step.healTeam) {
-                if (step.healTeam === "A") bonusA = Math.min(30, bonusA + 15);
-                else bonusB = Math.min(30, bonusB + 15);
+                if (target) {
+                    target.isAlive = true;
+                    target.currentHp = Math.round(target.maxHp * 0.45);
+                }
             }
         }
 
-        // 🚀 Wait 400ms into the step animation before applying the roster state change (HP drop)
+        // Wait 500ms into the step animation before applying roster changes
         const timer = setTimeout(() => {
             setRosterA(snapA);
             setRosterB(snapB);
-            setDynamicHealthBonusA(bonusA);
-            setDynamicHealthBonusB(bonusB);
-        }, 1500);
+        }, 500);
 
         if (currentStepIndex >= combatScript.length - 1) setIsPlaying(false);
 
@@ -120,8 +114,6 @@ export function useCombatPlayback(
             setCurrentStepIndex(-1);
             setRosterA(initialA);
             setRosterB(initialB);
-            setDynamicHealthBonusA(0);
-            setDynamicHealthBonusB(0);
             setIsPlaying(false);
         },
         []
@@ -139,22 +131,11 @@ export function useCombatPlayback(
             prev > 0 ? prev - 1 : prev
         );
         if (currentStepIndex <= 1) setIsPlaying(false);
-    }, [combatScript.length, currentStepIndex]);
+    }, [currentStepIndex]);
 
     const togglePlayPause = useCallback(() => {
         setIsPlaying((p) => !p);
     }, []);
-
-    // ── Derived health values ─────────────────────────────────────────────────
-    // ── Pure, Reliable Roster-Ratio Health ────────────────────────────────────
-    const totalA = rosterA.length || 1;
-    const aliveA = rosterA.filter((c) => c.isAlive).length;
-    const healthA = Math.min(100, Math.max(0, Math.round((aliveA / totalA) * 100) + dynamicHealthBonusA));
-
-    const totalB = rosterB.length || 1;
-    const aliveB = rosterB.filter((c) => c.isAlive).length;
-    const healthB = Math.min(100, Math.max(0, Math.round((aliveB / totalB) * 100) + dynamicHealthBonusB));
-
 
     const visibleLogs = combatScript.slice(0, currentStepIndex + 1).map((s) => s.log);
 
@@ -165,8 +146,6 @@ export function useCombatPlayback(
         isPlaying,
         rosterA,
         rosterB,
-        healthA,
-        healthB,
         visibleLogs,
         // actions
         loadScript,

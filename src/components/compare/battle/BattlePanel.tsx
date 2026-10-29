@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Swords, Maximize2 } from "lucide-react";
 import { simulateSpar } from "@/lib/compare";
 import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
-import { CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power } from "@/types";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import {
     Dialog,
     DialogContent,
@@ -18,44 +18,6 @@ import { useCombatPlayback } from "./battlePanel/useCombatPlayback";
 import CinematicCombatView from "./battlePanel/CinematicCombatView";
 
 export const ROUNDS = 100;
-
-// ── Shared types (imported by hooks, CombatView, LiveRosterStatus, etc.) ─────
-export type LogType = "attack" | "heal" | "defend" | "revive" | "ko" | "finish" | "rout";
-
-export type Log = {
-    id: number;
-    type: LogType;
-    attackerName?: string;
-    defenderName?: string;
-    powerName?: string;
-    actionName?: string;
-    text: string;
-    icon: any;
-    colorClass: string;
-    variant: "primary" | "secondary";
-};
-
-export type FighterState = {
-    name: string;
-    overall: number;
-    isAlive: boolean;
-    image: string;
-    powers?: (Power | FallbackItem)[];
-    hasRevived?: boolean;
-    imageFocus: string;
-};
-
-export interface ScriptItem {
-    targetTeam: "A" | "B";
-    targetName?: string;
-    isKO?: boolean;
-    isRevive?: boolean;
-    isHeal?: boolean;
-    healTeam?: "A" | "B";
-    isFinish?: boolean;
-    damage?: number;
-    log: Log;
-}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 type Props = {
@@ -92,7 +54,7 @@ export function BattlePanel({
 
     const {
         combatScript, currentStepIndex, isPlaying,
-        rosterA, rosterB, healthA, healthB, visibleLogs,
+        rosterA, rosterB, visibleLogs,
         loadScript, handleNextStep, handlePrevStep, togglePlayPause,
     } = useCombatPlayback(teamAChars, teamBChars, nameA, nameB);
 
@@ -121,7 +83,6 @@ export function BattlePanel({
     const sharedCombatViewProps = {
         result,
         nameA, nameB,
-        healthA, healthB,
         rosterA, rosterB,
         visibleLogs,
         isMounted,

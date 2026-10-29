@@ -1,5 +1,5 @@
 import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
-import { ScriptItem } from "../BattlePanel";
+import { ScriptItem } from "./useCombatScript";
 
 export default function ControlToolbar({
     onReset,

@@ -209,7 +209,7 @@ const SideFormulaCard = ({
                                                     <TierIcon size="10" className={CHARACTER_TIER_COLOR[entity.tier as keyof typeof CHARACTER_TIER_COLOR]?.text ?? ""} />
                                                     T-{entity.tier ?? 0} {tierName}
                                                 </span>
-                                                <span className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded truncate">
+                                                <span className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded truncate text-ellipsis">
                                                     <ClassIcon size="10" className={CHARACTER_CLASS_COLOR[entity.class as keyof typeof CHARACTER_CLASS_COLOR]?.text ?? ""} />
                                                     C-{entity.class ?? 0} {classCharName}
                                                 </span>

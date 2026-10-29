@@ -568,6 +568,109 @@ interface OverlayConfig {
 }; */
 
 export const THEMES: Record<ThemeKey, OverlayConfig> = {
+    construct: {
+        plate:
+            "bg-gradient-to-t from-emerald-950/90 via-green-600/55 to-lime-300/30",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(134,239,172,0.55)_0%,rgba(52,211,153,0.3)_40%,transparent_60%)]",
+        rim:
+            "border-lime-300/90 shadow-[0_0_36px_#22c55e,0_0_18px_#86efac,inset_0_0_28px_rgba(6,78,59,0.45)]",
+        motion: (
+            <>
+                {/* Hard-light construct panels */}
+                <div className="absolute top-[18%] left-[15%] w-10 h-7 border-2 border-lime-200/90 bg-emerald-400/20 shadow-[0_0_14px_#86efac] rotate-[-8deg] animate-po-pulse-soft" style={{ animationDuration: "0.8s" }} />
+                <div className="absolute bottom-[22%] right-[14%] w-9 h-9 border-2 border-green-100/90 bg-lime-300/15 shadow-[0_0_14px_#4ade80] rotate-[12deg] animate-po-pulse-soft" style={{ animationDuration: "0.9s", animationDelay: "0.1s" }} />
+                <div className="absolute top-[48%] left-[20%] w-8 h-3 border border-lime-100/80 bg-white/10 shadow-[0_0_10px_#bbf7d0] rotate-[4deg]" />
+
+                {/* Lantern ring orbit */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="w-12 h-12 rounded-full border-[3px] border-lime-300/95 shadow-[0_0_20px_#86efac] animate-po-spin"
+                        style={{ animationDuration: "3s" }}
+                    />
+                    <div
+                        className="absolute w-8 h-8 rounded-full border-2 border-emerald-200/80 animate-po-pulse-soft"
+                        style={{ animationDuration: "0.7s" }}
+                    />
+                    {/* Ring core */}
+                    <div className="absolute w-3 h-3 rounded-full bg-lime-100 shadow-[0_0_18px_#f7fee7,0_0_28px_#22c55e] animate-po-pulse-soft" style={{ animationDuration: "0.5s" }} />
+                </div>
+
+                {/* Construct energy beams (angular, not organic) */}
+                <div className="absolute top-[25%] left-[50%] w-[2px] h-[30%] bg-gradient-to-b from-lime-100 to-transparent shadow-[0_0_10px_#86efac] animate-po-bolt" style={{ animationDuration: "0.3s" }} />
+                <div className="absolute top-[50%] left-[25%] w-[28%] h-[2px] bg-gradient-to-r from-transparent via-lime-200 to-transparent shadow-[0_0_10px_#bbf7d0] animate-po-bolt" style={{ animationDuration: "0.28s", animationDelay: "0.05s" }} />
+
+                {/* Will sparks */}
+                {[22, 40, 60, 78].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-lime-100 shadow-[0_0_8px_#86efac] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${28 + (i % 3) * 15}%`,
+                            animationDelay: `${i * 0.07}s`,
+                            animationDuration: `${0.7 + i * 0.05}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    transform: {
+        plate:
+            "bg-gradient-to-tr from-violet-950/90 via-fuchsia-600/55 to-emerald-400/30",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(244,114,182,0.45)_0%,rgba(52,211,153,0.25)_45%,transparent_65%)]",
+        rim:
+            "border-fuchsia-300/80 shadow-[0_0_32px_#e879f9,0_0_18px_#34d399,inset_0_0_28px_rgba(76,29,149,0.4)]",
+        motion: (
+            <>
+                {/* Morphing outer silhouette — warping ring */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="w-16 h-16 rounded-[42%] border-2 border-fuchsia-200/90 animate-po-pulse-soft"
+                        style={{ animationDuration: "0.7s" }}
+                    />
+                    <div
+                        className="absolute w-14 h-14 rounded-[30%] border border-emerald-200/75 animate-po-pulse-soft"
+                        style={{ animationDuration: "0.85s", animationDelay: "0.12s" }}
+                    />
+                    <div
+                        className="absolute w-10 h-10 rounded-full border border-violet-200/60 animate-po-ring-out"
+                        style={{ animationDuration: "1s" }}
+                    />
+                </div>
+
+                {/* Chromatic split streaks — form tearing */}
+                <div className="absolute top-[30%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-fuchsia-300 to-transparent -skew-y-6 shadow-[0_0_12px_#f0abfc] animate-po-bolt" style={{ animationDuration: "0.35s" }} />
+                <div className="absolute top-[50%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-200 to-transparent skew-y-6 shadow-[0_0_12px_#6ee7b7] animate-po-bolt" style={{ animationDuration: "0.4s", animationDelay: "0.06s" }} />
+                <div className="absolute top-[70%] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-violet-200 to-transparent -skew-y-3 shadow-[0_0_10px_#c4b5fd] animate-po-bolt" style={{ animationDuration: "0.38s", animationDelay: "0.1s" }} />
+
+                {/* DNA / form particles */}
+                {[20, 35, 50, 65, 80].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1.5 h-1.5 rounded-full shadow-[0_0_8px_#e879f9] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            bottom: `${15 + (i % 3) * 12}%`,
+                            backgroundColor: i % 2 === 0 ? "rgb(244 114 182)" : "rgb(52 211 153)",
+                            animationDelay: `${i * 0.08}s`,
+                            animationDuration: `${0.8 + i * 0.06}s`,
+                        }}
+                    />
+                ))}
+
+                {/* Spiral hint — metamorphosis */}
+                <div
+                    className="absolute inset-4 rounded-full border border-dashed border-fuchsia-200/50 animate-po-spin"
+                    style={{ animationDuration: "4s" }}
+                />
+            </>
+        ),
+    },
+
     wings: {
         plate:
             "bg-gradient-to-t from-slate-950/95 via-sky-600/85 to-white/60",
@@ -1327,15 +1430,6 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
         ),
     },
 
-    /* ✨ Light — white core flare */
-    // light: {
-    //     plate: "bg-gradient-to-t from-amber-200/40 via-yellow-50/75 to-white/90",
-    //     bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,transparent_50%)] animate-po-pulse-soft",
-    //     rim: "border-yellow-50 shadow-[0_0_40px_#fef08a,inset_0_0_36px_rgba(255,255,255,0.7)]",
-    //     motion: (
-    //         <div className="absolute inset-4 rounded-full border border-yellow-100/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
-    //     ),
-    // },
     /* ✨ Light — Smooth Prismatic Photon Waves */
     light: {
         plate: "bg-gradient-to-tr from-yellow-100/40 via-white to-cyan-200/50",
@@ -1345,8 +1439,8 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
             <>
                 {/* Smooth expanding light ripples (no flicker, gentle pulse) */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="absolute w-36 h-36  border border-white/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
-                    <div className="absolute w-36 h-36  border border-sky-200/60 animate-po-ring-out" style={{ animationDuration: "1.2s", animationDelay: "0.4s" }} />
+                    <div className="absolute w-16 h-36  border border-white/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
+                    <div className="absolute w-16 h-16  border border-sky-200/60 animate-po-ring-out" style={{ animationDuration: "1.2s", animationDelay: "0.4s" }} />
                     <div className="w-16 h-16  bg-white/90 shadow-[0_0_40px_#fff,0_0_70px_#7dd3fc] animate-po-pulse-soft" style={{ animationDuration: "1s" }} />
                 </div>
 
