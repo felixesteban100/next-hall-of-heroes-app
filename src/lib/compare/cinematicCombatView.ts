@@ -1,5 +1,5 @@
-import { Log } from "@/components/compare/battle/BattlePanel";
 import { EnrichedFighter } from "@/components/compare/battle/battlePanel/CinematicCombatView";
+import { Log } from "@/components/compare/battle/battlePanel/useCombatScript";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
 
 export function isRealPower(power: any): power is Power {
