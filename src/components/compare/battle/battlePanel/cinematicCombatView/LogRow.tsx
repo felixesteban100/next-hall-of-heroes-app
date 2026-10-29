@@ -1,7 +1,7 @@
 import { Crown, HeartPulse, RefreshCw, Shield, Skull, Swords } from "lucide-react";
-import { Log } from "../../BattlePanel";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Log } from "../useCombatScript";
 
 
 export default function LogRow({ log }: { log: Log }) {
