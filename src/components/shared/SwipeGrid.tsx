@@ -232,7 +232,7 @@ export function SwipeGrid({
                     onScroll={handleScroll}
                     className="w-full h-full flex flex-col items-center overflow-x-hidden overflow-y-auto snap-y snap-mandatory scroll-smooth overscroll-behavior-y-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative px-2 py-2"
                 >
-                    {items.map((item, index) => (
+                    {items.map((item) => (
                         <div
                             key={item.id}
                             className="snap-card snap-center snap-always shrink-0 w-full h-full flex flex-col items-center justify-center relative py-1"

@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { ViewTransition } from "react";
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import Image from "next/image";
 
@@ -41,29 +41,31 @@ export function EntityCard({
 
     return (
         <Card className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl">
-            {/* Image / Media Container */}
-            <div className={`relative aspect-4/4 bg-muted/20 overflow-hidden flex items-center justify-center`}>
-                <ViewTransition name={transitionKey} share="morph">
-                    {background && (
-                        <Image
-                            src={background}
-                            alt="background"
-                            className="absolute opacity-0 group-hover:opacity-100 w-full h-full object-cover transition-opacity duration-300"
-                            width={800}
-                            height={1200}
-                        />
-                    )}
-                    {/* Use CharacterImage if imageFocus is provided, otherwise standard Image */}
-                    {imageFocus !== undefined ? (
+            {imageFocus !== undefined ? (
+                <div className={`relative aspect-4/4 bg-muted/20 overflow-hidden flex items-center justify-center`}>
+                    <ViewTransition name={transitionKey} share="morph">
                         <CharacterImage
                             src={image}
                             alt={title}
-                            imageFocus={imageFocus}
+                            imageFocus={imageFocus ?? null}
                             width={400}
                             height={500}
-                            className={`object-cover duration-500 group-hover:scale-110 rounded-t-2xl h-full w-full ${background ? "group-hover:opacity-0" : ""}`}
+                            className="object-cover duration-500 group-hover:scale-110 rounded-t-2xl h-full w-full"
                         />
-                    ) : (
+                    </ViewTransition>
+                </div>
+            ) : (
+                <div className={`relative aspect-8/16 lg:aspect-square bg-transparent overflow-hidden flex items-center justify-center`}>
+                    <ViewTransition name={transitionKey} share="morph">
+                        {background && (
+                            <Image
+                                src={background}
+                                alt="background"
+                                className="absolute opacity-0 group-hover:opacity-100 w-full h-full object-cover transition-opacity duration-300"
+                                width={800}
+                                height={1200}
+                            />
+                        )}
                         <Image
                             src={image}
                             alt={title}
@@ -72,37 +74,39 @@ export function EntityCard({
                             height={1200}
                             unoptimized
                         />
-                    )}
-                </ViewTransition>
-            </div>
-
-            {/* Header: Title & ID / Badge */}
-            <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-4  shrink-0">
-                <CardTitle className="text-base font-bold truncate" title={title}>
-                    {title}
-                </CardTitle>
-                <div className="flex items-center gap-2 shrink-0">
-                    {badge}
-                    <span className="text-[11px] text-muted-foreground font-medium bg-muted/50 px-1.5 py-0.5 rounded">
-                        #{id}
-                    </span>
+                    </ViewTransition>
                 </div>
-            </CardHeader>
+            )}
 
-            {/* Description */}
-            <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
-                <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light`}>{description || "No description available."}</p>
-                {universeLogo && <div className="h-6 w-14">
-                    <Image
-                        src={universeLogo}
-                        alt={`${title} publisher logo`}
-                        width={120}
-                        height={60}
-                        unoptimized
-                        className="h-full w-full object-contain"
-                    />
-                </div>}
-            </CardDescription>
+            <CardContent className="bg-card py-5">
+                {/* Header: Title & ID / Badge */}
+                <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-4 shrink-0">
+                    <CardTitle className="text-base font-bold truncate" title={title}>
+                        {title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {badge}
+                        <span className="text-[11px] text-muted-foreground font-medium bg-muted/50 px-1.5 py-0.5 rounded">
+                            #{id}
+                        </span>
+                    </div>
+                </CardHeader>
+
+                {/* Description */}
+                <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
+                    <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light`}>{description || "No description available."}</p>
+                    {universeLogo && <div className="h-6 w-14">
+                        <Image
+                            src={universeLogo}
+                            alt={`${title} publisher logo`}
+                            width={120}
+                            height={60}
+                            unoptimized
+                            className="h-full w-full object-contain"
+                        />
+                    </div>}
+                </CardDescription>
+            </CardContent>
 
             {/* Footer Stats Grid (Dynamically supports 3 or 4 columns) */}
             <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-2">
@@ -120,6 +124,6 @@ export function EntityCard({
                     })}
                 </div>
             </CardFooter>
-        </Card>
+        </Card >
     );
 }
