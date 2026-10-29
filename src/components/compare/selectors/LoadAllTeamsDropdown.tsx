@@ -116,8 +116,8 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
                             onClick={() => handleSelectTeam(team.name, team.ids)}
                             className="flex items-center justify-between cursor-pointer py-1.5 px-2 text-xs"
                         >
-                            <span className="font-medium text-foreground truncate max-w-[160px]">
-                                {team.name} <span className="font-semibold">{team.team_id && `#${team.team_id}`}</span>
+                            <span className="font-light text-muted-foreground text-foreground truncate max-w-[160px]">
+                                {team.name} <span className="font-semibold text-foreground">{team.team_id && `#${team.team_id}`}</span>
                             </span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
                                 {team.totalCount}

@@ -334,7 +334,7 @@ export default function ClashCard({
             </div>
 
             {/* Standardized 3-Column Arena Layout with Cinematic Collision */}
-            <div className="flex items-center justify-between gap-2 w-full px-1 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 w-full px-1 overflow-visible">
                 {/* Left Fighter (Team A) - Lunges right if attacking */}
                 <motion.div
                     initial={{ x: -40, opacity: 1, scale: 0.2 }}

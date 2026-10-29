@@ -56,7 +56,6 @@ function playOverlaySound(themeKey: ThemeKey) {
     const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
 
     try {
-        // 🚀 Interrupted immediately: Stop any previously active sound playing right now
         if (activeAudioInstance) {
             activeAudioInstance.pause();
             activeAudioInstance.currentTime = 0;
@@ -73,7 +72,7 @@ function playOverlaySound(themeKey: ThemeKey) {
         audio.currentTime = 0;
 
         audio.play().catch(() => {
-            // Silently handle browser autoplay limitations
+            // Silently handle browser autoplay policies
         });
     } catch (e) {
         // Fallback safety
@@ -143,25 +142,26 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
 }
 
 export default function PowerOverlay({ action, powerName, visible = true }: PowerOverlayProps) {
-    const key = getThemeKey(action, powerName);
+    const key = "light"//getThemeKey(action, powerName);
     const t = THEMES[key] ?? THEMES.combat;
+
+    // 🚀 Restored audio playback trigger on visibility change
+    useEffect(() => {
+        if (visible) {
+            playOverlaySound(key);
+        }
+    }, [visible, key]);
 
     return (
         <div
             className={cn(
-                // 🚀 Absolute positioning snug to the card, but overflowing visible for motion
                 "absolute inset-0 z-35 overflow-visible pointer-events-none po-fade",
                 visible && "po-fade-in",
             )}
         >
-            {/* 1. Snug background elements (stay inside the card box) */}
             <div className={cn("absolute inset-0 rounded-lg blur-sm opacity-75", t.plate)} />
-            <div className={cn("absolute inset-0 rounded-lg", t.bloom)} />
-
-            {/* 2. Motion layer (bursts/overflows outside the card freely) */}
+            {/* <div className={cn("absolute inset-0 rounded-lg", t.bloom)} /> */}
             {t.motion}
-
-            {/* 3. Snug border rim (stays inside the card box) */}
             <div className={cn("absolute inset-0 rounded-lg border-2", t.rim)} />
         </div>
     );

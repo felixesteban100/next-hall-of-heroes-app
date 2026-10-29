@@ -66,6 +66,7 @@ export function RandomFillButton({
                 params.delete("id1");
                 params.delete("id2");
 
+
                 pushParams(`?${params.toString()}`);
             } else if (mode === "team") {
                 const a = await sampleCharacterIds(sizeA, [...idsA, ...idsB]);
@@ -78,6 +79,8 @@ export function RandomFillButton({
                 params.delete("size");
                 params.set("a", a.join(","));
                 params.set("b", b.join(","));
+                params.delete("a_name");
+                params.delete("b_name");
 
                 pushParams(`?${params.toString()}`);
             } else {
@@ -89,6 +92,8 @@ export function RandomFillButton({
                 params.delete("b");
                 params.delete("p");
                 params.delete("size");
+                params.delete("a_name");
+                params.delete("b_name");
                 if (id1) params.set("id1", String(id1));
                 if (id2) params.set("id2", String(id2));
 

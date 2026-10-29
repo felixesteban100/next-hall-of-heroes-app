@@ -7,6 +7,566 @@ interface OverlayConfig {
     motion: React.ReactNode;
 }
 
+/* export const THEMES: Record<ThemeKey, OverlayConfig> = {
+    wings: {
+        plate:
+            "bg-gradient-to-t from-slate-950/95 via-sky-600/85 to-white/60",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.9)_0%,rgba(186,230,253,0.5)_35%,transparent_60%)]",
+        rim:
+            "border-white shadow-[0_0_40px_#ffffff,0_0_20px_#38bdf8,inset_0_0_32px_rgba(255,255,255,0.6)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 flex items-center justify-between px-1">
+                    <div className="w-10 h-20 bg-gradient-to-r from-white via-slate-100 to-sky-200/80 rounded-full shadow-[0_0_35px_#ffffff] origin-right animate-po-wing-left" style={{ animationDuration: "0.4s" }} />
+                    <div className="w-6 h-6 rounded-full bg-white shadow-[0_0_25px_#ffffff] animate-po-pulse-soft" style={{ animationDuration: "0.25s" }} />
+                    <div className="w-10 h-20 bg-gradient-to-l from-white via-slate-100 to-sky-200/80 rounded-full shadow-[0_0_35px_#ffffff] origin-left animate-po-wing-right" style={{ animationDuration: "0.4s" }} />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border-2 border-white/95 animate-po-ring-out" style={{ animationDuration: "0.5s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border border-sky-200/80 animate-po-ring-out" style={{ animationDuration: "0.5s", animationDelay: "0.15s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    explosion: {
+        plate:
+            "bg-gradient-to-t from-red-950/95 via-orange-600/85 to-yellow-300/45",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(254,240,138,0.85)_0%,rgba(249,115,22,0.5)_35%,transparent_60%)]",
+        rim:
+            "border-yellow-300 shadow-[0_0_40px_#f97316,0_0_20px_#ef4444,inset_0_0_32px_rgba(127,29,29,0.5)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-yellow-100 shadow-[0_0_40px_#fef08a,0_0_70px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.25s" }} />
+                    <div className="absolute w-36 h-36 rounded-full border-[4px] border-yellow-200/95 animate-po-ring-out" style={{ animationDuration: "0.5s" }} />
+                    <div className="absolute w-36 h-36 rounded-full border-2 border-orange-400/90 animate-po-ring-out" style={{ animationDuration: "0.5s", animationDelay: "0.1s" }} />
+                </div>
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => (
+                    <div
+                        key={i}
+                        className="absolute left-1/2 top-1/2 h-[3px] w-[70%] origin-left bg-gradient-to-r from-yellow-100 via-orange-400/90 to-transparent shadow-[0_0_14px_#fde047] animate-po-bolt"
+                        style={{ transform: `rotate(${deg}deg)`, animationDuration: "0.2s" }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    detective: {
+        plate:
+            "bg-gradient-to-t from-stone-950/90 via-amber-950/50 to-yellow-600/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_40%_35%,rgba(250,204,21,0.4)_0%,transparent_50%)]",
+        rim:
+            "border-amber-500/70 shadow-[0_0_28px_rgba(245,158,11,0.45),inset_0_0_30px_rgba(0,0,0,0.5)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 bg-[radial-gradient(ellipse_at_30%_25%,rgba(254,243,199,0.4)_0%,transparent_60%)] animate-po-pulse-soft" style={{ animationDuration: "1.4s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-28 h-28 rounded-full border-[4px] border-amber-300/85 shadow-[0_0_24px_rgba(252,211,77,0.6)] animate-po-pulse-soft" style={{ animationDuration: "1.2s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border border-yellow-100/60 animate-po-ring-out" style={{ animationDuration: "1.5s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    elastic: {
+        plate:
+            "bg-gradient-to-tr from-sky-950/85 via-blue-600/40 to-pink-300/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(147,197,253,0.45)_0%,transparent_55%)]",
+        rim:
+            "border-sky-200/80 shadow-[0_0_30px_rgba(56,189,248,0.5),inset_0_0_26px_rgba(244,114,182,0.2)]",
+        motion: (
+            <>
+                <div className="absolute top-[28%] -left-4 -right-4 h-[4px] rounded-full bg-gradient-to-r from-sky-200/30 via-white to-sky-200/30 shadow-[0_0_16px_#7dd3fc] animate-po-pulse-soft" style={{ animationDuration: "0.7s" }} />
+                <div className="absolute top-[48%] -left-4 -right-4 h-[5px] rounded-full bg-gradient-to-r from-pink-200/25 via-white to-blue-200/30 shadow-[0_0_18px_#fff] animate-po-pulse-soft" style={{ animationDuration: "0.85s", animationDelay: "0.1s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-2 border-sky-200/85 animate-po-ring-out" style={{ animationDuration: "0.9s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    breathing: {
+        plate:
+            "bg-gradient-to-t from-slate-950/85 via-cyan-900/45 to-rose-400/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_50%_55%,rgba(255,255,255,0.4)_0%,rgba(34,211,238,0.25)_35%,transparent_60%)]",
+        rim:
+            "border-cyan-200/75 shadow-[0_0_30px_rgba(34,211,238,0.45),inset_0_0_28px_rgba(251,113,133,0.2)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-2 border-white/85 animate-po-ring-out" style={{ animationDuration: "1.1s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border border-cyan-200/80 animate-po-ring-out" style={{ animationDuration: "1.1s", animationDelay: "0.35s" }} />
+                    <div className="absolute w-8 h-8 rounded-full bg-white/95 shadow-[0_0_22px_#fff] animate-po-pulse-soft" style={{ animationDuration: "1s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    speed: {
+        plate:
+            "bg-gradient-to-r from-sky-950/85 via-blue-500/45 to-yellow-200/30",
+        bloom:
+            "bg-[radial-gradient(ellipse_at_left,rgba(56,189,248,0.5)_0%,transparent_55%)]",
+        rim:
+            "border-sky-200/90 shadow-[0_0_32px_#38bdf8,inset_0_0_26px_rgba(250,204,21,0.25)]",
+        motion: (
+            <>
+                <div className="absolute top-[22%] -left-4 -right-4 h-[3px] bg-gradient-to-r from-transparent via-white to-sky-200/80 shadow-[0_0_14px_#fff] animate-po-sweep" style={{ animationDuration: "0.55s" }} />
+                <div className="absolute top-[52%] -left-4 -right-4 h-[3px] bg-gradient-to-r from-transparent via-yellow-100/90 to-transparent shadow-[0_0_14px_#fef08a] animate-po-sweep" style={{ animationDuration: "0.5s", animationDelay: "0.1s" }} />
+            </>
+        ),
+    },
+
+    firearms: {
+        plate:
+            "bg-gradient-to-t from-zinc-950/90 via-orange-900/40 to-yellow-400/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_70%_45%,rgba(253,224,71,0.55)_0%,transparent_45%)]",
+        rim:
+            "border-zinc-400/80 shadow-[0_0_28px_rgba(161,161,170,0.45),inset_0_0_24px_rgba(0,0,0,0.45)]",
+        motion: (
+            <>
+                <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-8 h-8 rounded-full bg-yellow-100 shadow-[0_0_30px_#fde047,0_0_55px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.2s" }} />
+                <div className="absolute top-1/2 right-[5%] -translate-y-1/2 w-16 h-16 rounded-full border border-orange-300/90 animate-po-ring-out" style={{ animationDuration: "0.4s" }} />
+                <div className="absolute top-1/2 -left-4 -right-4 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-yellow-200 to-orange-200 shadow-[0_0_16px_#fde047]" />
+            </>
+        ),
+    },
+
+    sword: {
+        plate:
+            "bg-gradient-to-br from-slate-950/90 via-blue-900/45 to-zinc-200/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.5)_0%,transparent_45%)]",
+        rim:
+            "border-zinc-200/85 shadow-[0_0_30px_rgba(226,232,240,0.5),inset_0_0_26px_rgba(30,58,138,0.35)]",
+        motion: (
+            <>
+                <div className="absolute -top-4 left-[10%] w-[4px] h-[130%] rotate-[-28deg] origin-top bg-gradient-to-b from-white via-slate-200 to-transparent shadow-[0_0_22px_#fff,0_0_12px_#93c5fd] animate-po-bolt" style={{ animationDuration: "0.22s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-[0_0_25px_#fff] animate-po-pulse-soft" style={{ animationDuration: "0.35s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border border-sky-200/80 animate-po-ring-out" style={{ animationDuration: "0.55s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    claws: {
+        plate:
+            "bg-gradient-to-tr from-zinc-950/90 via-slate-700/50 to-cyan-400/20",
+        bloom:
+            "bg-[radial-gradient(circle_at_60%_40%,rgba(226,232,240,0.4)_0%,transparent_50%)]",
+        rim:
+            "border-slate-300/80 shadow-[0_0_28px_rgba(148,163,184,0.55),inset_0_0_24px_rgba(15,23,42,0.5)]",
+        motion: (
+            <>
+                <div className="absolute -top-4 -left-4 -right-4 h-[3px] rotate-[-22deg] bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_16px_#fff] animate-po-bolt" style={{ animationDuration: "0.28s" }} />
+                <div className="absolute top-[32%] -left-4 -right-4 h-[4px] rotate-[-18deg] bg-gradient-to-r from-transparent via-slate-100 to-transparent shadow-[0_0_18px_#e2e8f0] animate-po-bolt" style={{ animationDuration: "0.26s" }} />
+            </>
+        ),
+    },
+
+    energy: {
+        plate:
+            "bg-gradient-to-t from-violet-950/90 via-fuchsia-600/75 to-cyan-300/40",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.55)_0%,rgba(232,121,249,0.35)_40%,transparent_65%)]",
+        rim:
+            "border-cyan-200/90 shadow-[0_0_36px_#22d3ee,0_0_20px_#e879f9,inset_0_0_30px_rgba(167,139,250,0.45)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/95 shadow-[0_0_35px_#fff,0_0_65px_#22d3ee] animate-po-pulse-soft" style={{ animationDuration: "0.45s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border-2 border-cyan-200/95 animate-po-ring-out" style={{ animationDuration: "0.7s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border border-fuchsia-300/90 animate-po-ring-out" style={{ animationDuration: "0.7s", animationDelay: "0.2s" }} />
+                </div>
+                <div className="absolute top-1/2 -left-6 -right-6 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-cyan-100 to-transparent shadow-[0_0_18px_#22d3ee]" />
+                <div className="absolute -top-6 -bottom-6 left-1/2 w-[3px] -translate-x-1/2 bg-gradient-to-b from-transparent via-fuchsia-200 to-transparent shadow-[0_0_18px_#e879f9]" />
+            </>
+        ),
+    },
+
+    fourthWall: {
+        plate:
+            "bg-gradient-to-br from-white/25 via-rose-500/20 to-sky-500/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.55)_0%,transparent_55%)]",
+        rim:
+            "border-white shadow-[0_0_0_2px_#000,0_0_28px_rgba(255,255,255,0.7),inset_0_0_20px_rgba(0,0,0,0.15)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 opacity-40 bg-[radial-gradient(circle,#000_1.2px,transparent_1.5px)] bg-[size:8px_8px]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border border-white/90 animate-po-ring-out" style={{ animationDuration: "1.3s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    genius: {
+        plate:
+            "bg-gradient-to-t from-slate-950/90 via-indigo-800/70 to-sky-400/30",
+        bloom:
+            "bg-[radial-gradient(circle_at_50%_30%,rgba(125,211,252,0.45)_0%,transparent_55%)]",
+        rim:
+            "border-sky-300/85 shadow-[0_0_32px_#38bdf8,inset_0_0_28px_rgba(99,102,241,0.4)]",
+        motion: (
+            <>
+                <div className="absolute -left-4 -right-4 h-[3px] bg-gradient-to-r from-transparent via-sky-200 to-transparent shadow-[0_0_16px_#7dd3fc] animate-po-scan" style={{ animationDuration: "1.4s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border border-sky-200/80 animate-po-ring-out" style={{ animationDuration: "1.25s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    fire: {
+        plate: "bg-gradient-to-t from-red-800/95 via-orange-600/85 to-yellow-400/35",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(253,224,71,0.75)_0%,transparent_55%)]",
+        rim: "border-yellow-300/90 shadow-[0_0_32px_#f97316,inset_0_0_40px_rgba(239,68,68,0.5)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 left-[10%] w-12 h-[130%] bg-gradient-to-t from-orange-400/90 to-transparent blur-[4px] animate-po-pulse-soft" style={{ animationDuration: "0.45s" }} />
+                <div className="absolute -bottom-4 right-[15%] w-10 h-[140%] bg-gradient-to-t from-red-500/85 to-transparent blur-[4px] animate-po-pulse-soft" style={{ animationDuration: "0.55s" }} />
+            </>
+        ),
+    },
+
+    ice: {
+        plate: "bg-gradient-to-b from-white/25 via-cyan-500/55 to-blue-950/90",
+        bloom: "bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.8)_0%,transparent_42%)]",
+        rim: "border-cyan-100 shadow-[0_0_34px_#22d3ee,inset_0_0_36px_rgba(224,242,254,0.55)]",
+        motion: (
+            <>
+                <div className="absolute top-[5%] left-[5%] w-6 h-6 bg-white shadow-[0_0_20px_#fff] animate-po-shard" />
+                <div className="absolute top-[20%] right-[8%] w-5 h-5 bg-cyan-50 shadow-[0_0_18px_#a5f3fc] animate-po-shard" style={{ animationDelay: "0.2s" }} />
+                <div className="absolute -inset-6 bg-[linear-gradient(115deg,transparent_30%,rgba(255,255,255,0.55)_50%,transparent_70%)] animate-po-sweep" />
+            </>
+        ),
+    },
+
+    water: {
+        plate: "bg-gradient-to-t from-blue-950/95 via-blue-600/80 to-cyan-400/40",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(34,211,238,0.45)_0%,transparent_50%)]",
+        rim: "border-blue-300/90 shadow-[0_0_32px_#3b82f6,inset_0_0_34px_rgba(96,165,250,0.45)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 -inset-x-4 h-3/4 bg-gradient-to-t from-blue-500/60 to-transparent animate-po-pulse-soft" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border border-cyan-200/80 animate-po-ring-out" style={{ animationDuration: "1s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    lightning: {
+        plate: "bg-gradient-to-b from-yellow-100/85 via-cyan-400/45 to-slate-950/70",
+        bloom: "bg-[radial-gradient(circle_at_50%_0%,rgba(254,240,138,0.95)_0%,transparent_50%)]",
+        rim: "border-yellow-100 shadow-[0_0_38px_#facc15,inset_0_0_28px_rgba(254,249,195,0.65)]",
+        motion: (
+            <>
+                <div className="absolute -top-6 left-[20%] w-[4px] h-[140%] bg-gradient-to-b from-white via-yellow-300 to-transparent -skew-x-[18deg] shadow-[0_0_22px_#fde047] animate-po-bolt" />
+                <div className="absolute -top-6 right-[25%] w-[3px] h-[130%] bg-gradient-to-b from-cyan-50 via-yellow-200 to-transparent skew-x-[20deg] shadow-[0_0_20px_#67e8f9] animate-po-bolt" style={{ animationDelay: "0.06s" }} />
+            </>
+        ),
+    },
+
+    psychic: {
+        plate: "bg-gradient-to-t from-fuchsia-950/92 via-pink-600/72 to-violet-300/35",
+        bloom: "bg-[radial-gradient(circle,rgba(244,114,182,0.55)_0%,transparent_58%)]",
+        rim: "border-pink-300 shadow-[0_0_36px_#ec4899,inset_0_0_32px_rgba(217,70,239,0.5)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-2 border-pink-100/95 animate-po-psi" />
+                <div className="absolute w-32 h-32 rounded-full border border-fuchsia-200/85 animate-po-psi" style={{ animationDelay: "0.35s" }} />
+                <div className="absolute w-32 h-32 rounded-full border border-violet-200/75 animate-po-psi" style={{ animationDelay: "0.7s" }} />
+            </div>
+        ),
+    },
+
+    combat: {
+        plate:
+            "bg-gradient-to-tr from-stone-950/90 via-orange-800/75 to-amber-400/35",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.5)_0%,transparent_55%)]",
+        rim:
+            "border-amber-400/90 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(180,83,9,0.5)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border-[4px] border-amber-200/95 animate-po-ring-out" style={{ animationDuration: "0.45s" }} />
+                    <div className="absolute w-32 h-32 rounded-full border-2 border-orange-400/90 animate-po-ring-out" style={{ animationDuration: "0.45s", animationDelay: "0.12s" }} />
+                    <div className="w-10 h-10 rounded-full bg-yellow-100/95 shadow-[0_0_30px_#fde047] animate-po-pulse-soft" />
+                </div>
+            </>
+        ),
+    },
+
+    mystic: {
+        plate: "bg-gradient-to-tr from-orange-950/92 via-amber-600/78 to-yellow-300/30",
+        bloom: "bg-[radial-gradient(circle,rgba(253,224,71,0.42)_0%,transparent_55%)]",
+        rim: "border-amber-300 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(253,224,71,0.45)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 rounded-full border-2 border-dashed border-amber-200/90 animate-po-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-yellow-100/85 border-t-transparent border-b-transparent animate-po-spin-rev" />
+            </>
+        ),
+    },
+
+    temporal: {
+        plate: "bg-gradient-to-tr from-amber-950/92 via-yellow-500/72 to-amber-100/40",
+        bloom: "bg-[radial-gradient(circle,rgba(254,240,138,0.5)_0%,transparent_50%)]",
+        rim: "border-yellow-300 shadow-[0_0_32px_#eab308,inset_0_0_28px_rgba(254,249,195,0.5)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 rounded-full border-2 border-dashed border-yellow-100/90 animate-po-spin-slow" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-2 border-yellow-50/90 animate-po-ring-out" style={{ animationDuration: "1.3s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    shadow: {
+        plate: "bg-gradient-to-t from-black/75 via-black/45 to-black/20",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(0,0,0,0.4)_0%,transparent_60%)]",
+        rim: "border-zinc-800/80 shadow-[0_0_18px_rgba(0,0,0,0.5),inset_0_0_24px_rgba(0,0,0,0.4)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 left-[10%] w-14 h-[120%] bg-gradient-to-t from-black/85 via-black/50 to-transparent blur-[3px] animate-po-pulse-soft" style={{ animationDuration: "1.3s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border border-zinc-500/50 animate-po-ring-out" style={{ animationDuration: "1.35s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    light: {
+        plate: "bg-gradient-to-t from-amber-200/40 via-yellow-50/75 to-white/90",
+        bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,transparent_50%)] animate-po-pulse-soft",
+        rim: "border-yellow-50 shadow-[0_0_40px_#fef08a,inset_0_0_36px_rgba(255,255,255,0.7)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-2 border-yellow-100/90 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
+            </div>
+        ),
+    },
+
+    cosmic: {
+        plate: "bg-gradient-to-tr from-indigo-950/95 via-violet-700/75 to-cyan-400/35",
+        bloom: "bg-[radial-gradient(circle_at_40%_30%,rgba(165,243,252,0.45)_0%,transparent_45%)]",
+        rim: "border-cyan-200/90 shadow-[0_0_38px_#22d3ee,inset_0_0_30px_rgba(167,139,250,0.45)]",
+        motion: (
+            <>
+                <div className="absolute -inset-6 bg-[radial-gradient(circle_at_20%_25%,#fff_0_1.5px,transparent_3px),radial-gradient(circle_at_70%_40%,#a5f3fc_0_2px,transparent_3.5px)]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border border-cyan-200/50 animate-po-spin-slow" />
+                </div>
+            </>
+        ),
+    },
+
+    magnetic: {
+        plate: "bg-gradient-to-t from-slate-950 via-red-800/55 to-slate-400/35",
+        bloom: "bg-[radial-gradient(circle,rgba(248,113,113,0.35)_0%,transparent_50%)]",
+        rim: "border-red-400 shadow-[0_0_32px_#f87171,inset_0_0_26px_rgba(148,163,184,0.4)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 rounded-full border border-dashed border-red-300/80 animate-po-spin" />
+            </>
+        ),
+    },
+
+    gravity: {
+        plate: "bg-gradient-to-t from-black via-purple-950/90 to-slate-600/40",
+        bloom: "bg-[radial-gradient(circle,rgba(15,23,42,0.95)_0%,transparent_55%)]",
+        rim: "border-slate-400/90 shadow-[0_0_32px_#64748b,inset_0_0_36px_rgba(49,46,129,0.6)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-black border border-slate-500 shadow-[0_0_40px_#0f172a] animate-po-pulse-soft" />
+                <div className="absolute w-36 h-36 rounded-full border border-slate-400/70 animate-po-ring-out" style={{ animationDuration: "1.4s" }} />
+            </div>
+        ),
+    },
+
+    sonic: {
+        plate: "bg-gradient-to-r from-white-900 via-white-500 to-white-900",
+        bloom: "bg-[radial-gradient(circle,rgba(232,121,249,0.5)_0%,transparent_55%)]",
+        rim: "border-cyan-300 shadow-[0_0_34px_#e879f9,inset_0_0_28px_rgba(192,38,211,0.45)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-2 border-cyan-100 animate-po-ring-out" style={{ animationDuration: "0.85s" }} />
+                <div className="absolute w-32 h-32 rounded-full border border-cyan-200/90 animate-po-ring-out" style={{ animationDuration: "0.85s", animationDelay: "0.28s" }} />
+            </div>
+        ),
+    },
+
+    poison: {
+        plate: "bg-gradient-to-t from-lime-950/95 via-green-700/80 to-lime-300/35",
+        bloom: "bg-[radial-gradient(circle_at_70%_30%,rgba(163,230,53,0.5)_0%,transparent_45%)]",
+        rim: "border-lime-400 shadow-[0_0_34px_#a3e635,inset_0_0_28px_rgba(101,163,13,0.5)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,rgba(190,242,100,0.35)_0%,transparent_50%)] animate-po-pulse-soft" />
+            </>
+        ),
+    },
+
+    nature: {
+        plate: "bg-gradient-to-t from-green-950/94 via-emerald-600/78 to-lime-300/35",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(52,211,153,0.45)_0%,transparent_50%)]",
+        rim: "border-emerald-300 shadow-[0_0_32px_#34d399,inset_0_0_26px_rgba(134,239,172,0.4)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 left-[20%] w-6 h-20 bg-gradient-to-t from-green-700 to-lime-300/80 rounded-t-full animate-po-pulse-soft" />
+                <div className="absolute -bottom-4 right-[20%] w-5 h-16 bg-gradient-to-t from-emerald-800 to-lime-200/70 rounded-t-full animate-po-pulse-soft" style={{ animationDelay: "0.2s" }} />
+            </>
+        ),
+    },
+
+    wind: {
+        plate: "bg-gradient-to-r from-slate-200/25 via-sky-300/55 to-white/40",
+        bloom: "bg-[radial-gradient(circle,rgba(186,230,253,0.45)_0%,transparent_55%)]",
+        rim: "border-sky-200 shadow-[0_0_30px_#7dd3fc,inset_0_0_24px_rgba(224,242,254,0.5)]",
+        motion: (
+            <>
+                <div className="absolute top-[30%] -inset-x-6 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent animate-po-sweep" style={{ animationDuration: "1.1s" }} />
+                <div className="absolute top-[60%] -inset-x-6 h-[2px] bg-gradient-to-r from-transparent via-sky-100 to-transparent animate-po-sweep" style={{ animationDuration: "1s", animationDelay: "0.3s" }} />
+            </>
+        ),
+    },
+
+    earth: {
+        plate: "bg-gradient-to-t from-amber-950/95 via-yellow-800/80 to-stone-400/45",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(180,83,9,0.5)_0%,transparent_50%)]",
+        rim: "border-amber-600 shadow-[0_0_30px_#d97706,inset_0_0_28px_rgba(120,53,15,0.55)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 -inset-x-4 h-1/2 bg-gradient-to-t from-amber-900/90 to-transparent" />
+            </>
+        ),
+    },
+
+    radiation: {
+        plate: "bg-gradient-to-t from-green-950/95 via-lime-500/80 to-yellow-300/40",
+        bloom: "bg-[radial-gradient(circle,rgba(190,242,100,0.55)_0%,transparent_50%)]",
+        rim: "border-lime-300 shadow-[0_0_36px_#84cc16,inset_0_0_30px_rgba(190,242,100,0.5)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border-2 border-lime-300/90 animate-po-ring-out" style={{ animationDuration: "1.1s" }} />
+                </div>
+                <div className="absolute -inset-4 bg-[repeating-conic-gradient(from_0deg,transparent_0deg_25deg,rgba(190,242,100,0.15)_25deg_45deg)] animate-po-spin-slow" />
+            </>
+        ),
+    },
+
+    blood: {
+        plate: "bg-gradient-to-t from-red-950/96 via-rose-800/88 to-red-500/40",
+        bloom: "bg-[radial-gradient(ellipse_at_bottom,rgba(225,29,72,0.55)_0%,transparent_55%)]",
+        rim: "border-rose-500 shadow-[0_0_34px_#e11d48,inset_0_0_32px_rgba(159,18,57,0.55)]",
+        motion: (
+            <>
+                <div className="absolute -bottom-4 -inset-x-4 h-1/2 bg-gradient-to-t from-red-900/80 to-transparent" />
+            </>
+        ),
+    },
+
+    web: {
+        plate: "bg-gradient-to-tr from-red-900/75 via-blue-950/55 to-slate-100/30",
+        bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.35)_0%,transparent_50%)]",
+        rim: "border-white shadow-[0_0_28px_#fff,inset_0_0_24px_rgba(255,255,255,0.65)]",
+        motion: (
+            <>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-32 h-32 rounded-full border border-white/90 animate-po-ring-out" style={{ animationDuration: "1.15s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    omnitrix: {
+        plate: "bg-gradient-to-t from-emerald-950/95 via-green-500/88 to-lime-300/45",
+        bloom: "bg-[radial-gradient(circle,rgba(134,239,172,0.55)_0%,transparent_50%)]",
+        rim: "border-lime-300 shadow-[0_0_36px_#22c55e,inset_0_0_30px_rgba(134,239,172,0.5)]",
+        motion: (
+            <>
+                <div className="absolute -inset-4 rounded-full border-2 border-dashed border-lime-200/90 animate-po-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-28 h-28 border-2 border-lime-200 rotate-45 animate-po-ring-out" style={{ animationDuration: "0.95s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    diamond: {
+        plate: "bg-gradient-to-tr from-cyan-400/75 via-white/85 to-blue-200/55",
+        bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.85)_0%,transparent_48%)]",
+        rim: "border-white shadow-[0_0_36px_#fff,inset_0_0_30px_rgba(165,243,252,0.65)]",
+        motion: (
+            <>
+                <div className="absolute top-[10%] left-[15%] w-6 h-6 bg-white rotate-45 shadow-[0_0_22px_#fff] animate-po-shard" />
+                <div className="absolute bottom-[12%] right-[15%] w-5 h-5 bg-cyan-50 rotate-45 shadow-[0_0_18px_#a5f3fc] animate-po-shard" style={{ animationDelay: "0.25s" }} />
+            </>
+        ),
+    },
+
+    tech: {
+        plate: "bg-gradient-to-t from-slate-950/95 via-cyan-600/78 to-indigo-900/45",
+        bloom: "bg-[radial-gradient(circle,rgba(34,211,238,0.35)_0%,transparent_50%)]",
+        rim: "border-cyan-300 shadow-[0_0_34px_#06b6d4,inset_0_0_28px_rgba(103,232,249,0.45)]",
+        motion: (
+            <>
+                <div className="absolute -left-4 -right-4 h-3 bg-cyan-200/95 shadow-[0_0_22px_#22d3ee] animate-po-scan" />
+            </>
+        ),
+    },
+
+    defend: {
+        plate: "bg-gradient-to-t from-cyan-900/88 via-blue-600/55 to-teal-200/30",
+        bloom: "bg-[radial-gradient(circle,rgba(34,211,238,0.45)_0%,transparent_55%)]",
+        rim: "border-cyan-200 shadow-[0_0_36px_#06b6d4,inset_0_0_32px_rgba(103,232,249,0.55)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-[4px] border-cyan-100/95 animate-po-ring-out" style={{ animationDuration: "1s" }} />
+                <div className="absolute w-16 h-16 rounded-full border-2 border-teal-100/90 animate-po-pulse-soft" />
+            </div>
+        ),
+    },
+
+    heal: {
+        plate: "bg-gradient-to-t from-emerald-950/90 via-green-500/65 to-teal-200/30",
+        bloom: "bg-[radial-gradient(circle,rgba(52,211,153,0.55)_0%,transparent_52%)]",
+        rim: "border-emerald-300 shadow-[0_0_34px_#10b981,inset_0_0_28px_rgba(110,231,183,0.5)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-4 rounded-full bg-emerald-100/95 shadow-[0_0_20px_#6ee7b7] animate-po-pulse-soft" />
+                <div className="absolute w-4 h-20 rounded-full bg-emerald-100/95 shadow-[0_0_20px_#6ee7b7] animate-po-pulse-soft" />
+            </div>
+        ),
+    },
+
+    revive: {
+        plate: "bg-gradient-to-t from-purple-950/95 via-fuchsia-600/75 to-pink-300/40",
+        bloom: "bg-[radial-gradient(circle,rgba(192,132,252,0.55)_0%,transparent_52%)]",
+        rim: "border-purple-300 shadow-[0_0_40px_#c084fc,inset_0_0_32px_rgba(244,114,182,0.45)]",
+        motion: (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-[3px] border-purple-100 animate-po-ring-out" style={{ animationDuration: "1.15s" }} />
+                <div className="absolute w-32 h-32 rounded-full border border-pink-200/90 animate-po-ring-out" style={{ animationDuration: "1.15s", animationDelay: "0.4s" }} />
+            </div>
+        ),
+    },
+}; */
+
 export const THEMES: Record<ThemeKey, OverlayConfig> = {
     wings: {
         plate:
@@ -584,7 +1144,7 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
                         style={{ left: `${left}%`, animationDelay: `${i * 0.12}s`, animationDuration: `${0.85 + i * 0.08}s` }}
                     />
                 ))}
-                <div className="absolute bottom-0 left-[18%] w-7 h-[65%] bg-gradient-to-t from-orange-400/85 to-transparent blur-[2px] animate-po-pulse-soft" style={{ animationDuration: "0.45s" }} />
+                <div className="absolute bottom-0 left-[18%] w-7 h-full bg-gradient-to-t from-orange-400/85 to-transparent blur-[2px] animate-po-pulse-soft" style={{ animationDuration: "0.45s" }} />
                 <div className="absolute bottom-0 right-[22%] w-6 h-[72%] bg-gradient-to-t from-red-500/75 to-transparent blur-[2px] animate-po-pulse-soft" style={{ animationDuration: "0.55s" }} />
             </>
         ),
@@ -713,7 +1273,7 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
         rim: "border-amber-300 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(253,224,71,0.45)]",
         motion: (
             <>
-                <div className="absolute inset-3 rounded-full border-2 border-dashed border-amber-200/90 animate-po-spin" />
+                <div className="absolute z-100 -inset-1 rounded-full border-2 border-dashed border-amber-200/90 animate-po-spin" />
                 <div className="absolute inset-6 rounded-full border-2 border-yellow-100/85 border-t-transparent border-b-transparent animate-po-spin-rev" />
                 <div className="absolute inset-9 rounded-full border border-amber-100/70 rotate-45 animate-po-spin-slow" />
             </>
@@ -729,7 +1289,7 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
             <>
                 <div className="absolute inset-2 rounded-full border-2 border-dashed border-yellow-100/90 animate-po-spin-slow" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full border-2 border-yellow-50/90 animate-po-ring-out" style={{ animationDuration: "1.3s" }} />
+                    <div className="w-full h-full rounded-full border-2 border-yellow-50/90 animate-po-ring-out" style={{ animationDuration: "1.3s" }} />
                 </div>
             </>
         ),
@@ -768,12 +1328,46 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
     },
 
     /* ✨ Light — white core flare */
+    // light: {
+    //     plate: "bg-gradient-to-t from-amber-200/40 via-yellow-50/75 to-white/90",
+    //     bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,transparent_50%)] animate-po-pulse-soft",
+    //     rim: "border-yellow-50 shadow-[0_0_40px_#fef08a,inset_0_0_36px_rgba(255,255,255,0.7)]",
+    //     motion: (
+    //         <div className="absolute inset-4 rounded-full border border-yellow-100/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
+    //     ),
+    // },
     light: {
-        plate: "bg-gradient-to-t from-amber-200/40 via-yellow-50/75 to-white/90",
-        bloom: "bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,transparent_50%)] animate-po-pulse-soft",
-        rim: "border-yellow-50 shadow-[0_0_40px_#fef08a,inset_0_0_36px_rgba(255,255,255,0.7)]",
+        plate: "bg-gradient-to-tr from-yellow-100/50 via-white to-cyan-200/60",
+        bloom: "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.98)_0%,rgba(56,189,248,0.4)_40%,transparent_70%)] animate-po-pulse-soft",
+        rim: "border-white shadow-[0_0_45px_#fef08a,0_0_25px_#38bdf8,inset_0_0_40px_rgba(255,255,255,0.8)]",
         motion: (
-            <div className="absolute inset-4 rounded-full border border-yellow-100/80 animate-po-ring-out" style={{ animationDuration: "1.2s" }} />
+            <>
+                {/* Blinding expanding prismatic rings */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-36 h-36 rounded-full border-2 border-white/95 animate-po-ring-out" style={{ animationDuration: "0.9s" }} />
+                    <div className="absolute w-36 h-36 rounded-full border border-sky-300/80 animate-po-ring-out" style={{ animationDuration: "0.9s", animationDelay: "0.25s" }} />
+                    <div className="absolute w-20 h-20 rounded-full bg-white shadow-[0_0_50px_#fff,0_0_80px_#7dd3fc] animate-po-pulse-soft" style={{ animationDuration: "0.3s" }} />
+                </div>
+
+                {/* Spectral diffraction diagonal light shards / prism beams */}
+                <div className="absolute -top-4 left-[15%] w-[3px] h-[130%] rotate-[-35deg] bg-gradient-to-b from-white via-cyan-200 to-transparent shadow-[0_0_16px_#fff] animate-po-bolt" style={{ animationDuration: "0.25s" }} />
+                <div className="absolute -top-4 right-[20%] w-[3px] h-[130%] rotate-[35deg] bg-gradient-to-b from-white via-pink-200 to-transparent shadow-[0_0_16px_#f472b6] animate-po-bolt" style={{ animationDuration: "0.28s", animationDelay: "0.08s" }} />
+                <div className="absolute top-1/2 -inset-x-6 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff] animate-po-sweep" style={{ animationDuration: "0.6s" }} />
+
+                {/* Floating prismatic refraction motes */}
+                {[20, 40, 60, 80].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#fff,0_0_18px_#38bdf8] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${15 + (i % 2) * 50}%`,
+                            animationDelay: `${i * 0.08}s`,
+                            animationDuration: "0.7s",
+                        }}
+                    />
+                ))}
+            </>
         ),
     },
 

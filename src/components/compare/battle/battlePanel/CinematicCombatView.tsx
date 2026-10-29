@@ -180,7 +180,7 @@ export default function CinematicCombatView({
                 />
 
                 <div className={cn(
-                    "shrink-0 rounded-2xl border border-muted-foreground/25 bg-card/85 backdrop-blur-md overflow-hidden min-h-[200px] flex items-center justify-center",
+                    "shrink-0 rounded-2xl border border-muted-foreground/25 bg-card/85 backdrop-blur-md overflow-visible min-h-[200px] flex items-center justify-center",
                     isDialog ? "w-[300px]" : "w-[340px] lg:w-[380px]"
                 )}>
                     <AnimatePresence mode="wait">
@@ -190,7 +190,7 @@ export default function CinematicCombatView({
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.94, y: -6 }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="w-full"
+                            className="w-full overflow-visible"
                         >
                             <ClashCard event={currentEvent} allChars={allChars} teamAChars={teamAChars} />
                         </motion.div>
