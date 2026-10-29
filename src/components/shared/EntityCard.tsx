@@ -42,7 +42,7 @@ export function EntityCard({
     return (
         <Card className="group h-full w-full flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 pt-0 overflow-hidden shadow-none hover:shadow-xl">
             {imageFocus !== undefined ? (
-                <div className={`relative aspect-4/4 bg-muted/20 overflow-hidden flex items-center justify-center`}>
+                <div className={`relative aspect-4/4 bg-muted/20 overflow-hidden flex items-center justify-center h-full`}>
                     <ViewTransition name={transitionKey} share="morph">
                         <CharacterImage
                             src={image}
