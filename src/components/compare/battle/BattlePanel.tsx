@@ -115,7 +115,7 @@ export function BattlePanel({
                         {toolbar}
 
                         {/* Expand dialog (desktop only) */}
-                        <div className="hidden md:block">
+                        {/* <div className="hidden md:block">
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Maximize2 className="size-4 cursor-pointer hover:text-primary transition-colors" />
@@ -136,7 +136,7 @@ export function BattlePanel({
                                     />
                                 </DialogContent>
                             </Dialog>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 

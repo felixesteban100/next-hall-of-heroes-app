@@ -104,6 +104,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (!powerName) return "combat";
     const n = powerName.toLowerCase();
 
+    if (/\b(shadow|darkness|umbral|fear|curse|null|dark)/.test(n)) return "shadow";
     if (/\b(lantern ring|power ring|energy construct|hard.?light|construct|green lantern|star sapphire|sinestro|orange lantern|blue lantern)/.test(n)) return "construct";
     if (/\b(transform|transformation|shapeshift|shape.?shift|metamorph|metamorphosis|morph|change form|alter form|polymorph)/.test(n)) return "transform";
     if (/\b(wing|wings|gale|feather|bird)/.test(n)) return "wings";
@@ -127,7 +128,6 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(cosmic|stellar|power cosmic|reality|omnipotence)/.test(n)) return "cosmic";
     if (/\b(magic|mystic|sorcery|spell|chaos magic)/.test(n)) return "mystic";
     if (/\b(telepath|telekin|psychic|mind control|illusion)/.test(n)) return "psychic";
-    if (/\b(shadow|darkness|umbral|fear|curse|null|dark)/.test(n)) return "shadow";
     if (/\b(light|photon|solar|holy|starbolt)/.test(n)) return "light";
     if (/\b(magnet|ferro|metal manipulation)/.test(n)) return "magnetic";
     if (/\b(gravity|gravimetric)/.test(n)) return "gravity";

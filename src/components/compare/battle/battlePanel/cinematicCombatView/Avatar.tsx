@@ -35,7 +35,8 @@ export default function Avatar({
                 : isHealing ? "border-emerald-400"
                     : isDefending ? "border-cyan-400"
                         : isAttacking ? (variant === "primary" ? "border-primary" : "border-secondary")
-                            : isBeingHit ? (variant === "primary" ? "border-secondary/70" : "border-primary/70")
+                            // : isBeingHit ? (variant === "primary" ? "border-secondary/70" : "border-primary/70")
+                            : isBeingHit ? (variant === "primary" ? "border-primary" : "border-secondary")
                                 : isMvp ? (variant === "primary" ? "border-primary/70" : "border-secondary/70")
                                     : (variant === "primary" ? "border-primary/25" : "border-secondary/25");
 
@@ -51,9 +52,9 @@ export default function Avatar({
         <motion.div
             className="flex flex-col items-center gap-1 shrink-0"
             animate={
-                isAttacking ? { scale: 1.12 }
-                    : isBeingHit ? { scale: 0.88, x: variant === "primary" ? 4 : -4 }
-                        : isKO ? { scale: 0.82, opacity: 0.55 }
+                isAttacking ? { scale: 1 }
+                    : isBeingHit ? { scale: 1/* , x: variant === "primary" ? 4 : -4 */ }
+                        : isKO ? { scale: 0.82, opacity: 0.55, animationDelay: 2 }
                             : dead ? { scale: 0.88, opacity: 0.3 }
                                 : { scale: 1, x: 0, y: 0, opacity: 1 }
             }
@@ -75,9 +76,9 @@ export default function Avatar({
                     className="w-full h-full rounded-lg"
                 />
 
-                {isAttacking && !dead && (
+                {(isAttacking || isBeingHit) && !dead && (
                     <div className={cn(
-                        "absolute inset-0 rounded-xl ring-2 animate-ping pointer-events-none",
+                        "absolute inset-2 rounded-xl ring-2 animate-ping pointer-events-none",
                         variant === "primary" ? "ring-primary/45" : "ring-secondary/45"
                     )} />
                 )}

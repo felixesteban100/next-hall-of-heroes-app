@@ -101,33 +101,34 @@ function FighterSlot({
 
     return (
         <div onClick={() => setShow((v) => !v)} className="flex flex-col items-center gap-1 min-w-18 relative">
+
+            {damagePopup != null && damagePopup > 0 && (
+                <motion.span
+                    key="damage"
+                    initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                    animate={{ opacity: 1, y: -10, scale: 1 }}
+                    exit={{ opacity: 0, y: -35, scale: 0.8 }}
+                    transition={{ duration: 1 }}
+                    className="absolute text-red-500 text-[6px]"
+                >
+                    (-{damagePopup} HP)
+                </motion.span>
+            )}
+            {healPopup != null && healPopup > 0 && (
+                <motion.span
+                    key="heal"
+                    initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                    animate={{ opacity: 1, y: -10, scale: 1 }}
+                    exit={{ opacity: 0, y: -35, scale: 0.8 }}
+                    transition={{ duration: 1 }}
+                    className="absolute text-emerald-400 text-[6px]"
+                >
+                    (+{healPopup} HP) {/* this doesn't give me the right value */}
+                    {/* +25% HP */}
+                </motion.span>
+            )}
             <span className={cn("text-[8px] font-black uppercase tracking-wider flex flex-col items-center justify-center", badgeColorClass ?? (isTeamA ? "text-primary" : "text-secondary"))}>
                 <span>{roleLabel}</span>
-                {damagePopup != null && damagePopup > 0 && (
-                    <motion.span
-                        key="damage"
-                        initial={{ opacity: 0, y: 10, scale: 0.5 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -35, scale: 0.8 }}
-                        transition={{ duration: 1 }}
-                        className="absolute text-red-500 text-[6px]"
-                    >
-                        (-{damagePopup} HP)
-                    </motion.span>
-                )}
-                {healPopup != null && healPopup > 0 && (
-                    <motion.span
-                        key="heal"
-                        initial={{ opacity: 0, y: 10, scale: 0.5 }}
-                        animate={{ opacity: 1, y: -10, scale: 1 }}
-                        exit={{ opacity: 0, y: -35, scale: 0.8 }}
-                        transition={{ duration: 1 }}
-                        className="absolute text-emerald-400 text-[6px]"
-                    >
-                        (+{healPopup} HP) {/* this doesn't give me the right value */}
-                        {/* +25% HP */}
-                    </motion.span>
-                )}
             </span>
 
             <div className="relative w-17 h-17 shrink-0 overflow-visible">
@@ -445,9 +446,11 @@ export default function ClashCard({
                         </span>
                     )}
 
-                    <p className="text-[7.5px] font-semibold text-muted-foreground max-w-[120px] text-center">
-                        {log.text}
-                    </p>
+                    <div className="bg-background/40 backdrop-blur-sm border border-muted-foreground/15 rounded-md px-2 py-1 max-w-[145px] shadow-inner">
+                        <p className="text-[7.5px] font-medium text-foreground/90 text-center leading-tight tracking-tight whitespace-normal break-words">
+                            {log.text}
+                        </p>
+                    </div>
                 </motion.div>
 
                 {/* Right Fighter */}

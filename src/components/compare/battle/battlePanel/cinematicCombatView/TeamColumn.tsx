@@ -59,7 +59,8 @@ export default function TeamColumn({
         <div className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0 overflow-hidden">
             <div
                 ref={scrollContainerRef}
-                className="flex flex-wrap gap-2.5 sm:gap-3 justify-center max-h-[210px] md:max-h-none overflow-y-auto md:overflow-y-visible overflow-x-hidden w-full p-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative"
+                /*  */
+                className="flex flex-wrap gap-1 sm:gap-3 justify-center max-h-[210px] md:max-h-none w-full py-6 overflow-y-auto md:overflow-y-visible overflow-x-hidden  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative"
             >
                 {fighters.map((f) => {
                     const isInvolved = involvedNames.has(f.name);
