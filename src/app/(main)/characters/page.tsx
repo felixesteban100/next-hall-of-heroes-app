@@ -48,7 +48,11 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const powersParam = JSON.parse(params.powers || "[]");
     const character_type = params.character_type?.toString() || "";
 
-    const query = buildQuery(name, gender, alignment, universe, team, tier, character_class, powersParam, character_type)
+    const queryBuilderParams = {
+        name, gender, alignment, universe, team, tier, character_class, powersParam, character_type
+    }
+
+    const query = await buildQuery(queryBuilderParams)
 
     // 🚀 FIX: Run all independent queries in PARALLEL via Promise.all
     const [charactersPerPage, totalCharacters, universes, teams, powers] = await Promise.all([

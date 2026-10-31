@@ -1,6 +1,10 @@
 import { collectionPowers, collectionTeams } from "@/db/mongodb";
 
-export async function buildQuery(name: string, gender: string, alignment: string, universe: string, tier: number, character_class: number, team: number, powersParam: number[], character_type: string) {
+type Params = {
+    name: string, gender: string, alignment: string, universe: string, tier: number, character_class: number, team: number, powersParam: number[], character_type: string
+}
+
+export async function buildQuery({ alignment, character_class, character_type, gender, name, powersParam, team, tier, universe }: Params) {
     // Build MongoDB query filter
     const query: Record<string, any> = {};
     if (name) {
