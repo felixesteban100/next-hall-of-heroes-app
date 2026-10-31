@@ -37,7 +37,7 @@ export type Character = {
         base: string;
     };
     connections: {
-        groupAffiliation: number[];
+        groupAffiliation: (number | string)[];
         relatives: string;
         enemies: string[];
     };

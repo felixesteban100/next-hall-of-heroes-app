@@ -1,3 +1,4 @@
+import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
 import { Frown, Mars, Meh, PersonStanding, Smile, Venus } from "lucide-react";
 
 export function getCharacterAlignmentColor(alignment: string) {
@@ -61,7 +62,7 @@ export function getCharacterRaceIcon(race: string) {
     }
 }
 
-export function getRandomIds(ids: number[], count = 12) {
+export function getRandomIds(ids: number[], count = MAX_TEAM_SIZE) {
     const temp = [...ids];
     const result = [];
     for (let i = 0; i < count; i++) {

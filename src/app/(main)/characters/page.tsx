@@ -11,6 +11,7 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
+import { buildQuery } from "@/lib/query";
 
 
 export const instant = false;
@@ -47,27 +48,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const powersParam = JSON.parse(params.powers || "[]");
     const character_type = params.character_type?.toString() || "";
 
-    // Build MongoDB query filter
-    const query: Record<string, any> = {};
-    if (name) {
-        const regexPattern = { $regex: name, $options: "i" };
-        query.$or = [
-            { name: regexPattern },
-            { "biography.fullName": regexPattern },
-            { "biography.aliases": regexPattern },
-            { "biography.alterEgos": regexPattern },
-        ];
-    }
-    if (gender) query["appearance.gender"] = gender;
-    if (alignment) query["biography.alignment"] = alignment;
-    if (universe) query["biography.publisher"] = universe;
-    if (character_type) query["character_type"] = character_type;
-    if (!Number.isNaN(tier)) query.tier = tier;
-    if (!Number.isNaN(team)) query["connections.groupAffiliation"] = team;
-    if (!Number.isNaN(character_class)) query.class = character_class;
-    if (powersParam.length > 0) {
-        query.powers = { $in: powersParam.map((c: string) => Number(c)) };
-    }
+    const query = buildQuery(name, gender, alignment, universe, team, tier, character_class, powersParam, character_type)
 
     // 🚀 FIX: Run all independent queries in PARALLEL via Promise.all
     const [charactersPerPage, totalCharacters, universes, teams, powers] = await Promise.all([

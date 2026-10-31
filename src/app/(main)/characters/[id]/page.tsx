@@ -274,7 +274,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                         alignment: c.alignment,
                         imageFocus: c.imageFocus
                     }))}
-                    externalNames={externalEnemies.map(c => c.name.replace(/[^\d.-]+/g, ''))}
+                    externalNames={externalEnemies.map(c => c.name.replace(/[^a-zA-Z\s.\-]/g, ''))}
                     emptyMessage="No enemies found."
                     compareWithId={character.id}
                 />
