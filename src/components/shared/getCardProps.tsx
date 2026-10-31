@@ -96,6 +96,7 @@ export const getCardProps = (item: any, type: EntityType) => {
                 image: item.logo,
                 description: item.description || "No description available.",
                 transitionKey: `team-${item.id}`,
+                universeLogo: item.universeData.logo,
                 stats: [
                     {
                         icon: IconAlignment,

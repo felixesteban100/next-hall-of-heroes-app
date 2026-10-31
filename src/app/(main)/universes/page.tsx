@@ -1,25 +1,22 @@
 import { PaginationPages } from "@/components/filters/Pagination";
 import { collectionUniverses } from "@/db/mongodb";
-import { Suspense } from "react";
-import SimpleFilterBar from "@/components/filters/SimpleFilterBar";
-import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { sanitize } from "@/lib/utils";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
+import { EntityFilterBar } from "@/components/filters/EntityFilterBar";
 
 export const instant = false;
 
-const sortOptions = [
-    { value: "name", label: "Name" },
-    { value: "id", label: "Id" },
-];
-
-export default async function page({
+export default async function UniversePage({
     searchParams
 }: {
     searchParams: Promise<{
         [key: string]: string | string[] | undefined,
-        page?: string, sort?: string,
-        sortOrientation?: string, name?: string
+        page?: string,
+        sort?: string,
+        sortOrientation?: string,
+        name?: string,
+        type?: string,
+        modes?: string,
     }>;
 }) {
     const params = await searchParams;
@@ -27,9 +24,35 @@ export default async function page({
     const pageSize = 12;
     const sortProperty = params.sort?.toString() || "id";
     const sortOrientation = params.sortOrientation?.toString() || "asc";
-    const name = params.name?.toString() || "";
 
-    const query = name ? { name: { $regex: name, $options: "i" } } : {};
+    const name = params.name?.toString() || "";
+    const universeType = params.type?.toString() || "";
+    const modesParam = params.modes?.toString() || "";
+    const modes = modesParam ? modesParam.split(",") : [];
+
+    const query: Record<string, any> = {};
+
+    if (name) {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        let regexPattern = escaped;
+
+        const hasStarts = modes.includes("startsWith");
+        const hasEnds = modes.includes("endsWith");
+        const hasExact = modes.includes("exact");
+
+        if (hasExact || (hasStarts && hasEnds)) {
+            regexPattern = `^${escaped}$`;
+        } else if (hasStarts) {
+            regexPattern = `^${escaped}`;
+        } else if (hasEnds) {
+            regexPattern = `${escaped}$`;
+        }
+
+        const nameRegex = { $regex: regexPattern, $options: "i" };
+        query.$or = [{ name: nameRegex }, { description: nameRegex }];
+    }
+
+    if (universeType) query.type = universeType;
 
     const universesPerPage = await collectionUniverses
         .find(query)
@@ -46,12 +69,19 @@ export default async function page({
 
     return (
         <div className="">
-            <Suspense fallback={<FilterBarSkeleton />}  >
+            {/* <Suspense fallback={<FilterBarSkeleton />}  >
                 <SimpleFilterBar
                     placeholder="Search universes..."
                     sortOptions={sortOptions}
                 />
-            </Suspense>
+            </Suspense> */}
+            <EntityFilterBar
+                type="universe"
+                sortOptions={[
+                    { value: "name", label: "Name" },
+                    { value: "id", label: "Id" },
+                ]}
+            />
 
             <SwipeGrid
                 items={sanitizedUniverses}

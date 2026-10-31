@@ -1,15 +1,13 @@
 import { PaginationPages } from "@/components/filters/Pagination";
 import { collectionPowers } from "@/db/mongodb";
-import { Suspense } from "react";
-import PowersFilterBar from "@/components/filters/PowersFilterBar"; // we'll create this
-import { FilterBarSkeleton } from "@/components/filters/FilterBarSkeleton";
 import { sanitize } from "@/lib/utils";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
 import { seedPowersCollectionActions, seedPowersCollectionCombatRole } from "@/db/seeds";
+import { EntityFilterBar } from "@/components/filters/EntityFilterBar";
 
 export const instant = false;
 
-export default async function page({
+export default async function PowersPage({
     searchParams
 }: {
     searchParams: Promise<{
@@ -21,21 +19,44 @@ export default async function page({
         tier?: string,
         combatRole?: string,
         activationType?: string,
+        modes?: string,
     }>;
 }) {
     const params = await searchParams;
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
 
-    const sortProperty = params.sort?.toString() || "id";  // default to score not id
+    const sortProperty = params.sort?.toString() || "score"; // 🚀 Default to score
     const sortOrientation = params.sortOrientation?.toString() || "desc";
+
     const name = params.name?.toString() || "";
     const tier = parseInt(params.tier?.toString() || "");
     const combatRole = params.combatRole?.toString() || "";
     const activationType = params.activationType?.toString() || "";
+    const modesParam = params.modes?.toString() || "";
+    const modes = modesParam ? modesParam.split(",") : [];
 
-    const query: Record<string, string | number | object> = {};
-    if (name) query.name = { $regex: name, $options: "i" };
+    const query: Record<string, any> = {};
+    if (name) {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        let regexPattern = escaped;
+
+        const hasStarts = modes.includes("startsWith");
+        const hasEnds = modes.includes("endsWith");
+        const hasExact = modes.includes("exact");
+
+        if (hasExact || (hasStarts && hasEnds)) {
+            regexPattern = `^${escaped}$`;
+        } else if (hasStarts) {
+            regexPattern = `^${escaped}`;
+        } else if (hasEnds) {
+            regexPattern = `${escaped}$`;
+        }
+
+        const nameRegex = { $regex: regexPattern, $options: "i" };
+        query.$or = [{ name: nameRegex }, { value: nameRegex }];
+    }
+
     if (!Number.isNaN(tier)) query.tier = tier;
     if (combatRole) query.combatRole = combatRole;
     if (activationType) query.activationType = activationType;
@@ -56,9 +77,17 @@ export default async function page({
 
     return (
         <div className="">
-            <Suspense fallback={<FilterBarSkeleton />} >
+            {/* <Suspense fallback={<FilterBarSkeleton />} >
                 <PowersFilterBar />
-            </Suspense>
+            </Suspense> */}
+            <EntityFilterBar
+                type="power"
+                sortOptions={[
+                    { value: "score", label: "Score" },
+                    { value: "name", label: "Name" },
+                    { value: "id", label: "Id" },
+                ]}
+            />
 
             <SwipeGrid
                 items={sanitizedPowers}

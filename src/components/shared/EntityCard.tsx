@@ -94,7 +94,7 @@ export function EntityCard({
 
                 {/* Description */}
                 <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
-                    <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light`}>{description || "No description available."}</p>
+                    <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light max-w-[70%]`}>{description || "No description available."}</p>
                     {universeLogo && <div className="h-6 w-14">
                         <Image
                             src={universeLogo}

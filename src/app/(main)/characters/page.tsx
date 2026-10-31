@@ -1,4 +1,3 @@
-import { FilterBar } from "@/components/filters/FilterBar";
 import { PaginationPages } from "@/components/filters/Pagination";
 import {
     collectionCharacters,
@@ -12,6 +11,7 @@ import { sanitize } from "@/lib/utils";
 import { seedCharactersDescription } from "@/db/seeds";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
 import { buildQuery } from "@/lib/query";
+import { EntityFilterBar } from "@/components/filters/EntityFilterBar";
 
 
 export const instant = false;
@@ -28,6 +28,8 @@ type SearchParamsPromise = Promise<{
     class?: string;
     powers?: string;
     character_type?: string;
+    modes?: string;
+    fields?: string;
 }>;
 
 export default async function CharactersPage({ searchParams }: { searchParams: SearchParamsPromise }) {
@@ -47,9 +49,13 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     const character_class = parseInt(params.class?.toString() || "");
     const powersParam = JSON.parse(params.powers || "[]");
     const character_type = params.character_type?.toString() || "";
+    const modesParam = params.modes?.toString() || "";
+    const modes = modesParam ? modesParam.split(",") : [];
+    const fieldsParam = params.fields?.toString() || "";
+    const fields = fieldsParam ? fieldsParam.split(",") : [];
 
     const queryBuilderParams = {
-        name, gender, alignment, universe, team, tier, character_class, powersParam, character_type
+        name, modes, gender, alignment, universe, team, tier, character_class, powersParam, character_type, fields
     }
 
     const query = await buildQuery(queryBuilderParams)
@@ -103,7 +109,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                 </div>
             </div>*/}
 
-            <FilterBar
+            {/* <FilterBar
                 universes={sanitizedUniverses}
                 teams={sanitizedTeams}
                 powers={sanitizedPowers}
@@ -120,8 +126,19 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                     character_type,
                     teams: sanitizedTeams,
                 }}
+            /> */}
+            <EntityFilterBar
+                type="character"
+                sortOptions={[
+                    { value: "id", label: "Id" },
+                    { value: "powerstats.total", label: "Power total" },
+                    { value: "name", label: "Name" },
+                    { value: "appearance.age", label: "Age" },
+                ]}
+                extraData={{ universes: sanitizedUniverses, teams: sanitizedTeams, powers: sanitizedPowers }}
             />
 
+            {/* being queried by page {sanitizedCharacters.length} */}
             <SwipeGrid
                 items={sanitizedCharacters}
                 currentPage={page}
