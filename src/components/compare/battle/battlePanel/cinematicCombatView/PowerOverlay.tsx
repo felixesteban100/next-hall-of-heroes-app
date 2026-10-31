@@ -104,7 +104,29 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (!powerName) return "combat";
     const n = powerName.toLowerCase();
 
-    if (/\b(shadow|darkness|umbral|fear|curse|null|dark)/.test(n)) return "shadow";
+    /* add invisible */
+    /* add intangibility */
+    /* add mist */
+    /* ninjutsu */
+    /* elemental control */
+    /* lightsaber */
+    /* heat vision */
+    /* power mimicry */
+    /* absorption / mimicry of materials */
+    /* durability or maybe use the same as defend*/
+    /* size manipulation */
+    /* bounty hunting skills */
+    /* energy manipulation */
+    /* energy absorption */
+    /* energy projection */
+    /* vibration / shockwave */
+    /* stealth / camouflage */
+    /* power nullification, null, nullify, magic null */
+    /* archery */
+    /* weather */
+    /* teleportation */
+
+    if (/\b(shadow|darkness|umbral|fear|curse|dark)/.test(n)) return "shadow";
     if (/\b(lantern ring|power ring|energy construct|hard.?light|construct|green lantern|star sapphire|sinestro|orange lantern|blue lantern)/.test(n)) return "construct";
     if (/\b(transform|transformation|shapeshift|shape.?shift|metamorph|metamorphosis|morph|change form|alter form|polymorph)/.test(n)) return "transform";
     if (/\b(wing|wings|gale|feather|bird)/.test(n)) return "wings";
@@ -113,11 +135,11 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(elastic|elasticity|stretch|rubber|plasticity|malleable|elongation|gum.?gum|luffy|flexibility)/.test(n)) return "elastic";
     if (/\b(breathing|breath style|breath technique|hinokami|sun breathing|water breathing|flame breathing|thunder breathing|beast breathing|insect breathing|love breathing|stone breathing|mist breathing|sound breathing|flower breathing|serpent breathing|total concentration)/.test(n)) return "breathing";
     if (/\b(speed|superspeed|super speed|speedster|velocity|fast|quickness|speed force)/.test(n)) return "speed";
-    if (/\b(firearm|gun|pistol|rifle|sniper|marksmanship|marksman|shooting|bullet|ammo|revolver|shotgun|machine.?gun|blaster gun)/.test(n)) return "firearms";
+    if (/\b(firearm|gun|pistol|rifle|sniper|marksmanship|marksman|shooting|bullet|ammo|revolver|shotgun|machine.?gun|blaster gun|weapon proficiency)/.test(n)) return "firearms";
     if (/\b(claw|claws|adamantium claw|talon|scratch)/.test(n)) return "claws";
     if (/\b(sword|blade|katana|saber|slash|cutlass|excalibur|dagger|knife)/.test(n)) return "sword";
     if (/\b(fourth wall|4th wall|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
-    if (/\b(wind|air control|weather|teleportation|aero|air manipulation|tornado|hurricane|flight|air|sky|breeze|cyclone|airflow|wind)/.test(n)) return "wind";
+    if (/\b(wind|air control|aero|air manipulation|tornado|hurricane|flight|air|sky|breeze|cyclone|airflow|wind)/.test(n)) return "wind";
     if (/\b(web|spider)/.test(n)) return "web";
     if (/\b(omnitrix|alien)/.test(n)) return "omnitrix";
     if (/\b(ice|cryo|frost|freeze|blizzard|arctic)/.test(n)) return "ice";
@@ -131,7 +153,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(light|photon|solar|holy|starbolt)/.test(n)) return "light";
     if (/\b(magnet|ferro|metal manipulation)/.test(n)) return "magnetic";
     if (/\b(gravity|gravimetric)/.test(n)) return "gravity";
-    if (/\b(sonic|sound|vibrat|scream)/.test(n)) return "sonic";
+    if (/\b(sonic|sound|scream)/.test(n)) return "sonic";
     if (/\b(poison|toxin|venom|acid|toxic)/.test(n)) return "poison";
     if (/\b(plant|nature|vine|chlorophyll)/.test(n)) return "nature";
     if (/\b(earth|geo|stone|rock|seismic)/.test(n)) return "earth";
@@ -139,9 +161,9 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(blood|vampir|life drain)/.test(n)) return "blood";
     if (/\b(diamond|crystal|invulnerab|force.?field)/.test(n)) return "diamond";
     if (/\b(techology|cyber|android|gadget|repulsor|nanite|tech)/.test(n)) return "tech";
-    if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive|energy)/.test(n)) return "energy";
+    if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive)/.test(n)) return "energy";
     if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat";
-    if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strategy|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
+    if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strateg|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
     return "combat";
 }
 
