@@ -177,6 +177,22 @@ export default function FocalPickerPage() {
                             {copied ? "Copied Snippet!" : "Copy DB Snippet"}
                         </button>
                     </div>
+
+                    <div className="flex items-center justify-between bg-card p-3.5 rounded-xl border border-border shadow-sm">
+                        <div className="font-mono text-xs text-primary font-bold">
+                            {focusString}
+                        </div>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(focusString);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 1500);
+                            }}
+                            className="px-4 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg font-bold cursor-pointer hover:opacity-90 transition-opacity"
+                        >
+                            {copied ? "Copied focusString!" : "Copy focusString"}
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
