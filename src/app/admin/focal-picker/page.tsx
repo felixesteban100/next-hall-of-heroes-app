@@ -12,6 +12,7 @@ export default function FocalPickerPage() {
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [copied, setCopied] = useState(false);
+    const [copiedF, setCopiedF] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -185,12 +186,12 @@ export default function FocalPickerPage() {
                         <button
                             onClick={() => {
                                 navigator.clipboard.writeText(focusString);
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 1500);
+                                setCopiedF(true);
+                                setTimeout(() => setCopiedF(false), 1500);
                             }}
                             className="px-4 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg font-bold cursor-pointer hover:opacity-90 transition-opacity"
                         >
-                            {copied ? "Copied focusString!" : "Copy focusString"}
+                            {copiedF ? "Copied focusString!" : "Copy focusString"}
                         </button>
                     </div>
                 </div>
