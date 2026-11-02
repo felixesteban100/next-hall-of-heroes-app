@@ -1,6 +1,6 @@
 import { ThemeKey } from "../PowerOverlay";
 
-interface OverlayConfig {
+export interface OverlayConfig {
     plate: string;
     bloom: string;
     rim: string;
@@ -568,6 +568,459 @@ interface OverlayConfig {
 }; */
 
 export const THEMES: Record<ThemeKey, OverlayConfig> = {
+    shockwave: {
+        plate:
+            "bg-gradient-to-t from-stone-950/90 via-amber-800/40 to-yellow-200/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(253,224,71,0.4)_0%,rgba(168,162,158,0.25)_45%,transparent_60%)]",
+        rim:
+            "border-amber-300/80 shadow-[0_0_32px_rgba(251,191,36,0.45),inset_0_0_28px_rgba(68,64,60,0.4)]",
+        motion: (
+            <>
+                {/* Expanding shock rings */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="w-10 h-10 rounded-full border-2 border-yellow-100/90 animate-po-ring-out"
+                        style={{ animationDuration: "0.7s" }}
+                    />
+                    <div
+                        className="absolute w-10 h-10 rounded-full border-2 border-amber-300/80 animate-po-ring-out"
+                        style={{ animationDuration: "0.7s", animationDelay: "0.15s" }}
+                    />
+                    <div
+                        className="absolute w-10 h-10 rounded-full border border-stone-300/70 animate-po-ring-out"
+                        style={{ animationDuration: "0.7s", animationDelay: "0.3s" }}
+                    />
+                    <div className="absolute w-3 h-3 rounded-full bg-yellow-100 shadow-[0_0_16px_#fef9c3] animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} />
+                </div>
+
+                {/* Horizontal vibration bands */}
+                <div className="absolute top-[30%] inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-200 to-transparent shadow-[0_0_10px_#fde68a] animate-po-bolt" style={{ animationDuration: "0.2s" }} />
+                <div className="absolute top-[50%] inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-100 to-transparent shadow-[0_0_12px_#fef08a] animate-po-bolt" style={{ animationDuration: "0.18s", animationDelay: "0.04s" }} />
+                <div className="absolute top-[70%] inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300/90 to-transparent animate-po-bolt" style={{ animationDuration: "0.22s", animationDelay: "0.08s" }} />
+
+                {/* Ground tremor dust */}
+                {[15, 30, 50, 70, 85].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute bottom-1 w-1.5 h-1.5 rounded-sm bg-amber-200/90 shadow-[0_0_8px_#fcd34d] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            animationDelay: `${i * 0.05}s`,
+                            animationDuration: `${0.55 + i * 0.04}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    absorb: {
+        plate: "",
+        bloom: "",
+        rim: "",
+        motion: null, // real config comes from createAbsorbTheme()
+    },
+
+    heatVision: {
+        plate:
+            "bg-gradient-to-b from-red-950/90 via-orange-700/50 to-yellow-400/20",
+        bloom:
+            "bg-[radial-gradient(ellipse_at_top,rgba(248,113,113,0.55)_0%,transparent_50%)]",
+        rim:
+            "border-red-400/85 shadow-[0_0_32px_#ef4444,0_0_16px_#f97316,inset_0_0_26px_rgba(127,29,29,0.45)]",
+        motion: (
+            <>
+                {/* Twin eye origins */}
+                <div className="absolute top-[28%] left-[34%] w-2.5 h-2.5 rounded-full bg-red-200 shadow-[0_0_16px_#fca5a5,0_0_28px_#ef4444] animate-po-pulse-soft" style={{ animationDuration: "0.35s" }} />
+                <div className="absolute top-[28%] right-[34%] w-2.5 h-2.5 rounded-full bg-red-200 shadow-[0_0_16px_#fca5a5,0_0_28px_#ef4444] animate-po-pulse-soft" style={{ animationDuration: "0.35s", animationDelay: "0.05s" }} />
+
+                {/* Converging / parallel heat beams downward */}
+                <div className="absolute top-[32%] left-[36%] w-[2.5px] h-[55%] bg-gradient-to-b from-red-200 via-orange-400 to-transparent shadow-[0_0_14px_#f97316] -skew-x-[4deg] animate-po-bolt" style={{ animationDuration: "0.18s" }} />
+                <div className="absolute top-[32%] right-[36%] w-[2.5px] h-[55%] bg-gradient-to-b from-red-200 via-orange-400 to-transparent shadow-[0_0_14px_#f97316] skew-x-[4deg] animate-po-bolt" style={{ animationDuration: "0.18s", animationDelay: "0.04s" }} />
+
+                {/* Hot center seam */}
+                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 w-[2px] h-[40%] bg-gradient-to-b from-yellow-100 via-orange-300 to-transparent shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.15s", animationDelay: "0.06s" }} />
+
+                {/* Impact glow at beam end */}
+                <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 w-8 h-4 rounded-full bg-orange-400/50 blur-[2px] shadow-[0_0_20px_#fb923c] animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} />
+                <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border border-yellow-200/70 animate-po-ring-out" style={{ animationDuration: "0.55s" }} />
+
+                {/* Heat shimmer motes */}
+                {[38, 50, 62].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_8px_#fde047] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${45 + i * 8}%`,
+                            animationDelay: `${i * 0.06}s`,
+                            animationDuration: "0.55s",
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    intangible: {
+        plate: "bg-gradient-to-tr from-violet-950/70 via-indigo-700/40 to-cyan-300/20",
+        bloom: "bg-[radial-gradient(circle_at_center,rgba(165,180,252,0.35)_0%,transparent_55%)]",
+        rim: "border-indigo-300/50 border-dashed shadow-[0_0_28px_rgba(129,140,248,0.35),inset_0_0_26px_rgba(49,46,129,0.35)]",
+        motion: (
+            <>
+                {/* Ghost afterimage offset */}
+                <div className="absolute inset-2 rounded-lg border border-dashed border-indigo-200/40 translate-x-1 -translate-y-0.5 animate-po-pulse-soft" style={{ animationDuration: "0.9s" }} />
+                <div className="absolute inset-3 rounded-lg border border-cyan-200/30 -translate-x-1 translate-y-0.5 animate-po-pulse-soft" style={{ animationDuration: "1.1s", animationDelay: "0.15s" }} />
+                {/* Phase slit */}
+                <div className="absolute top-[15%] bottom-[15%] left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-indigo-100/80 to-transparent shadow-[0_0_12px_#c7d2fe] animate-po-pulse-soft" style={{ animationDuration: "0.7s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-11 h-11 rounded-full border border-indigo-200/50 animate-po-ring-out" style={{ animationDuration: "1.15s" }} />
+                    <div className="absolute w-11 h-11 rounded-full border border-cyan-200/40 animate-po-ring-out" style={{ animationDuration: "1.15s", animationDelay: "0.35s" }} />
+                </div>
+                {[22, 48, 72].map((left, i) => (
+                    <span key={i} className="absolute w-1 h-1 rounded-full bg-indigo-200/80 shadow-[0_0_8px_#a5b4fc] animate-po-ember"
+                        style={{ left: `${left}%`, top: `${28 + i * 14}%`, animationDelay: `${i * 0.1}s`, animationDuration: "0.9s" }} />
+                ))}
+            </>
+        ),
+    },
+
+    invisible: {
+        plate: "bg-gradient-to-t from-slate-200/10 via-white/15 to-sky-100/10",
+        bloom: "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.35)_0%,transparent_55%)]",
+        rim: "border-white/35 shadow-[0_0_24px_rgba(255,255,255,0.25),inset_0_0_20px_rgba(255,255,255,0.08)]",
+        motion: (
+            <>
+                {/* Refraction shimmer */}
+                <div className="absolute inset-0 bg-[linear-gradient(115deg,transparent_40%,rgba(255,255,255,0.35)_50%,transparent_60%)] animate-po-sweep" style={{ animationDuration: "1.6s" }} />
+                <div className="absolute inset-0 bg-[linear-gradient(65deg,transparent_45%,rgba(186,230,253,0.2)_52%,transparent_60%)] animate-po-sweep" style={{ animationDuration: "1.9s", animationDelay: "0.3s" }} />
+                {/* Fading silhouette edge */}
+                <div className="absolute inset-3 rounded-lg border border-white/25 animate-po-pulse-soft" style={{ animationDuration: "1.2s" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full border border-white/30 animate-po-ring-out" style={{ animationDuration: "1.4s" }} />
+                </div>
+                {[30, 50, 70].map((left, i) => (
+                    <span key={i} className="absolute w-1 h-1 rounded-full bg-white/60 animate-po-ember"
+                        style={{ left: `${left}%`, top: `${35 + i * 10}%`, animationDelay: `${i * 0.12}s`, animationDuration: "1.1s" }} />
+                ))}
+            </>
+        ),
+    },
+
+    stealth: {
+        plate: "bg-gradient-to-t from-stone-900/70 via-stone-700/40 to-stone-400/15",
+        bloom: "bg-[radial-gradient(circle_at_center,rgba(120,113,108,0.3)_0%,transparent_55%)]",
+        rim: "border-stone-500/40 border-dashed shadow-[0_0_20px_rgba(0,0,0,0.4),inset_0_0_24px_rgba(0,0,0,0.35)]",
+        motion: (
+            <>
+                {/* Broken outline — blending */}
+                <div className="absolute inset-2 border border-dashed border-stone-400/35 rounded-lg animate-po-pulse-soft" style={{ animationDuration: "1.5s" }} />
+                <div className="absolute top-[20%] left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-stone-300/40 to-transparent" />
+                <div className="absolute top-[55%] right-0 w-1/3 h-px bg-gradient-to-l from-transparent via-stone-300/40 to-transparent" />
+                <div className="absolute bottom-[25%] left-[20%] right-[20%] h-px bg-stone-400/25" />
+                {/* Disruptive patches */}
+                <div className="absolute top-[25%] left-[15%] w-8 h-6 bg-stone-600/30 blur-[1px] animate-po-pulse-soft" style={{ animationDuration: "1.3s" }} />
+                <div className="absolute bottom-[30%] right-[18%] w-7 h-5 bg-stone-500/25 blur-[1px] animate-po-pulse-soft" style={{ animationDuration: "1.5s", animationDelay: "0.2s" }} />
+            </>
+        ),
+    },
+
+    mist: {
+        plate: "bg-gradient-to-t from-slate-600/40 via-slate-400/35 to-white/20",
+        bloom: "bg-[radial-gradient(ellipse_at_center,rgba(226,232,240,0.45)_0%,transparent_60%)]",
+        rim: "border-slate-300/50 shadow-[0_0_24px_rgba(148,163,184,0.35),inset_0_0_28px_rgba(255,255,255,0.12)]",
+        motion: (
+            <>
+                <div className="absolute bottom-0 left-[5%] w-20 h-14 rounded-full bg-white/25 blur-md animate-po-pulse-soft" style={{ animationDuration: "1.6s" }} />
+                <div className="absolute bottom-2 left-[30%] w-24 h-16 rounded-full bg-slate-200/30 blur-md animate-po-pulse-soft" style={{ animationDuration: "1.9s", animationDelay: "0.2s" }} />
+                <div className="absolute bottom-1 right-[10%] w-18 h-12 rounded-full bg-white/20 blur-md animate-po-pulse-soft" style={{ animationDuration: "1.7s", animationDelay: "0.35s" }} />
+                <div className="absolute top-[30%] left-[15%] w-14 h-8 rounded-full bg-slate-100/25 blur-sm animate-po-pulse-soft" style={{ animationDuration: "2s" }} />
+                {[20, 40, 60, 75].map((left, i) => (
+                    <span key={i} className="absolute w-1.5 h-1.5 rounded-full bg-white/50 animate-po-ember"
+                        style={{ left: `${left}%`, bottom: `${20 + i * 8}%`, animationDelay: `${i * 0.15}s`, animationDuration: `${1.4 + i * 0.1}s` }} />
+                ))}
+            </>
+        ),
+    },
+
+    nullify: {
+        plate:
+            "bg-gradient-to-t from-zinc-950/92 via-slate-700/50 to-zinc-400/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(161,161,170,0.35)_0%,transparent_55%)]",
+        rim:
+            "border-zinc-400/75 shadow-[0_0_28px_rgba(113,113,122,0.45),inset_0_0_32px_rgba(0,0,0,0.55)]",
+        motion: (
+            <>
+                {/* Dead-zone core */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-zinc-900/90 border-2 border-zinc-400/80 shadow-[inset_0_0_16px_#000] animate-po-pulse-soft" style={{ animationDuration: "1s" }} />
+                    {/* Suppression rings — inward feel via slow pulse */}
+                    <div
+                        className="absolute w-14 h-14 rounded-full border border-zinc-300/60 animate-po-pulse-soft"
+                        style={{ animationDuration: "1.2s" }}
+                    />
+                    <div
+                        className="absolute w-14 h-14 rounded-full border border-dashed border-zinc-500/50 animate-po-spin"
+                        style={{ animationDuration: "6s" }}
+                    />
+                </div>
+
+                {/* Broken / cancelled cross bars */}
+                <div className="absolute top-1/2 left-[15%] right-[15%] h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-zinc-300 to-transparent shadow-[0_0_10px_#a1a1aa] animate-po-bolt" style={{ animationDuration: "0.5s" }} />
+                <div className="absolute left-1/2 top-[15%] bottom-[15%] w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-zinc-300 to-transparent shadow-[0_0_10px_#a1a1aa] animate-po-bolt" style={{ animationDuration: "0.55s", animationDelay: "0.08s" }} />
+
+                {/* Fading “null” ticks around the rim */}
+                {[0, 60, 120, 180, 240, 300].map((deg, i) => (
+                    <div
+                        key={i}
+                        className="absolute left-1/2 top-1/2 h-[2px] w-3 origin-left bg-zinc-400/70 animate-po-pulse-soft"
+                        style={{
+                            transform: `rotate(${deg}deg) translateX(22px)`,
+                            animationDuration: "0.9s",
+                            animationDelay: `${i * 0.05}s`,
+                        }}
+                    />
+                ))}
+
+                {/* Desaturated motes — power dying */}
+                {[25, 45, 65, 80].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-zinc-400/70 animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${30 + (i % 3) * 12}%`,
+                            animationDelay: `${i * 0.1}s`,
+                            animationDuration: `${1 + i * 0.08}s`,
+                        }}
+                    />
+                ))}
+
+                {/* Flat static veil */}
+                <div className="absolute inset-0 opacity-25 bg-[repeating-linear-gradient(0deg,transparent,transparent_3px,rgba(161,161,170,0.15)_3px,rgba(161,161,170,0.15)_4px)]" />
+            </>
+        ),
+    },
+
+    weather: {
+        plate:
+            "bg-gradient-to-b from-slate-400/40 via-slate-700/55 to-blue-950/85",
+        bloom:
+            "bg-[radial-gradient(ellipse_at_top,rgba(148,163,184,0.45)_0%,transparent_50%)]",
+        rim:
+            "border-slate-300/70 shadow-[0_0_30px_rgba(100,116,139,0.5),inset_0_0_28px_rgba(30,58,138,0.35)]",
+        motion: (
+            <>
+                {/* Cloud bank */}
+                <div className="absolute top-0 inset-x-0 h-[40%] bg-gradient-to-b from-slate-300/50 via-slate-500/30 to-transparent animate-po-pulse-soft" style={{ animationDuration: "1.4s" }} />
+                <div className="absolute top-[8%] left-[10%] w-16 h-6 rounded-full bg-slate-400/40 blur-[2px] animate-po-pulse-soft" style={{ animationDuration: "1.6s" }} />
+                <div className="absolute top-[12%] right-[12%] w-14 h-5 rounded-full bg-slate-300/35 blur-[2px] animate-po-pulse-soft" style={{ animationDuration: "1.5s", animationDelay: "0.2s" }} />
+
+                {/* Rain streaks */}
+                {[15, 28, 42, 55, 68, 82].map((left, i) => (
+                    <div
+                        key={i}
+                        className="absolute top-[30%] w-px h-[45%] bg-gradient-to-b from-sky-100/80 to-transparent animate-po-bolt"
+                        style={{
+                            left: `${left}%`,
+                            animationDuration: `${0.25 + (i % 3) * 0.05}s`,
+                            animationDelay: `${i * 0.04}s`,
+                        }}
+                    />
+                ))}
+
+                {/* Wind shear lines */}
+                <div className="absolute top-[55%] inset-x-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent animate-po-sweep" style={{ animationDuration: "1.2s" }} />
+                <div className="absolute top-[62%] inset-x-0 h-px bg-gradient-to-r from-transparent via-sky-200/40 to-transparent animate-po-sweep" style={{ animationDuration: "1.4s", animationDelay: "0.15s" }} />
+
+                {/* Distant thunder flash */}
+                <div className="absolute inset-0 bg-sky-100/0 animate-po-pulse-soft" style={{ animationDuration: "1.8s" }} />
+                <div className="absolute top-[20%] left-[40%] w-[2px] h-10 bg-gradient-to-b from-yellow-100/90 to-transparent -skew-x-12 shadow-[0_0_12px_#fef08a] animate-po-bolt" style={{ animationDuration: "0.2s", animationDelay: "0.3s" }} />
+
+                {/* Pressure motes */}
+                {[25, 50, 75].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-slate-200/80 shadow-[0_0_6px_#e2e8f0] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${35 + i * 10}%`,
+                            animationDelay: `${i * 0.12}s`,
+                            animationDuration: `${1 + i * 0.1}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    archery: {
+        plate:
+            "bg-gradient-to-tr from-emerald-950/90 via-green-800/45 to-amber-300/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_70%_50%,rgba(253,224,71,0.4)_0%,transparent_45%)]",
+        rim:
+            "border-emerald-400/75 shadow-[0_0_28px_rgba(52,211,153,0.4),inset_0_0_24px_rgba(0,0,0,0.4)]",
+        motion: (
+            <>
+                {/* Bow limbs (curved hints) */}
+                <div className="absolute top-[18%] left-[22%] w-[12%] h-[64%] rounded-full border-2 border-l-emerald-200/90 border-y-emerald-200/50 border-r-transparent shadow-[0_0_10px_#6ee7b7]" />
+                <div className="absolute top-[18%] right-[22%] w-[12%] h-[64%] rounded-full border-2 border-r-emerald-200/90 border-y-emerald-200/50 border-l-transparent shadow-[0_0_10px_#6ee7b7]" />
+
+                {/* Bowstring */}
+                <div className="absolute top-[20%] bottom-[20%] left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-amber-100/40 via-white/90 to-amber-100/40 shadow-[0_0_8px_#fff] animate-po-pulse-soft" style={{ animationDuration: "0.6s" }} />
+
+                {/* Arrow shaft — flight path */}
+                <div className="absolute top-1/2 left-[18%] right-[12%] h-[2px] -translate-y-1/2 bg-gradient-to-r from-emerald-200/50 via-amber-100 to-yellow-200 shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.22s" }} />
+
+                {/* Arrowhead */}
+                <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-l-[9px] border-l-yellow-100 shadow-[0_0_14px_#fef9c3] animate-po-pulse-soft" style={{ animationDuration: "0.3s" }} />
+
+                {/* Fletching hint at nock */}
+                <div className="absolute top-[46%] left-[16%] w-2 h-2 rotate-45 border border-emerald-200/80 bg-emerald-400/20" />
+
+                {/* Release sparks */}
+                {[
+                    ["55%", "44%"],
+                    ["68%", "48%"],
+                    ["62%", "56%"],
+                ].map(([left, top], i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-amber-200 shadow-[0_0_8px_#fcd34d] animate-po-ember"
+                        style={{ left, top, animationDelay: `${i * 0.05}s`, animationDuration: "0.5s" }}
+                    />
+                ))}
+
+                {/* Aim ring — precision */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full border border-emerald-300/40 animate-po-pulse-soft" style={{ animationDuration: "1.1s" }} />
+                </div>
+            </>
+        ),
+    },
+
+    teleport: {
+        plate:
+            "bg-gradient-to-tr from-indigo-950/90 via-violet-700/55 to-cyan-300/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(165,180,252,0.5)_0%,transparent_55%)]",
+        rim:
+            "border-indigo-300/85 shadow-[0_0_32px_#818cf8,0_0_16px_#22d3ee,inset_0_0_28px_rgba(49,46,129,0.45)]",
+        motion: (
+            <>
+                {/* Blink flash core */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="w-5 h-5 rounded-full bg-white/95 shadow-[0_0_28px_#fff,0_0_40px_#a5b4fc] animate-po-pulse-soft"
+                        style={{ animationDuration: "0.35s" }}
+                    />
+                    {/* Arrival / departure rings */}
+                    <div
+                        className="absolute w-14 h-14 rounded-full border-2 border-indigo-200/90 animate-po-ring-out"
+                        style={{ animationDuration: "0.65s" }}
+                    />
+                    <div
+                        className="absolute w-14 h-14 rounded-full border border-cyan-200/70 animate-po-ring-out"
+                        style={{ animationDuration: "0.65s", animationDelay: "0.15s" }}
+                    />
+                </div>
+
+                {/* Spatial tear — vertical rift */}
+                <div className="absolute top-[10%] bottom-[10%] left-1/2 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-white to-transparent shadow-[0_0_16px_#c7d2fe] animate-po-pulse-soft" style={{ animationDuration: "0.5s" }} />
+                <div className="absolute top-[15%] bottom-[15%] left-[48%] w-px bg-gradient-to-b from-transparent via-cyan-200/80 to-transparent animate-po-bolt" style={{ animationDuration: "0.25s" }} />
+
+                {/* Afterimage smears — residual body */}
+                <div className="absolute top-[25%] left-[8%] w-[20%] h-[50%] rounded-lg bg-indigo-400/20 border border-indigo-300/30 blur-[1px] animate-po-pulse-soft" style={{ animationDuration: "0.6s" }} />
+                <div className="absolute top-[25%] right-[8%] w-[20%] h-[50%] rounded-lg bg-cyan-400/15 border border-cyan-200/25 blur-[1px] animate-po-pulse-soft" style={{ animationDuration: "0.7s", animationDelay: "0.08s" }} />
+
+                {/* Particle scatter — vanishing points */}
+                {[
+                    ["18%", "30%"],
+                    ["78%", "28%"],
+                    ["22%", "70%"],
+                    ["75%", "68%"],
+                    ["50%", "18%"],
+                    ["50%", "82%"],
+                ].map(([left, top], i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-indigo-100 shadow-[0_0_8px_#a5b4fc] animate-po-ember"
+                        style={{
+                            left,
+                            top,
+                            animationDelay: `${i * 0.05}s`,
+                            animationDuration: `${0.55 + (i % 3) * 0.08}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
+    size: {
+        plate:
+            "bg-gradient-to-t from-indigo-950/90 via-violet-700/50 to-amber-300/25",
+        bloom:
+            "bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.45)_0%,transparent_55%)]",
+        rim:
+            "border-violet-300/85 shadow-[0_0_32px_#a78bfa,inset_0_0_28px_rgba(49,46,129,0.45)]",
+        motion: (
+            <>
+                {/* Nested scale rings — grow / shrink */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="w-16 h-16 rounded-full border-2 border-violet-200/70 animate-po-pulse-soft"
+                        style={{ animationDuration: "1.1s" }}
+                    />
+                    <div
+                        className="absolute w-11 h-11 rounded-full border-2 border-amber-200/80 animate-po-scale-breathe"
+                        style={{ animationDuration: "0.9s", animationDelay: "0.1s" }}
+                    />
+                    <div
+                        className="absolute w-6 h-6 rounded-full border border-white/90 animate-po-pulse-soft"
+                        style={{ animationDuration: "0.7s", animationDelay: "0.2s" }}
+                    />
+                    {/* Expanding outer ghost */}
+                    <div
+                        className="absolute w-16 h-16 rounded-full border border-violet-300/50 animate-po-ring-out"
+                        style={{ animationDuration: "1.2s" }}
+                    />
+                </div>
+
+                {/* Vertical scale markers (height axis) */}
+                <div className="absolute left-2 top-[15%] bottom-[15%] w-px bg-gradient-to-b from-transparent via-violet-200/80 to-transparent" />
+                <div className="absolute left-1.5 top-[20%] w-2 h-px bg-violet-200/90" />
+                <div className="absolute left-1.5 top-1/2 w-2.5 h-px bg-amber-200/90" />
+                <div className="absolute left-1.5 bottom-[20%] w-2 h-px bg-violet-200/90" />
+
+                <div className="absolute right-2 top-[15%] bottom-[15%] w-px bg-gradient-to-b from-transparent via-amber-200/70 to-transparent" />
+                <div className="absolute right-1.5 top-[25%] w-2 h-px bg-amber-200/80" />
+                <div className="absolute right-1.5 bottom-[25%] w-2 h-px bg-violet-200/80" />
+
+                {/* Stretch guides — mass changing */}
+                <div className="absolute top-[35%] left-[18%] right-[18%] h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent animate-po-pulse-soft" style={{ animationDuration: "0.85s" }} />
+                <div className="absolute top-[62%] left-[22%] right-[22%] h-[2px] bg-gradient-to-r from-transparent via-violet-200/70 to-transparent animate-po-pulse-soft" style={{ animationDuration: "0.95s", animationDelay: "0.12s" }} />
+
+                {/* Scale motes */}
+                {[25, 45, 65, 80].map((left, i) => (
+                    <span
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full bg-violet-200 shadow-[0_0_8px_#c4b5fd] animate-po-ember"
+                        style={{
+                            left: `${left}%`,
+                            top: `${20 + i * 12}%`,
+                            animationDelay: `${i * 0.09}s`,
+                            animationDuration: `${0.85 + i * 0.06}s`,
+                        }}
+                    />
+                ))}
+            </>
+        ),
+    },
+
     construct: {
         plate:
             "bg-gradient-to-t from-emerald-950/90 via-green-600/55 to-lime-300/30",

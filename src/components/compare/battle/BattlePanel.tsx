@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Swords, Maximize2 } from "lucide-react";
 import { simulateSpar } from "@/lib/compare";
 import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import ControlToolbar from "./battlePanel/ControlToolbar";
 import { useCombatScript } from "./battlePanel/useCombatScript";
 import { useCombatPlayback } from "./battlePanel/useCombatPlayback";
@@ -113,34 +105,9 @@ export function BattlePanel({
                     </h3>
                     <div className="flex items-center gap-2">
                         {toolbar}
-
-                        {/* Expand dialog (desktop only) */}
-                        {/* <div className="hidden md:block">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Maximize2 className="size-4 cursor-pointer hover:text-primary transition-colors" />
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-4xl md:max-w-5xl w-[92vw] max-h-[90vh] flex flex-col gap-4 overflow-hidden p-6">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-base font-bold uppercase tracking-wider flex items-center justify-between gap-2">
-                                            <span className="flex gap-2 items-center">
-                                                <Swords className="size-5 text-primary" />
-                                                Live Engagement Overview ({nameA} vs {nameB})
-                                            </span>
-                                            <div className="pr-4">{toolbar}</div>
-                                        </DialogTitle>
-                                    </DialogHeader>
-                                    <CinematicCombatView
-                                        {...sharedCombatViewProps}
-                                        isDialog
-                                    />
-                                </DialogContent>
-                            </Dialog>
-                        </div> */}
                     </div>
                 </div>
 
-                {/* <CombatView {...sharedCombatViewProps} isDialog={false} /> */}
                 <CinematicCombatView
                     {...sharedCombatViewProps}
                 />
