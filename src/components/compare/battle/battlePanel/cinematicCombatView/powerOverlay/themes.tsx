@@ -568,6 +568,13 @@ export interface OverlayConfig {
 }; */
 
 export const THEMES: Record<ThemeKey, OverlayConfig> = {
+    none: {
+        plate: "",
+        bloom: "",
+        rim: "",
+        motion: null, // real config comes from createAbsorbTheme()
+    },
+
     shockwave: {
         plate:
             "bg-gradient-to-t from-stone-950/90 via-amber-800/40 to-yellow-200/25",
@@ -1769,18 +1776,18 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
         ),
     },
 
-    /*  Combat —  */
+    /*  Combat — is not very physical is like it got punched instead of throwing a punch  */
     combat: {
-        plate:
-            "bg-gradient-to-tr from-stone-950/90 via-orange-800/75 to-amber-400/35",
-        bloom:
-            "bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.5)_0%,transparent_55%)]",
-        rim:
-            "border-amber-400/90 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(180,83,9,0.5)]",
+        // plate: "bg-gradient-to-tr from-stone-950/90 via-orange-800/75 to-amber-400/35",
+        plate: "",
+        // bloom: "bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.5)_0%,transparent_55%)]",
+        bloom: "",
+        // rim: "border-amber-400/90 shadow-[0_0_34px_#f59e0b,inset_0_0_30px_rgba(180,83,9,0.5)]",
+        rim: "",
         motion: (
             <>
                 {/* Heavy impact rings — fast, punchy */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                {/* <div className="absolute inset-0 flex items-center justify-center">
                     <div
                         className="w-16 h-16 rounded-full border-[3px] border-amber-200/95 animate-po-ring-out"
                         style={{ animationDuration: "0.45s" }}
@@ -1793,18 +1800,18 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
                         className="absolute w-6 h-6 rounded-full bg-yellow-100/90 shadow-[0_0_22px_#fde047] animate-po-pulse-soft"
                         style={{ animationDuration: "0.35s" }}
                     />
-                </div>
+                </div> */}
 
                 {/* Shock streaks — short, violent */}
-                <div className="absolute top-[30%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-200 to-transparent -skew-y-[14deg] shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.18s" }} />
-                <div className="absolute bottom-[34%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange-300 to-transparent skew-y-[12deg] shadow-[0_0_12px_#fdba74] animate-po-bolt" style={{ animationDuration: "0.16s", animationDelay: "0.04s" }} />
+                {/* <div className="absolute top-[30%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-200 to-transparent -skew-y-[14deg] shadow-[0_0_12px_#fde047] animate-po-bolt" style={{ animationDuration: "0.18s" }} /> */}
+                {/* <div className="absolute bottom-[34%] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange-300 to-transparent skew-y-[12deg] shadow-[0_0_12px_#fdba74] animate-po-bolt" style={{ animationDuration: "0.16s", animationDelay: "0.04s" }} /> */}
 
                 {/* Vertical “crush” lines — super strength */}
-                <div className="absolute top-[15%] left-[22%] w-[3px] h-[45%] bg-gradient-to-b from-yellow-100 via-orange-500/80 to-transparent -skew-x-6 shadow-[0_0_10px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} />
-                <div className="absolute top-[18%] right-[24%] w-[3px] h-[40%] bg-gradient-to-b from-amber-100 via-red-600/70 to-transparent skew-x-6 shadow-[0_0_10px_#ef4444] animate-po-pulse-soft" style={{ animationDuration: "0.45s", animationDelay: "0.08s" }} />
+                {/* <div className="absolute top-[15%] left-[22%] w-[3px] h-[45%] bg-gradient-to-b from-yellow-100 via-orange-500/80 to-transparent -skew-x-6 shadow-[0_0_10px_#f97316] animate-po-pulse-soft" style={{ animationDuration: "0.4s" }} /> */}
+                {/* <div className="absolute top-[18%] right-[24%] w-[3px] h-[40%] bg-gradient-to-b from-amber-100 via-red-600/70 to-transparent skew-x-6 shadow-[0_0_10px_#ef4444] animate-po-pulse-soft" style={{ animationDuration: "0.45s", animationDelay: "0.08s" }} /> */}
 
                 {/* Debris / dust kicks at bottom */}
-                {[18, 35, 50, 65, 80].map((left, i) => (
+                {/* {[18, 35, 50, 65, 80].map((left, i) => (
                     <span
                         key={i}
                         className="absolute bottom-1 w-1.5 h-1.5 rounded-sm bg-amber-200/90 shadow-[0_0_8px_#fcd34d] animate-po-ember"
@@ -1814,10 +1821,10 @@ export const THEMES: Record<ThemeKey, OverlayConfig> = {
                             animationDuration: `${0.55 + i * 0.04}s`,
                         }}
                     />
-                ))}
+                ))} */}
 
                 {/* Screen shake feel on the plate edge */}
-                <div className="absolute inset-0 rounded-lg border border-yellow-400/30 animate-po-shake" style={{ animationDuration: "0.4s" }} />
+                {/* <div className="absolute inset-0 rounded-lg border border-yellow-400/30 animate-po-shake" style={{ animationDuration: "0.4s" }} /> */}
             </>
         ),
     },

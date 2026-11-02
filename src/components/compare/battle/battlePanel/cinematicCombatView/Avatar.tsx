@@ -1,7 +1,7 @@
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { EnrichedFighter } from "../CinematicCombatView";
 import { motion } from "framer-motion";
-import { Crown, Shield, Skull, Swords } from "lucide-react";
+import { Crown, HeartPlus, Shield, ShieldAlert, Skull, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Avatar({
@@ -52,11 +52,11 @@ export default function Avatar({
         <motion.div
             className="flex flex-col items-center gap-1 shrink-0"
             animate={
-                isAttacking ? { scale: 1 }
-                    : isBeingHit ? { scale: 1/* , x: variant === "primary" ? 4 : -4 */ }
-                        : isKO ? { scale: 0.82, opacity: 0.55, animationDelay: 2 }
-                            : dead ? { scale: 0.88, opacity: 0.3 }
-                                : { scale: 1, x: 0, y: 0, opacity: 1 }
+                // : isBeingHit ? { scale: 1.1/* , x: variant === "primary" ? 4 : -4 */ }
+                isAttacking || isBeingHit || isDefending || isReviving ? { scale: 1.1 }
+                    : isKO ? { scale: 0.82, opacity: 0.55, animationDelay: 2 }
+                        : dead ? { scale: 0.88, opacity: 0.3 }
+                            : { scale: 0.9, x: 0, y: 0, opacity: 0.9 }
             }
             transition={{ type: "spring", stiffness: 420, damping: 22 }}
         >
@@ -76,11 +76,31 @@ export default function Avatar({
                     className="w-full h-full rounded-lg"
                 />
 
-                {(isAttacking || isBeingHit) && !dead && (
+                {(isAttacking || isBeingHit || isDefending || isReviving) && !dead && (
                     <div className={cn(
                         "absolute inset-2 rounded-xl ring-2 animate-ping pointer-events-none",
                         variant === "primary" ? "ring-primary/45" : "ring-secondary/45"
                     )} />
+                )}
+
+                {(isAttacking) && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                        className="absolute -top-1.5 -left-1.5 bg-red-600 p-0.5 rounded-full border border-background z-20"
+                    >
+                        <Swords className="size-2.5 text-white" />
+                    </motion.div>
+                )}
+
+                {(isBeingHit) && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                        className="absolute -top-1.5 -left-1.5 bg-blue-600 p-0.5 rounded-full border border-background z-20"
+                    >
+                        <ShieldAlert className="size-2.5 text-white" />
+                    </motion.div>
                 )}
 
                 {isBeingHit && !dead && (
@@ -92,7 +112,23 @@ export default function Avatar({
                     />
                 )}
 
-                {isHealing && !dead && (
+                {isDefending && !dead && (
+                    <div className="absolute -top-1.5 -left-1.5 bg-cyan-500 p-0.5 rounded-full border border-background z-20">
+                        <Shield className="size-2.5 text-white" />
+                    </div>
+                )}
+
+                {(isReviving || isHealing) && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                        className="absolute -top-1.5 -left-1.5 bg-green-600 p-0.5 rounded-full border border-background z-20"
+                    >
+                        <HeartPlus className="size-2.5 text-white" />
+                    </motion.div>
+                )}
+
+                {isHealing && (
                     <motion.div
                         className="absolute inset-0 bg-emerald-400/20 pointer-events-none rounded-xl"
                         animate={{ opacity: [0.15, 0.55, 0.15] }}
@@ -107,22 +143,6 @@ export default function Avatar({
                 {dead && (
                     <div className="absolute inset-0 bg-black/65 flex items-center justify-center rounded-lg">
                         <Skull className="size-3.5" />
-                    </div>
-                )}
-
-                {isAttacking && !dead && (
-                    <motion.div
-                        initial={{ scale: 0 }} animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500 }}
-                        className="absolute -top-1.5 -left-1.5 bg-red-600 p-0.5 rounded-full border border-background z-20"
-                    >
-                        <Swords className="size-2.5 text-white" />
-                    </motion.div>
-                )}
-
-                {isDefending && !dead && (
-                    <div className="absolute -top-1.5 -left-1.5 bg-cyan-500 p-0.5 rounded-full border border-background z-20">
-                        <Shield className="size-2.5 text-white" />
                     </div>
                 )}
 

@@ -66,6 +66,7 @@ function playOverlaySound(themeKey: ThemeKey) {
         heatVision: "/sounds/heatVision.mp3",
         absorb: "/sounds/absorb.mp3",
         shockwave: "/sounds/absorb.mp3",
+        none: "/sounds/combat.mp3",
     };
 
     const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
@@ -109,13 +110,14 @@ export type ThemeKey =
     | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature" | "elastic" | "wings" | "size" | "weather"
     | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix" | "speed" | "breathing" | "detective"
     | "defend" | "heal" | "revive" | "genius" | "fourthWall" | "energy" | "claws" | "sword" | "firearms"
-    | "invisible" | "intangible" | "stealth" | "mist" | "heatVision" | "absorb" | "shockwave";
+    | "invisible" | "intangible" | "stealth" | "mist" | "heatVision" | "absorb" | "shockwave" | "none";
 
 function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (action === "defend") return "defend";
     if (action === "heal") return "heal";
     if (action === "revive") return "revive";
-    if (!powerName) return "combat";
+    // if (!powerName) return "combat";
+    if (!powerName) return "none";
     const n = powerName.toLowerCase();
 
     /* ninjutsu */
@@ -128,6 +130,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     /* energy projection */
     /* weapon proficiency???  */
 
+    if (/\b(cosmic|stellar|power cosmic|reality|omnipotence|reality warping)/.test(n)) return "cosmic";
     if (/\b(vibration|vibrate|shockwave|shock wave|seismic|tremor|quake|concussive wave|oscillat)/.test(n)) return "shockwave";
     if (/\b(absorb|absorption|mimicry|material mimic|copy material|matter absorption|substance|metallic form|iron form|steel form|colossus)/.test(n)) return "absorb";
     if (/\b(durability|durable)/.test(n)) return "defend";
@@ -137,7 +140,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(invisible|invisibility)/.test(n)) return "invisible";
     if (/\b(intangib|phase|phasing|ethereal|ghost|incorporeal|density)/.test(n)) return "intangible";
     if (/\b(nullif|nullify|nullification|power null|magic null|dampen|suppression|negate|negation|anti.?magic|anti.?power|power drain|neutralize)/.test(n)) return "nullify";
-    if (/\b(mist|weather|storm|rain|thunder.?storm|atmosphere|climate|meteorolog|tempest|hurricane|tornado)/.test(n)) return "weather";
+    if (/\b(weather|storm|rain|thunder.?storm|atmosphere|climate|meteorolog|tempest|hurricane|tornado)/.test(n)) return "weather";
     if (/\b(archery|archer|bow|arrow|longbow|crossbow|marksman.?bow|hawkeye|green arrow)/.test(n)) return "archery";
     if (/\b(teleport|teleportation|blink|warp|bamf|portal|apparition|phase.?step|jump.?point|instant transmission)/.test(n)) return "teleport";
     if (/\b(size|grow|shrink|giant|tiny|ant.?man|atom|pym|height|mass manipulation|enlarge|reduce|colossal|miniature)/.test(n)) return "size";
@@ -154,7 +157,7 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(claw|claws|adamantium claw|talon|scratch)/.test(n)) return "claws";
     if (/\b(sword|blade|katana|saber|slash|cutlass|excalibur|dagger|knife)/.test(n)) return "sword";
     if (/\b(fourth wall|4th wall|deadpool|break(ing)? the fourth|audience|narrat)/i.test(n)) return "fourthWall";
-    if (/\b(wind|air control|aero|air manipulation|tornado|hurricane|flight|air|sky|breeze|cyclone|airflow|wind)/.test(n)) return "wind";
+    if (/\b(wind|air control|aero|air manipulation|tornado|hurricane|flight|sky|breeze|cyclone|airflow|wind)/.test(n)) return "wind";
     if (/\b(web|spider)/.test(n)) return "web";
     if (/\b(omnitrix|alien)/.test(n)) return "omnitrix";
     if (/\b(ice|cryo|frost|freeze|blizzard|arctic)/.test(n)) return "ice";
@@ -162,7 +165,6 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(fire|flame|pyro|inferno|magma|heat)/.test(n)) return "fire";
     if (/\b(lightning|electric|electro|thunder)/.test(n)) return "lightning";
     if (/\b(time|temporal|chron|proba)/.test(n)) return "temporal";
-    if (/\b(cosmic|stellar|power cosmic|reality|omnipotence)/.test(n)) return "cosmic";
     if (/\b(magic|mystic|sorcery|spell|chaos magic)/.test(n)) return "mystic";
     if (/\b(telepath|telekin|psychic|mind control|illusion)/.test(n)) return "psychic";
     if (/\b(light|photon|solar|holy|starbolt)/.test(n)) return "light";
@@ -177,9 +179,11 @@ function getThemeKey(action: CombatActionType, powerName?: string): ThemeKey {
     if (/\b(diamond|crystal|invulnerab|force.?field)/.test(n)) return "diamond";
     if (/\b(techology|cyber|android|gadget|repulsor|nanite|tech)/.test(n)) return "tech";
     if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive)/.test(n)) return "energy";
-    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat";
+    // if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat";
+    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "none";
     if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strateg|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
-    return "combat";
+    return "none";
+    // return "combat";
 }
 
 export default function PowerOverlay({ action, powerName, visible = true, side }: PowerOverlayProps) {
@@ -190,9 +194,11 @@ export default function PowerOverlay({ action, powerName, visible = true, side }
     // 🚀 Restored audio playback trigger on visibility change
     useEffect(() => {
         if (visible) {
-            playOverlaySound(key);
+            playOverlaySound(key == "none" ? "combat" : key);
         }
     }, [visible, key]);
+
+    if (key == "none") return null;
 
     return (
         <div
