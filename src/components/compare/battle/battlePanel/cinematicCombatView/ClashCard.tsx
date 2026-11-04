@@ -4,9 +4,9 @@ import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole } from "@/types";
 import {
     Crown, Skull, Shield, Swords,
     ChevronRight, ChevronLeft,
-    Sparkles,
-    Atom,
-    Lock,
+    Sparkles, Atom, Lock,
+    Zap, HeartPulse, RefreshCw, Target, TrendingUp,
+    Star, Flame, Activity, Trophy, ShieldCheck,
 } from "lucide-react";
 import { ActionEvent } from "../CinematicCombatView";
 import { motion } from "framer-motion";
@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 import { HEALTH_DROP_DELAY, KO_VISUAL_DELAY } from "./TeamColumn";
 import FighterSlot from "./clashCard/FighterSlot";
+import { BattleMetadata, FighterTelemetry } from "../useCombatScript";
+import { AnimatePresence } from "framer-motion";
 
 const ACTIVATION_VERB: Record<string, string> = {
     Instant: "Unleashes",
@@ -48,18 +50,11 @@ const ROLE_STYLE: Record<PowerRole, {
 };
 
 // ── Timeline phases ──────────────────────────────────────────────────────────
-// Phase 0 → fighters slide in (mount); attacker charge overlay is visible
-// Phase 1 → attacker's PowerOverlay becomes visible + sound plays; charge aura fades
-// Phase 2 → damage flash + popup + health bar drop + impact burst on defender
-// Phase 3 → KO skull appears (only when isKO)
 export type CombatPhase = 0 | 1 | 2 | 3;
 
-const PHASE_1_DELAY = 600;   // ms after mount → impact
-const PHASE_2_DELAY = HEALTH_DROP_DELAY;   // ms after mount → damage numbers
-const PHASE_3_DELAY = KO_VISUAL_DELAY;  // ms after mount → KO skull
-// A lightweight shockwave burst shown on the defender at phase 2.
-// No sound — the main PowerOverlay already handled audio at phase 1.
-
+const PHASE_1_DELAY = 600;
+const PHASE_2_DELAY = HEALTH_DROP_DELAY;
+const PHASE_3_DELAY = KO_VISUAL_DELAY;
 
 function getFighterMotionProfile(
     role?: PowerRole,
@@ -69,25 +64,341 @@ function getFighterMotionProfile(
 ) {
     const dir = isTeamA ? 1 : -1;
     if (!isAttacker) {
-        if (isDefending) {
-            return { x: [0, -3 * dir, 0], scale: [1, 1.05, 1], rotate: 0 };
-        }
+        if (isDefending) return { x: [0, -3 * dir, 0], scale: [1, 1.05, 1], rotate: 0 };
         return { x: [0, 0, -18 * dir, 0], scale: [1, 1, 0.92, 1], rotate: [0, 0, -6 * dir, 0] };
     }
     switch (role) {
-        case "Offensive":
-            return { x: [0, 0, 48 * dir, 0], scale: [1, 1.05, 1.15, 1], rotate: [0, 0, 5 * dir, 0] };
-        case "Control":
-            return { x: [0, 0, 42 * dir, 0], y: [0, -20, -20, 0], scale: [1, 1.08, 1.15, 1], rotate: [0, -8 * dir, 8 * dir, 0] };
-        case "Utility":
-            return { x: [0, 0, 38 * dir, 0], y: [0, -12, 0], scale: [1, 1.05, 1.1, 1], rotate: 0 };
-        case "Defensive":
-            return { x: [0, 0, 36 * dir, 0], scale: [1, 1.08, 1.12, 1], rotate: 0 };
+        case "Offensive": return { x: [0, 0, 48 * dir, 0], scale: [1, 1.05, 1.15, 1], rotate: [0, 0, 5 * dir, 0] };
+        case "Control": return { x: [0, 0, 42 * dir, 0], y: [0, -20, -20, 0], scale: [1, 1.08, 1.15, 1], rotate: [0, -8 * dir, 8 * dir, 0] };
+        case "Utility": return { x: [0, 0, 38 * dir, 0], y: [0, -12, 0], scale: [1, 1.05, 1.1, 1], rotate: 0 };
+        case "Defensive": return { x: [0, 0, 36 * dir, 0], scale: [1, 1.08, 1.12, 1], rotate: 0 };
         case "Hybrid / Versatile":
-        default:
-            return { x: [0, 0, 45 * dir, 0], scale: [1, 1.05, 1.12, 1], rotate: 0 };
+        default: return { x: [0, 0, 45 * dir, 0], scale: [1, 1.05, 1.12, 1], rotate: 0 };
     }
 }
+
+// ── Battle-end helpers ────────────────────────────────────────────────────────
+
+function StatBar({ value, max = 100, colorClass }: { value: number; max?: number; colorClass: string }) {
+    const pct = Math.min(100, Math.round((value / max) * 100));
+    return (
+        <div className="h-1 w-full rounded-full bg-muted/30 overflow-hidden">
+            <motion.div
+                className={cn("h-full rounded-full", colorClass)}
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+            />
+        </div>
+    );
+}
+
+function MiniStat({ label, value, Icon, color }: { label: string; value: string | number; Icon: React.ElementType; color: string }) {
+    return (
+        <div className="flex items-center gap-1">
+            <Icon className={cn("size-2.5 shrink-0", color)} />
+            <span className="text-[7px] text-muted-foreground font-medium">{label}:</span>
+            <span className={cn("text-[7px] font-bold ml-auto", color)}>{value}</span>
+        </div>
+    );
+}
+
+function FighterCard({ fighter, isWinner }: { fighter: FighterTelemetry; isWinner: boolean }) {
+    const maxDmg = Math.max(fighter.damageDealt, 1);
+    return (
+        <div className={cn(
+            "flex flex-col gap-1 p-1.5 rounded-lg border",
+            isWinner ? "bg-amber-500/10 border-amber-500/30" : "bg-muted/10 border-muted-foreground/15"
+        )}>
+            <div className="flex items-center justify-between gap-1">
+                <span className={cn("text-[7.5px] font-bold truncate max-w-[70px]", isWinner ? "text-amber-300" : "text-foreground/80")}>
+                    {fighter.name}
+                </span>
+                {isWinner && <Star className="size-2.5 text-amber-400 shrink-0" />}
+            </div>
+            <div className="space-y-0.5">
+                <MiniStat label="DMG" value={fighter.damageDealt} Icon={Flame} color="text-red-400" />
+                <MiniStat label="KOs" value={fighter.kos} Icon={Skull} color="text-orange-400" />
+                <MiniStat label="Blk" value={fighter.damageBlocked} Icon={ShieldCheck} color="text-cyan-400" />
+                <MiniStat label="Heal" value={fighter.healingDone} Icon={HeartPulse} color="text-emerald-400" />
+                <MiniStat label="Eff" value={`${fighter.efficiency}%`} Icon={TrendingUp} color="text-violet-400" />
+            </div>
+            <div className="space-y-0.5 mt-0.5">
+                <div className="flex justify-between text-[6px] text-muted-foreground/60">
+                    <span>Damage</span><span>{fighter.damageDealt}</span>
+                </div>
+                <StatBar value={fighter.damageDealt} max={maxDmg * 1.2} colorClass="bg-red-500" />
+                <div className="flex justify-between text-[6px] text-muted-foreground/60 mt-0.5">
+                    <span>Survival</span><span>{fighter.survivalRate}%</span>
+                </div>
+                <StatBar value={fighter.survivalRate} colorClass="bg-emerald-500" />
+            </div>
+        </div>
+    );
+}
+
+function TeamSection({
+    label, fighters, mvp, variant,
+}: {
+    label: string;
+    fighters: FighterTelemetry[];
+    mvp: FighterTelemetry;
+    variant: "primary" | "secondary";
+}) {
+    const accent = variant === "primary" ? "text-primary" : "text-secondary";
+    const border = variant === "primary" ? "border-primary/30" : "border-secondary/30";
+    const bg = variant === "primary" ? "bg-primary/5" : "bg-secondary/5";
+
+    const totalDmg = fighters.reduce((s, f) => s + f.damageDealt, 0);
+    const totalBlk = fighters.reduce((s, f) => s + f.damageBlocked, 0);
+    const totalHeal = fighters.reduce((s, f) => s + f.healingDone, 0);
+    const totalKOs = fighters.reduce((s, f) => s + f.kos, 0);
+    const avgEff = Math.round(fighters.reduce((s, f) => s + f.efficiency, 0) / (fighters.length || 1));
+    const avgSurv = Math.round(fighters.reduce((s, f) => s + f.survivalRate, 0) / (fighters.length || 1));
+
+    return (
+        <div className={cn("flex flex-col gap-1.5 p-2 rounded-xl border", bg, border)}>
+            <div className="flex items-center justify-between">
+                <span className={cn("text-[8px] font-black uppercase tracking-widest", accent)}>{label}</span>
+                <div className="flex gap-2">
+                    <span className="text-[6.5px] text-muted-foreground">EFF <span className={cn("font-bold", accent)}>{avgEff}%</span></span>
+                    <span className="text-[6.5px] text-muted-foreground">SURV <span className={cn("font-bold", accent)}>{avgSurv}%</span></span>
+                </div>
+            </div>
+            <div className="grid grid-cols-4 gap-1">
+                {[
+                    { label: "DMG", value: totalDmg, Icon: Flame, color: "text-red-400" },
+                    { label: "KOs", value: totalKOs, Icon: Skull, color: "text-orange-400" },
+                    { label: "Blocked", value: totalBlk, Icon: ShieldCheck, color: "text-cyan-400" },
+                    { label: "Healed", value: totalHeal, Icon: HeartPulse, color: "text-emerald-400" },
+                ].map(({ label, value, Icon, color }) => (
+                    <div key={label} className="flex flex-col items-center gap-0.5 bg-background/30 rounded-md p-1">
+                        <Icon className={cn("size-2.5", color)} />
+                        <span className={cn("text-[8px] font-bold", color)}>{value}</span>
+                        <span className="text-[6px] text-muted-foreground/70 text-center leading-tight">{label}</span>
+                    </div>
+                ))}
+            </div>
+            <div className={cn(
+                "grid gap-1",
+                fighters.length === 1 ? "grid-cols-1" : fighters.length === 2 ? "grid-cols-2" : "grid-cols-3"
+            )}>
+                {fighters.map(f => (
+                    <FighterCard key={f.name} fighter={f} isWinner={f.name === mvp.name} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Collapsible section wrapper
+type SectionKey = "overview" | "teamA" | "teamB" | "awards";
+
+function Accordion({
+    sectionKey, label, icon: Icon, iconColor, open, onToggle, children,
+}: {
+    sectionKey: SectionKey;
+    label: string;
+    icon: React.ElementType;
+    iconColor: string;
+    open: boolean;
+    onToggle: (k: SectionKey) => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="rounded-lg border border-muted-foreground/15 overflow-hidden">
+            <button
+                onClick={() => onToggle(sectionKey)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 bg-muted/10 hover:bg-muted/20 transition-colors"
+            >
+                <div className="flex items-center gap-1.5">
+                    <Icon className={cn("size-3 shrink-0", iconColor)} />
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-foreground/80">{label}</span>
+                </div>
+                <ChevronRight className={cn("size-3 text-muted-foreground transition-transform duration-200", open && "rotate-90")} />
+            </button>
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-2">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+// ── Battle End Screen (finish / rout) ────────────────────────────────────────
+
+function BattleEndScreen({ isVictory, log, meta }: {
+    isVictory: boolean;
+    log: any;
+    meta: BattleMetadata | undefined;
+}) {
+    const [open, setOpen] = useState<SectionKey | null>(null);
+    const toggle = (k: SectionKey) => setOpen(prev => prev === k ? null : k);
+
+    return (
+        <div className="flex flex-col gap-1.5 py-2 px-2 w-full h-full overflow-y-auto [scrollbar-width:none]">
+
+            {/* ── Always-visible banner ── */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className={cn(
+                    "flex items-center justify-between gap-2 px-3 py-2 rounded-xl border  shrink-0",
+                    isVictory
+                        ? "bg-amber-500/10 border-amber-500/40 shadow-amber-500/20"
+                        : "bg-red-500/10 border-red-500/40 shadow-red-500/20"
+                )}
+            >
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className={cn(
+                        "p-1.5 rounded-full border-2 shrink-0",
+                        isVictory ? "bg-amber-400/20 border-amber-400/60" : "bg-red-500/20 border-red-500/60"
+                    )}>
+                        {isVictory
+                            ? <Crown className="size-4 text-amber-400" />
+                            : <Skull className="size-4 text-red-400 animate-pulse" />}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <span className={cn("text-[9px] font-black uppercase tracking-widest", isVictory ? "text-amber-400" : "text-red-400")}>
+                            {meta?.winType ?? "Engagement Concluded"}
+                        </span>
+                        <p className="text-[7px] font-medium text-foreground/60 leading-tight truncate max-w-[180px]">
+                            {log.text}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end gap-0 shrink-0">
+                    <span className="text-[6px] text-muted-foreground uppercase tracking-wide">Rounds</span>
+                    <span className="text-[13px] font-black text-foreground leading-none">{meta?.totalRounds ?? "—"}</span>
+                    <span className="text-[6.5px] text-muted-foreground">
+                        KOs <span className="text-orange-400 font-bold">{meta?.totalKoCount ?? 0}</span>
+                    </span>
+                </div>
+            </motion.div>
+
+            {/* ── Quick-glance stat chips ── */}
+            {meta && (
+                <motion.div
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 }}
+                    className="grid grid-cols-4 gap-1 shrink-0"
+                >
+                    {[
+                        { Icon: Activity, color: "text-violet-400", label: "Total DMG", value: meta.totalDamageDealt.toLocaleString() },
+                        { Icon: HeartPulse, color: "text-emerald-400", label: "Healed", value: meta.totalHealingDone.toLocaleString() },
+                        { Icon: Flame, color: "text-orange-400", label: "Best Hit", value: String(meta.mostDamageSingleHit.damage) },
+                        { Icon: Zap, color: "text-yellow-400", label: "Win Edge", value: `${meta.dominance}%` },
+                    ].map(({ Icon, color, label, value }) => (
+                        <div key={label} className="flex flex-col items-center gap-0.5 bg-muted/10 border border-muted-foreground/10 rounded-lg p-1">
+                            <Icon className={cn("size-2.5", color)} />
+                            <span className={cn("text-[7.5px] font-bold leading-none", color)}>{value}</span>
+                            <span className="text-[5.5px] text-muted-foreground/60 text-center leading-tight">{label}</span>
+                        </div>
+                    ))}
+                </motion.div>
+            )}
+
+            {/* ── Power balance bar ── */}
+            {meta && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.12 }}
+                    className="flex flex-col gap-0.5 px-0.5 shrink-0"
+                >
+                    <div className="flex justify-between text-[6.5px]">
+                        <span className="text-primary font-bold">A <span className="text-foreground">{meta.teamAPowerAvg}</span></span>
+                        <span className="text-muted-foreground/60 uppercase tracking-widest text-[5.5px] self-center">Power Avg</span>
+                        <span className="text-secondary font-bold"><span className="text-foreground">{meta.teamBPowerAvg}</span> B</span>
+                    </div>
+                    <div className="flex h-1 w-full rounded-full overflow-hidden">
+                        <motion.div className="bg-primary" initial={{ flex: 0 }} animate={{ flex: meta.teamAPowerAvg }} transition={{ duration: 0.7 }} />
+                        <motion.div className="bg-secondary" initial={{ flex: 0 }} animate={{ flex: meta.teamBPowerAvg }} transition={{ duration: 0.7 }} />
+                    </div>
+                </motion.div>
+            )}
+
+            {/* ── Collapsible sections ── */}
+            {meta && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.16 }}
+                    className="flex flex-col gap-1"
+                >
+                    {/* Overview */}
+                    <Accordion sectionKey="overview" label="Overview" icon={Activity} iconColor="text-violet-400" open={open === "overview"} onToggle={toggle}>
+                        <div className="flex flex-col gap-1.5">
+                            {meta.longestStreak.streak > 1 && (
+                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/25">
+                                    <Flame className="size-3 text-yellow-400 shrink-0" />
+                                    <span className="text-[7.5px] font-bold text-yellow-300">{meta.longestStreak.name}</span>
+                                    <span className="text-[7px] text-muted-foreground">· {meta.longestStreak.streak}-hit streak</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-orange-500/10 border border-orange-500/25">
+                                <Zap className="size-3 text-orange-400 shrink-0" />
+                                <span className="text-[7px] text-muted-foreground">Hardest hit:</span>
+                                <span className="text-[7.5px] font-bold text-orange-300 ml-auto">{meta.mostDamageSingleHit.damage} by {meta.mostDamageSingleHit.name.split(" ")[0]}</span>
+                            </div>
+                        </div>
+                    </Accordion>
+
+                    {/* Team A */}
+                    <Accordion sectionKey="teamA" label="Team A Breakdown" icon={Trophy} iconColor="text-primary" open={open === "teamA"} onToggle={toggle}>
+                        <TeamSection label="Team A" fighters={meta.teamAStats} mvp={meta.mvpA} variant="primary" />
+                    </Accordion>
+
+                    {/* Team B */}
+                    <Accordion sectionKey="teamB" label="Team B Breakdown" icon={Trophy} iconColor="text-secondary" open={open === "teamB"} onToggle={toggle}>
+                        <TeamSection label="Team B" fighters={meta.teamBStats} mvp={meta.mvpB} variant="secondary" />
+                    </Accordion>
+
+                    {/* Awards */}
+                    <Accordion sectionKey="awards" label="Awards" icon={Star} iconColor="text-amber-400" open={open === "awards"} onToggle={toggle}>
+                        <div className="grid grid-cols-2 gap-1">
+                            {[
+                                { Icon: Trophy, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/25", label: "Top Striker A", name: meta.mvpA.name, value: `${meta.mvpA.damageDealt} DMG` },
+                                { Icon: Trophy, color: "text-secondary", bg: "bg-secondary/10 border-secondary/25", label: "Top Striker B", name: meta.mvpB.name, value: `${meta.mvpB.damageDealt} DMG` },
+                                { Icon: ShieldCheck, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/25", label: "Iron Wall A", name: meta.wallA.name, value: `${meta.wallA.damageBlocked} blk` },
+                                { Icon: ShieldCheck, color: "text-cyan-300", bg: "bg-cyan-500/10 border-cyan-500/25", label: "Iron Wall B", name: meta.wallB.name, value: `${meta.wallB.damageBlocked} blk` },
+                                { Icon: RefreshCw, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/25", label: "Resurrector A", name: meta.reviveA.name, value: `${meta.reviveA.revivals}× revived` },
+                                { Icon: RefreshCw, color: "text-purple-300", bg: "bg-purple-500/10 border-purple-500/25", label: "Resurrector B", name: meta.reviveB.name, value: `${meta.reviveB.revivals}× revived` },
+                                { Icon: HeartPulse, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/25", label: "Field Medic A", name: meta.healerA.name, value: `${meta.healerA.healingDone} HP` },
+                                { Icon: HeartPulse, color: "text-emerald-300", bg: "bg-emerald-500/10 border-emerald-500/25", label: "Field Medic B", name: meta.healerB.name, value: `${meta.healerB.healingDone} HP` },
+                            ].map(({ Icon, color, bg, label, name, value }) => (
+                                <div key={label} className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg border", bg)}>
+                                    <Icon className={cn("size-2.5 shrink-0", color)} />
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[6px] text-muted-foreground/60 uppercase tracking-wide">{label}</span>
+                                        <span className="text-[7px] font-bold text-foreground truncate">{name}</span>
+                                        <span className={cn("text-[6px] font-medium", color)}>{value}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Accordion>
+                </motion.div>
+            )}
+        </div>
+    );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function ClashCard({
     event,
@@ -98,16 +409,12 @@ export default function ClashCard({
     allChars: CharacterWithJoinTeamUniversePowerEnemies[];
     teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
 }) {
-    // ── Combat phase timeline ─────────────────────────────────────────────────
     const [phase, setPhase] = useState<CombatPhase>(0);
     const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
     useEffect(() => {
-        // Clear any running timers from a previous event
         timersRef.current.forEach(clearTimeout);
         timersRef.current = [];
-
-        // Reset to phase 0 on every new event
         setPhase(0);
 
         if (!event) return;
@@ -116,19 +423,13 @@ export default function ClashCard({
         const isFinish = event.log.type === "finish" || event.log.type === "rout";
 
         if (isHealRevive || isFinish) {
-            // For heal/revive/finish, jump straight to phase 1 then 2 quickly
             timersRef.current.push(setTimeout(() => setPhase(1), 200));
             timersRef.current.push(setTimeout(() => setPhase(2), 400));
             return;
         }
 
-        // Normal attack / KO / defend timeline
-        // Phase 0 → attacker charge aura glows (no timeout needed, it's the default state)
-        // Phase 1 → main overlay fires + sound
         timersRef.current.push(setTimeout(() => setPhase(1), PHASE_1_DELAY));
-        // Phase 2 → damage flash + impact burst + health bar drop
         timersRef.current.push(setTimeout(() => setPhase(2), PHASE_2_DELAY));
-        // Phase 3 → KO skull (only for KO events)
         if (event.log.type === "ko" || event.log.isKO) {
             timersRef.current.push(setTimeout(() => setPhase(3), PHASE_3_DELAY));
         }
@@ -154,90 +455,14 @@ export default function ClashCard({
         ? `${ACTIVATION_VERB[activePower.activationType] ?? "Uses"} ${activePower.name} ${RANGE_SUFFIX[activePower.range] ?? ""}`
         : null;
 
+    // ── Finish / Rout screen ──────────────────────────────────────────────────
     if (log.type === "finish" || log.type === "rout") {
         const isVictory = log.type === "finish";
-        const meta = (log as any).metadata;
-
-        return (
-            <div className="flex flex-col items-center justify-center gap-1.5 py-2 px-3 w-full h-full overflow-y-auto max-h-[240px] [scrollbar-width:none]">
-                <motion.div
-                    initial={{ scale: 0.3, opacity: 0, rotate: -20 }}
-                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className={cn(
-                        "p-1.5 rounded-full border-2 shadow-lg",
-                        isVictory ? "bg-amber-400/20 border-amber-400/60 shadow-amber-500/30" : "bg-red-500/20 border-red-500/60 shadow-red-500/30"
-                    )}
-                >
-                    {isVictory ? <Crown className="size-4 text-amber-400 animate-bounce" /> : <Skull className="size-4 text-red-400 animate-pulse" />}
-                </motion.div>
-
-                <div className="flex flex-col items-center gap-0 text-center">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-amber-400">
-                        {meta?.winType ?? "Engagement Concluded"}
-                    </span>
-                    <p className="text-[7.5px] font-semibold text-foreground/90 max-w-[270px]">
-                        {log.text}
-                    </p>
-                </div>
-
-                {meta && (
-                    <div className="grid grid-cols-2 gap-2 w-full max-w-[340px] mt-1">
-                        {/* Team A Telemetry */}
-                        <div className="flex flex-col gap-0.5 p-1.5 rounded-lg bg-primary/10 border border-primary/30">
-                            <span className="text-[7px] font-black uppercase tracking-wider text-primary border-b border-primary/20 pb-0.5">Team A Honors</span>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Top Striker:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.mvpA?.name ?? "N/A"} ({meta.mvpA?.damageDealt ?? 0} DMG)</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Iron Wall:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.wallA?.name ?? "N/A"} ({meta.wallA?.damageBlocked ?? 0})</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Aggressor:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.strikerA?.name ?? "N/A"} ({meta.strikerA?.attacksLanded ?? 0} Hits)</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Resurrector:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.reviveA?.name ?? "N/A"} ({meta.reviveA?.revivals ?? 0})</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Medic:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.healerA?.name ?? "N/A"} ({meta.healerA?.healingDone ?? 0} HP)</span>
-                            </div>
-                        </div>
-
-                        {/* Team B Telemetry */}
-                        <div className="flex flex-col gap-0.5 p-1.5 rounded-lg bg-secondary/10 border border-secondary/30">
-                            <span className="text-[7px] font-black uppercase tracking-wider text-secondary border-b border-secondary/20 pb-0.5">Team B Honors</span>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Top Striker:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.mvpB?.name ?? "N/A"} ({meta.mvpB?.damageDealt ?? 0} DMG)</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Iron Wall:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.wallB?.name ?? "N/A"} ({meta.wallB?.damageBlocked ?? 0})</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Aggressor:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.strikerB?.name ?? "N/A"} ({meta.strikerB?.attacksLanded ?? 0} Hits)</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Resurrector:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.reviveB?.name ?? "N/A"} ({meta.reviveB?.revivals ?? 0})</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[7.5px]">
-                                <span className="text-muted-foreground font-semibold">Medic:</span>
-                                <span className="font-bold text-foreground truncate max-w-[80px]">{meta.healerB?.name ?? "N/A"} ({meta.healerB?.healingDone ?? 0} HP)</span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
+        const meta = (log as any).metadata as BattleMetadata | undefined;
+        return <BattleEndScreen isVictory={isVictory} log={log} meta={meta} />;
     }
 
+    // ── Heal / Revive ─────────────────────────────────────────────────────────
     if (log.type === "heal" || log.type === "revive") {
         const isHeal = log.type === "heal";
         const char = isHeal ? attacker : (defender ?? attacker);
@@ -256,8 +481,6 @@ export default function ClashCard({
                         badgeColorClass={accentColor}
                         activePower={activePower}
                         healPopup={isHeal ? healVal : null}
-                        // For revive: character was dead before this event, so prevHp = 0.
-                        // For heal: prevHp comes from the enriched fighter.
                         prevHp={isHeal ? char.prevHp : 0}
                         phase={phase}
                         isDefender={false}
@@ -269,6 +492,7 @@ export default function ClashCard({
         );
     }
 
+    // ── Standard attack / defend / KO ─────────────────────────────────────────
     const isKO = log.type === "ko" || log.isKO;
     const isDefend = log.type === "defend";
     const damageValue = log.damage ?? (isKO ? 15 : null);

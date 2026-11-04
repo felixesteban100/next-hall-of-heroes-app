@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { /* Shield,  */Skull, Trophy, HeartPulse, RefreshCw, Lock, HandFist, Shield } from "lucide-react";
+import { Skull, Trophy, HeartPulse, RefreshCw, Lock, HandFist, Shield } from "lucide-react";
 import { computeMatchScore } from "@/lib/compare";
 
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole, Power, FallbackItem } from "@/types";
@@ -19,10 +19,9 @@ export type Log = {
     icon: any;
     colorClass: string;
     variant: "primary" | "secondary";
-    // 🚀 Add these optional properties so ClashCard can read them safely
     isKO?: boolean;
     damage?: number;
-    healing?: number,
+    healing?: number;
 };
 
 export type FighterState = {
@@ -50,6 +49,55 @@ export interface ScriptItem {
     log: Log;
 }
 
+// ── Telemetry per fighter ─────────────────────────────────────────────────────
+export type FighterTelemetry = {
+    name: string;
+    // Offense
+    attacksLanded: number;
+    damageDealt: number;
+    // Defense
+    damageBlocked: number;
+    hitsTaken: number;
+    damageTaken: number;
+    // Support
+    revivals: number;
+    healingDone: number;
+    // Derived (computed at finalization)
+    accuracy: number;        // attacksLanded / (attacksLanded + blocked against them) — 0–100
+    survivalRate: number;    // (maxHp - damageTaken) / maxHp — 0–100 (clamped)
+    efficiency: number;      // damageDealt / Math.max(1, damageTaken) — scaled to 0–100
+    kos: number;             // enemies knocked out by this fighter
+};
+
+export type BattleMetadata = {
+    totalRounds: number;
+    totalKoCount: number;
+    winnerPowerAvg: number;
+    winType: string;
+    dominance: number;        // 0–100: how lopsided the win was
+    teamAPowerAvg: number;
+    teamBPowerAvg: number;
+    // Per-fighter telemetry by team
+    teamAStats: FighterTelemetry[];
+    teamBStats: FighterTelemetry[];
+    // Top performers (pre-computed for display)
+    mvpA: FighterTelemetry;
+    mvpB: FighterTelemetry;
+    wallA: FighterTelemetry;
+    wallB: FighterTelemetry;
+    strikerA: FighterTelemetry;
+    strikerB: FighterTelemetry;
+    reviveA: FighterTelemetry;
+    reviveB: FighterTelemetry;
+    healerA: FighterTelemetry;
+    healerB: FighterTelemetry;
+    // Extra
+    longestStreak: { name: string; streak: number };
+    mostDamageSingleHit: { name: string; damage: number };
+    totalDamageDealt: number;
+    totalHealingDone: number;
+};
+
 const ELIMINATION_PHRASES = [
     "was overwhelmed by the sustained pressure!",
     "succumbed to the relentless barrage!",
@@ -72,7 +120,7 @@ function toFighterState(
 ): FighterState {
     const validPowers = Array.isArray(c.powers) ? c.powers.filter(isRealPower) : [];
     const durability = c.powerstats?.durability ?? 50;
-    const maxHp = durability * 2; // e.g., Durability 70 = 140 Max HP
+    const maxHp = durability * 2;
 
     return {
         name: c.name ?? fallbackName,
@@ -89,9 +137,11 @@ function toFighterState(
 
 function getPowersByRole(fighter: FighterState, role: PowerRole) {
     if (!Array.isArray(fighter.powers)) return [];
-    return fighter.powers.filter(isRealPower).filter(
-        (p) => p.combatRole === role
-    );
+    return fighter.powers.filter(isRealPower).filter((p) => p.combatRole === role);
+}
+
+function clamp(value: number, min = 0, max = 100) {
+    return Math.max(min, Math.min(max, value));
 }
 
 /**
@@ -113,10 +163,29 @@ export function useCombatScript(
         const initialA = teamAChars.map((c) => toFighterState(c, nameA));
         const initialB = teamBChars.map((c) => toFighterState(c, nameB));
 
-        // 🚀 Telemetry Tracker Map
-        const statsMap: Record<string, { attacksLanded: number; damageDealt: number; damageBlocked: number; hitsTaken: number; revivals: number; healingDone: number }> = {};
+        // ── Telemetry tracker ────────────────────────────────────────────────
+        type RawStats = {
+            attacksLanded: number;
+            damageDealt: number;
+            damageBlocked: number;
+            hitsTaken: number;
+            damageTaken: number;
+            revivals: number;
+            healingDone: number;
+            kos: number;
+            maxSingleHit: number;
+            streak: number;
+            currentStreak: number;
+            maxHp: number;
+        };
+        const statsMap: Record<string, RawStats> = {};
         [...initialA, ...initialB].forEach(c => {
-            statsMap[c.name] = { attacksLanded: 0, damageDealt: 0, damageBlocked: 0, hitsTaken: 0, revivals: 0, healingDone: 0 };
+            statsMap[c.name] = {
+                attacksLanded: 0, damageDealt: 0, damageBlocked: 0,
+                hitsTaken: 0, damageTaken: 0, revivals: 0, healingDone: 0,
+                kos: 0, maxSingleHit: 0, streak: 0, currentStreak: 0,
+                maxHp: c.maxHp,
+            };
         });
 
         if (initialA.length === 0 || initialB.length === 0) {
@@ -128,15 +197,16 @@ export function useCombatScript(
 
         const isTeamAWinner = aWins >= bWins;
         const winnerName = isTeamAWinner ? nameA : nameB;
-        // const winningTeamTag = isTeamAWinner ? "A" : "B";
         const losingTeamTag = isTeamAWinner ? "B" : "A";
 
-        // Mutable clones for the simulation loop
         const tempA = initialA.map((c) => ({ ...c }));
         const tempB = initialB.map((c) => ({ ...c }));
 
         const maxRounds = Math.max(45, (tempA.length + tempB.length) * 4);
         let roundNum = 1;
+
+        // Track last attacker for streak detection
+        let lastAttackerName = "";
 
         while (roundNum <= maxRounds) {
             const activeTempA = tempA.filter((c) => c.isAlive);
@@ -156,6 +226,19 @@ export function useCombatScript(
             const defender = activeDefenders[Math.floor(Math.random() * activeDefenders.length)];
             const variant: "primary" | "secondary" = isAttackerA ? "primary" : "secondary";
 
+            // ── Streak tracking ───────────────────────────────────────────────
+            if (attacker.name === lastAttackerName) {
+                if (statsMap[attacker.name]) statsMap[attacker.name].currentStreak++;
+            } else {
+                if (lastAttackerName && statsMap[lastAttackerName]) {
+                    const prev = statsMap[lastAttackerName];
+                    prev.streak = Math.max(prev.streak, prev.currentStreak);
+                    prev.currentStreak = 0;
+                }
+                lastAttackerName = attacker.name;
+                if (statsMap[attacker.name]) statsMap[attacker.name].currentStreak = 1;
+            }
+
             // ── 1. Healing / Regeneration / Passive Check ────────────────────
             const allAttackerPowers = Array.isArray(attacker.powers) ? attacker.powers.filter(isRealPower) : [];
             const healingPowers = allAttackerPowers.filter((p) => {
@@ -163,11 +246,11 @@ export function useCombatScript(
                 return txt.includes("heal") || txt.includes("regenerat") || txt.includes("recovery") || txt.includes("health") || txt.includes("factor");
             });
 
-            // If the character has healing/regeneration and is hurt, trigger a heal on self instead of attacking!
             if (healingPowers.length > 0 && attacker.currentHp < attacker.maxHp && Math.random() < 0.35) {
                 const healPower = healingPowers[Math.floor(Math.random() * healingPowers.length)];
-                const healAmount = Math.round(attacker.maxHp * 0.25); // Heal 25% of max HP
+                const healAmount = Math.round(attacker.maxHp * 0.25);
                 attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + healAmount);
+                if (statsMap[attacker.name]) statsMap[attacker.name].healingDone += healAmount;
 
                 script.push({
                     targetTeam: isAttackerA ? "A" : "B",
@@ -190,7 +273,7 @@ export function useCombatScript(
                 continue;
             }
 
-            // ── 2. Offensive Power Filtering (Excludes Heals & Defends) ──────
+            // ── 2. Offensive Power Filtering ─────────────────────────────────
             const strikingPowers = allAttackerPowers.filter((p) => {
                 const role = p.combatRole;
                 const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
@@ -228,57 +311,36 @@ export function useCombatScript(
             let logIcon: any = HandFist;
             if (combatRole === "Control") logIcon = Lock;
 
-            // ⚡ High-Impact Damage Scaling (Deals 20% to 45% of defender's actual Max HP per hit)
             const defenderMaxHp = defender.maxHp || 100;
-            const damagePercentage = Math.random() * 0.25 + 0.20; // 20% to 45% chunk
+            const damagePercentage = Math.random() * 0.25 + 0.20;
             const calculatedDamage = Math.max(15, Math.round(defenderMaxHp * damagePercentage));
-
-            // ── 3. Defend Check — ~15% chance defender has a Defensive power active ──
-            // const allDefenderPowers = Array.isArray(defender.powers) ? defender.powers.filter(isRealPower) : [];
-            // const defensivePowers = allDefenderPowers.filter((p) => {
-            //     const txt = `${p.name ?? ""} ${p.description ?? ""} ${p.combatRole ?? ""}`.toLowerCase();
-            //     return p.combatRole === "Defensive" ||
-            //         txt.includes("shield") || txt.includes("barrier") || txt.includes("block") ||
-            //         txt.includes("protect") || txt.includes("armor") || txt.includes("deflect") ||
-            //         txt.includes("absorb") || txt.includes("counter") || txt.includes("resist");
-            // });
 
             const defenderVariant: "primary" | "secondary" = isAttackerA ? "secondary" : "primary";
 
-            if (/* defensivePowers.length > 0 &&  */Math.random() < 0.15) {
-                // Defender blocks! Reduce damage by 60–100%
-                // const blockPower = defensivePowers[Math.floor(Math.random() * defensivePowers.length)];
+            // ── 3. Defend Check ───────────────────────────────────────────────
+            if (Math.random() < 0.15) {
                 const blockPowerName = "Defense";
-                // const blockRatio = Math.random() * 0.4 + 0.6; // 60% to 100% mitigation
-                const blockedAmount = calculatedDamage //Math.round(calculatedDamage * blockRatio);
-                const actualDamage = 0//calculatedDamage - blockedAmount;
+                const blockedAmount = calculatedDamage;
 
-                // // Apply reduced damage to defender's HP
-                // defender.currentHp = Math.max(0, defender.currentHp - actualDamage);
-                // if (statsMap[defender.name]) statsMap[defender.name].damageBlocked += blockedAmount;
-                // if (statsMap[attacker.name]) statsMap[attacker.name].attacksLanded++;
+                if (statsMap[defender.name]) statsMap[defender.name].damageBlocked += blockedAmount;
 
                 const phrase = DEFEND_PHRASES[Math.floor(Math.random() * DEFEND_PHRASES.length)];
 
                 script.push({
                     targetTeam: defenderTeamTag,
                     isDefend: true,
-                    damage: /* actualDamage */0,
+                    damage: 0,
                     log: {
                         id: timeStep++,
                         type: "defend",
-                        // attacker = the one who tried to hit; defender = the one blocking
                         attackerName: attacker.name,
                         defenderName: defender.name,
-                        // powerName: blockPower.name,
                         powerName: blockPowerName,
-                        // text: `${defender.name} activated [${blockPower.name}] and ${phrase} Blocked ${blockedAmount} of ${calculatedDamage} damage!`,
                         text: `${defender.name} activated [${blockPowerName}] and ${phrase} Blocked ${blockedAmount} of ${calculatedDamage} damage!`,
                         icon: Shield,
                         colorClass: "text-cyan-400 font-bold",
-                        // variant of the DEFENDER (the one whose power is shown)
                         variant: defenderVariant,
-                        damage: actualDamage,
+                        damage: 0,
                     },
                 });
 
@@ -286,20 +348,23 @@ export function useCombatScript(
                 continue;
             }
 
-            // ── Normal hit (no defend) ────────────────────────────────────────
+            // ── Normal hit ────────────────────────────────────────────────────
             defender.currentHp = Math.max(0, defender.currentHp - calculatedDamage);
 
             if (statsMap[attacker.name]) {
                 statsMap[attacker.name].attacksLanded++;
                 statsMap[attacker.name].damageDealt += calculatedDamage;
+                statsMap[attacker.name].maxSingleHit = Math.max(statsMap[attacker.name].maxSingleHit, calculatedDamage);
             }
             if (statsMap[defender.name]) {
                 statsMap[defender.name].hitsTaken++;
+                statsMap[defender.name].damageTaken += calculatedDamage;
             }
 
-            // ── 4. Knockout Evaluation (Individual HP Check) ─────────────────
+            // ── 4. Knockout Evaluation ────────────────────────────────────────
             if (defender.currentHp === 0) {
                 defender.isAlive = false;
+                if (statsMap[attacker.name]) statsMap[attacker.name].kos++;
                 const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
 
                 script.push({
@@ -323,7 +388,7 @@ export function useCombatScript(
                     },
                 });
 
-                // Check Revival Traits
+                // Revival check
                 const revivalPowers = [...allAttackerPowers, ...(Array.isArray(defender.powers) ? defender.powers : [])].filter(isRealPower);
                 const revivalPower = revivalPowers.find((p) => {
                     const txt = `${p.name ?? ""} ${p.description ?? ""}`.toLowerCase();
@@ -333,7 +398,7 @@ export function useCombatScript(
                 if (!defender.hasRevived && revivalPower && Math.random() < 0.85) {
                     defender.hasRevived = true;
                     defender.isAlive = true;
-                    defender.currentHp = Math.round(defender.maxHp * 0.45); // Revive with 45% HP
+                    defender.currentHp = Math.round(defender.maxHp * 0.45);
                     if (statsMap[defender.name]) statsMap[defender.name].revivals++;
 
                     script.push({
@@ -369,14 +434,20 @@ export function useCombatScript(
                         icon: logIcon,
                         colorClass: isAttackerA ? "text-primary" : "text-secondary",
                         variant,
-                        damage: calculatedDamage, // 🚀 Crucial for live playback HP tracking
+                        damage: calculatedDamage,
                     },
                 });
             }
             roundNum++;
         }
 
-        // Finalize Rout if any remaining active units on losing side
+        // Flush last streak
+        if (lastAttackerName && statsMap[lastAttackerName]) {
+            const s = statsMap[lastAttackerName];
+            s.streak = Math.max(s.streak, s.currentStreak);
+        }
+
+        // ── Rout finalization ─────────────────────────────────────────────────
         const losingTeamFinal = isTeamAWinner ? tempB : tempA;
         const remaining = losingTeamFinal.filter((c) => c.isAlive);
         if (remaining.length > 0) {
@@ -395,23 +466,93 @@ export function useCombatScript(
             });
         }
 
+        // ── Build final telemetry ─────────────────────────────────────────────
         const totalRounds = roundNum - 1;
         const totalKoCount = [...tempA, ...tempB].filter(c => !c.isAlive).length;
         const avgTeamA = Math.round(initialA.reduce((acc, c) => acc + c.overall, 0) / (initialA.length || 1));
         const avgTeamB = Math.round(initialB.reduce((acc, c) => acc + c.overall, 0) / (initialB.length || 1));
         const diff = Math.abs(aWins - bWins);
-        const winType = diff > 15 ? "Decisive Wipeout" : "Hard-Fought Victory";
+        const dominance = clamp(Math.round((diff / Math.max(1, aWins + bWins)) * 100));
+        const winType = diff > 15 ? "Decisive Wipeout" : diff > 5 ? "Dominant Victory" : "Hard-Fought Victory";
 
-        // Aggregate Dual-Team Telemetry for Final Summary Card (7 Categories)
         const teamANames = new Set(initialA.map(c => c.name));
-        const allFightersStats = Object.entries(statsMap).map(([name, stats]) => ({ name, ...stats }));
-        const statsA = allFightersStats.filter(f => teamANames.has(f.name));
-        const statsB = allFightersStats.filter(f => !teamANames.has(f.name));
 
-        const getBest = (arr: typeof allFightersStats, key: keyof typeof allFightersStats[0], fallback: typeof allFightersStats[0]) =>
-            arr.length > 0 ? arr.reduce((prev, curr) => (curr[key] > prev[key] ? curr : prev), arr[0]) : fallback;
+        // Convert raw stats → FighterTelemetry with derived fields
+        const toTelemetry = (name: string): FighterTelemetry => {
+            const r = statsMap[name] ?? {
+                attacksLanded: 0, damageDealt: 0, damageBlocked: 0, hitsTaken: 0,
+                damageTaken: 0, revivals: 0, healingDone: 0, kos: 0,
+                maxSingleHit: 0, streak: 0, currentStreak: 0, maxHp: 100,
+            };
+            const accuracy = r.attacksLanded > 0
+                ? clamp(Math.round((r.attacksLanded / (r.attacksLanded + r.hitsTaken || 1)) * 100))
+                : 0;
+            const survivalRate = clamp(Math.round(((r.maxHp - r.damageTaken) / (r.maxHp || 1)) * 100));
+            const efficiency = clamp(Math.round(Math.min((r.damageDealt / Math.max(1, r.damageTaken)) * 50, 100)));
+            return {
+                name,
+                attacksLanded: r.attacksLanded,
+                damageDealt: r.damageDealt,
+                damageBlocked: r.damageBlocked,
+                hitsTaken: r.hitsTaken,
+                damageTaken: r.damageTaken,
+                revivals: r.revivals,
+                healingDone: r.healingDone,
+                kos: r.kos,
+                accuracy,
+                survivalRate,
+                efficiency,
+            };
+        };
 
-        const fallbackFighter = { name: "N/A", attacksLanded: 0, damageDealt: 0, damageBlocked: 0, hitsTaken: 0, revivals: 0, healingDone: 0 };
+        const teamAStats = initialA.map(c => toTelemetry(c.name));
+        const teamBStats = initialB.map(c => toTelemetry(c.name));
+
+        const getBest = <K extends keyof FighterTelemetry>(
+            arr: FighterTelemetry[], key: K
+        ): FighterTelemetry => arr.length > 0
+                ? arr.reduce((prev, curr) => ((curr[key] as number) > (prev[key] as number) ? curr : prev), arr[0])
+                : toTelemetry("N/A");
+
+        // Global records
+        const allStats = [...teamAStats, ...teamBStats];
+        const allRaw = Object.entries(statsMap);
+        const longestStreak = allRaw.reduce(
+            (best, [name, s]) => s.streak > best.streak ? { name, streak: s.streak } : best,
+            { name: "N/A", streak: 0 }
+        );
+        const mostDamageSingleHit = allRaw.reduce(
+            (best, [name, s]) => s.maxSingleHit > best.damage ? { name, damage: s.maxSingleHit } : best,
+            { name: "N/A", damage: 0 }
+        );
+        const totalDamageDealt = allStats.reduce((s, f) => s + f.damageDealt, 0);
+        const totalHealingDone = allStats.reduce((s, f) => s + f.healingDone, 0);
+
+        const metadata: BattleMetadata = {
+            totalRounds,
+            totalKoCount,
+            winnerPowerAvg: isTeamAWinner ? avgTeamA : avgTeamB,
+            winType,
+            dominance,
+            teamAPowerAvg: avgTeamA,
+            teamBPowerAvg: avgTeamB,
+            teamAStats,
+            teamBStats,
+            mvpA: getBest(teamAStats, "damageDealt"),
+            mvpB: getBest(teamBStats, "damageDealt"),
+            wallA: getBest(teamAStats, "damageBlocked"),
+            wallB: getBest(teamBStats, "damageBlocked"),
+            strikerA: getBest(teamAStats, "attacksLanded"),
+            strikerB: getBest(teamBStats, "attacksLanded"),
+            reviveA: getBest(teamAStats, "revivals"),
+            reviveB: getBest(teamBStats, "revivals"),
+            healerA: getBest(teamAStats, "healingDone"),
+            healerB: getBest(teamBStats, "healingDone"),
+            longestStreak,
+            mostDamageSingleHit,
+            totalDamageDealt,
+            totalHealingDone,
+        };
 
         script.push({
             targetTeam: losingTeamTag,
@@ -423,25 +564,7 @@ export function useCombatScript(
                 icon: Trophy,
                 colorClass: "text-amber-400 font-black",
                 variant: isTeamAWinner ? "primary" : "secondary",
-                metadata: {
-                    totalRounds,
-                    totalKoCount,
-                    winnerPowerAvg: isTeamAWinner ? avgTeamA : avgTeamB,
-                    winType,
-                    // 🚀 Expanded Telemetry Categories (7 categories per team)
-                    mvpA: getBest(statsA, "damageDealt", fallbackFighter),
-                    mvpB: getBest(statsB, "damageDealt", fallbackFighter),
-                    wallA: getBest(statsA, "damageBlocked", fallbackFighter),
-                    wallB: getBest(statsB, "damageBlocked", fallbackFighter),
-                    strikerA: getBest(statsA, "attacksLanded", fallbackFighter),
-                    strikerB: getBest(statsB, "attacksLanded", fallbackFighter),
-                    punishA: getBest(statsA, "hitsTaken", fallbackFighter),
-                    punishB: getBest(statsB, "hitsTaken", fallbackFighter),
-                    reviveA: getBest(statsA, "revivals", fallbackFighter),
-                    reviveB: getBest(statsB, "revivals", fallbackFighter),
-                    healerA: getBest(statsA, "healingDone", fallbackFighter),
-                    healerB: getBest(statsB, "healingDone", fallbackFighter),
-                },
+                metadata,
             } as any,
         });
 

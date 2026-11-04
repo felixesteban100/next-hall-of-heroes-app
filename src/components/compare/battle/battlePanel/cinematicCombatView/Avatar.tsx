@@ -162,7 +162,7 @@ export default function Avatar({
                             animate={{ scale: 1, opacity: 1, rotate: 0 }}
                             exit={{ opacity: 0 }}
                             transition={{ ...transition, delay: 0.30 }/* { type: "spring", stiffness: 300, damping: 20, delay: 0.15 } */}
-                            className="absolute inset-0 bg-foreground/65 flex items-center justify-center rounded-lg"
+                            className="absolute inset-0 bg-black/65 flex items-center justify-center rounded-lg"
                         >
                             <Skull className="size-3.7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-white" />
                         </motion.div>
