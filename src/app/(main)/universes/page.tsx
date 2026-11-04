@@ -23,7 +23,7 @@ export default async function UniversePage({
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
     const sortProperty = params.sort?.toString() || "id";
-    const sortOrientation = params.sortOrientation?.toString() || "asc";
+    const sortOrientation = params.sortOrientation?.toString() || "desc";
 
     const name = params.name?.toString() || "";
     const universeType = params.type?.toString() || "";
@@ -78,8 +78,8 @@ export default async function UniversePage({
             <EntityFilterBar
                 type="universe"
                 sortOptions={[
-                    { value: "name", label: "Name" },
                     { value: "id", label: "Id" },
+                    { value: "name", label: "Name" },
                 ]}
             />
 

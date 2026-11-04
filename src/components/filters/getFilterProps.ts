@@ -67,15 +67,17 @@ export function getFilterProps(type: EntityFilterType, searchParams: URLSearchPa
             const name = searchParams.get("name") || "";
             const alignment = searchParams.get("alignment") || "";
             const status = searchParams.get("status") || "";
-            const activeCount = [alignment, status].filter(Boolean).length;
+            const universe = searchParams.get("universe") || "";
+            const activeCount = [alignment, status, universe].filter(Boolean).length;
 
             return {
                 title: "Filter Teams",
                 placeholder: "Search teams by name...",
                 searchParams,
                 name,
+                universes: extraData?.universes || [],
                 activeCount,
-                draftFilters: { alignment, status },
+                draftFilters: { alignment, status, universe },
             };
         }
 

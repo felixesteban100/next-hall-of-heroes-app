@@ -26,7 +26,7 @@ export default async function PowersPage({
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
 
-    const sortProperty = params.sort?.toString() || "score"; // 🚀 Default to score
+    const sortProperty = params.sort?.toString() || "id"; // 🚀 Default to score
     const sortOrientation = params.sortOrientation?.toString() || "desc";
 
     const name = params.name?.toString() || "";
@@ -83,9 +83,9 @@ export default async function PowersPage({
             <EntityFilterBar
                 type="power"
                 sortOptions={[
-                    { value: "score", label: "Score" },
-                    { value: "name", label: "Name" },
                     { value: "id", label: "Id" },
+                    { value: "name", label: "Name" },
+                    { value: "score", label: "Score" },
                 ]}
             />
 

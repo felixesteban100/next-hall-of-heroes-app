@@ -48,11 +48,15 @@ export function getCharacterAligmentIcon(alignment: string) {
 }
 
 export function getCharacterGenderTextColor(gender: string) {
-    return gender === "Male" ? "text-blue-500" : "text-pink-500"
+    return gender.toLowerCase() === "male" ? "text-blue-500" : "text-pink-500"
+}
+
+export function getCharacterGenderBackground(gender: string) {
+    return gender.toLowerCase() === "male" ? "bg-blue-500" : "bg-pink-500"
 }
 
 export function getCharacterGenderIcon(gender: string) {
-    return gender === "Male" ? Mars : Venus
+    return gender.toLowerCase() === "male" ? Mars : Venus
 }
 
 export function getCharacterRaceIcon(race: string) {

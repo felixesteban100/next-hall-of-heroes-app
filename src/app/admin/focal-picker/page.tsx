@@ -165,6 +165,22 @@ export default function FocalPickerPage() {
 
                     <div className="flex items-center justify-between bg-card p-3.5 rounded-xl border border-border shadow-sm">
                         <div className="font-mono text-xs text-primary font-bold">
+                            {focusString}
+                        </div>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(focusString);
+                                setCopiedF(true);
+                                setTimeout(() => setCopiedF(false), 1500);
+                            }}
+                            className="px-4 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg font-bold cursor-pointer hover:opacity-90 transition-opacity"
+                        >
+                            {copiedF ? "Copied focusString!" : "Copy focusString"}
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-card p-3.5 rounded-xl border border-border shadow-sm">
+                        <div className="font-mono text-xs text-primary font-bold">
                             {dbSnippet}
                         </div>
                         <button
@@ -179,21 +195,7 @@ export default function FocalPickerPage() {
                         </button>
                     </div>
 
-                    <div className="flex items-center justify-between bg-card p-3.5 rounded-xl border border-border shadow-sm">
-                        <div className="font-mono text-xs text-primary font-bold">
-                            {focusString}
-                        </div>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(focusString);
-                                setCopiedF(true);
-                                setTimeout(() => setCopiedF(false), 1500);
-                            }}
-                            className="px-4 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg font-bold cursor-pointer hover:opacity-90 transition-opacity"
-                        >
-                            {copiedF ? "Copied focusString!" : "Copy focusString"}
-                        </button>
-                    </div>
+                    
                 </div>
             )}
         </div>
