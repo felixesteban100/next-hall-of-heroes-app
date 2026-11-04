@@ -239,7 +239,7 @@ export function SwipeGrid({
                 </div>
 
                 {/* 🌟 3D Hologram Inspection State Status Badge */}
-                {isInspecting && (
+                {/* {isInspecting && (
                     <motion.div
                         initial={{ opacity: 0, y: -8, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -252,7 +252,7 @@ export function SwipeGrid({
                         </span>
                         3D Hologram Inspecting
                     </motion.div>
-                )}
+                )} */}
 
                 {totalPages > 1 && <div className="text-xs text-muted-foreground font-medium my-1 shrink-0">
                     Page {currentPage} of {totalPages}
