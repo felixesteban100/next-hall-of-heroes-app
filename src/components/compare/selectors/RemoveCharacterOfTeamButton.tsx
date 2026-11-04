@@ -32,7 +32,7 @@ export default function RemoveCharacterOfTeamButton({ variant = "default", param
     return (
         <button
             type="button"
-            className="cursor-pointer p-2"
+            className="cursor-pointer p-2 text-white"
             onClick={() => write(selectedIds.filter((id) => !idsToRemove.includes(id)))}
         >
             ×

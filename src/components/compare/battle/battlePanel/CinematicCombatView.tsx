@@ -103,18 +103,13 @@ type Props = {
     rosterB: FighterState[];
     teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
     teamBChars: CharacterWithJoinTeamUniversePowerEnemies[];
-    nameA: string;
-    nameB: string;
     visibleLogs: Log[];
-    isDialog?: boolean;
 };
 
 export default function CinematicCombatView({
     rosterA, rosterB,
     teamAChars, teamBChars,
-    nameA, nameB,
     visibleLogs,
-    isDialog = false,
 }: Props) {
     // visibleLogs minus the very last entry — used to hold HP bars at "before this hit" value
     const prevLogs = visibleLogs.slice(0, -1);
@@ -234,7 +229,7 @@ export default function CinematicCombatView({
             <div className="flex flex-col gap-1.5 mt-1">
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
                     <span className="flex items-center gap-1.5">
-                        <Activity className="size-3.5 animate-pulse text-amber-500" />
+                        <Activity className="size-3.5 animate-pulse-gold text-amber-500" />
                         Combat Feed
                     </span>
                     <span className="text-muted-foreground/60 font-mono">{visibleLogs.length} events</span>

@@ -5,6 +5,9 @@ import { computeMatchScore } from "@/lib/compare";
 import { CharacterWithJoinTeamUniversePowerEnemies, PowerRole, Power, FallbackItem } from "@/types";
 import { isRealPower } from "@/lib/compare/cinematicCombatView";
 
+const REVIVAL_HP_PERCENTAGE = 0.45; // 45% of maxHp
+const HEALING_HP_PERCENTAGE = 0.25; // 25% of maxHp
+
 // ── Shared types (imported by hooks, CombatView, LiveRosterStatus, etc.) ─────
 export type LogType = "attack" | "heal" | "defend" | "revive" | "ko" | "finish" | "rout";
 
@@ -96,6 +99,8 @@ export type BattleMetadata = {
     mostDamageSingleHit: { name: string; damage: number };
     totalDamageDealt: number;
     totalHealingDone: number;
+    mostKOA: { name: string; kos: number }
+    mostKOB: { name: string; kos: number }
 };
 
 const ELIMINATION_PHRASES = [
@@ -135,11 +140,6 @@ function toFighterState(
     };
 }
 
-function getPowersByRole(fighter: FighterState, role: PowerRole) {
-    if (!Array.isArray(fighter.powers)) return [];
-    return fighter.powers.filter(isRealPower).filter((p) => p.combatRole === role);
-}
-
 function clamp(value: number, min = 0, max = 100) {
     return Math.max(min, Math.min(max, value));
 }
@@ -177,6 +177,7 @@ export function useCombatScript(
             streak: number;
             currentStreak: number;
             maxHp: number;
+            currentHp: number;
         };
         const statsMap: Record<string, RawStats> = {};
         [...initialA, ...initialB].forEach(c => {
@@ -185,6 +186,7 @@ export function useCombatScript(
                 hitsTaken: 0, damageTaken: 0, revivals: 0, healingDone: 0,
                 kos: 0, maxSingleHit: 0, streak: 0, currentStreak: 0,
                 maxHp: c.maxHp,
+                currentHp: c.maxHp,
             };
         });
 
@@ -248,7 +250,7 @@ export function useCombatScript(
 
             if (healingPowers.length > 0 && attacker.currentHp < attacker.maxHp && Math.random() < 0.35) {
                 const healPower = healingPowers[Math.floor(Math.random() * healingPowers.length)];
-                const healAmount = Math.round(attacker.maxHp * 0.25);
+                const healAmount = Math.round(attacker.maxHp * HEALING_HP_PERCENTAGE);
                 attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + healAmount);
                 if (statsMap[attacker.name]) statsMap[attacker.name].healingDone += healAmount;
 
@@ -262,7 +264,7 @@ export function useCombatScript(
                         attackerName: attacker.name,
                         defenderName: attacker.name,
                         powerName: healPower.name,
-                        text: `${attacker.name} triggered [${healPower.name}], restoring ${healAmount} HP!`,
+                        text: `${attacker.name} triggered [${healPower.name}], restoring ${healAmount} HP (${HEALING_HP_PERCENTAGE * 100}%)!`,
                         icon: HeartPulse,
                         colorClass: "text-emerald-400 font-bold",
                         variant,
@@ -350,7 +352,7 @@ export function useCombatScript(
 
             // ── Normal hit ────────────────────────────────────────────────────
             defender.currentHp = Math.max(0, defender.currentHp - calculatedDamage);
-
+            statsMap[defender.name].currentHp = defender.currentHp;
             if (statsMap[attacker.name]) {
                 statsMap[attacker.name].attacksLanded++;
                 statsMap[attacker.name].damageDealt += calculatedDamage;
@@ -364,6 +366,7 @@ export function useCombatScript(
             // ── 4. Knockout Evaluation ────────────────────────────────────────
             if (defender.currentHp === 0) {
                 defender.isAlive = false;
+                statsMap[defender.name].currentHp = 0;
                 if (statsMap[attacker.name]) statsMap[attacker.name].kos++;
                 const phrase = ELIMINATION_PHRASES[Math.floor(Math.random() * ELIMINATION_PHRASES.length)];
 
@@ -398,7 +401,8 @@ export function useCombatScript(
                 if (!defender.hasRevived && revivalPower && Math.random() < 0.85) {
                     defender.hasRevived = true;
                     defender.isAlive = true;
-                    defender.currentHp = Math.round(defender.maxHp * 0.45);
+                    defender.currentHp = Math.round(defender.maxHp * REVIVAL_HP_PERCENTAGE);
+                    statsMap[defender.name].currentHp = defender.currentHp;
                     if (statsMap[defender.name]) statsMap[defender.name].revivals++;
 
                     script.push({
@@ -411,7 +415,7 @@ export function useCombatScript(
                             attackerName: defender.name,
                             defenderName: defender.name,
                             powerName: revivalPower.name,
-                            text: `${defender.name} cheated death using [${revivalPower.name}], resurrecting with 45% HP!`,
+                            text: `${defender.name} cheated death using [${revivalPower.name}], resurrecting with ${REVIVAL_HP_PERCENTAGE * 100}% HP!`,
                             icon: RefreshCw,
                             colorClass: "text-purple-400 font-bold",
                             variant,
@@ -475,7 +479,38 @@ export function useCombatScript(
         const dominance = clamp(Math.round((diff / Math.max(1, aWins + bWins)) * 100));
         const winType = diff > 15 ? "Decisive Wipeout" : diff > 5 ? "Dominant Victory" : "Hard-Fought Victory";
 
-        const teamANames = new Set(initialA.map(c => c.name));
+        // const teamANames = new Set(initialA.map(c => c.name));
+
+        // Convert raw stats → FighterTelemetry with derived fields
+        // const toTelemetry = (name: string): FighterTelemetry => {
+        //     const r = statsMap[name] ?? {
+        //         attacksLanded: 0, damageDealt: 0, damageBlocked: 0, hitsTaken: 0,
+        //         damageTaken: 0, revivals: 0, healingDone: 0, kos: 0,
+        //         maxSingleHit: 0, streak: 0, currentStreak: 0, maxHp: 100,
+        //     };
+        //     const accuracy = r.attacksLanded > 0
+        //         ? clamp(Math.round((r.attacksLanded / (r.attacksLanded + r.hitsTaken || 1)) * 100))
+        //         : 0;
+        //     // this is not quite right
+        //     const allHPGained = r.healingDone ? r.healingDone + (r.revivals * r.maxHp * REVIVAL_HP_PERCENTAGE) : r.maxHp;
+        //     const survivalRate = clamp(Math.round(((allHPGained - r.damageTaken) / (r.maxHp || 1)) * 100));
+        //     // clamp(Math.round(((r.maxHp - r.damageTaken) / (r.maxHp || 1)) * 100)); // it was like this before, but now we want to account for healing and revivals.
+        //     const efficiency = clamp(Math.round(Math.min((r.damageDealt / Math.max(1, r.damageTaken)) * 50, 100)));
+        //     return {
+        //         name,
+        //         attacksLanded: r.attacksLanded,
+        //         damageDealt: r.damageDealt,
+        //         damageBlocked: r.damageBlocked,
+        //         hitsTaken: r.hitsTaken,
+        //         damageTaken: r.damageTaken,
+        //         revivals: r.revivals,
+        //         healingDone: r.healingDone,
+        //         kos: r.kos,
+        //         accuracy,
+        //         survivalRate,
+        //         efficiency,
+        //     };
+        // };
 
         // Convert raw stats → FighterTelemetry with derived fields
         const toTelemetry = (name: string): FighterTelemetry => {
@@ -484,11 +519,25 @@ export function useCombatScript(
                 damageTaken: 0, revivals: 0, healingDone: 0, kos: 0,
                 maxSingleHit: 0, streak: 0, currentStreak: 0, maxHp: 100,
             };
+
             const accuracy = r.attacksLanded > 0
                 ? clamp(Math.round((r.attacksLanded / (r.attacksLanded + r.hitsTaken || 1)) * 100))
                 : 0;
-            const survivalRate = clamp(Math.round(((r.maxHp - r.damageTaken) / (r.maxHp || 1)) * 100));
+
+            // ── Fixed Survival Rate Calculation ──────────────────────────────
+            // Total HP a fighter had access to throughout the match:
+            // Base maxHp + total healing done + HP gained from all revivals
+            const revivalHpGained = r.revivals * (r.maxHp * REVIVAL_HP_PERCENTAGE);
+            const totalHpPool = r.maxHp + r.healingDone + revivalHpGained;
+
+            // Remaining effective health pool after all damage taken
+            const remainingHp = Math.max(0, totalHpPool - r.damageTaken);
+
+            // Survival rate is the ratio of remaining health vs the total health pool they utilized
+            const survivalRate = clamp(Math.round((remainingHp / (totalHpPool || 1)) * 100));
+
             const efficiency = clamp(Math.round(Math.min((r.damageDealt / Math.max(1, r.damageTaken)) * 50, 100)));
+
             return {
                 name,
                 attacksLanded: r.attacksLanded,
@@ -505,8 +554,8 @@ export function useCombatScript(
             };
         };
 
-        const teamAStats = initialA.map(c => toTelemetry(c.name));
-        const teamBStats = initialB.map(c => toTelemetry(c.name));
+        const teamAStats = initialA.sort((a, b) => b.overall - a.overall).map(c => toTelemetry(c.name));
+        const teamBStats = initialB.sort((a, b) => b.overall - a.overall).map(c => toTelemetry(c.name));
 
         const getBest = <K extends keyof FighterTelemetry>(
             arr: FighterTelemetry[], key: K
@@ -552,6 +601,8 @@ export function useCombatScript(
             mostDamageSingleHit,
             totalDamageDealt,
             totalHealingDone,
+            mostKOA: getBest(teamAStats, "kos"),
+            mostKOB: getBest(teamBStats, "kos")
         };
 
         script.push({

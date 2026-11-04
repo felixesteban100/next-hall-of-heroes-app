@@ -73,7 +73,6 @@ export function BattlePanel({
 
     const sharedCombatViewProps = {
         result,
-        nameA, nameB,
         rosterA, rosterB,
         visibleLogs,
         isMounted,

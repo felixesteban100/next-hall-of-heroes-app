@@ -31,13 +31,13 @@ export default function Avatar({
 }) {
     const dead = !fighter.isAlive;
 
-    const ringColor = isAttacking || isBeingHit || isInvolved ? (variant === "primary" ? "border-primary" : "border-secondary")
-        : isReviving ? "border-purple-400"
-            : isHealing ? "border-emerald-400"
-                : isDefending ? "border-cyan-400"
-                    : isMvp ? (variant === "primary" ? "border-primary/70" : "border-secondary/70")
-                        : dead || isKO ? "border-white"
-                            : (variant === "primary" ? "border-primary/25" : "border-secondary/25");
+    // const ringColor = isAttacking || isBeingHit || isInvolved ? (variant === "primary" ? "border-primary" : "border-secondary")
+    //     : isReviving ? "border-purple-400"
+    //         : isHealing ? "border-emerald-400"
+    //             : isDefending ? "border-cyan-400"
+    //                 : isMvp ? (variant === "primary" ? "border-primary/70" : "border-secondary/70")
+    //                     : dead || isKO ? "border-white"
+    //                         : (variant === "primary" ? "border-primary/25" : "border-secondary/25");
 
     const glowClass = isAttacking || isDefending || isInvolved ? (variant === "primary" ? "shadow-[0_0_12px_3px] shadow-primary/55" : "shadow-[0_0_12px_3px] shadow-secondary/55")
         : isReviving ? "shadow-[0_0_14px_3px] shadow-purple-400/60"
@@ -71,8 +71,8 @@ export default function Avatar({
         >
             <div
                 className={cn(
-                    "relative rounded-xl border-2 transition-colors duration-300 shrink-0",
-                    ringColor, glowClass
+                    "relative rounded-lg  transition-colors duration-300 shrink-0",
+                    /* ringColor, */ glowClass
                 )}
                 style={{ width: size, height: size }}
             >
@@ -86,7 +86,7 @@ export default function Avatar({
 
                 {(isAttacking || isBeingHit || isDefending || isReviving) && !dead && (
                     <div className={cn(
-                        "absolute inset-2 rounded-xl ring-2 animate-ping pointer-events-none",
+                        "absolute inset-2 rounded-lg ring-2 animate-ping pointer-events-none",
                         variant === "primary" ? "ring-primary/45" : "ring-secondary/45"
                     )} />
                 )}
@@ -113,7 +113,7 @@ export default function Avatar({
 
                 {isBeingHit && !dead && (
                     <motion.div
-                        className="absolute inset-0 bg-red-400/30 pointer-events-none rounded-xl"
+                        className="absolute inset-0 bg-red-400/30 pointer-events-none rounded-lg"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0, 1, 0] }}
                         transition={{ duration: 0.35 }}
@@ -138,14 +138,14 @@ export default function Avatar({
 
                 {isHealing && (
                     <motion.div
-                        className="absolute inset-0 bg-emerald-400/20 pointer-events-none rounded-xl"
+                        className="absolute inset-0 bg-emerald-400/20 pointer-events-none rounded-lg"
                         animate={{ opacity: [0.15, 0.55, 0.15] }}
                         transition={{ duration: 1.1, repeat: Infinity }}
                     />
                 )}
 
                 {isReviving && (
-                    <div className="absolute inset-0 bg-purple-400/30 animate-ping pointer-events-none rounded-xl" />
+                    <div className="absolute inset-0 bg-purple-400/30 animate-ping pointer-events-none rounded-lg" />
                 )}
 
                 {/* {isKO && (
@@ -169,11 +169,11 @@ export default function Avatar({
                     )}
                 </AnimatePresence>
 
-                {isMvp && !dead && (
+                {/* {isMvp && !dead && (
                     <div className="absolute -top-1.5 -right-1.5 bg-yellow-300 p-0.5 rounded-full border border-background z-20">
                         <Crown className="size-2.5 fill-black text-black" />
                     </div>
-                )}
+                )} */}
             </div>
 
             <span

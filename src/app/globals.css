@@ -318,7 +318,7 @@
     0%,
     100% {
       transform: scale(1);
-      filter: brightness(1);
+      filter: brightness(0.8);
     }
     50% {
       transform: scale(1.05);

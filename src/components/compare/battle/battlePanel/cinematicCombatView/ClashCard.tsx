@@ -129,7 +129,7 @@ function FighterCard({ fighter, isWinner }: { fighter: FighterTelemetry; isWinne
                 </div>
                 <StatBar value={fighter.damageDealt} max={maxDmg * 1.2} colorClass="bg-red-500" />
                 <div className="flex justify-between text-[6px] text-muted-foreground/60 mt-0.5">
-                    <span>Survival</span><span>{fighter.survivalRate}%</span>
+                    <span>Survival rate</span><span>{fighter.survivalRate}%</span>
                 </div>
                 <StatBar value={fighter.survivalRate} colorClass="bg-emerald-500" />
             </div>
@@ -370,23 +370,86 @@ function BattleEndScreen({ isVictory, log, meta }: {
 
                     {/* Awards */}
                     <Accordion sectionKey="awards" label="Awards" icon={Star} iconColor="text-amber-400" open={open === "awards"} onToggle={toggle}>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-1 gap-1.5">
                             {[
-                                { Icon: Trophy, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/25", label: "Top Striker A", name: meta.mvpA.name, value: `${meta.mvpA.damageDealt} DMG` },
-                                { Icon: Trophy, color: "text-secondary", bg: "bg-secondary/10 border-secondary/25", label: "Top Striker B", name: meta.mvpB.name, value: `${meta.mvpB.damageDealt} DMG` },
-                                { Icon: ShieldCheck, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/25", label: "Iron Wall A", name: meta.wallA.name, value: `${meta.wallA.damageBlocked} blk` },
-                                { Icon: ShieldCheck, color: "text-cyan-300", bg: "bg-cyan-500/10 border-cyan-500/25", label: "Iron Wall B", name: meta.wallB.name, value: `${meta.wallB.damageBlocked} blk` },
-                                { Icon: RefreshCw, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/25", label: "Resurrector A", name: meta.reviveA.name, value: `${meta.reviveA.revivals}× revived` },
-                                { Icon: RefreshCw, color: "text-purple-300", bg: "bg-purple-500/10 border-purple-500/25", label: "Resurrector B", name: meta.reviveB.name, value: `${meta.reviveB.revivals}× revived` },
-                                { Icon: HeartPulse, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/25", label: "Field Medic A", name: meta.healerA.name, value: `${meta.healerA.healingDone} HP` },
-                                { Icon: HeartPulse, color: "text-emerald-300", bg: "bg-emerald-500/10 border-emerald-500/25", label: "Field Medic B", name: meta.healerB.name, value: `${meta.healerB.healingDone} HP` },
-                            ].map(({ Icon, color, bg, label, name, value }) => (
-                                <div key={label} className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg border", bg)}>
-                                    <Icon className={cn("size-2.5 shrink-0", color)} />
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="text-[6px] text-muted-foreground/60 uppercase tracking-wide">{label}</span>
-                                        <span className="text-[7px] font-bold text-foreground truncate">{name}</span>
-                                        <span className={cn("text-[6px] font-medium", color)}>{value}</span>
+                                {
+                                    Icon: Trophy,
+                                    color: "text-amber-400",
+                                    label: "Top MVP (Damage Dealt)",
+                                    nameA: meta.mvpA.name, valA: meta.mvpA.damageDealt,
+                                    nameB: meta.mvpB.name, valB: meta.mvpB.damageDealt,
+                                    unit: "DMG",
+                                    aWins: meta.mvpA.damageDealt >= meta.mvpB.damageDealt
+                                },
+                                {
+                                    Icon: Skull,
+                                    color: "text-red-400",
+                                    label: "Most Eliminations (KO's)",
+                                    nameA: meta.mostKOA.name, valA: meta.mostKOA.kos,
+                                    nameB: meta.mostKOB.name, valB: meta.mostKOB.kos,
+                                    unit: "KO'S",
+                                    aWins: meta.mostKOA.kos >= meta.mostKOB.kos
+                                },
+                                {
+                                    Icon: ShieldCheck,
+                                    color: "text-blue-400",
+                                    label: "Iron Wall (Damage Blocked)",
+                                    nameA: meta.wallA.name, valA: meta.wallA.damageBlocked,
+                                    nameB: meta.wallB.name, valB: meta.wallB.damageBlocked,
+                                    unit: "BLK",
+                                    aWins: meta.wallA.damageBlocked >= meta.wallB.damageBlocked
+                                },
+                                {
+                                    Icon: RefreshCw,
+                                    color: "text-purple-400",
+                                    label: "Resurrector (Revivals)",
+                                    nameA: meta.reviveA.name, valA: meta.reviveA.revivals,
+                                    nameB: meta.reviveB.name, valB: meta.reviveB.revivals,
+                                    unit: "REV",
+                                    aWins: meta.reviveA.revivals >= meta.reviveB.revivals
+                                },
+                                {
+                                    Icon: HeartPulse,
+                                    color: "text-emerald-400",
+                                    label: "Field Medic (Healing Done)",
+                                    nameA: meta.healerA.name, valA: meta.healerA.healingDone,
+                                    nameB: meta.healerB.name, valB: meta.healerB.healingDone,
+                                    unit: "HP",
+                                    aWins: meta.healerA.healingDone >= meta.healerB.healingDone
+                                },
+                            ].map(({ Icon, color, label, nameA, valA, nameB, valB, unit, aWins }) => (
+                                <div key={label} className="flex flex-col p-2 gap-1.5 ">
+                                    {/* Category Header */}
+                                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                        <Icon className={cn("size-3.5", color)} />
+                                        <span>{label}</span>
+                                    </div>
+
+                                    {/* Head-to-Head Split Box */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {/* Team A Side */}
+                                        <div className={cn(
+                                            "flex flex-col p-1.5 rounded border transition-all",
+                                            aWins ? "bg-primary/10 border-primary/40 font-bold" : "bg-muted/20 border-border/50 opacity-75"
+                                        )}>
+                                            <span className="text-[7px] text-muted-foreground truncate">{nameA}</span>
+                                            <div className="flex items-baseline justify-between mt-0.5">
+                                                <span className={cn("text-xs font-black", aWins ? "text-primary" : "text-foreground")}>{valA} <span className="text-[9px] font-normal opacity-70">{unit}</span></span>
+                                                {aWins && <span className="text-[9px] bg-primary text-primary-foreground px-1 rounded">WIN</span>}
+                                            </div>
+                                        </div>
+
+                                        {/* Team B Side */}
+                                        <div className={cn(
+                                            "flex flex-col p-1.5 rounded border transition-all",
+                                            !aWins ? "bg-secondary/10 border-secondary/40 font-bold" : "bg-muted/20 border-border/50 opacity-75"
+                                        )}>
+                                            <span className="text-[7px] text-muted-foreground truncate">{nameB}</span>
+                                            <div className="flex items-baseline justify-between mt-0.5">
+                                                <span className={cn("text-xs font-black", !aWins ? "text-secondary" : "text-foreground")}>{valB} <span className="text-[9px] font-normal opacity-70">{unit}</span></span>
+                                                {!aWins && <span className="text-[9px] bg-secondary text-secondary-foreground px-1 rounded">WIN</span>}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -439,8 +502,8 @@ export default function ClashCard({
 
     if (!event) {
         return (
-            <div className="flex flex-col items-center justify-center gap-2 h-full text-muted-foreground/30 py-8">
-                <Swords className="size-8 animate-pulse" />
+            <div className="flex flex-col items-center justify-center gap-2 h-full text-muted-foreground/30 py-8s">
+                <Swords className="size-8 animate-pulse-gold" />
                 <span className="text-[10px] uppercase tracking-widest font-semibold">Awaiting Combat</span>
             </div>
         );
