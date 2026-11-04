@@ -145,16 +145,16 @@ export const getCardProps = (item: any, type: EntityType) => {
                         title: "Power Tier",
                     },
                     {
-                        icon: ActivationIcon,
-                        text: item.activationType || "Instant",
-                        colorClass: activationColor,
-                        title: "Activation Type",
-                    },
-                    {
                         icon: RoleIcon,
                         text: item.combatRole?.split("/")[0].trim() || "Utility",
                         colorClass: roleColor,
                         title: "Combat Role",
+                    },
+                    {
+                        icon: ActivationIcon,
+                        text: item.activationType || "Instant",
+                        colorClass: activationColor,
+                        title: "Activation Type",
                     },
                 ],
             };
@@ -178,9 +178,15 @@ export const getCardProps = (item: any, type: EntityType) => {
                         colorClass: universeColor?.text ?? "text-muted-foreground",
                         title: "Type",
                     },
-                    {
+                    /* {
                         icon: ImageIcon,
                         text: `${item.comics?.length ?? 0} Gallery`,
+                        colorClass: "text-amber-500",
+                        title: "Comics",
+                    }, */
+                    {
+                        icon: Users,
+                        text: `${item.characterCount ?? 0} Characters`,
                         colorClass: "text-amber-500",
                         title: "Comics",
                     },

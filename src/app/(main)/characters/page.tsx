@@ -99,9 +99,10 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
 
     // const charactersToUpdate = 
     // seedCharactersDescription(charactersToUpdate)
+    // };
 
     return (
-        <div >
+        <div className="">
             <EntityFilterBar
                 type="character"
                 sortOptions={[

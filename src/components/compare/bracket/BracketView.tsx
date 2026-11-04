@@ -204,24 +204,45 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const frameId = requestAnimationFrame(() => {
+        const timer = setTimeout(() => {
             if (scrollContainerRef.current) {
                 const container = scrollContainerRef.current;
-                // Find the active card directly from the container DOM
                 const activeCard = container.querySelector('[data-active-bout="true"]');
 
                 if (activeCard) {
                     activeCard.scrollIntoView({
                         behavior: "smooth",
                         inline: "center",
-                        block: "nearest",
+                        block: "center", // "nearest" prevents vertical jumping on mobile/desktop
                     });
                 }
             }
-        });
+        }, 50); // Small delay to let layout settle
 
-        return () => cancelAnimationFrame(frameId);
+        return () => clearTimeout(timer);
     }, [currentStep, pendingVoteBoutId]);
+
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         if (!scrollContainerRef.current) return;
+    //         const container = scrollContainerRef.current;
+
+    //         // Find the active card directly from the container
+    //         const activeCard = container.querySelector('[data-active-bout="true"]') as HTMLElement;
+
+    //         if (activeCard) {
+    //             // Calculate position to center the active card horizontally
+    //             const scrollLeft = activeCard.offsetLeft - (container.clientWidth / 2) + (activeCard.offsetWidth / 2);
+
+    //             container.scrollTo({
+    //                 left: Math.max(0, scrollLeft),
+    //                 behavior: "smooth"
+    //             });
+    //         }
+    //     }, 60);
+
+    //     return () => clearTimeout(timer);
+    // }, [currentStep, pendingVoteBoutId]);
 
     useEffect(() => {
         if (!isPlaying) return;
@@ -393,7 +414,11 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
             </div>
 
             {/* Horizontal scroll container with larger cards */}
-            <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-6 pt-2 px-2 scroll-smooth snap-x snap-mandatory">
+            {/* <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-6 pt-2 px-2 snap-x snap-mandatory"> */}
+            <div
+                ref={scrollContainerRef}
+                className="w-full overflow-x-auto pb-6 pt-2 px-2 relative"
+            >
                 <div className="flex flex-row gap-3 sm:gap-6 justify-start items-center min-w-max px-4">
                     {rounds.map((roundBouts, rIdx) => {
 

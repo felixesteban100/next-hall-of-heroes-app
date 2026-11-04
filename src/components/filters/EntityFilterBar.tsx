@@ -225,27 +225,78 @@ export const EntityFilterBar = ({
 
     function getExtremeBannerItems(): BannerItem[] {
         let extremeBannerItems: BannerItem[] = [];
+        const alreadyStablishedFilters = filterProps.draftFilters
+        const nameQueried = filterProps.name
+        const { universe, alignment, gender, character_type, tier, class: classQ, team, activationType, combatRole, type, powers } = alreadyStablishedFilters
 
-        if (name) {
+        if (nameQueried) {
             extremeBannerItems.push({
-                label: `Name: ${name}`,
+                label: `Name: ${nameQueried}`,
                 icon: "star",
                 color: "bg-blue-500/15 text-blue-400 border border-blue-500/25"
             });
         }
 
-        if (draftFilters.universe) {
-            const universeObj = extraData?.universes?.find(u => String(u.id) === String(draftFilters.universe));
+        if (alignment) {
+            extremeBannerItems.push({
+                label: `Alignment: ${getCharacterAlignmentText(alignment)}`,
+                icon: alignment as BannerIcon,
+                color: getCharacterAlignmentBadgeColors(alignment),
+            });
+        }
+
+        if (gender) {
+            extremeBannerItems.push({
+                label: `Gender: ${gender}`,
+                icon: gender.toLowerCase() as BannerIcon,
+                color: getCharacterGenderBadgeColors(gender)
+            });
+        }
+
+        if (character_type) {
+            extremeBannerItems.push({
+                label: `Type: ${CHARACTER_TYPE_LABEL[character_type as keyof typeof CHARACTER_TYPE_LABEL]}`,
+                icon: character_type.toLowerCase() as BannerIcon,
+                color: CHARACTER_TYPE_COLOR[character_type as keyof typeof CHARACTER_TYPE_COLOR].badge
+            });
+        }
+
+        if (tier) {
+            if (type === "power") {
+                extremeBannerItems.push({
+                    label: `Tier: ${POWER_TIER[Number(tier) as keyof typeof POWER_TIER]} (T${tier})`,
+                    icon: `power_tier_${tier}` as BannerIcon,
+                    color: POWER_TIER_COLOR[Number(tier) as keyof typeof POWER_TIER_COLOR].badge
+                });
+            } else {
+                extremeBannerItems.push({
+                    label: `Tier: ${CHARACTER_TIER[Number(tier) as keyof typeof CHARACTER_TIER]} (T${tier})`,
+                    icon: `character_tier_${tier}` as BannerIcon,
+                    color: CHARACTER_TIER_COLOR[Number(tier) as keyof typeof CHARACTER_TIER_COLOR].badge
+                });
+            }
+        }
+
+        if (classQ) {
+            extremeBannerItems.push({
+                label: `Class: ${CHARACTER_CLASS[Number(classQ) as keyof typeof CHARACTER_CLASS]}`,
+                icon: `character_class_${classQ}` as BannerIcon,
+                color: CHARACTER_CLASS_COLOR[Number(classQ) as keyof typeof CHARACTER_CLASS_COLOR].badge
+            });
+        }
+
+        if (universe) {
+            const universeObj = extraData?.universes?.find(u => String(u.id) === String(universe));
 
             extremeBannerItems.push({
-                label: `Universe: ${universeObj?.name || draftFilters.universe}`,
+                label: `Universe: ${universeObj?.name || universe}`,
                 icon: "trophy",
                 color: "bg-purple-500/15 text-purple-400 border border-purple-500/25"
             });
         }
 
-        if (draftFilters.team) {
-            const teamObj = extraData?.teams?.find(t => String(t.id) === String(draftFilters.team));
+        if (team) {
+            const teamObj = extraData?.teams?.find(t => String(t.id) === String(team));
             if (teamObj) {
                 extremeBannerItems.push({
                     label: `Team: ${teamObj.name}`,
@@ -255,80 +306,32 @@ export const EntityFilterBar = ({
             }
         }
 
-        if (draftFilters.combatRole) {
+        if (activationType) {
             extremeBannerItems.push({
-                label: `Combat Role: ${draftFilters.combatRole}`,
-                icon: draftFilters.combatRole.toLowerCase() as BannerIcon,
-                color: POWER_COMBAT_ROLE_COLOR[draftFilters.combatRole as keyof typeof POWER_COMBAT_ROLE_COLOR].badge
+                label: `Activation Type: ${activationType}`,
+                icon: activationType.toLowerCase() as BannerIcon,
+                color: POWER_ACTIVATION_TYPE_COLOR[activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR].badge
             });
         }
 
-        if (draftFilters.activationType) {
+        if (combatRole) {
             extremeBannerItems.push({
-                label: `Activation Type: ${draftFilters.activationType}`,
-                icon: draftFilters.activationType.toLowerCase() as BannerIcon,
-                color: POWER_ACTIVATION_TYPE_COLOR[draftFilters.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR].badge
+                label: `Combat Role: ${combatRole}`,
+                icon: combatRole.toLowerCase() as BannerIcon,
+                color: POWER_COMBAT_ROLE_COLOR[combatRole as keyof typeof POWER_COMBAT_ROLE_COLOR].badge
             });
         }
 
-        if (draftFilters.type) {
+        if (type) {
             extremeBannerItems.push({
-                label: `Type: ${draftFilters.type}`,
-                icon: draftFilters.type.toLowerCase() as BannerIcon,
+                label: `Type: ${type}`,
+                icon: type.toLowerCase() as BannerIcon,
                 color: "bg-amber-500/15 text-amber-400 border border-amber-500/25"
             });
         }
 
-        if (draftFilters.gender) {
-            extremeBannerItems.push({
-                label: `Gender: ${draftFilters.gender}`,
-                icon: draftFilters.gender.toLowerCase() as BannerIcon,
-                color: getCharacterGenderBadgeColors(draftFilters.gender)
-            });
-        }
-
-        if (draftFilters.alignment) {
-            extremeBannerItems.push({
-                label: `Alignment: ${getCharacterAlignmentText(draftFilters.alignment)}`,
-                icon: draftFilters.alignment as BannerIcon,
-                color: getCharacterAlignmentBadgeColors(draftFilters.alignment),
-            });
-        }
-
-        if (draftFilters.tier) {
-            if (type === "power") {
-                extremeBannerItems.push({
-                    label: `Tier: ${POWER_TIER[Number(draftFilters.tier) as keyof typeof POWER_TIER]} (T${draftFilters.tier})`,
-                    icon: `power_tier_${draftFilters.tier}` as BannerIcon,
-                    color: POWER_TIER_COLOR[Number(draftFilters.tier) as keyof typeof POWER_TIER_COLOR].badge
-                });
-            } else {
-                extremeBannerItems.push({
-                    label: `Tier: ${CHARACTER_TIER[Number(draftFilters.tier) as keyof typeof CHARACTER_TIER]} (T${draftFilters.tier})`,
-                    icon: `character_tier_${draftFilters.tier}` as BannerIcon,
-                    color: CHARACTER_TIER_COLOR[Number(draftFilters.tier) as keyof typeof CHARACTER_TIER_COLOR].badge
-                });
-            }
-        }
-
-        if (draftFilters.class) {
-            extremeBannerItems.push({
-                label: `Class: ${CHARACTER_CLASS[Number(draftFilters.class) as keyof typeof CHARACTER_CLASS]}`,
-                icon: `character_class_${draftFilters.class}` as BannerIcon,
-                color: CHARACTER_CLASS_COLOR[Number(draftFilters.class) as keyof typeof CHARACTER_CLASS_COLOR].badge
-            });
-        }
-
-        if (draftFilters.character_type) {
-            extremeBannerItems.push({
-                label: `Type: ${CHARACTER_TYPE_LABEL[draftFilters.character_type as keyof typeof CHARACTER_TYPE_LABEL]}`,
-                icon: draftFilters.character_type.toLowerCase() as BannerIcon,
-                color: CHARACTER_TYPE_COLOR[draftFilters.character_type as keyof typeof CHARACTER_TYPE_COLOR].badge
-            });
-        }
-
-        if (draftFilters.powers && draftFilters.powers.length > 0) {
-            for (const powerId of draftFilters.powers) {
+        if (powers && powers.length > 0) {
+            for (const powerId of powers) {
                 const powerObj = extraData?.powers?.find(p => p.id === powerId);
                 if (powerObj) {
                     extremeBannerItems.push({
@@ -414,14 +417,13 @@ export const EntityFilterBar = ({
                         {type === "character" && (
                             <div className="space-y-4">
                                 <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Attributes</Label>
+                                <ToggleGroup label="Alignment" cols={3}
+                                    options={ALIGNMENT_OPTIONS}
+                                    value={draftFilters.alignment} onChange={v => setFilter("alignment", v)} />
 
                                 <ToggleGroup label="Gender"
                                     options={[{ id: "Male", label: "Male", activeBg: getCharacterGenderBackground("male"), Icon: getCharacterGenderIcon("male") }, { id: "Female", label: "Female", activeBg: getCharacterGenderBackground("female"), Icon: getCharacterGenderIcon("female") }]}
                                     value={draftFilters.gender} onChange={v => setFilter("gender", v)} />
-
-                                <ToggleGroup label="Alignment" cols={3}
-                                    options={ALIGNMENT_OPTIONS}
-                                    value={draftFilters.alignment} onChange={v => setFilter("alignment", v)} />
 
                                 <ToggleGroup label="Character Type"
                                     options={CHARACTER_TYPE_OPTIONS}
@@ -484,15 +486,16 @@ export const EntityFilterBar = ({
                         {type === "power" && (
                             <div className="space-y-4">
                                 <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Power Properties</Label>
+                                <ToggleGroup label="Tier"
+                                    options={POWER_TIER_OPTIONS}
+                                    value={draftFilters.tier} onChange={v => setFilter("tier", v)} />
                                 <ToggleGroup label="Combat Role"
                                     options={COMBAT_ROLE_OPTIONS}
                                     value={draftFilters.combatRole} onChange={v => setFilter("combatRole", v)} />
                                 <ToggleGroup label="Activation Type"
                                     options={ACTIVATION_TYPE_OPTIONS}
                                     value={draftFilters.activationType} onChange={v => setFilter("activationType", v)} />
-                                <ToggleGroup label="Tier"
-                                    options={POWER_TIER_OPTIONS}
-                                    value={draftFilters.tier} onChange={v => setFilter("tier", v)} />
+
                             </div>
                         )}
 
@@ -508,7 +511,7 @@ export const EntityFilterBar = ({
                                     value={draftFilters.status} onChange={v => setFilter("status", v)} /> */}
                                 <div className="space-y-1.5">
                                     <span className="text-[11px] text-muted-foreground">Universe with teams</span>
-                                    <Select value={draftFilters.universe} onValueChange={v => { setFilter("universe", v); }}>
+                                    <Select defaultValue={filterProps.draftFilters.universe} value={draftFilters.universe} onValueChange={v => { setFilter("universe", v); }}>
                                         <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Universe..." /></SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>

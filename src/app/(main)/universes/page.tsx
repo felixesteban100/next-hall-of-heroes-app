@@ -1,5 +1,5 @@
 import { PaginationPages } from "@/components/filters/Pagination";
-import { collectionUniverses } from "@/db/mongodb";
+import { collectionCharacters, collectionUniverses } from "@/db/mongodb";
 import { sanitize } from "@/lib/utils";
 import { SwipeGrid } from "@/components/shared/SwipeGrid";
 import { EntityFilterBar } from "@/components/filters/EntityFilterBar";
@@ -54,12 +54,30 @@ export default async function UniversePage({
 
     if (universeType) query.type = universeType;
 
-    const universesPerPage = await collectionUniverses
-        .find(query)
-        .sort({ [sortProperty]: sortOrientation === "desc" ? -1 : 1 })
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .toArray();
+    const universesPerPage = await collectionUniverses.aggregate([
+        { $match: query },
+        { $sort: { [sortProperty]: sortOrientation === "desc" ? -1 : 1 } },
+        { $skip: (page - 1) * pageSize },
+        { $limit: pageSize },
+        {
+            $lookup: {
+                from: "characters", // Replace with your actual characters collection name in MongoDB
+                localField: "name", // The field on the universe document (e.g. universe name)
+                foreignField: "biography.publisher", // The character field matching it
+                as: "matchingCharacters"
+            }
+        },
+        {
+            $addFields: {
+                characterCount: { $size: "$matchingCharacters" }
+            }
+        },
+        {
+            $project: {
+                matchingCharacters: 0 // Strips out the heavy character array, leaving only the count and universe fields
+            }
+        }
+    ]).toArray();
 
     const sanitizedUniverses = sanitize(universesPerPage);
 
