@@ -275,7 +275,7 @@ function BattleEndScreen({ isVictory, log, meta }: {
                         <span className={cn("text-[9px] font-black uppercase tracking-widest", isVictory ? "text-amber-400" : "text-red-400")}>
                             {meta?.winType ?? "Engagement Concluded"}
                         </span>
-                        <p className="text-[7px] font-medium text-foreground/60 leading-tight truncate max-w-[180px]">
+                        <p className="text-[7px] font-medium text-foreground/60 leading-tight max-w-[180px]">
                             {log.text}
                         </p>
                     </div>

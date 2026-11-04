@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { simulateSpar } from "@/lib/compare";
-import { RoundDistributionChart } from "../bracket/RoundDistributionChart";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import ControlToolbar from "./battlePanel/ControlToolbar";
 import { useCombatScript } from "./battlePanel/useCombatScript";
@@ -110,14 +109,6 @@ export function BattlePanel({
 
                 <CinematicCombatView
                     {...sharedCombatViewProps}
-                />
-
-                <RoundDistributionChart
-                    aWins={result?.aWins}
-                    bWins={result?.bWins}
-                    draws={result?.draws}
-                    nameA={nameA}
-                    nameB={nameB}
                 />
             </div>
         </div>
