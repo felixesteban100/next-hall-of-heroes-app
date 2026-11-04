@@ -23,7 +23,8 @@ import {
     POWER_ACTIVATION_TYPE_ICON, POWER_ACTIVATION_TYPE_COLOR,
     POWER_TIER, POWER_TIER_ICON, POWER_TIER_COLOR,
 } from '@/lib/constants';
-import { getCharacterAligmentIcon, getCharacterGenderBackground, getCharacterGenderIcon } from '@/lib/character_utils';
+import { getAlignmentIcon, getCharacterAlignmentBadgeColors, getCharacterAlignmentText, getCharacterGenderBackground, getCharacterGenderBadgeColors, getCharacterGenderIcon } from '@/lib/character_utils';
+import { BannerIcon, BannerItem, ExtremeBanner } from '../shared/ExtremeBanner';
 
 export type DraftFilters = {
     alignment?: string;
@@ -145,9 +146,9 @@ const POWER_TIER_OPTIONS: ToggleOption[] = (Object.keys(POWER_TIER).map(Number))
 
 // Plain options (no color/icon constants for these)
 const ALIGNMENT_OPTIONS: ToggleOption[] = [
-    { id: "good", label: "Hero", activeBg: "bg-green-500 text-white", activeText: "", Icon: getCharacterAligmentIcon("good") },
-    { id: "neutral", label: "Anti-Hero", activeBg: "bg-yellow-500 text-white", activeText: "", Icon: getCharacterAligmentIcon("neutral") },
-    { id: "bad", label: "Villain", activeBg: "bg-red-600 text-white", activeText: "", Icon: getCharacterAligmentIcon("bad") },
+    { id: "good", label: "Hero", activeBg: "bg-green-500 text-white", activeText: "", Icon: getAlignmentIcon("good") },
+    { id: "neutral", label: "Anti-Hero", activeBg: "bg-yellow-500 text-white", activeText: "", Icon: getAlignmentIcon("neutral") },
+    { id: "bad", label: "Villain", activeBg: "bg-red-600 text-white", activeText: "", Icon: getAlignmentIcon("bad") },
 ];
 // const TEAM_STATUS_OPTIONS: ToggleOption[] = [
 //     { id: "active", label: "Active", activeBg: "bg-blue-500", activeText: "text-white" },
@@ -165,10 +166,12 @@ export const EntityFilterBar = ({
     type,
     sortOptions,
     extraData,
+    // extremeBannerItems
 }: {
     type: EntityFilterType;
     sortOptions: SortOption[];
     extraData?: { universes?: any[]; teams?: any[]; powers?: any[] };
+    // extremeBannerItems: BannerItem[];
 }) => {
     const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();
@@ -220,14 +223,136 @@ export const EntityFilterBar = ({
         Array.isArray(val) ? val.length > 0 : Boolean(val)
     ) || Boolean(name) || modes.length > 0 || fields.length > 0;
 
+    function getExtremeBannerItems(): BannerItem[] {
+        let extremeBannerItems: BannerItem[] = [];
+
+        if (name) {
+            extremeBannerItems.push({
+                label: `Name: ${name}`,
+                icon: "star",
+                color: "bg-blue-500/15 text-blue-400 border border-blue-500/25"
+            });
+        }
+
+        if (draftFilters.universe) {
+            const universeObj = extraData?.universes?.find(u => String(u.id) === String(draftFilters.universe));
+
+            extremeBannerItems.push({
+                label: `Universe: ${universeObj?.name || draftFilters.universe}`,
+                icon: "trophy",
+                color: "bg-purple-500/15 text-purple-400 border border-purple-500/25"
+            });
+        }
+
+        if (draftFilters.team) {
+            const teamObj = extraData?.teams?.find(t => String(t.id) === String(draftFilters.team));
+            if (teamObj) {
+                extremeBannerItems.push({
+                    label: `Team: ${teamObj.name}`,
+                    icon: "zap",
+                    color: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                });
+            }
+        }
+
+        if (draftFilters.combatRole) {
+            extremeBannerItems.push({
+                label: `Combat Role: ${draftFilters.combatRole}`,
+                icon: draftFilters.combatRole.toLowerCase() as BannerIcon,
+                color: POWER_COMBAT_ROLE_COLOR[draftFilters.combatRole as keyof typeof POWER_COMBAT_ROLE_COLOR].badge
+            });
+        }
+
+        if (draftFilters.activationType) {
+            extremeBannerItems.push({
+                label: `Activation Type: ${draftFilters.activationType}`,
+                icon: draftFilters.activationType.toLowerCase() as BannerIcon,
+                color: POWER_ACTIVATION_TYPE_COLOR[draftFilters.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR].badge
+            });
+        }
+
+        if (draftFilters.type) {
+            extremeBannerItems.push({
+                label: `Type: ${draftFilters.type}`,
+                icon: draftFilters.type.toLowerCase() as BannerIcon,
+                color: "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+            });
+        }
+
+        if (draftFilters.gender) {
+            extremeBannerItems.push({
+                label: `Gender: ${draftFilters.gender}`,
+                icon: draftFilters.gender.toLowerCase() as BannerIcon,
+                color: getCharacterGenderBadgeColors(draftFilters.gender)
+            });
+        }
+
+        if (draftFilters.alignment) {
+            extremeBannerItems.push({
+                label: `Alignment: ${getCharacterAlignmentText(draftFilters.alignment)}`,
+                icon: draftFilters.alignment as BannerIcon,
+                color: getCharacterAlignmentBadgeColors(draftFilters.alignment),
+            });
+        }
+
+        if (draftFilters.tier) {
+            if (type === "power") {
+                extremeBannerItems.push({
+                    label: `Tier: ${POWER_TIER[Number(draftFilters.tier) as keyof typeof POWER_TIER]} (T${draftFilters.tier})`,
+                    icon: `power_tier_${draftFilters.tier}` as BannerIcon,
+                    color: POWER_TIER_COLOR[Number(draftFilters.tier) as keyof typeof POWER_TIER_COLOR].badge
+                });
+            } else {
+                extremeBannerItems.push({
+                    label: `Tier: ${CHARACTER_TIER[Number(draftFilters.tier) as keyof typeof CHARACTER_TIER]} (T${draftFilters.tier})`,
+                    icon: `character_tier_${draftFilters.tier}` as BannerIcon,
+                    color: CHARACTER_TIER_COLOR[Number(draftFilters.tier) as keyof typeof CHARACTER_TIER_COLOR].badge
+                });
+            }
+        }
+
+        if (draftFilters.class) {
+            extremeBannerItems.push({
+                label: `Class: ${CHARACTER_CLASS[Number(draftFilters.class) as keyof typeof CHARACTER_CLASS]}`,
+                icon: `character_class_${draftFilters.class}` as BannerIcon,
+                color: CHARACTER_CLASS_COLOR[Number(draftFilters.class) as keyof typeof CHARACTER_CLASS_COLOR].badge
+            });
+        }
+
+        if (draftFilters.character_type) {
+            extremeBannerItems.push({
+                label: `Type: ${CHARACTER_TYPE_LABEL[draftFilters.character_type as keyof typeof CHARACTER_TYPE_LABEL]}`,
+                icon: draftFilters.character_type.toLowerCase() as BannerIcon,
+                color: CHARACTER_TYPE_COLOR[draftFilters.character_type as keyof typeof CHARACTER_TYPE_COLOR].badge
+            });
+        }
+
+        if (draftFilters.powers && draftFilters.powers.length > 0) {
+            for (const powerId of draftFilters.powers) {
+                const powerObj = extraData?.powers?.find(p => p.id === powerId);
+                if (powerObj) {
+                    extremeBannerItems.push({
+                        label: `Power: ${powerObj.name}`,
+                        icon: "zap",
+                        color: "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+                    });
+                }
+            }
+        }
+
+        return extremeBannerItems;
+    }
+
     return (
         <div className="flex items-center justify-between w-full gap-2">
-            <div className="flex items-center gap-2" />
+            {
+                getExtremeBannerItems().length > 0 ? (<ExtremeBanner items={getExtremeBannerItems()} interval={3500} />) : (<div className="h-7" />)
+            }
 
             <Drawer direction="right" open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
                 <DrawerTrigger asChild>
                     <Button size="sm" variant="outline" className="gap-2 relative">
-                        <SlidersHorizontal size={14} /> Filters & Search
+                        <SlidersHorizontal size={14} /> <span className="hidden md:inline">Filters & Search</span>
                         {filterProps.activeCount > 0 && (
                             <Badge className="absolute -top-1.5 -right-1.5 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
                                 {filterProps.activeCount}
@@ -342,7 +467,7 @@ export const EntityFilterBar = ({
                                 <div className="space-y-1.5">
                                     <span className="text-[11px] text-muted-foreground">Powers</span>
                                     <MultiSelect values={(draftFilters.powers || []).map(String)} onValuesChange={v => setFilter("powers", v.map(Number))}>
-                                        <MultiSelectTrigger className="w-full text-xs h-8">
+                                        <MultiSelectTrigger className="w-full text-xs h-8 border border-text-muted-foreground/25 rounded-md px-2 py-1.5 flex items-center justify-between gap-2">
                                             <MultiSelectValue placeholder="Select powers..." overflowBehavior="cutoff" />
                                         </MultiSelectTrigger>
                                         <MultiSelectContent>

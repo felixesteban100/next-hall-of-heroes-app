@@ -5,15 +5,41 @@ export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
         case "good":
             // return "text-green-500 bg-transparent font-bold";
-            return "bg-green-400 text-black";
+            return "bg-green-400 text-white";
         case "neutral":
             // return "text-yellow-500 bg-transparent font-bold";
-            return "bg-yellow-400 text-black";
+            return "bg-yellow-400 text-white";
         case "bad":
             // return "text-red-500 bg-transparent font-bold";
             return "bg-red-600 text-white";
         default:
             return "bg-gray-500 text-foreground";
+    }
+}
+
+export function getCharacterAlignmentColorsNameAndNumber(alignment: string) {
+    switch (alignment) {
+        case "good":
+            return "green-400";
+        case "neutral":
+            return "yellow-400";
+        case "bad":
+            return "red-600";
+        default:
+            return "gray-500";
+    }
+}
+
+export function getCharacterAlignmentBadgeColors(alignment: string) {
+    switch (alignment) {
+        case "good":
+            return "bg-green-500/15 text-green-400 border border-green-500/25";
+        case "neutral":
+            return "bg-yellow-500/15 text-yellow-400 border border-yellow-500/25";
+        case "bad":
+            return "bg-red-500/15 text-red-400 border border-red-500/25";
+        default:
+            return "bg-gray-500/15 text-gray-400 border border-gray-500/25";
     }
 }
 
@@ -43,7 +69,7 @@ export function getCharacterAlignmentText(alignment: string) {
     }
 }
 
-export function getCharacterAligmentIcon(alignment: string) {
+export function getAlignmentIcon(alignment: string) {
     return alignment === "good" ? Smile : alignment === "bad" ? Frown : Meh
 }
 
@@ -57,6 +83,10 @@ export function getCharacterGenderBackground(gender: string) {
 
 export function getCharacterGenderIcon(gender: string) {
     return gender.toLowerCase() === "male" ? Mars : Venus
+}
+
+export function getCharacterGenderBadgeColors(gender: string) {
+    return gender.toLowerCase() === "male" ? "bg-blue-500/15 text-blue-400 border border-blue-500/25" : "bg-pink-500/15 text-pink-400 border border-pink-500/25"
 }
 
 export function getCharacterRaceIcon(race: string) {

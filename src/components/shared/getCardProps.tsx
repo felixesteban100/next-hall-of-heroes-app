@@ -1,4 +1,4 @@
-import { Crown, Hash, ImageIcon, Mars, Venus, Users } from "lucide-react";
+import { Crown, Hash, ImageIcon, Users } from "lucide-react";
 import { EntityType } from "./SwipeGrid";
 import {
     CHARACTER_CLASS,
@@ -17,8 +17,8 @@ import {
     POWER_TIER_COLOR,
     POWER_TIER_ICON,
 } from "@/lib/constants";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor } from "@/lib/character_utils";
-import { getAligmentIcon } from "@/lib/characters_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon } from "@/lib/character_utils";
+import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
 
 export const getCardProps = (item: any, type: EntityType) => {
@@ -36,7 +36,7 @@ export const getCardProps = (item: any, type: EntityType) => {
             const typeColor = CHARACTER_TYPE_COLOR[(item.character_type === "" ? "unknown" : item.character_type) as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_COLOR["unknown"];
 
             const alignmentColor = getCharacterAlignmentTextColor(item.biography.alignment);
-            const IconAlignment = getAligmentIcon(item.biography.alignment);
+            const IconAlignment = getAlignmentIcon(item.biography.alignment);
             const alignmentText = getCharacterAlignmentText(item.biography.alignment);
 
             return {
@@ -57,7 +57,7 @@ export const getCardProps = (item: any, type: EntityType) => {
                         title: "Alignment",
                     },
                     {
-                        icon: item.appearance?.gender === "Female" ? Venus : Mars,
+                        icon: getCharacterGenderIcon(item.appearance?.gender),
                         text: item.appearance?.gender || "—",
                         colorClass: item.appearance?.gender === "Female" ? "text-pink-500" : "text-blue-500",
                         title: "Gender",
@@ -87,7 +87,7 @@ export const getCardProps = (item: any, type: EntityType) => {
 
         case "team": {
             const alignmentColor = getCharacterAlignmentTextColor(item.alignment);
-            const IconAlignment = getAligmentIcon(item.alignment);
+            const IconAlignment = getAlignmentIcon(item.alignment);
             const alignmentText = getCharacterAlignmentText(item.alignment);
 
             return {

@@ -15,7 +15,7 @@ import {
     getCharacterGenderTextColor,
     getCharacterRaceIcon,
 } from "../character_utils";
-import { getAligmentIcon } from "../characters_utils";
+import { getAlignmentIcon } from "../character_utils";
 import { getEnemyNames, getPowerNames, getTeamNames } from "./formatters";
 
 export type SharedItem = {
@@ -225,7 +225,7 @@ export function groupAlignments(entities: CharacterWithJoinTeamUniversePowerEnem
             key: `align:${a ?? "unknown"}`,
             value: getCharacterAlignmentText(a),
             className: getCharacterAlignmentTextColor(a),
-            icon: getAligmentIcon(a),
+            icon: getAlignmentIcon(a),
         };
     });
 }

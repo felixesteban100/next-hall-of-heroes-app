@@ -101,32 +101,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
 
     return (
-        <div className="">
-            {/* <div>
-                <h1 className="text-2xl font-bold">Characters</h1>
-                <div className="text-muted-foreground font-light flex gap-2 items-center justify-between">
-                    {totalCharacters} characters across all universes
-                </div>
-            </div>*/}
-
-            {/* <FilterBar
-                universes={sanitizedUniverses}
-                teams={sanitizedTeams}
-                powers={sanitizedPowers}
-                activeFilterProps={{
-                    name,
-                    gender,
-                    alignment,
-                    universe,
-                    tier,
-                    character_class,
-                    powersParam,
-                    team,
-                    powers: sanitizedPowers,
-                    character_type,
-                    teams: sanitizedTeams,
-                }}
-            /> */}
+        <div >
             <EntityFilterBar
                 type="character"
                 sortOptions={[

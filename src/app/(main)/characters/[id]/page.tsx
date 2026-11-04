@@ -5,8 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { CharacterImageCarousel } from "@/components/characters/CharacterImageCarousel";
 
 import { collectionCharacters } from "@/db/mongodb";
-import { getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
-import { CharacterBadgeIcon } from "@/lib/characters_utils";
+import { getAlignmentIcon, getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, POWER_TIER } from "@/lib/constants";
 import { CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Power, Team } from "@/types";
 
@@ -66,6 +65,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
     const tierColors = CHARACTER_TIER_COLOR[character.tier as keyof typeof CHARACTER_TIER_COLOR];
     const classColors = CHARACTER_CLASS_COLOR[character.class as keyof typeof CHARACTER_CLASS_COLOR];
     const typeColors = CHARACTER_TYPE_COLOR[character.character_type as keyof typeof CHARACTER_TYPE_COLOR];
+    const AlignmentIcon = getAlignmentIcon(biography.alignment);
 
     const appearanceFields = [
         { label: "HEIGHT", /* icon: , */ value: appearance.height?.filter(h => h && h !== "-").join(" / ") || "Unknown" },
@@ -136,7 +136,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                 <div className="w-full flex flex-col gap-4">
                     <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
-                            <Badge className={`${getCharacterAlignmentColor(biography.alignment)}`}>{CharacterBadgeIcon(biography.alignment)} {getCharacterAlignmentText(biography.alignment)}</Badge>
+                            <Badge className={`${getCharacterAlignmentColor(biography.alignment)}`}><AlignmentIcon /> {getCharacterAlignmentText(biography.alignment)}</Badge>
                             <Badge className={`${typeColors.bg} ${typeColors.foreground}`}><TypeIcon size={16} className="mr-1" /> Type {CHARACTER_TYPE_LABEL[character.character_type as keyof typeof CHARACTER_TYPE_LABEL]}</Badge>
                             <Badge className={`${tierColors.bg} ${tierColors.foreground}`}><TierIcon size={16} className="mr-1" /> Tier {CHARACTER_TIER[character.tier as keyof typeof CHARACTER_TIER]}</Badge>
                             <Badge className={`${classColors.bg} ${classColors.foreground}`}><ClassIcon size={16} className="mr-1" /> Class {CHARACTER_CLASS[character.class as keyof typeof CHARACTER_CLASS]}</Badge>

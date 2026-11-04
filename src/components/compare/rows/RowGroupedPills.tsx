@@ -23,7 +23,7 @@ function GroupBlock({
 
     const Pill = ({ children }: { children: React.ReactNode }) => (
         <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-medium ${pill}`}
+            className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-[10px] sm:text-xs font-medium ${pill}`}
         >
             {children}
         </span>
@@ -41,7 +41,8 @@ function GroupBlock({
         <div className="w-full space-y-3 text-left">
             {group.shared.map((s) => (
                 <div key={s.name} className="group flex flex-col gap-0.5 items-start">
-                    <span className={`${pillClass} group-hover:flex  `}>{s.name}</span>
+                    {/* group-hover:flex */}
+                    <span className={`${pillClass} `}>{s.name}</span>
                     <span className="text-[9px] text-muted-foreground pl-0.5">
                         {s.members.map((m) => m.name).join(" · ")}
                     </span>
