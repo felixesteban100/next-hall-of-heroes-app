@@ -8,6 +8,7 @@ import Image from "next/image";
 import { RotateCcw } from "lucide-react";
 import { useIsMobile } from "./SwipeGrid";
 import { LoadingLink } from "./LoadingLink";
+import { Button } from "../ui/button";
 
 export type StatColumn = {
     icon: React.ElementType;
@@ -349,9 +350,20 @@ export function EntityCard({
                     className="absolute inset-0"
                     style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                 >
-                    <Card className="overflow-hidden group w-full h-full flex flex-col items-stretch gap-0 justify-between pt-0 transition-all duration-500 hover:shadow-2xl select-none [-webkit-touch-callout:none]">
-
+                    <Card className="overflow-hidden group w-full h-full flex flex-col items-stretch gap-0 justify-between pt-0 transition-all duration-500 hover:shadow-md select-none [-webkit-touch-callout:none]">
+                        {backData && (
+                            <Button
+                                onClick={toggleFlip}
+                                size={"icon"}
+                                className="z-99 right-5 top-2 absolute rounded-full opacity-50 hover:opacity-100"
+                                title="Flip card"
+                                variant={"outline"}
+                            >
+                                <RotateCcw className="w-2 h-2" />
+                            </Button>
+                        )}
                         {/* 🌟 Image area (flex-1 lets it take all remaining vertical space gracefully) */}
+
                         {imageFocus !== undefined ? (
                             <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center min-h-0">
                                 <ViewTransition name={transitionKey} share="morph">
@@ -371,14 +383,14 @@ export function EntityCard({
                                         src={background ? background : image}
                                         alt="background blur"
                                         /* ${typePage === "team" ? "object-contain" : `object-cover ${typePage !== "power" ? "group-hover:blur-none" : ""}`} */
-                                        className={`absolute inset-0 m-auto ${typePage === "team" ? "object-contain" : `object-cover`} blur-xs w-full h-full pointer-events-none transition-all duration-500`}
+                                        className={`absolute inset-0 m-auto ${typePage === "team" ? "overflow-hidden h-full w-full object-cover blur-3xl brightness-150" : `object-cover blur-[3px]`}  w-full h-full pointer-events-none transition-all duration-500`}
                                         width={200} height={200} unoptimized
                                     />
                                     <Image
                                         src={image} alt={title}
-                                        /* animate-bright-gold */
                                         /* ${background && is3D ? "opacity-0" : background ? "opacity-100 group-hover:opacity-0" : ""} */
-                                        className={`overflow-visible absolute z-10 object-contain ${typePage === "universe" ? "max-h-[85%] w-[85%] " : "h-full w-full"} duration-1000 transition-all pointer-events-none ${typePage !== "team" && (is3D ? "scale-110" : "group-hover:scale-110")} `}
+                                        /* ${typePage !== "team" && (is3D ? "scale-110" : "group-hover:scale-110")} */
+                                        className={`overflow-visible absolute z-10 object-contain ${typePage === "universe" || typePage === "team" ? "max-h-[85%] w-[85%] " : "h-full w-full"} duration-1000 transition-all pointer-events-none  `}
                                         width={800} height={1200} unoptimized
                                     />
                                 </ViewTransition>
@@ -395,15 +407,7 @@ export function EntityCard({
                                 <div className="flex items-center gap-2 shrink-0">
                                     {badge}
                                     <span className="text-[11px] text-muted-foreground font-medium bg-muted/50 px-1.5 py-0.5 rounded">#{id}</span>
-                                    {backData && (
-                                        <button
-                                            onClick={toggleFlip}
-                                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                                            title="Flip card"
-                                        >
-                                            <RotateCcw className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
+
                                 </div>
                             </CardHeader>
                             <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
@@ -475,13 +479,15 @@ function CardBackFace({
 }) {
     return (
         <div className="relative flex flex-col h-full w-full">
-            <button
+            <Button
                 onClick={onFlip}
-                className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                title="Flip back"
+                size={"icon"}
+                className="z-99 right-5 top-2 absolute rounded-full opacity-50 hover:opacity-100"
+                title="Flip card"
+                variant={"outline"}
             >
-                <RotateCcw className="w-3.5 h-3.5" />
-            </button>
+                <RotateCcw className="w-2 h-2" />
+            </Button>
             <CardBack backData={backData} />
         </div>
     );
