@@ -56,6 +56,19 @@ export function getCharacterAlignmentTextColor(alignment: string) {
     }
 }
 
+export function getCharacterAlignmentVarColor(alignment: string) {
+    switch (alignment) {
+        case "good":
+            return "var(--color-green-500)";
+        case "neutral":
+            return "var(--color-yellow-500)";
+        case "bad":
+            return "var(--color-red-500)";
+        default:
+            return "var(--color-gray-500)";
+    }
+}
+
 export function getCharacterAlignmentText(alignment: string) {
     switch (alignment) {
         case "good":

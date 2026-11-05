@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // AnimatePresence used in AnimatedCard exit
-import { Pin, PinOff } from "lucide-react";
+// import { useState, useEffect, useCallback, useRef } from "react";
+// import { motion, AnimatePresence } from "framer-motion"; // AnimatePresence used in AnimatedCard exit
+// import { Pin, PinOff } from "lucide-react";
 import { SwipeGrid, useIsMobile } from "@/components/shared/SwipeGrid";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { Button } from "@/components/ui/button";
 import { Scale } from "lucide-react";
 import { RefreshRandomPageButton } from "@/components/random/RefreshRandomPageButton";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils";
 import { ExtremeBanner, BannerItem } from "@/components/shared/ExtremeBanner";
-import { EntityCard } from "../shared/EntityCard";
-import { getCardProps } from "../shared/getCardProps";
+// import { EntityCard } from "../shared/EntityCard";
+// import { getCardProps } from "../shared/getCardProps";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

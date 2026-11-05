@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { LoadingLink } from "@/components/shared/LoadingLink";
+import { useSearchParams } from "next/navigation";
 import { ArrowBigLeftIcon, ArrowBigRightIcon, BrushCleaning } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 
 import { EntityCard } from "./EntityCard";
 import { getCardProps } from "./getCardProps";
+import { useParamLoading } from "../layout/ParamLoadingContext";
 
 export function useIsMobile() {
     return useSyncExternalStore(
@@ -20,6 +20,18 @@ export function useIsMobile() {
         () => false
     );
 }
+
+// make this function so that the 3d tilt work on tablets also
+// export function useIsTablet() {
+//     return useSyncExternalStore(
+//         (callback) => {
+//             window.addEventListener("resize", callback);
+//             return () => window.removeEventListener("resize", callback);
+//         },
+//         () => window.innerWidth < 640,
+//         () => false
+//     );
+// }
 
 export type EntityType = "power" | "character" | "team" | "universe"
 
@@ -38,12 +50,12 @@ export function SwipeGrid({
     totalPages,
     type,
     emptyMessage = "No items found.",
-    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8 items-start mt-3",
+    desktopGridClassName = "hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8 items-start mt-3 h-full",
 }: SwipeGridProps) {
+    const { pushParams } = useParamLoading()
     const [activeIndex, setActiveIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const isMobile = useIsMobile();
-    const router = useRouter();
     const searchParams = useSearchParams();
 
     // Coordination with EntityCard: when any card enters 3D tilt, pause all scroll/nav logic
@@ -88,14 +100,14 @@ export function SwipeGrid({
             isNavigatingRef.current = true;
             targetIndexRef.current = 0;
             params.set("page", String(currentPage + 1));
-            router.push(`?${params.toString()}`);
+            pushParams(params);
         } else if (direction === "prev" && currentPage > 1) {
             isNavigatingRef.current = true;
             targetIndexRef.current = items.length - 1;
             params.set("page", String(currentPage - 1));
-            router.push(`?${params.toString()}`);
+            pushParams(params);
         }
-    }, [currentPage, totalPages, items.length, router, searchParams]);
+    }, [currentPage, totalPages, items.length, pushParams, searchParams]);
 
     // ── Non-passive touchmove — only handles page-change edge swipes ──────────
     // EntityCard handles its own tilt; we only act when NO card is tilting.
@@ -233,12 +245,11 @@ export function SwipeGrid({
                             className="snap-card snap-center snap-always shrink-0 w-full h-full flex flex-col items-center justify-center relative py-1"
                         >
                             <div className="w-full h-full flex items-center justify-center max-w-md mx-auto">
-                                <LoadingLink href={getItemHref(item)} className="w-full h-full flex items-center justify-center pointer-events-auto">
-                                    <EntityCard
-                                        {...getCardProps(item, type)}
-                                        onTiltChange={handleTiltChange}
-                                    />
-                                </LoadingLink>
+                                <EntityCard
+                                    {...getCardProps(item, type)}
+                                    onTiltChange={handleTiltChange}
+                                    href={getItemHref(item)}
+                                />
                             </div>
                         </div>
                     ))}
@@ -249,11 +260,11 @@ export function SwipeGrid({
 
     // ── Desktop grid ──────────────────────────────────────────────────────────
     return (
-        <div className={`${desktopGridClassName} mb-4`}>
+        <div className={`${desktopGridClassName} mb-4 overflow-visible`}>
             {items.map((item) => (
-                <LoadingLink key={item.id} href={getItemHref(item)}>
-                    <EntityCard {...getCardProps(item, type)} />
-                </LoadingLink>
+                <div key={item.id} className="w-auto h-[25rem] shrink-0 relative">
+                    <EntityCard {...getCardProps(item, type)} href={getItemHref(item)} />
+                </div>
             ))}
         </div>
     );

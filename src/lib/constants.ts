@@ -113,6 +113,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-slate-500 dark:text-slate-400",
         foreground: "text-white dark:text-white",
         badge: "bg-slate-200/15 text-slate-500 border border-slate-200/25",
+        var: "var(--color-slate-500)",
     },
     // Mutant/Powered — orange, biological heat, raw innate energy
     1: {
@@ -120,6 +121,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-orange-600 dark:text-orange-400",
         foreground: "text-white dark:text-white",
         badge: "bg-orange-400/15 text-orange-600 border border-orange-400/25",
+        var: "var(--color-orange-500)",
     },
     // Tech/Gadget-based — sky blue, clean, engineered, precise
     2: {
@@ -127,6 +129,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-sky-600 dark:text-sky-400",
         foreground: "text-white dark:text-white",
         badge: "bg-sky-500/15 text-sky-600 border border-sky-500/25",
+        var: "var(--color-sky-500)",
     },
     // Trained Discipline / Mystic Arts — violet, arcane, spiritual, otherworldly
     3: {
@@ -134,6 +137,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-violet-600 dark:text-violet-400",
         foreground: "text-white dark:text-white",
         badge: "bg-violet-500/15 text-violet-600 border border-violet-500/25",
+        var: "var(--color-violet-500)",
     },
     // Skill/Peak Human — emerald, natural, disciplined, earned through grind
     4: {
@@ -141,6 +145,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-emerald-600 dark:text-emerald-400",
         foreground: "text-white dark:text-white",
         badge: "bg-emerald-400/15 text-emerald-600 border border-emerald-400/25",
+        var: "var(--color-emerald-500)",
     },
     // Cosmic/God-tier — fuchsia, beyond nature, divine, reality-warping
     5: {
@@ -148,6 +153,7 @@ export const CHARACTER_CLASS_COLOR = {
         text: "text-fuchsia-600 dark:text-fuchsia-400",
         foreground: "text-white dark:text-white",
         badge: "bg-fuchsia-600/15 text-fuchsia-600 border border-fuchsia-600/25",
+        var: "var(--color-fuchsia-500)",
     },
 } as const;
 
@@ -158,6 +164,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-zinc-500 dark:text-zinc-400",
         foreground: "text-white dark:text-white",
         badge: "bg-zinc-200/15 text-zinc-500 border border-zinc-200/25",
+        var: "var(--color-zinc-500)",
     },
     // Street level — stone/earthy
     1: {
@@ -165,6 +172,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-stone-600 dark:text-stone-400",
         foreground: "text-white dark:text-white",
         badge: "bg-stone-200/15 text-stone-600 border border-stone-200/25",
+        var: "var(--color-stone-500)",
     },
     // Skilled / Enhanced — teal
     2: {
@@ -172,6 +180,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-teal-600 dark:text-teal-400",
         foreground: "text-white dark:text-white",
         badge: "bg-teal-500/15 text-teal-600 border border-teal-500/25",
+        var: "var(--color-teal-500)",
     },
     // Superhuman — indigo
     3: {
@@ -179,6 +188,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-indigo-600 dark:text-indigo-400",
         foreground: "text-white dark:text-white",
         badge: "bg-indigo-500/15 text-indigo-600 border border-indigo-500/25",
+        var: "var(--color-indigo-500)",
     },
     // Powerhouse — amber/gold
     4: {
@@ -186,6 +196,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-amber-600 dark:text-amber-400",
         foreground: "text-white dark:text-white",
         badge: "bg-amber-400/15 text-amber-600 border border-amber-400/25",
+        var: "var(--color-amber-500)",
     },
     // Cosmic / World-ending — rose
     5: {
@@ -193,6 +204,7 @@ export const CHARACTER_TIER_COLOR = {
         text: "text-rose-600 dark:text-rose-400",
         foreground: "text-white dark:text-white",
         badge: "bg-rose-600/15 text-rose-600 border border-rose-600/25",
+        var: "var(--color-rose-500)",
     },
 } as const;
 
@@ -204,6 +216,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-slate-500",
         badge: "bg-slate-200/15 text-slate-500 border border-slate-200/25",
+        var: "var(--color-slate-500)",
     },
     // Minor / Latent — subtle gray-green
     1: {
@@ -212,6 +225,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-zinc-500",
         badge: "bg-zinc-300/15 text-zinc-600 border border-zinc-300/25",
+        var: "var(--color-zinc-500)",
     },
     // Tactical / Basic — cool blue
     2: {
@@ -220,6 +234,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-blue-500",
         badge: "bg-blue-400/15 text-blue-600 border border-blue-400/25",
+        var: "var(--color-blue-500)",
     },
     // Enhanced / Substantial — cyan/teal
     3: {
@@ -228,6 +243,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-cyan-500",
         badge: "bg-cyan-500/15 text-cyan-600 border border-cyan-500/25",
+        var: "var(--color-cyan-500)",
     },
     // Advanced / Potent — emerald
     4: {
@@ -236,6 +252,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-emerald-500",
         badge: "bg-emerald-500/15 text-emerald-600 border border-emerald-500/25",
+        var: "var(--color-emerald-500)",
 
     },
     // High Tier / Disaster — yellow/amber
@@ -245,6 +262,7 @@ export const POWER_TIER_COLOR = {
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-yellow-500",
         badge: "bg-yellow-500/15 text-yellow-600 border border-yellow-500/25",
+        var: "var(--color-yellow-500)",
 
     },
     // Supreme / Calamity — orange
@@ -253,7 +271,8 @@ export const POWER_TIER_COLOR = {
         text: "text-orange-600 dark:text-orange-400",
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-orange-500",
-        badge: "bg-orange-500/15 text-orange-600 border border-orange-500/25"
+        badge: "bg-orange-500/15 text-orange-600 border border-orange-500/25",
+        var: "var(--color-orange-500)",
 
     },
     // Planetary / World Breaker — intense red
@@ -262,7 +281,8 @@ export const POWER_TIER_COLOR = {
         text: "text-red-600 dark:text-red-400",
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-red-500",
-        badge: "bg-red-600/15 text-red-600 border border-red-600/25"
+        badge: "bg-red-600/15 text-red-600 border border-red-600/25",
+        var: "var(--color-red-500)",
     },
     // Stellar / Cosmic — deep purple
     8: {
@@ -270,7 +290,8 @@ export const POWER_TIER_COLOR = {
         text: "text-purple-600 dark:text-purple-400",
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-purple-500",
-        badge: "bg-purple-600/15 text-purple-600 border border-purple-600/25"
+        badge: "bg-purple-600/15 text-purple-600 border border-purple-600/25",
+        var: "var(--color-purple-500)",
     },
     // Universal / Transcendent — dark violet/indigo
     9: {
@@ -278,7 +299,8 @@ export const POWER_TIER_COLOR = {
         text: "text-indigo-600 dark:text-indigo-400",
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-indigo-500",
-        badge: "bg-indigo-600/15 text-indigo-600 border border-indigo-600/25"
+        badge: "bg-indigo-600/15 text-indigo-600 border border-indigo-600/25",
+        var: "var(--color-indigo-500)",
     },
     // Absolute / Omnipotent — golden amber/fuchsia gradient feel
     10: {
@@ -286,8 +308,8 @@ export const POWER_TIER_COLOR = {
         text: "text-amber-500 dark:text-amber-300",
         foreground: "text-white dark:text-white",
         progress: "[&>div]:bg-amber-500",
-        badge: "bg-amber-500/15 text-amber-600 border border-amber-500/25"
-
+        badge: "bg-amber-500/15 text-amber-600 border border-amber-500/25",
+        var: "var(--color-amber-500)",
     },
 } as const;
 
@@ -324,6 +346,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-rose-600 dark:text-rose-400",
         foreground: "text-white dark:text-white",
         badge: "bg-rose-500/15 text-rose-600 border border-rose-500/25",
+        var: "var(--color-rose-500)",
     },
     // Cartoon — energetic amber/yellow
     cartoon: {
@@ -331,6 +354,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-amber-600 dark:text-amber-400",
         foreground: "text-white dark:text-white",
         badge: "bg-amber-500/15 text-amber-600 border border-amber-500/25",
+        var: "var(--color-amber-500)",
     },
     // Comic — primary blue
     comic: {
@@ -338,6 +362,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-blue-600 dark:text-blue-400",
         foreground: "text-white dark:text-white",
         badge: "bg-blue-600/15 text-blue-600 border border-blue-600/25",
+        var: "var(--color-blue-500)",
     },
     // Game — electric violet/purple
     game: {
@@ -345,6 +370,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-violet-600 dark:text-violet-400",
         foreground: "text-white dark:text-white",
         badge: "bg-violet-600/15 text-violet-600 border border-violet-600/25",
+        var: "var(--color-violet-500)",
     },
     // Movie — sleek red/crimson
     movie: {
@@ -352,6 +378,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-red-600 dark:text-red-400",
         foreground: "text-white dark:text-white",
         badge: "bg-red-600/15 text-red-600 border border-red-600/25",
+        var: "var(--color-red-500)",
     },
     // TV Show — indigo/teal accent
     "tv show": {
@@ -359,6 +386,7 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-indigo-600 dark:text-indigo-400",
         foreground: "text-white dark:text-white",
         badge: "bg-indigo-500/15 text-indigo-600 border border-indigo-500/25",
+        var: "var(--color-indigo-500)",
     },
     // Real Life — grounded slate/emerald
     "real life": {
@@ -366,12 +394,14 @@ export const CHARACTER_TYPE_COLOR = {
         text: "text-emerald-600 dark:text-emerald-400",
         foreground: "text-white dark:text-white",
         badge: "bg-emerald-600/15 text-emerald-600 border border-emerald-600/25",
+        var: "var(--color-emerald-500)",
     },
     "unknown": {
         bg: "bg-slate-600 dark:bg-slate-800",
         text: "text-slate-600 dark:text-slate-400",
         foreground: "text-white dark:text-white",
         badge: "bg-slate-600/15 text-slate-600 border border-slate-600/25",
+        var: "var(--color-slate-500)",
     },
 } as const;
 
@@ -426,26 +456,31 @@ export const POWER_COMBAT_ROLE_COLOR = {
         bg: "bg-rose-500 dark:bg-rose-700 text-white",
         text: "text-rose-600 dark:text-rose-400",
         badge: "bg-rose-600/15 text-rose-600 border border-rose-600/25",
+        var: "var(--color-rose-500)",
     },
     "Defensive": {
         bg: "bg-blue-500 dark:bg-blue-700 text-white",
         text: "text-blue-600 dark:text-blue-400",
         badge: "bg-blue-600/15 text-blue-600 border border-blue-600/25",
+        var: "var(--color-blue-500)",
     },
     "Control": {
         bg: "bg-purple-500 dark:bg-purple-700 text-white",
         text: "text-purple-600 dark:text-purple-400",
         badge: "bg-purple-600/15 text-purple-600 border border-purple-600/25",
+        var: "var(--color-purple-500)",
     },
     "Utility": {
         bg: "bg-emerald-500 dark:bg-emerald-700 text-white",
         text: "text-emerald-600 dark:text-emerald-400",
         badge: "bg-emerald-600/15 text-emerald-600 border border-emerald-600/25",
+        var: "var(--color-emerald-500)",
     },
     "Hybrid / Versatile": {
         bg: "bg-amber-500 dark:bg-amber-700 text-white",
         text: "text-amber-600 dark:text-amber-400",
         badge: "bg-amber-600/15 text-amber-600 border border-amber-600/25",
+        var: "var(--color-amber-500)",
     },
 } as const;
 
@@ -457,8 +492,8 @@ export const POWER_ACTIVATION_TYPE_ICON: Record<string, LucideIcon> = {
 };
 
 export const POWER_ACTIVATION_TYPE_COLOR = {
-    "Instant": { text: "text-amber-500 dark:text-amber-500", bg: "bg-amber-500 text-white", badge: "bg-amber-500/15 text-amber-500 border border-amber-500/25" },
-    "Action": { text: "text-blue-500 dark:text-blue-500", bg: "bg-blue-500 text-white", badge: "bg-blue-500/15 text-blue-500 border border-blue-500/25" },
-    "Passive": { text: "text-emerald-500 dark:text-emerald-500", bg: "bg-emerald-500 text-white", badge: "bg-emerald-500/15 text-emerald-500 border border-emerald-500/25" },
-    "Channeled": { text: "text-purple-500 dark:text-purple-500", bg: "bg-purple-500 text-white", badge: "bg-purple-500/15 text-purple-500 border border-purple-500/25" },
+    "Instant": { text: "text-amber-500 dark:text-amber-500", bg: "bg-amber-500 text-white", badge: "bg-amber-500/15 text-amber-500 border border-amber-500/25", var: "var(--color-amber-500)", },
+    "Action": { text: "text-blue-500 dark:text-blue-500", bg: "bg-blue-500 text-white", badge: "bg-blue-500/15 text-blue-500 border border-blue-500/25", var: "var(--color-blue-500)", },
+    "Passive": { text: "text-emerald-500 dark:text-emerald-500", bg: "bg-emerald-500 text-white", badge: "bg-emerald-500/15 text-emerald-500 border border-emerald-500/25", var: "var(--color-emerald-500)", },
+    "Channeled": { text: "text-purple-500 dark:text-purple-500", bg: "bg-purple-500 text-white", badge: "bg-purple-500/15 text-purple-500 border border-purple-500/25", var: "var(--color-purple-500)", },
 } as const;

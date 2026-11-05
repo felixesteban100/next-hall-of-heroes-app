@@ -1,5 +1,6 @@
-import { Crown, Hash, ImageIcon, Users } from "lucide-react";
+import { Crown, Hash, Users } from "lucide-react";
 import { EntityType } from "./SwipeGrid";
+import { BackData } from "./EntityCard";
 import {
     CHARACTER_CLASS,
     CHARACTER_CLASS_COLOR,
@@ -17,9 +18,10 @@ import {
     POWER_TIER_COLOR,
     POWER_TIER_ICON,
 } from "@/lib/constants";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon } from "@/lib/character_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
+import { computeMatchScore } from "@/lib/compare";
 
 export const getCardProps = (item: any, type: EntityType) => {
     switch (type) {
@@ -38,6 +40,58 @@ export const getCardProps = (item: any, type: EntityType) => {
             const alignmentColor = getCharacterAlignmentTextColor(item.biography.alignment);
             const IconAlignment = getAlignmentIcon(item.biography.alignment);
             const alignmentText = getCharacterAlignmentText(item.biography.alignment);
+            const alignmentVarColor = getCharacterAlignmentVarColor(item.biography.alignment)
+
+            const stats = [
+                {
+                    icon: IconAlignment,
+                    text: alignmentText,
+                    colorClass: alignmentColor,
+                    title: "Alignment",
+                },
+                {
+                    icon: getCharacterGenderIcon(item.appearance?.gender),
+                    text: item.appearance?.gender || "—",
+                    colorClass: item.appearance?.gender === "Female" ? "text-pink-500" : "text-blue-500",
+                    title: "Gender",
+                },
+                {
+                    icon: TypeIcon,
+                    text: item.character_type || "Type",
+                    colorClass: typeColor?.text ?? "text-muted-foreground",
+                    title: "Type",
+                },
+                {
+                    icon: TierIconCharacter,
+                    text: `T-${tierLabelCharacter.slice(0, 3)}...`,
+                    colorClass: tierColorCharacter.text,
+                    title: "Tier",
+                },
+                {
+                    icon: ClassIcon,
+                    text: `C-${characterClass}`,
+                    colorClass: classColor.text,
+                    title: "Class",
+                },
+            ];
+
+            // 1. Establish the core thematic blend
+            const thematicMix = `color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, ${tierColorCharacter.var}, ${classColor.var}), ${alignmentVarColor}), ${typeColor.var})`;
+
+            // 2. Derive specific UI properties from it
+            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
+            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
+            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+
+            const backData: BackData = {
+                kind: "character",
+                entityName: item.name,
+                logo: item.biography.publisher.logo,
+                // total: parseInt(computeMatchScore(item).overall.toFixed(0)),
+                cardBackgroundColor,
+                cardBorderColor,
+                glowShadowColor,
+            };
 
             return {
                 title: item.name,
@@ -49,39 +103,8 @@ export const getCardProps = (item: any, type: EntityType) => {
                 publisherLogo: item.biography?.publisher?.logo,
                 alignment: item.biography?.alignment,
                 universeLogo: item.biography?.publisher.logo,
-                stats: [
-                    {
-                        icon: IconAlignment,
-                        text: alignmentText,
-                        colorClass: alignmentColor,
-                        title: "Alignment",
-                    },
-                    {
-                        icon: getCharacterGenderIcon(item.appearance?.gender),
-                        text: item.appearance?.gender || "—",
-                        colorClass: item.appearance?.gender === "Female" ? "text-pink-500" : "text-blue-500",
-                        title: "Gender",
-                    },
-                    {
-                        icon: TypeIcon,
-                        text: item.character_type || "Type",
-                        colorClass: typeColor?.text ?? "text-muted-foreground",
-                        title: "Type",
-                    },
-                    {
-                        icon: TierIconCharacter,
-                        // text: `T${item.tier}/${tierLabelCharacter.slice(0, 6)}...`,
-                        text: `T-${tierLabelCharacter.slice(0, 3)}...`,
-                        colorClass: tierColorCharacter.text,
-                        title: "Tier",
-                    },
-                    {
-                        icon: ClassIcon,
-                        text: `C-${characterClass}`,
-                        colorClass: classColor.text,
-                        title: "Class",
-                    },
-                ],
+                stats,
+                backData,
             };
         }
 
@@ -89,6 +112,42 @@ export const getCardProps = (item: any, type: EntityType) => {
             const alignmentColor = getCharacterAlignmentTextColor(item.alignment);
             const IconAlignment = getAlignmentIcon(item.alignment);
             const alignmentText = getCharacterAlignmentText(item.alignment);
+            const alignmentVarColor = getCharacterAlignmentVarColor(item.alignment)
+
+            const stats = [
+                {
+                    icon: IconAlignment,
+                    text: alignmentText,
+                    colorClass: alignmentColor,
+                    title: "Alignment",
+                },
+                {
+                    icon: Users,
+                    text: item.status || "Active",
+                    colorClass: "text-blue-500",
+                    title: "Status",
+                },
+                {
+                    icon: Crown,
+                    text: `${item.leaders?.length ?? 0} Leaders`,
+                    colorClass: "text-amber-400",
+                    title: "Leaders",
+                },
+            ];
+
+            const thematicMix = `color-mix(in srgb, ${alignmentVarColor})`;
+            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
+            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
+            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+
+            const backData: BackData = {
+                kind: "team",
+                entityName: item.name,
+                logo: item.universeData.logo,
+                cardBackgroundColor: "var(--color-card)",
+                cardBorderColor,
+                glowShadowColor,
+            };
 
             return {
                 title: item.name,
@@ -97,26 +156,8 @@ export const getCardProps = (item: any, type: EntityType) => {
                 description: item.description || "No description available.",
                 transitionKey: `team-${item.id}`,
                 universeLogo: item.universeData.logo,
-                stats: [
-                    {
-                        icon: IconAlignment,
-                        text: alignmentText,
-                        colorClass: alignmentColor,
-                        title: "Alignment",
-                    },
-                    {
-                        icon: Users,
-                        text: item.status || "Active",
-                        colorClass: "text-blue-500",
-                        title: "Status",
-                    },
-                    {
-                        icon: Crown,
-                        text: `${item.leaders?.length ?? 0} Leaders`,
-                        colorClass: "text-amber-400",
-                        title: "Leaders",
-                    },
-                ],
+                stats,
+                backData,
             };
         }
 
@@ -126,10 +167,48 @@ export const getCardProps = (item: any, type: EntityType) => {
             const powerTierLabel = POWER_TIER[item.tier as keyof typeof POWER_TIER]?.split("/")[0] ?? "Unrated";
 
             const RoleIcon = POWER_COMBAT_ROLE_ICON[item.combatRole as PowerRole] ?? POWER_COMBAT_ROLE_ICON["Utility"];
-            const roleColor = POWER_COMBAT_ROLE_COLOR[item.combatRole as PowerRole]?.text ?? "text-muted-foreground";
+            const roleColor = POWER_COMBAT_ROLE_COLOR[item.combatRole as PowerRole];
 
             const ActivationIcon = POWER_ACTIVATION_TYPE_ICON[item.activationType] ?? POWER_ACTIVATION_TYPE_ICON["Instant"];
-            const activationColor = POWER_ACTIVATION_TYPE_COLOR[item.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR]?.text ?? "text-muted-foreground";
+            const activationColor = POWER_ACTIVATION_TYPE_COLOR[item.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR]
+
+            const stats = [
+                {
+                    icon: TierIconPower,
+                    text: `T${item.tier || 0}/${powerTierLabel}`,
+                    colorClass: tierColorPower.text,
+                    title: "Power Tier",
+                },
+                {
+                    icon: RoleIcon,
+                    text: item.combatRole?.split("/")[0].trim() || "Utility",
+                    colorClass: roleColor.text ?? "text-muted-foreground",
+                    title: "Combat Role",
+                },
+                {
+                    icon: ActivationIcon,
+                    text: item.activationType || "Instant",
+                    colorClass: activationColor?.text ?? "text-muted-foreground",
+                    title: "Activation Type",
+                },
+            ];
+            // 1. Establish the core thematic blend
+            const thematicMix = `color-mix(in srgb, color-mix(in srgb, ${tierColorPower.var}, ${roleColor.var}), ${activationColor.var})`;
+
+            // 2. Derive specific UI properties from it
+            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
+            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
+            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+
+            const backData: BackData = {
+                kind: "power",
+                // score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
+                entityName: item.name,
+                logo: "",
+                cardBackgroundColor,
+                cardBorderColor,
+                glowShadowColor,
+            };
 
             return {
                 title: item.name,
@@ -137,32 +216,45 @@ export const getCardProps = (item: any, type: EntityType) => {
                 image: item.img,
                 description: item.description || "No description available.",
                 transitionKey: `power-${item.id}`,
-                stats: [
-                    {
-                        icon: TierIconPower,
-                        text: `T${item.tier || 0}/${powerTierLabel}`,
-                        colorClass: tierColorPower.text,
-                        title: "Power Tier",
-                    },
-                    {
-                        icon: RoleIcon,
-                        text: item.combatRole?.split("/")[0].trim() || "Utility",
-                        colorClass: roleColor,
-                        title: "Combat Role",
-                    },
-                    {
-                        icon: ActivationIcon,
-                        text: item.activationType || "Instant",
-                        colorClass: activationColor,
-                        title: "Activation Type",
-                    },
-                ],
+                stats,
+                backData,
             };
         }
 
         case "universe": {
             const universeColor = CHARACTER_TYPE_COLOR[item.type as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_COLOR["unknown"];
             const UniverseIcon = CHARACTER_TYPE_ICON[item.type as keyof typeof CHARACTER_TYPE_ICON] ?? CHARACTER_TYPE_ICON["unknown"];
+
+            const stats = [
+                {
+                    icon: UniverseIcon,
+                    text: item.type || "Universe",
+                    colorClass: universeColor?.text ?? "text-muted-foreground",
+                    title: "Type",
+                },
+                {
+                    icon: Users,
+                    text: `${item.characterCount ?? 0} Characters`,
+                    colorClass: "text-amber-500",
+                    title: "Characters",
+                },
+                {
+                    icon: Hash,
+                    text: `${item.id}`,
+                    colorClass: "text-cyan-500",
+                    title: "Canon Status",
+                },
+            ];
+            const cardBackgroundColor = "var(--color-card)"
+
+            const backData: BackData = {
+                kind: "universe",
+                logo: item.logo,
+                entityName: item.name,
+                cardBackgroundColor,
+                cardBorderColor: "",
+                glowShadowColor: "",
+            };
 
             return {
                 title: item.name,
@@ -171,32 +263,8 @@ export const getCardProps = (item: any, type: EntityType) => {
                 background: item.background,
                 description: item.description || "No description available.",
                 transitionKey: `universe-${item.id}`,
-                stats: [
-                    {
-                        icon: UniverseIcon,
-                        text: item.type || "Universe",
-                        colorClass: universeColor?.text ?? "text-muted-foreground",
-                        title: "Type",
-                    },
-                    /* {
-                        icon: ImageIcon,
-                        text: `${item.comics?.length ?? 0} Gallery`,
-                        colorClass: "text-amber-500",
-                        title: "Comics",
-                    }, */
-                    {
-                        icon: Users,
-                        text: `${item.characterCount ?? 0} Characters`,
-                        colorClass: "text-amber-500",
-                        title: "Comics",
-                    },
-                    {
-                        icon: Hash,
-                        text: `${item.id}`,
-                        colorClass: "text-cyan-500",
-                        title: "Canon Status",
-                    },
-                ],
+                stats,
+                backData,
             };
         }
     }
