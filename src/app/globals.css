@@ -330,6 +330,20 @@
     animation: pulse-gold 1.5s infinite ease-in-out;
   }
 
+  @keyframes bright-gold {
+    0%,
+    100% {
+      filter: brightness(0.8);
+    }
+    50% {
+      filter: brightness(1.2);
+    }
+  }
+
+  .animate-bright-gold {
+    animation: bright-gold 1.5s infinite ease-in-out;
+  }
+
   @keyframes sword-slash {
     /* The active slash animation (0% to 40%) */
     0% {
@@ -732,7 +746,7 @@
   }
 
   .animate-glass-shimmer {
-    animation: glass-shimmer 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: glass-shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   /*  @keyframes po-appear-cycle {
