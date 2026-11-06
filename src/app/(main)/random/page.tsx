@@ -4,6 +4,7 @@ import { sanitize } from "@/lib/utils";
 import { UrlParamSyncer } from "@/components/random/UrlParamSyncer";
 import { RandomPageClient, BatchExtreme } from "@/components/random/RandomPageClient";
 import { CHARACTER_TIER } from "@/lib/constants";
+import { buildEnemiesLookup, buildPowersLookup, buildTeamsLookup, buildUniverseLookup } from "@/lib/character_utils";
 
 export const instant = false;
 
@@ -95,16 +96,6 @@ export function computeExtremes(characters: CharacterWithJoinTeamUniversePowerEn
     return extremes;
 }
 
-const LOOKUP_STAGE = {
-    $lookup: {
-        from: "universes",
-        localField: "biography.publisher",
-        foreignField: "value",
-        pipeline: [{ $project: { teams: 0 } }],
-        as: "biography.publisher",
-    },
-} as const;
-
 export default async function Random({ searchParams }: PageProps) {
     const resolvedParams = await searchParams;
     let charactersPerPage: CharacterWithJoinTeamUniversePowerEnemies[] = [];
@@ -115,7 +106,10 @@ export default async function Random({ searchParams }: PageProps) {
         if (ids.length > 0) {
             charactersPerPage = await collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>([
                 { $match: { id: { $in: ids } } },
-                LOOKUP_STAGE,
+                ...buildUniverseLookup(),
+                ...buildPowersLookup(),
+                ...buildTeamsLookup(),
+                ...buildEnemiesLookup(),
                 { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
             ]).toArray();
         }
@@ -132,26 +126,29 @@ export default async function Random({ searchParams }: PageProps) {
         const BATCH_SIZE = 12;
         const randomSize = Math.max(0, BATCH_SIZE - pinnedIds.length);
 
-        const [pinnedChars, randomChars] = await Promise.all([
-            pinnedIds.length > 0
+        const [/* pinnedChars,  */randomChars] = await Promise.all([
+            /* pinnedIds.length > 0
                 ? collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>([
                     { $match: { id: { $in: pinnedIds } } },
                     LOOKUP_STAGE,
                     { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
                 ]).toArray()
-                : Promise.resolve([]),
+                : Promise.resolve([]), */
             randomSize > 0
                 ? collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>([
                     { $match: { id: { $nin: pinnedIds } } },
                     { $sample: { size: randomSize } },
-                    LOOKUP_STAGE,
+                    ...buildUniverseLookup(),
+                    ...buildPowersLookup(),
+                    ...buildTeamsLookup(),
+                    ...buildEnemiesLookup(),
                     { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } },
                 ]).toArray()
                 : Promise.resolve([]),
         ]);
 
         // Pinned first, then fill with fresh randoms
-        charactersPerPage = [...pinnedChars, ...randomChars];
+        charactersPerPage = [/* ...pinnedChars, */ ...randomChars];
     }
 
     const sanitizedCharacters = sanitize(charactersPerPage);
