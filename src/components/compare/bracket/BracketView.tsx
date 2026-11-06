@@ -458,7 +458,7 @@ export function DynamicBracketView({ characters }: { characters: CharacterWithJo
                     })}
 
                     {/* Champion Column */}
-                    <div className="flex flex-col justify-center items-center gap-3">
+                    <div className="flex flex-col justify-center items-center gap-3" data-active-bout={champion ? "true" : undefined}>
                         <span className="text-xs font-bold text-transparent select-none">
                             Champion
                         </span>

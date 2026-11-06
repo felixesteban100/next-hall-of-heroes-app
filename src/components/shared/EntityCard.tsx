@@ -355,7 +355,7 @@ export function EntityCard({
                             <Button
                                 onClick={toggleFlip}
                                 size={"icon"}
-                                className="z-99 right-5 top-2 absolute rounded-full opacity-50 hover:opacity-100"
+                                className="z-99 right-5 top-5 absolute rounded-full opacity-50 hover:opacity-100"
                                 title="Flip card"
                                 variant={"outline"}
                             >
@@ -503,9 +503,13 @@ function CardBack({ backData }: { backData: BackData; }) {
             >
                 <p className="text-7xl font-bold text-white">{backData.total}</p>
             </div> */}
-            {backData.logo != "" ?
-                < Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
-                : <p className="text-white font-semibold">{backData.entityName}</p>
+            {
+                backData.kind == "power" ?
+                    < Image className="aspect-square w-48 rounded-full object-cover" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                    :
+                    backData.logo != "" ?
+                        < Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                        : <p className="text-foreground font-semibold">{backData.entityName}</p>
             }
 
         </div>

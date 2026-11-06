@@ -88,7 +88,7 @@ export const getCardProps = (item: any, type: EntityType) => {
                 entityName: item.name,
                 logo: item.biography.publisher.logo,
                 // total: parseInt(computeMatchScore(item).overall.toFixed(0)),
-                cardBackgroundColor,
+                cardBackgroundColor: "var(--color-card)",
                 cardBorderColor,
                 glowShadowColor,
             };
@@ -204,8 +204,10 @@ export const getCardProps = (item: any, type: EntityType) => {
                 kind: "power",
                 // score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
                 entityName: item.name,
-                logo: "",
-                cardBackgroundColor,
+                // logo: "",
+                logo: item.img,
+                // cardBackgroundColor,
+                cardBackgroundColor: "var(--color-card)",
                 cardBorderColor,
                 glowShadowColor,
             };

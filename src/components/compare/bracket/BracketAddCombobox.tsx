@@ -101,7 +101,7 @@ export function BracketPicker({
                                 {/* Remove button on hover */}
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
                                     <RemoveCharacterOfTeamButton
-                                        paramKey={"a" as any} // bracket uses param "p", but we can handle removal locally via write or pass custom handler if needed
+                                        paramKey={"p" as any} // bracket uses param "p", but we can handle removal locally via write or pass custom handler if needed
                                         selectedIds={ids}
                                         idsToRemove={[c.id]}
                                     />
