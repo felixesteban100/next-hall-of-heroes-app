@@ -115,17 +115,17 @@ export async function buildQuery({
                 // });
 
                 // Partial match B: Character has "animal" -> User selected "Animalistic Agility"
-                const keywords = targetName
-                    .toLowerCase()
-                    .split(/\s+/)
-                    .filter((w) => w.length > 8);
+                // const keywords = targetName
+                //     .toLowerCase()
+                //     .split(/\s+/)
+                //     .filter((w) => w.length > 8);
 
-                if (keywords.length > 0) {
-                    const keywordRegex = keywords.join("|");
-                    singlePowerOrConditions.push({
-                        powers: { $regex: keywordRegex, $options: "i" }
-                    });
-                }
+                // if (keywords.length > 0) {
+                //     const keywordRegex = keywords.join("|");
+                //     singlePowerOrConditions.push({
+                //         powers: { $regex: keywordRegex, $options: "i" }
+                //     });
+                // }
             }
 
             powerConditions.push({ $or: singlePowerOrConditions });

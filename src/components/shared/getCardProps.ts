@@ -21,16 +21,14 @@ import {
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
-// import { computeMatchScore } from "@/lib/compare";
+import { computeMatchScore } from "@/lib/compare";
 
 export const getCardProps = (item: any, type: EntityType) => {
     switch (type) {
         case "character": {
-            const TierIconCharacter = CHARACTER_TIER_ICON[item.tier] ?? CHARACTER_TIER_ICON[0];
             const tierColorCharacter = CHARACTER_TIER_COLOR[item.tier as keyof typeof CHARACTER_TIER_COLOR] ?? CHARACTER_TIER_COLOR[0];
             const tierLabelCharacter = CHARACTER_TIER[item.tier as keyof typeof CHARACTER_TIER]?.split("/")[0] ?? "Unrated";
 
-            const ClassIcon = CHARACTER_CLASS_ICON[item.class] ?? CHARACTER_CLASS_ICON[0];
             const classColor = CHARACTER_CLASS_COLOR[item.class as keyof typeof CHARACTER_CLASS_COLOR] ?? CHARACTER_CLASS_COLOR[0];
             const characterClass = CHARACTER_CLASS[item.class as keyof typeof CHARACTER_CLASS]?.split("/")[0].split(" ")[0] ?? "?";
 
@@ -62,35 +60,34 @@ export const getCardProps = (item: any, type: EntityType) => {
                     title: "Type",
                 },
                 {
-                    icon: TierIconCharacter,
-                    text: `T-${tierLabelCharacter.slice(0, 3)}...`,
+                    icon: CHARACTER_TIER_ICON[item.tier] ?? CHARACTER_TIER_ICON[0],
+                    // text: `T-${tierLabelCharacter.slice(0, 3)}...`,
+                    text: tierLabelCharacter.slice(0, 5),
                     colorClass: tierColorCharacter.text,
                     title: "Tier",
                 },
                 {
-                    icon: ClassIcon,
-                    text: `C-${characterClass}`,
+                    icon: CHARACTER_CLASS_ICON[item.class] ?? CHARACTER_CLASS_ICON[0],
+                    // text: `C-${characterClass}`,
+                    text: characterClass,
                     colorClass: classColor.text,
                     title: "Class",
                 },
             ];
 
-            // 1. Establish the core thematic blend
             const thematicMix = `color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, ${tierColorCharacter.var}, ${classColor.var}), ${alignmentVarColor}), ${typeColor.var})`;
-
-            // 2. Derive specific UI properties from it
-            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
-            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
-            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
+            const scoreTextColor = `contrast-color(${thematicMix})`;
 
             const backData: BackData = {
                 kind: "character",
                 entityName: item.name,
                 logo: item.biography.publisher.logo,
-                // total: parseInt(computeMatchScore(item).overall.toFixed(0)),
-                cardBackgroundColor: "var(--color-card)",
-                cardBorderColor,
-                glowShadowColor,
+                score: computeMatchScore(item).overall,
+                scoreColor: thematicMix,
+                scoreBorderColor,
+                scoreTextColor,
+                cardBaseColor: "var(--color-card)",
             };
 
             return {
@@ -136,17 +133,18 @@ export const getCardProps = (item: any, type: EntityType) => {
             ];
 
             const thematicMix = `color-mix(in srgb, ${alignmentVarColor})`;
-            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
-            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
-            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
+            const scoreTextColor = `contrast-color(${thematicMix})`;
 
             const backData: BackData = {
                 kind: "team",
                 entityName: item.name,
                 logo: item.universeData.logo,
-                cardBackgroundColor: "var(--color-card)",
-                cardBorderColor,
-                glowShadowColor,
+                score: 0,
+                scoreColor: thematicMix,
+                scoreBorderColor,
+                scoreTextColor,
+                cardBaseColor: "var(--color-card)",
             };
 
             return {
@@ -194,22 +192,18 @@ export const getCardProps = (item: any, type: EntityType) => {
             ];
             // 1. Establish the core thematic blend
             const thematicMix = `color-mix(in srgb, color-mix(in srgb, ${tierColorPower.var}, ${roleColor.var}), ${activationColor.var})`;
-
-            // 2. Derive specific UI properties from it
-            const cardBackgroundColor = `color-mix(in srgb, ${thematicMix} 50%, #09090b 50%)`; // Blended with dark slate/black
-            const cardBorderColor = `color-mix(in srgb, ${thematicMix} 80%, white 20%)`;       // Brighter version for the edge
-            const glowShadowColor = `color-mix(in srgb, ${thematicMix} 40%, transparent)`;    // For colored drop-shadows
+            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
+            const scoreTextColor = `contrast-color(${thematicMix})`;
 
             const backData: BackData = {
                 kind: "power",
-                // score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
                 entityName: item.name,
-                // logo: "",
                 logo: item.img,
-                // cardBackgroundColor,
-                cardBackgroundColor: "var(--color-card)",
-                cardBorderColor,
-                glowShadowColor,
+                score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
+                scoreColor: thematicMix,
+                scoreBorderColor,
+                scoreTextColor,
+                cardBaseColor: "var(--color-card)",
             };
 
             return {
@@ -247,15 +241,16 @@ export const getCardProps = (item: any, type: EntityType) => {
                     title: "Canon Status",
                 },
             ];
-            const cardBackgroundColor = "var(--color-card)"
 
             const backData: BackData = {
                 kind: "universe",
                 logo: item.logo,
                 entityName: item.name,
-                cardBackgroundColor,
-                cardBorderColor: "",
-                glowShadowColor: "",
+                score: 0,
+                scoreColor: "",
+                scoreBorderColor: "",
+                scoreTextColor: "",
+                cardBaseColor: "var(--color-card)",
             };
 
             return {

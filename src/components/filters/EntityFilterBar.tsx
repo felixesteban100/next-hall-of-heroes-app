@@ -541,6 +541,9 @@ export const EntityFilterBar = ({
                             setName("");
                             setModes([]);
                             setFields([]);
+                            const params = new URLSearchParams(searchParams)
+                            params.forEach((_, key) => params.delete(key))
+                            pushParams(params)
                         }}>
                             <RotateCcw size={14} className="mr-1" /> Reset
                         </Button>

@@ -5,10 +5,8 @@ import { ViewTransition } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import Image from "next/image";
-import { RotateCcw } from "lucide-react";
 import { useIsMobile } from "./SwipeGrid";
 import { LoadingLink } from "./LoadingLink";
-import { Button } from "../ui/button";
 
 export type StatColumn = {
     icon: React.ElementType;
@@ -21,9 +19,11 @@ export type BackData = {
     kind: "character" | "team" | "power" | "universe";
     entityName: string;
     logo: string;
-    cardBackgroundColor: string
-    cardBorderColor: string,
-    glowShadowColor: string,
+    score: string | number
+    scoreColor: string
+    scoreBorderColor: string,
+    scoreTextColor: string,
+    cardBaseColor: string;
 };
 
 type EntityCardProps = {
@@ -37,7 +37,7 @@ type EntityCardProps = {
     transitionKey: string;
     badge?: ReactNode;
     stats: StatColumn[];
-    backData?: BackData;
+    backData: BackData;
     onTiltChange?: (tilting: boolean) => void;
     href: string;
 };
@@ -72,6 +72,8 @@ export function EntityCard({
     const progressInt = useRef<ReturnType<typeof setInterval> | null>(null);
     const touchStart = useRef<{ x: number; y: number } | null>(null);
     const lastPos = useRef<{ x: number; y: number } | null>(null);
+    const isFlippingRef = useRef(false);
+    const hasSwipedRef = useRef(false);
 
     // ── State ─────────────────────────────────────────────────────────────────
     const [is3D, setIs3D] = useState(false);
@@ -89,23 +91,39 @@ export function EntityCard({
     const isFlippedRef = useRef(false);
     useEffect(() => { isFlippedRef.current = isFlipped; }, [isFlipped]);
 
-    // ── Random Left/Right Flip Function ───────────────────────────────────────
-    const toggleFlip = useCallback(() => {
-        // if (is3D || isHolding) return;
-        // 🌟 Randomly choose whether to spin left (-1) or right (+1)
+    // ── Unstoppable Locked Flip Function ──────────────────────────────────────
+    const toggleFlip = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
+        e?.stopPropagation();
+
+        // Prevent spamming or interrupting an active flip
+        if (isFlippingRef.current) return;
+        isFlippingRef.current = true;
+
+        setIs3D(false);
+        setIsHolding(false);
+        setIsMoving(false);
+
+        if (shineRef.current) {
+            shineRef.current.style.opacity = "0";
+        }
+
         const el = tiltRef.current;
-        if (el) el.style.transition = "transform 0.5s linear";
+        if (el) {
+            el.style.transition = "transform 1.0s cubic-bezier(0.4,0,0.2,1)";
+        }
 
         const direction = Math.random() < 0.5 ? 1 : -1;
         setFlipAngle(prev => prev + (180 * direction));
 
-        /* disable everything when flipping */
-    }, [is3D, isHolding]);
+        // Unlock interactions only after the 1-second flip animation fully finishes
+        setTimeout(() => {
+            isFlippingRef.current = false;
+        }, 1000);
+    }, []);
 
-    // ── Tilt helpers — operate on tiltRef, NOT on the flip wrapper ────────────
-    // The tilt element sits INSIDE the flip wrapper, so its own transform
-    // only needs rotateX/rotateY for tilt (flip is handled by parent).
+    // ── Protected Tilt & Mouse Handlers ───────────────────────────────────────
     const applyTilt = useCallback((clientX: number, clientY: number) => {
+        if (isFlippingRef.current) return; // Ignore tilt updates while flipping
         const el = tiltRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
@@ -117,31 +135,12 @@ export function EntityCard({
         el.style.transition = "transform 0.08s linear";
         el.style.transform = `perspective(1000px) rotateY(${flipAngleRef.current}deg) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.025,1.025,1.025)`;
 
-        // // 🌟 Fixed coordinate math using untransformed element dimensions
-        // if (shineRef.current) {
-        //     const centerX = rect.left + rect.width / 2;
-        //     const centerY = rect.top + rect.height / 2;
-
-        //     const offsetX = clientX - centerX;
-        //     const offsetY = clientY - centerY;
-
-        //     // Use offsetWidth/offsetHeight so 3D transforms don't distort the scale
-        //     const xPercent = 50 + (offsetX / el.offsetWidth) * 100;
-        //     const yPercent = 50 + (offsetY / el.offsetHeight) * 100;
-
-        //     shineRef.current.style.setProperty('--x', `${xPercent}%`);
-        //     shineRef.current.style.setProperty('--y', `${yPercent}%`);
-        //     shineRef.current.style.opacity = "1";
-        // }
-        // ── Realistic specular shine ─────────────────────────────────────────
-        // Uses offsetWidth/Height so 3D transforms don't distort the percentage math
         const shine = shineRef.current;
         if (shine) {
             const xPct = 50 + ((clientX - rect.left - rect.width / 2) / el.offsetWidth) * 100;
             const yPct = 50 + ((clientY - rect.top - rect.height / 2) / el.offsetHeight) * 100;
             shine.style.setProperty("--x", `${xPct}%`);
             shine.style.setProperty("--y", `${yPct}%`);
-            // Tilt intensity 0-1 for brightness scaling
             const intensity = Math.sqrt((rx / MAX_TILT) ** 2 + (ry / MAX_TILT) ** 2);
             shine.style.setProperty("--i", String(Math.min(intensity, 1)));
             shine.style.opacity = "1";
@@ -156,14 +155,6 @@ export function EntityCard({
         const shine = shineRef.current;
         if (shine) shine.style.opacity = "0";
     }, []);
-
-    // const startShine = useCallback(() => {
-    //     const el = shineRef.current;
-    //     if (!el) return;
-    //     el.style.animation = "none";
-    //     void el.offsetHeight;
-    //     // el.style.animation = "glass-shimmer 1.4s cubic-bezier(0.4,0,0.2,1) infinite";
-    // }, []);
 
     const stopShine = useCallback(() => {
         if (shineRef.current) {
@@ -182,6 +173,7 @@ export function EntityCard({
     }, [onTiltChange, applyTilt/* , startShine */]);
 
     const exit3D = useCallback(() => {
+        if (isFlippingRef.current) return; // Don't reset tilt/exit while flipping
         setIs3D(false);
         setIsHolding(false);
         setIsMoving(false);
@@ -209,11 +201,10 @@ export function EntityCard({
 
     // ── Desktop mouse handlers ────────────────────────────────────────────────
     const onMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isMobile) return;
+        if (isMobile || isFlippingRef.current) return; // Don't trigger 3D during a flip
         setIs3D(true);
         onTiltChange?.(true);
         applyTilt(e.clientX, e.clientY);
-        // setTimeout(startShine, 700);
     };
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         // if (!isMobile) return;
@@ -227,6 +218,7 @@ export function EntityCard({
 
     // ── Mobile touch handlers ─────────────────────────────────────────────────
     const startCountdown = useCallback((x: number, y: number) => {
+        if (hasSwipedRef.current) return; // Do not start if already swiped
         clearTimers();
         touchStart.current = { x, y };
         lastPos.current = { x, y };
@@ -234,10 +226,12 @@ export function EntityCard({
 
         const startTime = Date.now();
         progressInt.current = setInterval(() => {
+            if (hasSwipedRef.current) return;
             setProgress(Math.min(((Date.now() - startTime) / HOLD_MS) * 100, 100));
         }, 16);
 
         holdTimer.current = setTimeout(() => {
+            if (hasSwipedRef.current) return; // 🌟 Final guard block before opening 3D
             const start = touchStart.current;
             const last = lastPos.current;
             if (!start || !last) return;
@@ -254,6 +248,7 @@ export function EntityCard({
     const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
         if (!isMobile || is3D) return;
         const t = e.touches[0];
+        hasSwipedRef.current = false; // Reset swipe lock on fresh touch
         setIsHolding(true);
         startCountdown(t.clientX, t.clientY);
     };
@@ -261,21 +256,26 @@ export function EntityCard({
     const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
         if (!isMobile) return;
         const t = e.touches[0];
-        if (is3D) { applyTilt(t.clientX, t.clientY); return; }
+        if (is3D) {
+            e.stopPropagation();
+            applyTilt(t.clientX, t.clientY);
+            return;
+        }
         if (!touchStart.current) return;
         lastPos.current = { x: t.clientX, y: t.clientY };
         const dx = Math.abs(t.clientX - touchStart.current.x);
         const dy = Math.abs(t.clientY - touchStart.current.y);
+
         if (dx > STILL_PX || dy > STILL_PX) {
+            hasSwipedRef.current = true; // 🌟 Mark that a swipe/scroll is happening
             setIsMoving(true);
-            startCountdown(t.clientX, t.clientY);
-        } else {
-            setIsMoving(false);
+            cancelHold(); // 🌟 Permanently kill the countdown so it won't trigger later!
         }
     };
 
     const onTouchEnd = () => {
         if (!isMobile) return;
+        hasSwipedRef.current = false; // 🌟 Reset when finger lifts
         if (is3D) { exit3D(); } else { cancelHold(); }
     };
 
@@ -332,17 +332,6 @@ export function EntityCard({
                     </div>
                 </div>
             )}
-
-            {/*
-             * Flip wrapper — this is the element that rotates 180° for the flip.
-             * It fills the outer shell entirely.
-             * tiltRef points here too, so tilt transform is applied to this same element
-             * (which already has the flip baked in via CSS transition).
-             *
-             * IMPORTANT: when is3D is active we take over the transform fully via
-             * applyTilt(), so we set style.transform directly on this element and
-             * the CSS transition class is removed while tilting.
-             */}
             <div
                 ref={tiltRef}
                 className={`relative ${cardSize}`}
@@ -367,19 +356,17 @@ export function EntityCard({
                     className="absolute inset-0"
                     style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                 >
-                    <Card className="overflow-hidden group w-full h-full flex flex-col items-stretch gap-0 justify-between pt-0 transition-all duration-500 hover:shadow-md select-none [-webkit-touch-callout:none]">
-                        {backData && (
-                            <Button
-                                onClick={toggleFlip}
-                                size={"icon"}
-                                className="z-99 right-5 top-5 absolute rounded-full opacity-50 hover:opacity-100"
-                                title="Flip card"
-                                variant={"outline"}
+                    <Card onClick={toggleFlip} className={`overflow-hidden group w-full h-full flex flex-col items-stretch gap-0 justify-between pt-0 transition-all duration-500 ${is3D && "shadow-md"} select-none [-webkit-touch-callout:none]`}>
+                        <div className="z-99 absolute top-2 w-full flex justify-start items-end px-2">
+                            {["character", "power"].includes(typePage) && <div className=" flex items-center justify-center border-3 rounded-full aspect-square w-12 p-2"
+                                style={{
+                                    background: backData.scoreColor,
+                                    borderColor: backData.scoreBorderColor
+                                }}
                             >
-                                <RotateCcw className="w-2 h-2" />
-                            </Button>
-                        )}
-                        {/* 🌟 Image area (flex-1 lets it take all remaining vertical space gracefully) */}
+                                <p className="text-[15px] font-extrabold" style={{ color: backData.scoreTextColor }}>{backData.score}</p>
+                            </div>}
+                        </div>
 
                         {imageFocus !== undefined ? (
                             <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center min-h-0">
@@ -391,44 +378,43 @@ export function EntityCard({
                                         className={`overflow-hidden relative z-10 object-contain h-full w-full duration-700 transition-transform pointer-events-none ${is3D ? "scale-110" : "group-hover:scale-110"}`}
                                     />
                                 </ViewTransition>
-                                {is3D && <ShineEffect shineRef={shineRef} />}
                             </div>
                         ) : (
                             <div className="relative flex-1 w-full bg-transparent flex items-center justify-center overflow-hidden min-h-0">
+                                <Image
+                                    src={background ? background : image}
+                                    alt="background blur"
+                                    className={`absolute inset-0 m-auto ${typePage === "team" ? "overflow-hidden h-full w-full object-cover blur-3xl brightness-150" : `object-cover blur-[3px]`}  w-full h-full pointer-events-none transition-all duration-500`}
+                                    width={200} height={200} unoptimized
+                                />
                                 <ViewTransition name={transitionKey} share="morph">
                                     <Image
-                                        src={background ? background : image}
-                                        alt="background blur"
-                                        /* ${typePage === "team" ? "object-contain" : `object-cover ${typePage !== "power" ? "group-hover:blur-none" : ""}`} */
-                                        className={`absolute inset-0 m-auto ${typePage === "team" ? "overflow-hidden h-full w-full object-cover blur-3xl brightness-150" : `object-cover blur-[3px]`}  w-full h-full pointer-events-none transition-all duration-500`}
-                                        width={200} height={200} unoptimized
-                                    />
-                                    <Image
                                         src={image} alt={title}
-                                        /* ${background && is3D ? "opacity-0" : background ? "opacity-100 group-hover:opacity-0" : ""} */
-                                        /* ${typePage !== "team" && (is3D ? "scale-110" : "group-hover:scale-110")} */
                                         className={`overflow-visible absolute z-10 object-contain ${typePage === "universe" || typePage === "team" ? "max-h-[85%] w-[85%] " : "h-full w-full"} duration-1000 transition-all pointer-events-none  `}
                                         width={800} height={1200} unoptimized
                                     />
                                 </ViewTransition>
-                                {is3D && <ShineEffect shineRef={shineRef} />}
                             </div>
                         )}
 
                         {/* Info (shrink-0 prevents it from shrinking or disappearing) */}
                         <CardContent className="bg-card py-3 flex flex-col items-center justify-center shrink-0">
                             <CardHeader className="flex flex-row justify-between items-center gap-1 w-full px-4 shrink-0">
-                                <LoadingLink href={href}>
-                                    <CardTitle className="text-base font-bold truncate" title={title}>{title}</CardTitle>
-                                </LoadingLink>
+                                <CardTitle
+                                    className={`text-base font-bold truncate max-w-[80%]`}
+                                    title={title}
+                                >
+                                    <LoadingLink href={href}>
+                                        {title}
+                                    </LoadingLink>
+                                </CardTitle>
                                 <div className="flex items-center gap-2 shrink-0">
                                     {badge}
                                     <span className="text-[11px] text-muted-foreground font-medium bg-muted/50 px-1.5 py-0.5 rounded">#{id}</span>
-
                                 </div>
                             </CardHeader>
                             <CardDescription className="flex flex-row justify-between items-center gap-2 w-full px-5 py-1 shrink-0">
-                                <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light max-w-[70%]`}>
+                                <p className={`${!universeLogo && "min-h-12.5"} line-clamp-3 text-xs text-muted-foreground font-light ${universeLogo && "max-w-[70%]"}`}>
                                     {description || "No description available."}
                                 </p>
                                 {universeLogo && (
@@ -468,108 +454,28 @@ export function EntityCard({
                             transform: "rotateY(180deg)",
                         }}
                     >
-                        <Card className={`w-full h-full overflow-hidden select-none [-webkit-touch-callout:none]`}
+                        <Card onClick={toggleFlip} className={`w-full h-full overflow-hidden select-none [-webkit-touch-callout:none]`}
                             style={{
-                                // transformStyle: "preserve-3d",
-                                backgroundColor: backData.cardBackgroundColor
+                                transformStyle: "preserve-3d",
+                                backgroundColor: backData.cardBaseColor
                             }}
                         >
-                            <CardBackFace
-                                backData={backData}
-                                onFlip={() => toggleFlip()}
-                            />
+                            <div className="relative flex flex-col h-full w-full">
+                                <div className="h-full flex flex-col gap-8 items-center justify-center">
+                                    {
+                                        backData.kind == "power" ?
+                                            < Image className="aspect-square w-48 rounded-full object-cover" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                                            :
+                                            backData.logo != "" ?
+                                                < Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                                                : <p className="text-foreground font-semibold">{backData.entityName}</p>
+                                    }
+                                </div>
+                            </div>
                         </Card>
                     </div>
                 )}
             </div>
-        </div>
-    );
-}
-
-// ── Back face router ──────────────────────────────────────────────────────────
-
-function CardBackFace({
-    backData, onFlip,
-}: {
-    backData: BackData;
-    onFlip: (e?: React.MouseEvent) => void;
-}) {
-    return (
-        <div className="relative flex flex-col h-full w-full">
-            <Button
-                onClick={onFlip}
-                size={"icon"}
-                className="z-99 right-5 top-2 absolute rounded-full opacity-50 hover:opacity-100"
-                title="Flip card"
-                variant={"outline"}
-            >
-                <RotateCcw className="w-2 h-2" />
-            </Button>
-            <CardBack backData={backData} />
-        </div>
-    );
-}
-function CardBack({ backData }: { backData: BackData; }) {
-    return (
-        <div className="h-full flex flex-col gap-8 items-center justify-center">
-            {/* <div className="flex items-center justify-center border rounded-full aspect-square w-48 p-4 shadow-lg"
-                style={{
-                    background: backData.glowShadowColor,
-                    borderColor: backData.cardBorderColor
-                }}
-            >
-                <p className="text-7xl font-bold text-white">{backData.total}</p>
-            </div> */}
-            {
-                backData.kind == "power" ?
-                    < Image className="aspect-square w-48 rounded-full object-cover" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
-                    :
-                    backData.logo != "" ?
-                        < Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
-                        : <p className="text-foreground font-semibold">{backData.entityName}</p>
-            }
-
-        </div>
-    )
-}
-
-// ── Realistic specular shine ──────────────────────────────────────────────────
-//
-// Mimics a foil card held under light:
-//  - A sharp bright ellipse that tracks the cursor (the "hot spot")
-//  - A wider soft glow that fades out from center
-//  - Intensity (--i) scales both layers so the effect only appears when
-//    the card is actually tilted away from flat
-//
-// No hue-shifting, no rainbows — just a neutral-white specular reflection.
-
-function ShineEffect({ shineRef }: { shineRef: React.RefObject<HTMLDivElement | null> }) {
-    return (
-        <div className="absolute inset-0 z-30 overflow-hidden pointer-events-none" style={{ borderRadius: "inherit" }}>
-            <div
-                ref={shineRef}
-                className="absolute inset-0 opacity-0 pointer-events-none"
-                style={{
-                    // Hot-spot: tight bright ellipse exactly at cursor
-                    // Glow:     wide soft bloom, intensity-scaled
-                    background: `
-                        radial-gradient(
-                            ellipse 30% 20% at var(--x, 50%) var(--y, 50%),
-                            rgba(255,255,255,calc(0.95 * var(--i,0))) 0%,
-                            rgba(255,255,255,calc(0.55 * var(--i,0))) 30%,
-                            transparent 70%
-                        ),
-                        radial-gradient(
-                            ellipse 80% 60% at var(--x, 50%) var(--y, 50%),
-                            rgba(255,255,255,calc(0.18 * var(--i,0))) 0%,
-                            transparent 75%
-                        )
-                    `,
-                    mixBlendMode: "hard-light",
-                    transition: "opacity 0.25s ease",
-                    willChange: "opacity",
-                }}
-            />
         </div>
     );
 }

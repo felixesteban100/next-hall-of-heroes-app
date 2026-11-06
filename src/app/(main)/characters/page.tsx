@@ -107,9 +107,9 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                 type="character"
                 sortOptions={[
                     { value: "id", label: "Id" },
-                    { value: "powerstats.total", label: "Power total" },
+                    // { value: "powerstats.total", label: "Power total" },
                     { value: "name", label: "Name" },
-                    { value: "appearance.age", label: "Age" },
+                    // { value: "appearance.age", label: "Age" },
                 ]}
                 extraData={{ universes: sanitizedUniverses, teams: sanitizedTeams, powers: sanitizedPowers }}
             />

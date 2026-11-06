@@ -11,6 +11,7 @@ export function LoadingLink({ href, children, onClick, ...props }: LoadingLinkPr
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
+        e.stopPropagation();
         onClick?.(e as any);
         navigateRoute(href.toString());
     };
