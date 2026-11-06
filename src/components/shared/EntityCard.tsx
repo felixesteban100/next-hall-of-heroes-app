@@ -98,6 +98,8 @@ export function EntityCard({
 
         const direction = Math.random() < 0.5 ? 1 : -1;
         setFlipAngle(prev => prev + (180 * direction));
+
+        /* disable everything when flipping */
     }, [is3D, isHolding]);
 
     // ── Tilt helpers — operate on tiltRef, NOT on the flip wrapper ────────────
@@ -115,21 +117,34 @@ export function EntityCard({
         el.style.transition = "transform 0.08s linear";
         el.style.transform = `perspective(1000px) rotateY(${flipAngleRef.current}deg) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.025,1.025,1.025)`;
 
-        // 🌟 Fixed coordinate math using untransformed element dimensions
-        if (shineRef.current) {
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+        // // 🌟 Fixed coordinate math using untransformed element dimensions
+        // if (shineRef.current) {
+        //     const centerX = rect.left + rect.width / 2;
+        //     const centerY = rect.top + rect.height / 2;
 
-            const offsetX = clientX - centerX;
-            const offsetY = clientY - centerY;
+        //     const offsetX = clientX - centerX;
+        //     const offsetY = clientY - centerY;
 
-            // Use offsetWidth/offsetHeight so 3D transforms don't distort the scale
-            const xPercent = 50 + (offsetX / el.offsetWidth) * 100;
-            const yPercent = 50 + (offsetY / el.offsetHeight) * 100;
+        //     // Use offsetWidth/offsetHeight so 3D transforms don't distort the scale
+        //     const xPercent = 50 + (offsetX / el.offsetWidth) * 100;
+        //     const yPercent = 50 + (offsetY / el.offsetHeight) * 100;
 
-            shineRef.current.style.setProperty('--x', `${xPercent}%`);
-            shineRef.current.style.setProperty('--y', `${yPercent}%`);
-            shineRef.current.style.opacity = "1";
+        //     shineRef.current.style.setProperty('--x', `${xPercent}%`);
+        //     shineRef.current.style.setProperty('--y', `${yPercent}%`);
+        //     shineRef.current.style.opacity = "1";
+        // }
+        // ── Realistic specular shine ─────────────────────────────────────────
+        // Uses offsetWidth/Height so 3D transforms don't distort the percentage math
+        const shine = shineRef.current;
+        if (shine) {
+            const xPct = 50 + ((clientX - rect.left - rect.width / 2) / el.offsetWidth) * 100;
+            const yPct = 50 + ((clientY - rect.top - rect.height / 2) / el.offsetHeight) * 100;
+            shine.style.setProperty("--x", `${xPct}%`);
+            shine.style.setProperty("--y", `${yPct}%`);
+            // Tilt intensity 0-1 for brightness scaling
+            const intensity = Math.sqrt((rx / MAX_TILT) ** 2 + (ry / MAX_TILT) ** 2);
+            shine.style.setProperty("--i", String(Math.min(intensity, 1)));
+            shine.style.opacity = "1";
         }
     }, []);
 
@@ -138,15 +153,17 @@ export function EntityCard({
         if (!el) return;
         el.style.transition = "transform 1.0s cubic-bezier(0.4,0,0.2,1)";
         el.style.transform = `perspective(1000px) rotateY(${flipAngleRef.current}deg) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)`;
+        const shine = shineRef.current;
+        if (shine) shine.style.opacity = "0";
     }, []);
 
-    const startShine = useCallback(() => {
-        const el = shineRef.current;
-        if (!el) return;
-        el.style.animation = "none";
-        void el.offsetHeight;
-        // el.style.animation = "glass-shimmer 1.4s cubic-bezier(0.4,0,0.2,1) infinite";
-    }, []);
+    // const startShine = useCallback(() => {
+    //     const el = shineRef.current;
+    //     if (!el) return;
+    //     el.style.animation = "none";
+    //     void el.offsetHeight;
+    //     // el.style.animation = "glass-shimmer 1.4s cubic-bezier(0.4,0,0.2,1) infinite";
+    // }, []);
 
     const stopShine = useCallback(() => {
         if (shineRef.current) {
@@ -161,8 +178,8 @@ export function EntityCard({
         setProgress(0);
         onTiltChange?.(true);
         applyTilt(x, y);
-        setTimeout(startShine, 700);
-    }, [onTiltChange, applyTilt, startShine]);
+        // setTimeout(startShine, 700);
+    }, [onTiltChange, applyTilt/* , startShine */]);
 
     const exit3D = useCallback(() => {
         setIs3D(false);
@@ -196,7 +213,7 @@ export function EntityCard({
         setIs3D(true);
         onTiltChange?.(true);
         applyTilt(e.clientX, e.clientY);
-        setTimeout(startShine, 700);
+        // setTimeout(startShine, 700);
     };
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         // if (!isMobile) return;
@@ -516,26 +533,41 @@ function CardBack({ backData }: { backData: BackData; }) {
     )
 }
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
+// ── Realistic specular shine ──────────────────────────────────────────────────
+//
+// Mimics a foil card held under light:
+//  - A sharp bright ellipse that tracks the cursor (the "hot spot")
+//  - A wider soft glow that fades out from center
+//  - Intensity (--i) scales both layers so the effect only appears when
+//    the card is actually tilted away from flat
+//
+// No hue-shifting, no rainbows — just a neutral-white specular reflection.
 
 function ShineEffect({ shineRef }: { shineRef: React.RefObject<HTMLDivElement | null> }) {
     return (
-        <div className="absolute inset-0 z-30 overflow-hidden pointer-events-none rounded-inherit">
+        <div className="absolute inset-0 z-30 overflow-hidden pointer-events-none" style={{ borderRadius: "inherit" }}>
             <div
                 ref={shineRef}
-                className="absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none"
+                className="absolute inset-0 opacity-0 pointer-events-none"
                 style={{
+                    // Hot-spot: tight bright ellipse exactly at cursor
+                    // Glow:     wide soft bloom, intensity-scaled
                     background: `
                         radial-gradient(
-                            circle 350px at var(--x, 50%) var(--y, 50%),
-                            rgba(255, 255, 255, 0.85) 0%,
-                            rgba(255, 255, 255, 0.3) 35%,
-                            rgba(120, 200, 255, 0.15) 60%,
-                            transparent 85%
+                            ellipse 30% 20% at var(--x, 50%) var(--y, 50%),
+                            rgba(255,255,255,calc(0.95 * var(--i,0))) 0%,
+                            rgba(255,255,255,calc(0.55 * var(--i,0))) 30%,
+                            transparent 70%
+                        ),
+                        radial-gradient(
+                            ellipse 80% 60% at var(--x, 50%) var(--y, 50%),
+                            rgba(255,255,255,calc(0.18 * var(--i,0))) 0%,
+                            transparent 75%
                         )
                     `,
-                    mixBlendMode: "overlay",
-                    willChange: "transform, opacity",
+                    mixBlendMode: "hard-light",
+                    transition: "opacity 0.25s ease",
+                    willChange: "opacity",
                 }}
             />
         </div>
