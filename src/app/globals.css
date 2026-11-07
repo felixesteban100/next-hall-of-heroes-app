@@ -203,6 +203,8 @@
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+
+  --animate-shine: shine 3s ease-in-out infinite;
 }
 
 @view-transition {
@@ -232,7 +234,6 @@
 ::view-transition-new(site-header) {
   animation: none;
 }
-
 ::view-transition-group(.morph) {
   animation-duration: 400ms;
 }
@@ -242,6 +243,18 @@
 @keyframes via-blur {
   30% {
     filter: blur(3px);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 
@@ -379,136 +392,6 @@
     animation: sword-slash 1.2s infinite ease-out;
   }
 
-  /* power-overlay.css or globals.css */
-  /* @keyframes po-shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    20%,
-    60% {
-      transform: translateX(-5px) rotate(-2deg);
-    }
-    40%,
-    80% {
-      transform: translateX(5px) rotate(2deg);
-    }
-  }
-  @keyframes po-pulse-gold {
-    0%,
-    100% {
-      transform: scale(1);
-      filter: brightness(1);
-    }
-    50% {
-      transform: scale(1.08);
-      filter: brightness(1.35);
-    }
-  }
-  @keyframes po-shield-flash {
-    0%,
-    100% {
-      box-shadow:
-        0 0 8px 2px rgba(6, 182, 212, 0.5),
-        inset 0 0 12px rgba(6, 182, 212, 0.4);
-    }
-    50% {
-      box-shadow:
-        0 0 28px 10px rgba(6, 182, 212, 1),
-        inset 0 0 20px rgba(103, 232, 249, 0.9);
-    }
-  }
-  @keyframes po-revive-burst {
-    0% {
-      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.9);
-      transform: scale(0.92);
-    }
-    70% {
-      box-shadow: 0 0 32px 14px rgba(192, 132, 252, 0);
-      transform: scale(1.12);
-    }
-    100% {
-      box-shadow: 0 0 0 0 transparent;
-      transform: scale(1);
-    }
-  }
-  @keyframes po-icon-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  @keyframes po-icon-bounce {
-    0%,
-    100% {
-      transform: translateY(0) scale(1);
-    }
-    50% {
-      transform: translateY(-6px) scale(1.12);
-    }
-  }
-  @keyframes po-icon-pulse {
-    0%,
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.2);
-      opacity: 0.85;
-    }
-  }
-  @keyframes po-slash {
-    0% {
-      transform: rotate(-20deg) scale(0.9);
-    }
-    25% {
-      transform: rotate(18deg) scale(1.25);
-    }
-    50% {
-      transform: rotate(-8deg) scale(1.1);
-    }
-    100% {
-      transform: rotate(0) scale(1);
-    }
-  }
-  @keyframes po-ring {
-    0% {
-      transform: scale(0.5);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1.6);
-      opacity: 0;
-    }
-  }
-
-  .animate-po-shake {
-    animation: po-shake 0.45s ease-in-out infinite;
-  }
-  .animate-po-pulse-gold {
-    animation: po-pulse-gold 1.1s ease-in-out infinite;
-  }
-  .animate-po-shield-flash {
-    animation: po-shield-flash 0.85s ease-in-out infinite;
-  }
-  .animate-po-revive-burst {
-    animation: po-revive-burst 1.1s ease-out infinite;
-  }
-  .animate-po-icon-spin {
-    animation: po-icon-spin 2.5s linear infinite;
-  }
-  .animate-po-icon-bounce {
-    animation: po-icon-bounce 0.7s ease-in-out infinite;
-  }
-  .animate-po-icon-pulse {
-    animation: po-icon-pulse 0.9s ease-in-out infinite;
-  }
-  .animate-po-slash {
-    animation: po-slash 1s ease-out infinite;
-  }
-  .animate-po-ring {
-    animation: po-ring 1s ease-out infinite;
-  } */
   /* —— Power overlay motion —— */
   @keyframes po-ember-rise {
     0% {
@@ -739,5 +622,17 @@
   }
   .po-fade-in {
     opacity: 1;
+  }
+
+  .card-shine {
+    background-image: linear-gradient(
+      45deg,
+      transparent 20%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 55%,
+      transparent 70%,
+      transparent 100%
+    );
   }
 }

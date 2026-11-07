@@ -1,26 +1,22 @@
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
-import { ChemistryResult } from "@/lib/compare/teamChemistry";
-import { Crown } from "lucide-react";
 import { computeMatchScore } from "@/lib/compare";
 
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { CharacterImage } from "@/components/shared/CharacterImage";
+import { getCharacterThematicMix } from "@/lib/character_utils";
+import { EntityCard } from "@/components/shared/EntityCard";
+import { getCardProps } from "@/components/shared/getCardProps";
+import { getItemHref } from "@/components/shared/SwipeGrid";
 
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
     variant: "primary" | "secondary";
-    powerEstimate?: number;
-    chemistry: ChemistryResult | null;
-    mvp: string
 };
 
 export function TeamProfileSlot({
     entities,
     variant,
-    powerEstimate,
-    chemistry,
-    mvp
 }: Props) {
     const border =
         variant === "primary" ? "border-primary" : "border-secondary";
@@ -40,13 +36,12 @@ export function TeamProfileSlot({
 
     return (
         <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
-            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full">
+            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full mt-2">
                 {entities.map(c => ({ ...c, overall: computeMatchScore(c).overall })).sort((a, b) => b.overall - a.overall).map((e) => (
                     <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
                         <div
                             key={e.id}
-                            /*  sm:w-12 sm:h-12 md:w-14 md:h-14  */
-                            className={`relative w-13 h-13 border-2 ${border} bg-card shrink-0 rounded-lg`}
+                            className={`relative w-12 h-12 md:w-20 md:h-20 border-2 ${border} bg-card shrink-0 rounded-lg`}
                             title={e.name}
                         >
                             <ViewTransition name={`character-${e.id}`}>
@@ -58,15 +53,17 @@ export function TeamProfileSlot({
                                     unoptimized
                                     imageFocus={e.imageFocus}
                                 />
-                                {/* MVP Star Badge */}
-                                {(mvp === e.name) && (
-                                    <div
-                                        title="Team MVP"
-                                        className="absolute -top-1.5 -right-1.5 bg-yellow-300 text-black p-0.5 rounded-full shadow-md border border-background animate-pulse-gold"
-                                    >
-                                        <Crown className="size-3 fill-black " /> {/* or <Star className="size-3 fill-black" /> */}
-                                    </div>
-                                )}
+                                <div
+                                    title={`${e.name} score`}
+                                    className="absolute -top-2 -left-2 z-30 w-[60%] h-[60%] md:w-[40%] md:h-[40%] rounded-full border-2 flex items-center justify-center text-[50%] font-black"
+                                    style={{
+                                        background: getCharacterThematicMix(e).background,
+                                        borderColor: getCharacterThematicMix(e).text, // 🌟 Use borderColor instead of border to preserve border-2 width
+                                        color: getCharacterThematicMix(e).text
+                                    }}
+                                >
+                                    {computeMatchScore(e).overall}
+                                </div>
                             </ViewTransition>
 
                         </div>
@@ -76,17 +73,6 @@ export function TeamProfileSlot({
                     </LoadingLink>
                 ))}
             </div>
-
-            {powerEstimate != null && (
-                <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    PowerEstimate {powerEstimate.toFixed(1)}
-                </span>
-            )}
-            {chemistry != null && (
-                <span className="text-[10px] text-muted-foreground">
-                    Chem{" "}+{chemistry.score}
-                </span>
-            )}
         </div>
     );
 }

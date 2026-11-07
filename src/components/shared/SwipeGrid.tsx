@@ -33,6 +33,17 @@ export function useIsMobile() {
 //     );
 // }
 
+// ── URL helpers ───────────────────────────────────────────────────────────
+export const getItemHref = (item: any, type: EntityType) => {
+    switch (type) {
+        case "power": return `/powers/${item.id}`;
+        case "character": return `/characters/${item.id}`;
+        case "team": return `/teams/${item.id}`;
+        case "universe": return `/universes/${item.id}`;
+        default: return `/${item.id}`;
+    }
+};
+
 export type EntityType = "power" | "character" | "team" | "universe"
 
 interface SwipeGridProps {
@@ -177,17 +188,6 @@ export function SwipeGrid({
         tiltActiveRef.current = tilting;
     }, []);
 
-    // ── URL helpers ───────────────────────────────────────────────────────────
-    const getItemHref = (item: any) => {
-        switch (type) {
-            case "power": return `/powers/${item.id}`;
-            case "character": return `/characters/${item.id}`;
-            case "team": return `/teams/${item.id}`;
-            case "universe": return `/universes/${item.id}`;
-            default: return `/${item.id}`;
-        }
-    };
-
     // ── Empty state ───────────────────────────────────────────────────────────
     if (items.length === 0) {
         return (
@@ -244,11 +244,11 @@ export function SwipeGrid({
                             key={item.id}
                             className="snap-card snap-center snap-always shrink-0 w-full h-full flex flex-col items-center justify-center relative py-1"
                         >
-                            <div className="w-full h-full flex items-center justify-center max-w-md mx-auto">
+                            <div className="w-[90%] h-[90%] flex items-center justify-center max-w-md mx-auto">
                                 <EntityCard
                                     {...getCardProps(item, type)}
                                     onTiltChange={handleTiltChange}
-                                    href={getItemHref(item)}
+                                    href={getItemHref(item, type)}
                                 />
                             </div>
                         </div>
@@ -263,7 +263,7 @@ export function SwipeGrid({
         <div className={`${desktopGridClassName} mb-4 overflow-visible`}>
             {items.map((item) => (
                 <div key={item.id} className="w-auto h-[25rem] shrink-0 relative">
-                    <EntityCard {...getCardProps(item, type)} href={getItemHref(item)} />
+                    <EntityCard {...getCardProps(item, type)} href={getItemHref(item, type)} />
                 </div>
             ))}
         </div>

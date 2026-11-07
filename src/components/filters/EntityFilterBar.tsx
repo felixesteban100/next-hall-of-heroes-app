@@ -86,7 +86,7 @@ function ToggleGroup({ label, options, value, onChange, cols = 2 }: {
                                 active && o.activeBg && "border-transparent"
                             )}>
                             {o.Icon && <o.Icon className="size-3 shrink-0" />}
-                            {o.label}
+                            {o.label.slice(0, 25)}
                         </Button>
                     );
                 })}

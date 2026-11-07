@@ -1,6 +1,6 @@
 import { Crown, Hash, Users } from "lucide-react";
 import { EntityType } from "./SwipeGrid";
-import { BackData } from "./EntityCard";
+import { BackData, StatColumn } from "./EntityCard";
 import {
     CHARACTER_CLASS,
     CHARACTER_CLASS_COLOR,
@@ -18,7 +18,7 @@ import {
     POWER_TIER_COLOR,
     POWER_TIER_ICON,
 } from "@/lib/constants";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon } from "@/lib/character_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon, getCharacterThematicMix, getPowerThematicMix } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
 import { computeMatchScore } from "@/lib/compare";
@@ -26,25 +26,11 @@ import { computeMatchScore } from "@/lib/compare";
 export const getCardProps = (item: any, type: EntityType) => {
     switch (type) {
         case "character": {
-            const tierColorCharacter = CHARACTER_TIER_COLOR[item.tier as keyof typeof CHARACTER_TIER_COLOR] ?? CHARACTER_TIER_COLOR[0];
-            const tierLabelCharacter = CHARACTER_TIER[item.tier as keyof typeof CHARACTER_TIER]?.split("/")[0] ?? "Unrated";
-
-            const classColor = CHARACTER_CLASS_COLOR[item.class as keyof typeof CHARACTER_CLASS_COLOR] ?? CHARACTER_CLASS_COLOR[0];
-            const characterClass = CHARACTER_CLASS[item.class as keyof typeof CHARACTER_CLASS]?.split("/")[0].split(" ")[0] ?? "?";
-
-            const TypeIcon = CHARACTER_TYPE_ICON[(item.character_type === "" ? "unknown" : item.character_type) as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_ICON["unknown"];
-            const typeColor = CHARACTER_TYPE_COLOR[(item.character_type === "" ? "unknown" : item.character_type) as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_COLOR["unknown"];
-
-            const alignmentColor = getCharacterAlignmentTextColor(item.biography.alignment);
-            const IconAlignment = getAlignmentIcon(item.biography.alignment);
-            const alignmentText = getCharacterAlignmentText(item.biography.alignment);
-            const alignmentVarColor = getCharacterAlignmentVarColor(item.biography.alignment)
-
-            const stats = [
+            const stats: StatColumn[] = [
                 {
-                    icon: IconAlignment,
-                    text: alignmentText,
-                    colorClass: alignmentColor,
+                    icon: getAlignmentIcon(item.biography.alignment),
+                    text: getCharacterAlignmentText(item.biography.alignment),
+                    colorClass: getCharacterAlignmentTextColor(item.biography.alignment),
                     title: "Alignment",
                 },
                 {
@@ -54,39 +40,35 @@ export const getCardProps = (item: any, type: EntityType) => {
                     title: "Gender",
                 },
                 {
-                    icon: TypeIcon,
+                    icon: CHARACTER_TYPE_ICON[(item.character_type === "" ? "unknown" : item.character_type) as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_ICON["unknown"],
                     text: item.character_type || "Type",
-                    colorClass: typeColor?.text ?? "text-muted-foreground",
+                    colorClass: CHARACTER_TYPE_COLOR[(item.character_type === "" ? "unknown" : item.character_type) as keyof typeof CHARACTER_TYPE_COLOR].text ?? CHARACTER_TYPE_COLOR["unknown"]?.text ?? "text-muted-foreground",
                     title: "Type",
                 },
                 {
                     icon: CHARACTER_TIER_ICON[item.tier] ?? CHARACTER_TIER_ICON[0],
-                    // text: `T-${tierLabelCharacter.slice(0, 3)}...`,
-                    text: tierLabelCharacter.slice(0, 5),
-                    colorClass: tierColorCharacter.text,
+                    text: CHARACTER_TIER[item.tier as keyof typeof CHARACTER_TIER]?.split("/")[0].slice(0, 5) ?? "Unrated".slice(0, 5),
+                    colorClass: CHARACTER_TIER_COLOR[item.tier as keyof typeof CHARACTER_TIER_COLOR].text ?? CHARACTER_TIER_COLOR[0].text,
                     title: "Tier",
                 },
                 {
                     icon: CHARACTER_CLASS_ICON[item.class] ?? CHARACTER_CLASS_ICON[0],
-                    // text: `C-${characterClass}`,
-                    text: characterClass,
-                    colorClass: classColor.text,
+                    text: CHARACTER_CLASS[item.class as keyof typeof CHARACTER_CLASS]?.split("/")[0].split(" ")[0] ?? "?",
+                    colorClass: CHARACTER_CLASS_COLOR[item.class as keyof typeof CHARACTER_CLASS_COLOR].text ?? CHARACTER_CLASS_COLOR[0].text,
                     title: "Class",
                 },
             ];
 
-            const thematicMix = `color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, ${tierColorCharacter.var}, ${classColor.var}), ${alignmentVarColor}), ${typeColor.var})`;
-            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
-            const scoreTextColor = `contrast-color(${thematicMix})`;
+            const { background, border, text } = getCharacterThematicMix(item)
 
             const backData: BackData = {
                 kind: "character",
                 entityName: item.name,
                 logo: item.biography.publisher.logo,
                 score: computeMatchScore(item).overall,
-                scoreColor: thematicMix,
-                scoreBorderColor,
-                scoreTextColor,
+                scoreColor: background,
+                scoreBorderColor: border,
+                scoreTextColor: text,
                 cardBaseColor: "var(--color-card)",
             };
 
@@ -102,20 +84,18 @@ export const getCardProps = (item: any, type: EntityType) => {
                 universeLogo: item.biography?.publisher.logo,
                 stats,
                 backData,
+                randomPower: item.powers[Math.floor(Math.random() * item.powers.length)].name
             };
         }
 
         case "team": {
-            const alignmentColor = getCharacterAlignmentTextColor(item.alignment);
-            const IconAlignment = getAlignmentIcon(item.alignment);
-            const alignmentText = getCharacterAlignmentText(item.alignment);
             const alignmentVarColor = getCharacterAlignmentVarColor(item.alignment)
 
-            const stats = [
+            const stats: StatColumn[] = [
                 {
-                    icon: IconAlignment,
-                    text: alignmentText,
-                    colorClass: alignmentColor,
+                    icon: getAlignmentIcon(item.alignment),
+                    text: getCharacterAlignmentText(item.alignment),
+                    colorClass: getCharacterAlignmentTextColor(item.alignment),
                     title: "Alignment",
                 },
                 {
@@ -160,49 +140,37 @@ export const getCardProps = (item: any, type: EntityType) => {
         }
 
         case "power": {
-            const TierIconPower = POWER_TIER_ICON[item.tier] ?? POWER_TIER_ICON[0];
-            const tierColorPower = POWER_TIER_COLOR[item.tier as keyof typeof POWER_TIER_COLOR] ?? POWER_TIER_COLOR[0];
-            const powerTierLabel = POWER_TIER[item.tier as keyof typeof POWER_TIER]?.split("/")[0] ?? "Unrated";
-
-            const RoleIcon = POWER_COMBAT_ROLE_ICON[item.combatRole as PowerRole] ?? POWER_COMBAT_ROLE_ICON["Utility"];
-            const roleColor = POWER_COMBAT_ROLE_COLOR[item.combatRole as PowerRole];
-
-            const ActivationIcon = POWER_ACTIVATION_TYPE_ICON[item.activationType] ?? POWER_ACTIVATION_TYPE_ICON["Instant"];
-            const activationColor = POWER_ACTIVATION_TYPE_COLOR[item.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR]
-
-            const stats = [
+            const stats: StatColumn[] = [
                 {
-                    icon: TierIconPower,
-                    text: `T${item.tier || 0}/${powerTierLabel}`,
-                    colorClass: tierColorPower.text,
+                    icon: POWER_TIER_ICON[item.tier] ?? POWER_TIER_ICON[0],
+                    text: `T${item.tier || 0}/${POWER_TIER[item.tier as keyof typeof POWER_TIER]?.split("/")[0] ?? "Unrated"}`,
+                    colorClass: POWER_TIER_COLOR[item.tier as keyof typeof POWER_TIER_COLOR].text ?? POWER_TIER_COLOR[0].text,
                     title: "Power Tier",
                 },
                 {
-                    icon: RoleIcon,
+                    icon: POWER_COMBAT_ROLE_ICON[item.combatRole as PowerRole] ?? POWER_COMBAT_ROLE_ICON["Utility"],
                     text: item.combatRole?.split("/")[0].trim() || "Utility",
-                    colorClass: roleColor.text ?? "text-muted-foreground",
+                    colorClass: POWER_COMBAT_ROLE_COLOR[item.combatRole as PowerRole].text ?? "text-muted-foreground",
                     title: "Combat Role",
                 },
                 {
-                    icon: ActivationIcon,
+                    icon: POWER_ACTIVATION_TYPE_ICON[item.activationType] ?? POWER_ACTIVATION_TYPE_ICON["Instant"],
                     text: item.activationType || "Instant",
-                    colorClass: activationColor?.text ?? "text-muted-foreground",
+                    colorClass: POWER_ACTIVATION_TYPE_COLOR[item.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR]?.text ?? "text-muted-foreground",
                     title: "Activation Type",
                 },
             ];
-            // 1. Establish the core thematic blend
-            const thematicMix = `color-mix(in srgb, color-mix(in srgb, ${tierColorPower.var}, ${roleColor.var}), ${activationColor.var})`;
-            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
-            const scoreTextColor = `contrast-color(${thematicMix})`;
+
+            const { background, border, text } = getPowerThematicMix(item)
 
             const backData: BackData = {
                 kind: "power",
                 entityName: item.name,
                 logo: item.img,
                 score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
-                scoreColor: thematicMix,
-                scoreBorderColor,
-                scoreTextColor,
+                scoreColor: background,
+                scoreBorderColor: border,
+                scoreTextColor: text,
                 cardBaseColor: "var(--color-card)",
             };
 
@@ -221,7 +189,7 @@ export const getCardProps = (item: any, type: EntityType) => {
             const universeColor = CHARACTER_TYPE_COLOR[item.type as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_COLOR["unknown"];
             const UniverseIcon = CHARACTER_TYPE_ICON[item.type as keyof typeof CHARACTER_TYPE_ICON] ?? CHARACTER_TYPE_ICON["unknown"];
 
-            const stats = [
+            const stats: StatColumn[] = [
                 {
                     icon: UniverseIcon,
                     text: item.type || "Universe",

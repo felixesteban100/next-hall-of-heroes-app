@@ -4,7 +4,6 @@ import { CompareMode } from "@/lib/compare/compareParams";
 import { BattlePanel } from "@/components/compare/battle/BattlePanel";
 import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
-import { MemberBreakdown } from "@/components/compare/MembersBreakdown";
 import { RowGroupedPills } from "@/components/compare/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/compare/rows/RowGroupedBadges";
 import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
@@ -12,7 +11,6 @@ import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
-import { TeamTacticalOverview } from "./battle/TeamTacticalOverview";
 import { StatsRadar } from "./stats/StatRadar";
 import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
 import MatchVerdict from "./battle/MatchVerdict";
@@ -112,9 +110,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
 
     const hasBothSides = entitiesA.length > 0 && entitiesB.length > 0;
 
-    const mvpA = teamA.aceName ?? "";
-    const mvpB = teamB.aceName ?? "";
-
     return (
         <>
             <div className="relative w-full max-w-5xl">
@@ -178,16 +173,10 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                             <TeamProfileSlot
                                                 entities={entitiesA}
                                                 variant="primary"
-                                                powerEstimate={teamA.powerEstimate}
-                                                chemistry={computeTeamChemistry(entitiesA)}
-                                                mvp={mvpA}
                                             />
                                             <TeamProfileSlot
                                                 entities={entitiesB}
                                                 variant="secondary"
-                                                powerEstimate={teamB.powerEstimate}
-                                                chemistry={computeTeamChemistry(entitiesB)}
-                                                mvp={mvpB}
                                             />
                                         </>
                                     ) : (
@@ -197,10 +186,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                         </>
                                     )}
                                 </div>
-
-                                {mode === "team" && (
-                                    <MemberBreakdown entitiesA={entitiesA} entitiesB={entitiesB} mvpA={mvpA} mvpB={mvpB} />
-                                )}
                             </div>
 
                             {/* 3. The Hype Factor: Grouped Rival Matchups */}
@@ -211,16 +196,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                 entityBName={entityBName}
                                 mode={mode}
                             />
-
-                            {/* 4. Tactical Overview / Summary at the bottom */}
-                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-md">
-                                <TeamTacticalOverview
-                                    entitiesA={entitiesA}
-                                    entitiesB={entitiesB}
-                                    nameA={entityAName}
-                                    nameB={entityBName}
-                                />
-                            </div>
                         </div>
                     )}
 

@@ -1,5 +1,7 @@
 import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
+import { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { Frown, Mars, Meh, PersonStanding, Smile, Venus } from "lucide-react";
+import { CHARACTER_CLASS_COLOR, CHARACTER_TIER_COLOR, CHARACTER_TYPE_COLOR, POWER_ACTIVATION_TYPE_COLOR, POWER_COMBAT_ROLE_COLOR, POWER_TIER_COLOR } from "./constants";
 
 export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
@@ -106,6 +108,35 @@ export function getCharacterRaceIcon(race: string) {
     switch (race) {
         default:
             return PersonStanding
+    }
+}
+
+export function getCharacterThematicMix(character: CharacterWithJoinTeamUniversePowerEnemies) {
+    const tierColorCharacter = CHARACTER_TIER_COLOR[character.tier as keyof typeof CHARACTER_TIER_COLOR] ?? CHARACTER_TIER_COLOR[0];
+    const classColor = CHARACTER_CLASS_COLOR[character.class as keyof typeof CHARACTER_CLASS_COLOR] ?? CHARACTER_CLASS_COLOR[0];
+    const typeColor = CHARACTER_TYPE_COLOR[(character.character_type === "" ? "unknown" : character.character_type) as keyof typeof CHARACTER_TYPE_COLOR] ?? CHARACTER_TYPE_COLOR["unknown"];
+    const alignmentVarColor = getCharacterAlignmentVarColor(character.biography.alignment)
+
+    const thematicMix = `color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, ${tierColorCharacter.var}, ${classColor.var}), ${alignmentVarColor}), ${typeColor.var})`;
+    return {
+        background: thematicMix,
+        border: `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`,
+        // text: `contrast-color(${thematicMix})`,
+        text: `color-mix(in srgb, ${thematicMix} 50%, ${`contrast-color(${thematicMix})`} 50%)`,
+    }
+}
+
+export function getPowerThematicMix(power: Power) {
+    const tierColorPower = POWER_TIER_COLOR[power.tier as keyof typeof POWER_TIER_COLOR] ?? POWER_TIER_COLOR[0]
+    const roleColor = POWER_COMBAT_ROLE_COLOR[power.combatRole as PowerRole];
+    const activationColor = POWER_ACTIVATION_TYPE_COLOR[power.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR];
+
+    const thematicMix = `color-mix(in srgb, color-mix(in srgb, ${tierColorPower.var}, ${roleColor.var}), ${activationColor.var})`;
+    return {
+        background: thematicMix,
+        border: `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`,
+        // text: `contrast-color(${thematicMix})`,
+        text: `color-mix(in srgb, ${thematicMix} 50%, ${`contrast-color(${thematicMix})`} 50%)`,
     }
 }
 

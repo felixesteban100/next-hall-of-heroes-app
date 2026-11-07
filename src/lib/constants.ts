@@ -73,7 +73,7 @@ export const POWER_TIER_ICON: Record<number, LucideIcon> = {
 export const CHARACTER_CLASS = {
     1: "Mutant/Powered", // (born with abilities — X-Men, most DBZ Saiyans)
     2: "Tech/Gadget-based", // (Iron Man, Batman, Batwing — no innate powers, all engineering)
-    3: "Trained Discipline / Mystic Arts", // (Doctor Strange, Scarlet Witch)
+    3: "Trained Discipline/Mystic Arts", // (Doctor Strange, Scarlet Witch)
     4: "Skill/Peak Human", // (Akashi, Black Widow — no superpowers, pure trained ability)
     5: "Cosmic/God-tier", // (Thanos, Goku at his strongest, Superman)
     0: "Unassigned",
