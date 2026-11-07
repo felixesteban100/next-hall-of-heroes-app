@@ -351,7 +351,7 @@ export function EntityCard({
                                 <ViewTransition name={transitionKey} share="morph">
                                     <Image
                                         src={image} alt={title}
-                                        className={`overflow-visible absolute z-10 object-contain ${typePage === "universe" || typePage === "team" ? "max-h-[85%] w-[85%]" : "h-full w-full"} duration-1000 transition-all pointer-events-none`}
+                                        className={`overflow-visible absolute z-10 object-contain ${typePage === "universe" || typePage === "team" ? "max-h-[70%] w-[85%]" : "h-full w-full"} duration-1000 transition-all pointer-events-none`}
                                         width={800} height={1200} unoptimized
                                     />
                                 </ViewTransition>
