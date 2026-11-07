@@ -168,23 +168,14 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                             {/* 2. Team Profiles & Avatars (Who is fighting) */}
                             <div className={`mx-auto border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-1`}>
                                 <div className="grid grid-cols-2 bg-card/10 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
-                                    {mode === "team" ? (
-                                        <>
-                                            <TeamProfileSlot
-                                                entities={entitiesA}
-                                                variant="primary"
-                                            />
-                                            <TeamProfileSlot
-                                                entities={entitiesB}
-                                                variant="secondary"
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <ProfileSlot entity={entityA} variant="primary" />
-                                            <ProfileSlot entity={entityB} variant="secondary" />
-                                        </>
-                                    )}
+                                    <TeamProfileSlot
+                                        entities={entitiesA}
+                                        variant="primary"
+                                    />
+                                    <TeamProfileSlot
+                                        entities={entitiesB}
+                                        variant="secondary"
+                                    />
                                 </div>
                             </div>
 
