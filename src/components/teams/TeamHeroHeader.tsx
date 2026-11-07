@@ -4,6 +4,7 @@ import { ShieldCheck, Globe2 } from "lucide-react";
 import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
 import { getAlignmentIcon, getCharacterAlignmentColor } from "@/lib/character_utils";
+import { getAlignmentNames } from "@/lib/compare";
 
 interface TeamHeroHeaderProps {
   team: {
@@ -38,7 +39,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
     },
   ];
 
-  const TeamAligmentIcon = getAlignmentIcon(team?.alignment ?? "neutral")
+  const TeamAligmentIcon = getAlignmentIcon(team.alignment ?? "neutral")
   const teamAligmentColor = getCharacterAlignmentColor(team?.alignment ?? "neutral")
 
   return (
@@ -69,7 +70,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
           {/* Top Badges */}
           <div className="flex flex-wrap gap-2">
             <Badge className={teamAligmentColor}>
-              <TeamAligmentIcon size={16} className="mr-1" /> Hero
+              <TeamAligmentIcon size={16} className="mr-1" /> {getAlignmentNames(team.alignment)}
             </Badge>
           </div>
 
