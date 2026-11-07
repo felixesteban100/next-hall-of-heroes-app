@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Globe2 } from "lucide-react";
 import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
+import { getAlignmentIcon, getCharacterAlignmentColor } from "@/lib/character_utils";
 
 interface TeamHeroHeaderProps {
   team: {
@@ -37,6 +38,9 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
     },
   ];
 
+  const TeamAligmentIcon = getAlignmentIcon(team?.alignment ?? "neutral")
+  const teamAligmentColor = getCharacterAlignmentColor(team?.alignment ?? "neutral")
+
   return (
     <div className="flex flex-col md:flex-row items-start gap-6">
       {/* Left: Team Image / Logo (Matching Character Carousel Dimensions) */}
@@ -64,8 +68,8 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
         <div className="space-y-2">
           {/* Top Badges */}
           <div className="flex flex-wrap gap-2">
-            <Badge className="bg-emerald-500 text-white hover:bg-emerald-600">
-              <ShieldCheck size={16} className="mr-1" /> Hero
+            <Badge className={teamAligmentColor}>
+              <TeamAligmentIcon size={16} className="mr-1" /> Hero
             </Badge>
           </div>
 

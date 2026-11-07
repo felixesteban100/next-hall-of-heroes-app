@@ -440,7 +440,6 @@ export function EntityCard({
 }
 
 // "use client";
-
 // import { ReactNode, useState, useRef, useEffect, useCallback } from "react";
 // import { ViewTransition } from "react";
 // import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
