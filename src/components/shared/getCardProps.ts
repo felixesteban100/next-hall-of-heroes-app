@@ -59,20 +59,15 @@ export const getCardProps = (item: any, type: EntityType) => {
                 },
             ];
 
-            const { background, border, text } = getCharacterThematicMix(item)
-
             const backData: BackData = {
                 kind: "character",
                 entityName: item.name,
                 logo: item.biography.publisher.logo,
-                score: computeMatchScore(item).overall,
-                scoreColor: background,
-                scoreBorderColor: border,
-                scoreTextColor: text,
-                cardBaseColor: "var(--color-card)",
             };
 
             return {
+                wholeEntity: item,
+                score: computeMatchScore(item).overall,
                 title: item.name,
                 id: item.id,
                 image: item.images?.md || "/placeholder.png",
@@ -89,8 +84,6 @@ export const getCardProps = (item: any, type: EntityType) => {
         }
 
         case "team": {
-            const alignmentVarColor = getCharacterAlignmentVarColor(item.alignment)
-
             const stats: StatColumn[] = [
                 {
                     icon: getAlignmentIcon(item.alignment),
@@ -112,22 +105,15 @@ export const getCardProps = (item: any, type: EntityType) => {
                 },
             ];
 
-            const thematicMix = `color-mix(in srgb, ${alignmentVarColor})`;
-            const scoreBorderColor = `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`;       // Glowing bright edge
-            const scoreTextColor = `contrast-color(${thematicMix})`;
-
             const backData: BackData = {
                 kind: "team",
                 entityName: item.name,
                 logo: item.universeData.logo,
-                score: 0,
-                scoreColor: thematicMix,
-                scoreBorderColor,
-                scoreTextColor,
-                cardBaseColor: "var(--color-card)",
             };
 
             return {
+                wholeEntity: item,
+                score: 0,
                 title: item.name,
                 id: item.id,
                 image: item.logo,
@@ -161,20 +147,15 @@ export const getCardProps = (item: any, type: EntityType) => {
                 },
             ];
 
-            const { background, border, text } = getPowerThematicMix(item)
-
             const backData: BackData = {
                 kind: "power",
                 entityName: item.name,
                 logo: item.img,
-                score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
-                scoreColor: background,
-                scoreBorderColor: border,
-                scoreTextColor: text,
-                cardBaseColor: "var(--color-card)",
             };
 
             return {
+                wholeEntity: item,
+                score: Math.floor((item.score ?? item.powerScore ?? 0) / 1000) + 'k',
                 title: item.name,
                 id: item.id,
                 image: item.img,
@@ -214,14 +195,11 @@ export const getCardProps = (item: any, type: EntityType) => {
                 kind: "universe",
                 logo: item.logo,
                 entityName: item.name,
-                score: 0,
-                scoreColor: "",
-                scoreBorderColor: "",
-                scoreTextColor: "",
-                cardBaseColor: "var(--color-card)",
             };
 
             return {
+                wholeEntity: item,
+                score: 0,
                 title: item.name,
                 id: item.id,
                 image: item.logo,

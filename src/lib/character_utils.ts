@@ -118,12 +118,7 @@ export function getCharacterThematicMix(character: CharacterWithJoinTeamUniverse
     const alignmentVarColor = getCharacterAlignmentVarColor(character.biography.alignment)
 
     const thematicMix = `color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, ${tierColorCharacter.var}, ${classColor.var}), ${alignmentVarColor}), ${typeColor.var})`;
-    return {
-        background: thematicMix,
-        border: `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`,
-        // text: `contrast-color(${thematicMix})`,
-        text: `color-mix(in srgb, ${thematicMix} 50%, ${`contrast-color(${thematicMix})`} 50%)`,
-    }
+    return geThematicMixProperties(thematicMix)
 }
 
 export function getPowerThematicMix(power: Power) {
@@ -132,11 +127,17 @@ export function getPowerThematicMix(power: Power) {
     const activationColor = POWER_ACTIVATION_TYPE_COLOR[power.activationType as keyof typeof POWER_ACTIVATION_TYPE_COLOR];
 
     const thematicMix = `color-mix(in srgb, color-mix(in srgb, ${tierColorPower.var}, ${roleColor.var}), ${activationColor.var})`;
+    return geThematicMixProperties(thematicMix)
+}
+
+function geThematicMixProperties(thematicMix: string) {
     return {
-        background: thematicMix,
-        border: `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`,
+        // background: thematicMix,
+        background: `color-mix(in srgb, ${thematicMix} 70%, var(--background) 30%)`,
+        borderColor: `color-mix(in srgb, ${thematicMix} 80%, var(--foreground) 20%)`,
         // text: `contrast-color(${thematicMix})`,
-        text: `color-mix(in srgb, ${thematicMix} 50%, ${`contrast-color(${thematicMix})`} 50%)`,
+        // color: `color-mix(in srgb, ${thematicMix} 50%, ${`contrast-color(${thematicMix})`} 50%)`,
+        color: `color-mix(in srgb, ${thematicMix} 50%, var(--foreground) 50%)`,
     }
 }
 

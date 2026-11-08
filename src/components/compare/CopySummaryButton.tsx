@@ -144,6 +144,7 @@ export function CopySummaryButton({
       ) : (
         <>
           <Link2 className="size-3.5" />
+          {/* <p className="hidden md:inline">Copy summary</p> */}
           Copy summary
         </>
       )}

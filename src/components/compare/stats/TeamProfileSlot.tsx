@@ -1,13 +1,10 @@
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
 import { computeMatchScore } from "@/lib/compare";
-
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { CharacterImage } from "@/components/shared/CharacterImage";
-import { getCharacterThematicMix } from "@/lib/character_utils";
-import { EntityCard } from "@/components/shared/EntityCard";
-import { getCardProps } from "@/components/shared/getCardProps";
-import { getItemHref } from "@/components/shared/SwipeGrid";
+import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
+
 
 type Props = {
     entities: CharacterWithJoinTeamUniversePowerEnemies[];
@@ -53,19 +50,13 @@ export function TeamProfileSlot({
                                     unoptimized
                                     imageFocus={e.imageFocus}
                                 />
-                                <div
-                                    title={`${e.name} score`}
-                                    className="absolute -top-2 -left-2 z-30 w-[60%] h-[60%] md:w-[40%] md:h-[40%] rounded-full border-2 flex items-center justify-center text-[50%] font-black"
-                                    style={{
-                                        background: getCharacterThematicMix(e).background,
-                                        borderColor: getCharacterThematicMix(e).text, // 🌟 Use borderColor instead of border to preserve border-2 width
-                                        color: getCharacterThematicMix(e).text
-                                    }}
-                                >
-                                    {computeMatchScore(e).overall}
-                                </div>
-                            </ViewTransition>
 
+                            </ViewTransition>
+                            <ScoreBadgeOnCard
+                                entity={e}
+                                score={computeMatchScore(e).overall}
+                                side="front"
+                            />
                         </div>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full bg-muted/50 truncate max-w-28 ${nameColor}`}>
                             {e.name}

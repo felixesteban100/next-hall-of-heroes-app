@@ -5,10 +5,12 @@ import { ViewTransition } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import Image from "next/image";
-import { useIsMobile } from "./SwipeGrid";
+import { EntityType, useIsMobile } from "./SwipeGrid";
 import { LoadingLink } from "./LoadingLink";
 import PowerOverlay, { getThemeKey } from "../compare/battle/battlePanel/cinematicCombatView/PowerOverlay";
 import { getThemeOverlay } from "../compare/battle/battlePanel/cinematicCombatView/powerOverlay/themesOverlays";
+import ScoreBadgeOnCard from "./ScoreBadgeOnCard";
+import { CharacterWithJoinTeamUniversePowerEnemies, Power, Team, Universe } from "@/types";
 
 export type StatColumn = {
     icon: React.ElementType;
@@ -18,17 +20,13 @@ export type StatColumn = {
 };
 
 export type BackData = {
-    kind: "character" | "team" | "power" | "universe";
+    kind: EntityType;
     entityName: string;
     logo: string;
-    score: string | number;
-    scoreColor: string;
-    scoreBorderColor: string;
-    scoreTextColor: string;
-    cardBaseColor: string;
 };
 
 type EntityCardProps = {
+    wholeEntity: CharacterWithJoinTeamUniversePowerEnemies | Power | Team | Universe
     title: string;
     id: number | string;
     image: string;
@@ -43,6 +41,7 @@ type EntityCardProps = {
     onTiltChange?: (tilting: boolean) => void;
     href: string;
     randomPower?: string;
+    score: string | number;
 };
 
 const HOLD_MS = 500;
@@ -50,7 +49,7 @@ const STILL_PX = 10;
 const MAX_TILT = 14;
 
 export function EntityCard({
-    title, id, image, universeLogo, background, imageFocus,
+    wholeEntity, score, title, id, image, universeLogo, background, imageFocus,
     description, transitionKey, badge, stats, backData, onTiltChange, href, randomPower
 }: EntityCardProps) {
     const isMobile = useIsMobile();
@@ -243,7 +242,7 @@ export function EntityCard({
         if (is3D) { exit3D(); } else { cancelHold(); }
     };
 
-    const typePage = transitionKey.split("-")[0];
+    const typePage: EntityType = transitionKey.split("-")[0] as EntityType;
 
     return (
         <div className="h-full w-full relative flex justify-center items-center">
@@ -313,13 +312,8 @@ export function EntityCard({
                     style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                 >
                     <Card onClick={toggleFlip} className={`overflow-hidden group w-full h-full flex flex-col items-stretch gap-0 justify-between pt-0 transition-all duration-500 ${is3D && "shadow-md"} select-none [-webkit-touch-callout:none]`}>
-                        <div className="z-99 absolute top-2 w-full flex justify-start items-end px-2">
-                            {["character", "power"].includes(typePage) && <div className="flex items-center justify-center border-3 rounded-full aspect-square w-[13%] min-w-[1.5rem] max-w-[3rem] p-[2%]"
-                                style={{ background: backData.scoreColor, borderColor: backData.scoreBorderColor }}
-                            >
-                                <p className="text-[15px] font-extrabold leading-none" style={{ color: backData.scoreTextColor, fontSize: "clamp(9px, 15%, 15px)" }}>{backData.score}</p>
-                            </div>}
-                        </div>
+                        {/* <ScoreBadgeOnCard entityType={typePage} entity={wholeEntity as CharacterWithJoinTeamUniversePowerEnemies | Power} score={score} /> */}
+                        {["character", "power"].includes(typePage) && <ScoreBadgeOnCard entity={wholeEntity as CharacterWithJoinTeamUniversePowerEnemies | Power} score={score} side={"front"} />}
 
                         {/* Image area */}
                         {imageFocus !== undefined ? (
@@ -417,19 +411,16 @@ export function EntityCard({
                             transform: "rotateY(180deg)",
                         }}
                     >
-                        <Card onClick={toggleFlip} className={`w-full h-full overflow-hidden select-none [-webkit-touch-callout:none]`}
-                            style={{ transformStyle: "preserve-3d", backgroundColor: backData.cardBaseColor }}
-                        >
-                            <div className="relative flex flex-col h-full w-full">
-                                <div className="h-full flex flex-col gap-8 items-center justify-center">
-                                    {backData.kind == "power" ?
-                                        getThemeOverlay(getThemeKey("attack", title))
-                                        // <Image className="aspect-square w-[40%] min-w-[4rem] max-w-[10rem] rounded-full object-cover" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
-                                        : backData.logo != "" ?
-                                            <Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
-                                            : <p className="text-foreground font-semibold">{backData.entityName}</p>
-                                    }
-                                </div>
+                        {["character", "power"].includes(typePage) && <ScoreBadgeOnCard entity={wholeEntity as CharacterWithJoinTeamUniversePowerEnemies | Power} score={score} side={"back"} />}
+                        <Card onClick={toggleFlip} className={`w-full h-full overflow-visible select-none [-webkit-touch-callout:none]`} style={{ transformStyle: "preserve-3d", backgroundColor: "var(--color-card)" }}>
+                            <div className="relative h-full w-full flex flex-col gap-8 items-center justify-center">
+                                {backData.kind == "power" ?
+                                    getThemeOverlay(getThemeKey("attack", title))
+                                    // <Image className="aspect-square w-[40%] min-w-[4rem] max-w-[10rem] rounded-full object-cover" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                                    : backData.logo != "" ?
+                                        <Image className="max-h-[60%] w-auto max-w-[80%]" src={backData.logo} width={800} height={800} unoptimized alt={backData.entityName} />
+                                        : <p className="text-foreground font-semibold">{backData.entityName}</p>
+                                }
                             </div>
                         </Card>
                     </div>

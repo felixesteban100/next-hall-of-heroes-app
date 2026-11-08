@@ -110,7 +110,7 @@ export function RandomFillButton({
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-muted-foreground/20 bg-card hover:bg-muted/50 transition-colors disabled:opacity-50 cursor-pointer"
         >
             <Dices className={`size-3.5 ${pending ? "animate-spin" : ""}`} />
-            {pending ? "Rolling…" : "Surprise me"}
+            <p className="hidden md:inline">{pending ? "Rolling…" : "Surprise me"}</p>
         </button>
     );
 }
