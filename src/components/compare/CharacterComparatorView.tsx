@@ -6,7 +6,6 @@ import { RowsHeader } from "@/components/compare/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/compare/rows/RowScoreComparer";
 import { RowGroupedPills } from "@/components/compare/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/compare/rows/RowGroupedBadges";
-import { computeTeamChemistry } from "@/lib/compare/teamChemistry";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
@@ -15,7 +14,6 @@ import { StatsRadar } from "./stats/StatRadar";
 import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
 import MatchVerdict from "./battle/MatchVerdict";
 import { TeamProfileSlot } from "./stats/TeamProfileSlot";
-import { ProfileSlot } from "./stats/ProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/compare";
 import { PowerFormulaTab } from "./PowerFormulaTab";
 import { RivalryMatrixCard } from "./RivalryMatrixCard";
@@ -39,13 +37,11 @@ type CharacterComparatorViewProps = {
     teamB: TeamAggregate,
     entitiesA: CharacterWithJoinTeamUniversePowerEnemies[],
     entitiesB: CharacterWithJoinTeamUniversePowerEnemies[],
-    entityA: CharacterWithJoinTeamUniversePowerEnemies,
-    entityB: CharacterWithJoinTeamUniversePowerEnemies,
     entityAName: string,
     entityBName: string
 }
 
-export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA, entitiesB, entityA, entityB, entityAName, entityBName, idsA, idsB }: CharacterComparatorViewProps) {
+export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA, entitiesB, entityAName, entityBName, idsA, idsB }: CharacterComparatorViewProps) {
     const [showPredictionOverlay, setShowPredictionOverlay] = useState<boolean>(true);
     const [activeTab, setActiveTab] = useState<CompareTab>("overview");
 
@@ -81,13 +77,9 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
         const validA = entitiesA.filter(Boolean);
         const validB = entitiesB.filter(Boolean);
         return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
-    }, [mode, entitiesA, entitiesB, entityA, entityB]);
+    }, [mode, entitiesA, entitiesB]);
 
-    // Radar: team avg powerstats or single
-    const radar =
-        mode === "team"
-            ? radarDataFromStats(avgTeamPowerstats(entitiesA), avgTeamPowerstats(entitiesB))
-            : radarData(entityA, entityB);
+    const radar = radarDataFromStats(avgTeamPowerstats(entitiesA), avgTeamPowerstats(entitiesB))
 
     const hasA = entitiesA.length > 0;
     const hasB = entitiesB.length > 0;
@@ -209,8 +201,8 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                         <div className={`mx-auto bg-card/40 border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
                             <RowsHeader text={mode === "team" ? "Combat & Powerstats · team avg" : "Combat & Powerstats"} />
                             <RowScoreComparer
-                                scoreA={mode === "team" ? avgTeamPowerstats(entitiesA) : entityA?.powerstats}
-                                scoreB={mode === "team" ? avgTeamPowerstats(entitiesB) : entityB?.powerstats}
+                                scoreA={avgTeamPowerstats(entitiesA)}
+                                scoreB={avgTeamPowerstats(entitiesA)}
                                 rows={[
                                     { label: "INTELLIGENCE", key: "intelligence" },
                                     { label: "STRENGTH", key: "strength" },
@@ -241,7 +233,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                                         Stats radar
                                     </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!!entityA && !showPredictionOverlay} showB={!!entityB && !showPredictionOverlay} />
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!showPredictionOverlay} showB={!showPredictionOverlay} />
                                 </div>
                             </div>
                         </div>

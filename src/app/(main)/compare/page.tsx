@@ -192,8 +192,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         teamB={teamB}
                         entitiesA={entitiesA}
                         entitiesB={entitiesB}
-                        entityA={entityA}
-                        entityB={entityB}
                         entityAName={entityAName}
                         entityBName={entityBName}
                     />
