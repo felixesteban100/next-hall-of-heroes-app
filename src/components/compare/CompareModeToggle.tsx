@@ -3,21 +3,18 @@
 
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
-import { parseIdList, type CompareMode } from "@/lib/compare/compareParams";
-import { MAX_BRACKET_SIZE, MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
+import { parseIdList } from "@/lib/compare/compareParams";
+import { MAX_BRACKET_SIZE } from "@/app/(main)/compare/page";
+
+// 🌟 Restricted to team and bracket only
+export type CompareMode = "team" | "bracket";
 
 function detectClientMode(searchParams: URLSearchParams): CompareMode {
     if (searchParams.get("mode") === "bracket" || searchParams.get("p")) {
         return "bracket";
     }
-    if (
-        searchParams.get("mode") === "team" ||
-        searchParams.get("a") ||
-        searchParams.get("b")
-    ) {
-        return "team";
-    }
-    return "1v1";
+    // Default fallback to team since 1v1 is gone
+    return "team";
 }
 
 export function CompareModeToggle() {
@@ -30,45 +27,19 @@ export function CompareModeToggle() {
 
         const params = new URLSearchParams(searchParams.toString());
 
-        if (next === "1v1") {
-            params.delete("mode");
-            params.delete("a");
-            params.delete("b");
-            params.delete("p");
-            params.delete("size");
-            params.delete("a_name");
-            params.delete("b_name");
-
-            // Prefer existing id1/id2; otherwise seed from team/bracket
-            const hasId1 = params.get("id1");
-            const hasId2 = params.get("id2");
-            if (!hasId1 || !hasId2) {
-                const seed = parseIdList(
-                    searchParams.get("p") ||
-                    [searchParams.get("a"), searchParams.get("b")]
-                        .filter(Boolean)
-                        .join(",") ||
-                    undefined,
-                );
-                if (!hasId1 && seed[0] != null) params.set("id1", String(seed[0]));
-                if (!hasId2 && seed[1] != null) params.set("id2", String(seed[1]));
-            }
-
-            pushParams(params);
-            return;
-        }
-
         if (next === "team") {
             params.set("mode", "team");
             params.delete("p");
             params.delete("size");
 
+            // Seed from id1/id2 if switching from legacy states
             if (!params.get("a") && searchParams.get("id1")) {
                 params.set("a", searchParams.get("id1")!);
             }
             if (!params.get("b") && searchParams.get("id2")) {
                 params.set("b", searchParams.get("id2")!);
             }
+
             // If coming from bracket, put first half in a, rest in b
             if (!params.get("a") && !params.get("b") && searchParams.get("p")) {
                 const seed = parseIdList(searchParams.get("p"));
@@ -97,23 +68,11 @@ export function CompareModeToggle() {
                 Number(searchParams.get("id2")),
             ].filter((n) => typeof n === "number" && !Number.isNaN(n) && n > 0);
 
-
-
             // Unique deduplicated participant IDs
             const unique = Array.from(new Set(seed));
-
-            // Determine bracket size: check existing param, default to 8 if count > 4, else 4
-            // const rawSize = searchParams.get("size");
-            /* const targetSize = rawSize
-                ? parseInt(rawSize, MAX_TEAM_SIZE)
-                : unique.length > 4
-                    ? 8
-                    : 4; */
-
             const trimmedParticipants = unique.slice(0, MAX_BRACKET_SIZE);
 
             params.set("mode", "bracket");
-            // params.set("size", String(MAX_TEAM_SIZE));
 
             if (trimmedParticipants.length > 0) {
                 params.set("p", trimmedParticipants.join(","));
@@ -139,8 +98,8 @@ export function CompareModeToggle() {
             type="button"
             onClick={() => go(m)}
             className={`rounded-lg px-3 py-1.5 transition-colors cursor-pointer ${current === m
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
         >
             {label}
@@ -149,7 +108,6 @@ export function CompareModeToggle() {
 
     return (
         <div className="inline-flex rounded-xl border border-muted-foreground/20 bg-card p-1 text-xs font-semibold">
-            {btn("1v1", "1 vs 1")}
             {btn("team", "Teams")}
             {btn("bracket", "Bracket")}
         </div>

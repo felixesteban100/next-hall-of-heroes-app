@@ -1,5 +1,3 @@
-import { ComparisonHeader } from "@/components/compare/stats/ComparisonHeader";
-import { SelectorCard } from "@/components/compare/selectors/SelectorCard";
 import { aggregateTeamScores } from "@/lib/compare";
 import { detectMode, parseIdList } from "@/lib/compare/compareParams";
 import { fetchCharactersByIds, fetchCharactersJoinedById } from "@/lib/compare/fetchCompareEntities";
@@ -58,11 +56,8 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
         sanitize(await fetchCharactersByIds(idsB)),
     ]);
 
-    const entityA = entitiesA[0] ?? null;
-    const entityB = entitiesB[0] ?? null;
-
-    const entityAIdValue = entityA?.id ?? null;
-    const entityBIdValue = entityB?.id ?? null;
+    // const entityA = entitiesA[0] ?? null;
+    // const entityB = entitiesB[0] ?? null;
 
     const teamA = aggregateTeamScores(entitiesA);
     const teamB = aggregateTeamScores(entitiesB);
@@ -74,33 +69,22 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const bestTeamNameB = await getBestTeamName(entitiesB, 1);
 
     const entityAName =
-        (mode === "team" && entitiesA.length > 1)
+        entitiesA.length > 1
             ? (explicitTeamNameA ?? bestTeamNameA ?? "Team A")
-            : entityA?.name;
+            : entitiesA[0]?.name;
 
     const entityBName =
-        (mode === "team" && entitiesB.length > 1)
+        entitiesB.length > 1
             ? (explicitTeamNameB ?? bestTeamNameB ?? "Team B")
-            : entityB?.name;
+            : entitiesB[0]?.name;
 
-    const aceAInfo =
-        mode === "team" && teamA?.ace
-            ? { name: teamA.aceName ?? "Ace", overall: teamA.ace.overall }
-            : entityA
-                ? { name: entityA.name, overall: teamA?.avg.overall ?? 0 }
-                : null;
+    const aceAInfo = teamA?.ace ? { name: teamA.aceName ?? "Ace", overall: teamA.ace.overall } : null;
 
-    const aceBInfo =
-        mode === "team" && teamB?.ace
-            ? { name: teamB.aceName ?? "Ace", overall: teamB.ace.overall }
-            : entityB
-                ? { name: entityB.name, overall: teamB?.avg.overall ?? 0 }
-                : null;
+    const aceBInfo = teamB?.ace ? { name: teamB.aceName ?? "Ace", overall: teamB.ace.overall } : null;
 
     return (
         // 🚀 Added pb-28 to give bottom breathing room so cards never get clipped
         <div className="space-y-4 ">
-
             {/* 🚀 Streamlined toolbar: Mode toggle and actions aligned cleanly */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 backdrop-blur-sm">
                 <CompareModeToggle />
@@ -129,59 +113,35 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             ) : (
                 <>
                     <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center mb-4 overflow-visible">
-                        {mode === "team" ? (
-                            <>
-                                <TeamSelectorCard
-                                    title={entityAName}
-                                    selected={entitiesA.map((c) => ({
-                                        id: c.id,
-                                        name: c.name,
-                                        slug: c.slug,
-                                        image: c.images.md,
-                                        imageFocus: c.imageFocus
-                                    }))}
-                                    selectedIds={idsA}
-                                    excludeIds={[...idsA, ...idsB]}
-                                    paramKey="a"
-                                    variant="primary"
-                                />
-                                <VS />
-                                <TeamSelectorCard
-                                    title={entityBName}
-                                    selected={entitiesB.map((c) => ({
-                                        id: c.id,
-                                        name: c.name,
-                                        slug: c.slug,
-                                        image: c.images.md,
-                                        imageFocus: c.imageFocus
-                                    }))}
-                                    selectedIds={idsB}
-                                    excludeIds={[...idsA, ...idsB]}
-                                    paramKey="b"
-                                    variant="secondary"
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <SelectorCard
-                                    key={entityA?.id ?? "empty-a"}
-                                    title="Character A"
-                                    selected={entityA}
-                                    otherSelectedId={entityBIdValue ?? undefined}
-                                    paramKey="id1"
-                                    variant="primary"
-                                />
-                                <VS />
-                                <SelectorCard
-                                    key={entityB?.id ?? "empty-b"}
-                                    title="Character B"
-                                    selected={entityB}
-                                    otherSelectedId={entityAIdValue ?? undefined}
-                                    paramKey="id2"
-                                    variant="secondary"
-                                />
-                            </>
-                        )}
+                        <TeamSelectorCard
+                            title={entityAName}
+                            selected={entitiesA.map((c) => ({
+                                id: c.id,
+                                name: c.name,
+                                slug: c.slug,
+                                image: c.images.md,
+                                imageFocus: c.imageFocus
+                            }))}
+                            selectedIds={idsA}
+                            excludeIds={[...idsA, ...idsB]}
+                            paramKey="a"
+                            variant="primary"
+                        />
+                        <VS />
+                        <TeamSelectorCard
+                            title={entityBName}
+                            selected={entitiesB.map((c) => ({
+                                id: c.id,
+                                name: c.name,
+                                slug: c.slug,
+                                image: c.images.md,
+                                imageFocus: c.imageFocus
+                            }))}
+                            selectedIds={idsB}
+                            excludeIds={[...idsA, ...idsB]}
+                            paramKey="b"
+                            variant="secondary"
+                        />
                     </section>
 
                     <CharacterComparatorView
