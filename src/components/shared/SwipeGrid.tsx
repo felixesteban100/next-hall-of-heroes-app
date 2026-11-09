@@ -260,7 +260,7 @@ export function SwipeGrid({
 
     // ── Desktop grid ──────────────────────────────────────────────────────────
     return (
-        <div className={`${desktopGridClassName} mb-4 overflow-visible`}>
+        <div className={`${desktopGridClassName} py-4 overflow-visible`}>
             {items.map((item) => (
                 <div key={item.id} className="w-auto h-[25rem] shrink-0 relative">
                     <EntityCard {...getCardProps(item, type)} href={getItemHref(item, type)} />

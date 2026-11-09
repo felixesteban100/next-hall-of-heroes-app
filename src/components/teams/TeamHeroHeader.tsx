@@ -1,10 +1,9 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Globe2 } from "lucide-react";
+import { Globe2 } from "lucide-react";
 import { LoadingLink } from "../shared/LoadingLink";
 import { ViewTransition } from "react";
-import { getAlignmentIcon, getCharacterAlignmentColor } from "@/lib/character_utils";
-import { getAlignmentNames } from "@/lib/compare";
+import { getAlignmentIcon, getCharacterAlignmentColor, getCharacterAlignmentText } from "@/lib/character_utils";
 
 interface TeamHeroHeaderProps {
   team: {
@@ -70,7 +69,7 @@ export function TeamHeroHeader({ team }: TeamHeroHeaderProps) {
           {/* Top Badges */}
           <div className="flex flex-wrap gap-2">
             <Badge className={teamAligmentColor}>
-              <TeamAligmentIcon size={16} className="mr-1" /> {getAlignmentNames(team.alignment)}
+              <TeamAligmentIcon size={16} className="mr-1" /> {getCharacterAlignmentText(team.alignment ?? "neutral")}
             </Badge>
           </div>
 

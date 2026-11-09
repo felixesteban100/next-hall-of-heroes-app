@@ -247,7 +247,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                 <CharacterAccordionList characters={powerCharacters} />
             </div>
 
-            <MiniEntityGrid
+            {/* <MiniEntityGrid
                 entityType="character"
                 items={powerCharacters.map((c) => ({
                     id: c.id,
@@ -256,7 +256,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     alignment: c.biography.alignment,
                     imageFocus: c.imageFocus
                 }))}
-            />
+            /> */}
         </div>
     )
 }

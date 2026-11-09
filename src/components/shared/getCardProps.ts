@@ -203,6 +203,7 @@ export const getCardProps = (item: any, type: EntityType) => {
                 title: item.name,
                 id: item.id,
                 image: item.logo,
+                universeLogo: item.logo,
                 background: item.background,
                 description: item.description || "No description available.",
                 transitionKey: `universe-${item.id}`,
