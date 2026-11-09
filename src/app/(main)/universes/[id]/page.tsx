@@ -82,7 +82,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
                     <LoadingLink href={`/characters?universe=${universe.name}`} className="text-sm font-medium uppercase text-primary tracking-wider hover:underline">
                         CHARACTERS ({universeCharacters.length})
                     </LoadingLink>
-                    <CompareWithButton mode="team" ids={universeCharacters.map(c => c.id)} />
+                    <CompareWithButton ids={universeCharacters.map(c => c.id)} />
                 </div>
                 <CharacterAccordionList characters={universeCharacters} />
             </div>

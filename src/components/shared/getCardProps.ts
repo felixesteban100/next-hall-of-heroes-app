@@ -21,7 +21,7 @@ import {
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon, getCharacterThematicMix, getPowerThematicMix } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
-import { computeMatchScore } from "@/lib/compare";
+import { computeMatchScore } from "@/lib/matchup";
 
 export const getCardProps = (item: any, type: EntityType) => {
     switch (type) {

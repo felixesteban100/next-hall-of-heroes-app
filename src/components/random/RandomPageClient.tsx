@@ -148,9 +148,9 @@ export function RandomPageClient({ sanitizedCharacters, characterIdsString, extr
                 <div className="flex items-center gap-2">
                     <RefreshRandomPageButton path="/random" />
                     <Button size="sm" variant="outline" asChild>
-                        <LoadingLink href={`/compare?mode=bracket&size=8&p=${characterIdsString}`}>
+                        <LoadingLink href={`/matchup?mode=bracket&size=8&p=${characterIdsString}`}>
                             <Scale />
-                            <span className="hidden md:inline">Compare in bracket</span>
+                            <span className="hidden md:inline">Match up in bracket</span>
                         </LoadingLink>
                     </Button>
                 </div>

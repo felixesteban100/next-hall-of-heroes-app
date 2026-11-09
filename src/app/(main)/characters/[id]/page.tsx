@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { CharacterImageCarousel } from "@/components/characters/CharacterImageCarousel";
 
 import { collectionCharacters } from "@/db/mongodb";
-import { getAlignmentIcon, getCharacterAlignmentColor, getCharacterAlignmentText, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
+import { getAlignmentIcon, getCharacterAlignmentColor, getCharacterAlignmentText, getCharacterThematicMix, joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON, CHARACTER_TYPE_COLOR, CHARACTER_TYPE_ICON, CHARACTER_TYPE_LABEL, POWER_TIER } from "@/lib/constants";
 import { CharacterWithJoinTeamUniversePowerEnemies, Enemy, FallbackItem, Power, Team } from "@/types";
 
@@ -13,7 +13,7 @@ import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIc
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { computeMatchScore } from "@/lib/compare";
+import { computeMatchScore } from "@/lib/matchup";
 
 import CompareWithButton from "@/components/shared/CompareWithButton";
 
@@ -115,6 +115,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
         (c): c is Team => !("isFallback" in c)
     );
 
+    const characterPropertiesColor = getCharacterThematicMix(character)
+
     return (
         <div className="pb-8 space-y-6 pt-5">
             {/* Header Section */}
@@ -196,7 +198,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             <div id="powerstats" className="space-y-2">
                 <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-primary uppercase tracking-wider">Powerstats</p>
-                    <CompareWithButton mode="1v1" ids={[character.id]} />
+                    <CompareWithButton ids={[character.id]} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                     {POWERSTATS_CFG.map(({ key, label, icon: Icon, color }) => (
@@ -204,7 +206,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                             <p className="text-sm font-light flex gap-1.5 items-center">
                                 <Icon size={16} /> {label}: {powerstats[key]}
                             </p>
-                            <Progress value={powerstats[key]} /* indicatorClassName={color} */ />
+                            <Progress value={powerstats[key]} color={characterPropertiesColor.background} style={{ background: characterPropertiesColor.color }} />
                         </div>
                     ))}
                 </div>
@@ -212,7 +214,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     <p className="text-sm font-light flex gap-1.5 items-center">
                         <Percent size={16} /> Total: {powerstats.total}
                     </p>
-                    <Progress value={powerstats.total > 100 ? 100 : powerstats.total} indicatorClassName="bg-primary" />
+                    <Progress value={powerstats.total > 100 ? 100 : powerstats.total} color={characterPropertiesColor.background} style={{ background: characterPropertiesColor.color }} />
                 </div>
             </div>
 
@@ -226,7 +228,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                             <p className="text-sm font-light flex gap-1.5 items-center capitalize">
                                 {key}: <span className="font-bold">{value}</span>
                             </p>
-                            <Progress value={value} />
+                            <Progress value={value} color={characterPropertiesColor.background} style={{ background: characterPropertiesColor.color }} />
                         </div>
                     ))}
                 </div>

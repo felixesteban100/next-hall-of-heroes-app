@@ -1,0 +1,50 @@
+"use server"
+
+import { MAX_BRACKET_SIZE } from "@/app/(main)/matchup/page";
+import { collectionCharacters } from "@/db/mongodb";
+import { joinTeam_universe_power_enemies_toCharacter } from "@/lib/character_utils";
+import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+
+export async function fetchCharacterById(
+    id: number
+): Promise<CharacterWithJoinTeamUniversePowerEnemies | null> {
+    return collectionCharacters
+        .aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+            joinTeam_universe_power_enemies_toCharacter(
+                { id },
+                "id",
+                "desc",
+                0,
+                1,
+                { includeEnemies: true }
+            )
+        )
+        .next();
+}
+
+export async function fetchCharactersByIds(
+    ids: number[]
+): Promise<CharacterWithJoinTeamUniversePowerEnemies[]> {
+    if (ids.length === 0) return [];
+
+    const rows = await Promise.all(ids.map((id) => fetchCharacterById(id)));
+
+    // keep URL order, drop missing
+    return ids
+        .map((id) => rows.find((r) => r?.id === id) ?? null)
+        .filter((r): r is CharacterWithJoinTeamUniversePowerEnemies => r != null);
+}
+
+export async function fetchCharactersJoinedById(ids: number[]): Promise<CharacterWithJoinTeamUniversePowerEnemies[]> {
+    return collectionCharacters.aggregate<CharacterWithJoinTeamUniversePowerEnemies>(
+        joinTeam_universe_power_enemies_toCharacter(
+            { id: { $in: [...ids] } },
+            "id",
+            "desc",
+            0,
+            MAX_BRACKET_SIZE,
+            { includeEnemies: true }
+        )
+    )
+        .toArray();
+}

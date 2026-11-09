@@ -7,8 +7,8 @@ import { CharacterImage } from "@/components/shared/CharacterImage";
 import Image from "next/image";
 import { EntityType, useIsMobile } from "./SwipeGrid";
 import { LoadingLink } from "./LoadingLink";
-import { getThemeKey } from "../compare/battle/battlePanel/cinematicCombatView/PowerOverlay";
-import { getThemeDetails, getThemeOverlay } from "../compare/battle/battlePanel/cinematicCombatView/powerOverlay/themesOverlays";
+import { getThemeKey } from "../matchup/battle/battlePanel/cinematicCombatView/PowerOverlay";
+import { getThemeDetails, getThemeOverlay } from "../matchup/battle/battlePanel/cinematicCombatView/powerOverlay/themesOverlays";
 import ScoreBadgeOnCard from "./ScoreBadgeOnCard";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, Team, Universe } from "@/types";
 import { motion } from "framer-motion"

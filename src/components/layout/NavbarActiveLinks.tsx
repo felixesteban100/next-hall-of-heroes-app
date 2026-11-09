@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Shield, Globe2, Zap, Sparkles, Scale } from "lucide-react";
+import { Users, UsersRoundCollaboration, Globe2, Zap, Sparkles, Swords, Dices } from "lucide-react";
 import { useParamLoading } from "./ParamLoadingContext";
 
 const ROUTE_KEYS: Record<string, string> = {
@@ -11,17 +11,17 @@ const ROUTE_KEYS: Record<string, string> = {
     "/teams": "lastParams_teams",
     "/universes": "lastParams_universes",
     "/powers": "lastParams_powers",
-    "/compare": "lastParams_compare",
+    "/matchup": "lastParams_compare",
     "/random": "lastParams_random"
 };
 
 const navLinks = [
     { name: "Characters", href: "/characters", icon: Users },
-    { name: "Teams", href: "/teams", icon: Shield },
+    { name: "Teams", href: "/teams", icon: UsersRoundCollaboration },
     { name: "Universes", href: "/universes", icon: Globe2 },
     { name: "Powers", href: "/powers", icon: Zap },
-    { name: "Random", href: "/random", icon: Users },
-    { name: "Compare", href: "/compare", icon: Scale },
+    { name: "Random", href: "/random", icon: Dices },
+    { name: "Matchup", href: "/matchup", icon: Swords },
 ];
 
 export function NavbarActiveLinks() {
@@ -112,6 +112,7 @@ export function NavbarActiveLinks() {
                         <Link
                             key={link.href}
                             href={fullHref}
+                            title={`${link.name} page`}
                             onClick={(e) => handleLinkClick(e, link.href)}
                             className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all touch-manipulation select-none shrink-0 ${isActive
                                 ? "text-primary bg-primary/10 sm:bg-transparent font-semibold"

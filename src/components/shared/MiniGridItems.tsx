@@ -207,13 +207,12 @@ export function MiniEntityGrid({
                                     </span>
                                 </div>
                             </LoadingLink>
-                            {/* NEW: Compare link – only when we have a current character to compare against */}
                             {compareWithId && entityType === "character" && (
                                 <LoadingLink
-                                    href={`/compare?id1=${compareWithId}&id2=${item.id}`}   // ← adjust path to whatever you use
+                                    href={`/matchup?a=${compareWithId}&b=${item.id}`}   // ← adjust path to whatever you use
                                     className={`mt-0.5 text-xs font-medium text-muted-foreground ${theme.text} hover:underline transition-colors`}
                                 >
-                                    Compare
+                                    Match
                                 </LoadingLink>
                             )}
                         </div>

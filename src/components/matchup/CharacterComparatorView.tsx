@@ -1,0 +1,288 @@
+"use client"
+
+import { MatchMode } from "@/lib/matchup/matchupParams";
+import { BattlePanel } from "@/components/matchup/battle/BattlePanel";
+import { RowsHeader } from "@/components/matchup/rows/RowsHeader";
+import { RowScoreComparer } from "@/components/matchup/rows/RowScoreComparer";
+import { RowGroupedPills } from "@/components/matchup/rows/RowGroupedPills";
+import { RowGroupedBadges } from "@/components/matchup/rows/RowGroupedBadges";
+import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
+import { cn } from "@/lib/utils";
+import { StatsRadar } from "./stats/StatRadar";
+import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
+import MatchVerdict from "./battle/MatchVerdict";
+import { TeamProfileSlot } from "./stats/TeamProfileSlot";
+import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/matchup";
+import { PowerFormulaTab } from "./PowerFormulaTab";
+import { RivalryMatrixCard } from "./RivalryMatrixCard";
+
+
+type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
+
+const TABS: { id: CompareTab; label: string, icon: LucideIcon }[] = [
+    { id: "overview", label: "Overview", icon: List },
+    { id: "combat", label: "Combat", icon: Swords },
+    { id: "stats", label: "Stats", icon: ChartArea },
+    { id: "info", label: "Info", icon: BookText },
+    { id: "calculations", label: "Calculations", icon: Calculator },
+];
+
+type CharacterComparatorViewProps = {
+    mode: MatchMode;
+    idsA: number[]
+    idsB: number[]
+    teamA: TeamAggregate,
+    teamB: TeamAggregate,
+    entitiesA: CharacterWithJoinTeamUniversePowerEnemies[],
+    entitiesB: CharacterWithJoinTeamUniversePowerEnemies[],
+    entityAName: string,
+    entityBName: string
+}
+
+export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA, entitiesB, entityAName, entityBName, idsA, idsB }: CharacterComparatorViewProps) {
+    const [showPredictionOverlay, setShowPredictionOverlay] = useState<boolean>(true);
+    const [activeTab, setActiveTab] = useState<CompareTab>("overview");
+
+    // Create a composite key that changes whenever IDs, team lists, or modes change
+    const matchKey = `${mode}-${idsA}-${idsB}`;
+
+    // Reset prediction overlay and tab to 'overview' every time the match context changes
+    useEffect(() => {
+        setShowPredictionOverlay(true);
+        setActiveTab("overview");
+    }, [matchKey]);
+
+    // Determine actual winner based on overall scores calculated by your backend/lib
+    const actualWinner = useMemo(() => {
+        const valA = teamA.powerEstimate;
+        const valB = teamB.powerEstimate;
+
+        if (valA === 0 && valB === 0) return "Draw";
+
+        const d = valA - valB;
+        const maxVal = Math.max(valA, valB, 1);
+        const pct = Math.abs(d) / maxVal;
+
+        if (pct < 0.06) return "Draw";
+
+        if (valA > valB) return "A";
+        if (valB > valA) return "B";
+        return "Draw";
+    }, [teamA, teamB]);
+
+    // Nemesis: any pair across teams, or only 1v1
+    const isNemesis = useMemo(() => {
+        const validA = entitiesA.filter(Boolean);
+        const validB = entitiesB.filter(Boolean);
+        return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
+    }, [mode, entitiesA, entitiesB]);
+
+    const radar = radarDataFromStats(avgTeamPowerstats(entitiesA), avgTeamPowerstats(entitiesB))
+
+    const hasA = entitiesA.length > 0;
+    const hasB = entitiesB.length > 0;
+
+    const rowsBadges = [
+        { label: "Publisher", functionGroup: groupPublishers, BadgeComponent: RowGroupedBadges, images: true },
+        { label: "Tier", functionGroup: groupTiers, BadgeComponent: RowGroupedBadges },
+        { label: "Class", functionGroup: groupClasses, BadgeComponent: RowGroupedBadges },
+        { label: "Alignment", functionGroup: groupAlignments, BadgeComponent: RowGroupedBadges },
+        { label: "Race", functionGroup: groupRaces, BadgeComponent: RowGroupedBadges },
+        { label: "Gender", functionGroup: groupGenders, BadgeComponent: RowGroupedBadges }
+    ]
+
+    const rowsPills = [
+        { label: "Special Powers", functionGroup: groupPowers, BadgeComponent: RowGroupedPills },
+        { label: "Weaknesses", functionGroup: groupWeaknesses, BadgeComponent: RowGroupedPills },
+        { label: "Teams & Affiliations", functionGroup: groupTeams, BadgeComponent: RowGroupedPills },
+        { label: "Primary Enemies", functionGroup: groupEnemies, BadgeComponent: RowGroupedPills },
+    ]
+
+    const hasBothSides = entitiesA.length > 0 && entitiesB.length > 0;
+
+    return (
+        <>
+            <div className="relative w-full max-w-5xl">
+                {(hasBothSides && showPredictionOverlay) && (
+                    <MatchPredictionOverlay
+                        entityAName={entityAName}
+                        entityBName={entityBName}
+                        entitiesA={entitiesA}
+                        entitiesB={entitiesB}
+                        actualWinner={actualWinner}
+                        onReveal={() => setShowPredictionOverlay(false)}
+                    />
+                )}
+
+                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 overflow-hidden" : "opacity-100 max-h-none"}`}>
+                    {/* Tab bar */}
+                    <div className="flex gap-1 mb-4 border-b border-muted-foreground/20">
+                        {TABS.map(tab => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={cn(
+                                    "px-4 py-2 text-sm font-medium transition-colors relative",
+                                    activeTab === tab.id
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                <div className="flex gap-1 items-center justify-center">
+                                    <span className="hidden lg:inline">{tab.label}</span>
+                                    <tab.icon className="size-5 md:size-3" />
+                                </div>
+                                {activeTab === tab.id && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* OVERVIEW TAB */}
+                    {activeTab === "overview" && (
+                        <div className="space-y-4 mb-4">
+                            {/* 1. The High-Level Headline / Verdict */}
+                            <MatchVerdict
+                                nameA={entityAName}
+                                nameB={entityBName}
+                                isNemesis={isNemesis}
+                                teamA={teamA ?? null}
+                                teamB={teamB ?? null}
+                                entitiesA={entitiesA}
+                                entitiesB={entitiesB}
+                            />
+
+                            {/* 2. Team Profiles & Avatars (Who is fighting) */}
+                            <div className={`mx-auto border-muted-foreground/20 rounded-xl relative overflow-x-hidden bg-transparent border-1`}>
+                                <div className="grid grid-cols-2 bg-card/10 backdrop-blur-md border-b border-muted-foreground/20 text-center font-bold">
+                                    <TeamProfileSlot
+                                        entities={entitiesA}
+                                        variant="primary"
+                                    />
+                                    <TeamProfileSlot
+                                        entities={entitiesB}
+                                        variant="secondary"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 3. The Hype Factor: Grouped Rival Matchups */}
+                            <RivalryMatrixCard
+                                entitiesA={entitiesA}
+                                entitiesB={entitiesB}
+                                entityAName={entityAName}
+                                entityBName={entityBName}
+                                mode={mode}
+                            />
+                        </div>
+                    )}
+
+                    {/* COMBAT TAB */}
+                    {activeTab === "combat" && (
+                        <div className="mb-4">
+                            <BattlePanel
+                                powerEstimateA={teamA.powerEstimate}
+                                powerEstimateB={teamB.powerEstimate}
+                                nameA={entityAName}
+                                nameB={entityBName}
+                                teamAChars={entitiesA}
+                                teamBChars={entitiesB}
+                            />
+                        </div>
+                    )}
+
+                    {/* STATS TAB */}
+                    {activeTab === "stats" && (
+                        <div className={`mx-auto bg-card/40 border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
+                            <RowsHeader text={"Combat & Powerstats"} />
+                            <RowScoreComparer
+                                scoreA={avgTeamPowerstats(entitiesA)}
+                                scoreB={avgTeamPowerstats(entitiesA)}
+                                rows={[
+                                    { label: "INTELLIGENCE", key: "intelligence" },
+                                    { label: "STRENGTH", key: "strength" },
+                                    { label: "SPEED", key: "speed" },
+                                    { label: "DURABILITY", key: "durability" },
+                                    { label: "POWER", key: "power" },
+                                    { label: "COMBAT", key: "combat" },
+                                    { label: "TOTAL", key: "total" },
+                                ]}
+                            />
+
+                            <RowsHeader text="Match score breakdown" />
+                            <RowScoreComparer
+                                scoreA={teamA.avg}
+                                scoreB={teamB.avg}
+                                rows={[
+                                    { label: "Average Powerstats", key: "averagePowerStats" },
+                                    { label: "Tier", key: "tier" },
+                                    { label: "Class", key: "class" },
+                                    { label: "Powers", key: "powers" },
+                                    { label: "Threat context", key: "threat" },
+                                    { label: "Weakness penalty", key: "weaknessPenalty", isPenalty: true },
+                                    { label: "Overall", key: "overall" },
+                                ]}
+                            />
+                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-b-md">
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                                        Stats radar
+                                    </h3>
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!showPredictionOverlay} showB={!showPredictionOverlay} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* INFO TAB */}
+                    {activeTab === "info" && (
+                        <div className={`mx-auto bg-card/30 border border-muted-foreground/20 rounded-xl relative mb-10 overflow-x-hidden`}>
+                            <RowsHeader text="General Information" />
+                            {rowsBadges.map(row => (
+                                <row.BadgeComponent
+                                    key={row.label}
+                                    label={row.label}
+                                    hasA={hasA}
+                                    hasB={hasB}
+                                    groupA={row.functionGroup(entitiesA)}
+                                    groupB={row.functionGroup(entitiesB)}
+                                    showNames={true}
+                                    images={row.images}
+                                />
+                            ))}
+
+                            <RowsHeader text="Powers & Connections" />
+                            {rowsPills.map(row => (
+                                <row.BadgeComponent
+                                    key={row.label}
+                                    label={row.label}
+                                    hasA={hasA}
+                                    hasB={hasB}
+                                    groupA={row.functionGroup(entitiesA)}
+                                    groupB={row.functionGroup(entitiesB)}
+                                    showNames={true}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* FORMULA TAB */}
+                    {activeTab === "calculations" && (
+                        <PowerFormulaTab
+                            sideA={entitiesA}
+                            sideB={entitiesB}
+                            labelA={entityAName}
+                            labelB={entityBName}
+                            variant={actualWinner === "A" ? "primary" : actualWinner === "B" ? "secondary" : "foreground"}
+                        />
+                    )}
+
+                </div>
+            </div>
+        </>
+    )
+}

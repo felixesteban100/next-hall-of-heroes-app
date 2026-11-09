@@ -1,4 +1,4 @@
-import { MAX_TEAM_SIZE } from "@/app/(main)/compare/page";
+import { MAX_TEAM_SIZE } from "@/app/(main)/matchup/page";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { Frown, Mars, Meh, PersonStanding, Smile, Venus } from "lucide-react";
 import { CHARACTER_CLASS_COLOR, CHARACTER_TIER_COLOR, CHARACTER_TYPE_COLOR, POWER_ACTIVATION_TYPE_COLOR, POWER_COMBAT_ROLE_COLOR, POWER_TIER_COLOR } from "./constants";

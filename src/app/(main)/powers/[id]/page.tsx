@@ -242,7 +242,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                     <LoadingLink href={`/characters?powers=[${power.id}]`} className="font-medium uppercase text-primary">
                         Users ({powerCharacters.length})
                     </LoadingLink>
-                    <CompareWithButton mode="team" ids={powerCharacters.map(c => c.id)} />
+                    <CompareWithButton ids={powerCharacters.map(c => c.id)} />
                 </div>
                 <CharacterAccordionList characters={powerCharacters} />
             </div>

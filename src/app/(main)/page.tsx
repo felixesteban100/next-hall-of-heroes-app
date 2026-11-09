@@ -22,7 +22,7 @@ export default function StartPage() {
         </h1>
 
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto font-light">
-          Dive into relational intelligence across universes. Compare team leaders, simulate cinematic tactical battles, track power tiers, and trace faction connections.
+          Dive into relational intelligence across universes. Match up team leaders, simulate cinematic tactical battles, track power tiers, and trace faction connections.
         </p>
 
         {/* Global Quick Search Anchor */}
@@ -43,7 +43,7 @@ export default function StartPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Feature 1: Cinematic Combat Simulator */}
           <Link
-            href="/compare"
+            href="/matchup"
             className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/60 bg-card/40 hover:bg-card/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             <div className="space-y-3">

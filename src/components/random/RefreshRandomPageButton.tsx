@@ -2,7 +2,7 @@
 
 import { clearDataCache } from '@/app/actions';
 import { Button } from '../ui/button';
-import { RefreshCcw } from 'lucide-react';
+import { Dices } from 'lucide-react';
 import { useParamLoading } from '../layout/ParamLoadingContext';
 
 const PINNED_KEY = "random_pinned_ids";
@@ -34,7 +34,7 @@ export function RefreshRandomPageButton({ path }: { path: string }) {
 
     return (
         <Button onClick={handleClick} size="sm" variant="outline" >
-            <RefreshCcw />
+            <Dices />
             <span className="hidden md:inline">New Random Batch</span>
         </Button>
     );
