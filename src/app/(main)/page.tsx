@@ -32,7 +32,7 @@ export default function StartPage() {
       </section>
 
       {/* 🌟 Feature Highlights Grid (Showcasing Everything the App Offers) */}
-      <section className="px-4 py-8 max-w-6xl mx-auto w-full space-y-6">
+      {/* <section className="px-4 py-8 max-w-6xl mx-auto w-full space-y-6">
         <div className="flex items-center justify-between border-b border-border/40 pb-3">
           <h2 className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <Cpu className="w-4 h-4 text-primary" /> Core System Capabilities
@@ -41,7 +41,6 @@ export default function StartPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* Feature 1: Cinematic Combat Simulator */}
           <Link
             href="/matchup"
             className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/60 bg-card/40 hover:bg-card/80 hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md"
@@ -63,7 +62,6 @@ export default function StartPage() {
             </div>
           </Link>
 
-          {/* Feature 2: Multiverse Database */}
           <div className="flex flex-col justify-between p-6 rounded-2xl border border-border/60 bg-card/40 shadow-sm">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-secondary/10 border border-secondary/30 flex items-center justify-center text-secondary">
@@ -83,7 +81,6 @@ export default function StartPage() {
             </div>
           </div>
 
-          {/* Feature 3: Power Roles & Tactics */}
           <div className="flex flex-col justify-between p-6 rounded-2xl border border-border/60 bg-card/40 shadow-sm md:col-span-2 lg:col-span-1">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -103,7 +100,7 @@ export default function StartPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Main Grid Category Navigation Cards */}
       <section className="px-4 py-4 max-w-6xl mx-auto w-full">
