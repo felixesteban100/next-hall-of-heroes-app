@@ -374,10 +374,10 @@ export function EntityCard({
 
                         {/* Info */}
                         <CardContent className="bg-card py-3 flex flex-col items-center justify-center shrink-0 w-full">
-                            <CardHeader className="flex flex-row justify-between items-center gap-1 px-4 py-0 w-full">
+                            <CardHeader className="flex flex-row justify-center items-center gap-1 px-4 py-0 w-full">
                                 <LoadingLink
                                     href={href}
-                                    className="font-bold truncate w-full text-foreground w-full px-2 text-center overflow-hidden"
+                                    className="font-bold truncate text-foreground w-fit px-2 text-center overflow-hidden"
                                     title={title}
                                     style={{
                                         // Fluid font size scaling safely between 13px and 18px
