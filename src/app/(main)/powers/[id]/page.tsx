@@ -10,6 +10,7 @@ import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { Character } from "@/types";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import CompareWithButton from "@/components/shared/CompareWithButton";
+import { getPowerThematicMix } from "@/lib/character_utils";
 
 export const instant = false;
 
@@ -88,7 +89,7 @@ export default async function page({ params }: { params: Promise<{ id: string }>
     const ActivationIcon = POWER_ACTIVATION_TYPE_ICON[power.activationType]
     const activationColor = POWER_ACTIVATION_TYPE_COLOR[power.activationType]
 
-    console.log(power.activationType)
+    const powerColor = getPowerThematicMix(power)
 
     /* Power Tier Badge: Show where this power sits on your tier scale (e.g., Tier 2: Tactical / Basic).
 
@@ -184,7 +185,7 @@ Top Users / Powerhouses: A featured banner highlighting the #1 or top 3 stronges
                                     </span>
                                 </span>
                             </div>
-                            <Progress value={normalizedScore} className={`h-2 ${tierColors.progress}`} />
+                            <Progress color={powerColor.background} value={normalizedScore} className={`h-2 ${tierColors.progress}`} />
                         </div>
                     )}
 

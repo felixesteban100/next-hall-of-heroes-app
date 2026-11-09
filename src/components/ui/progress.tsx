@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 interface ProgressProps extends React.ComponentProps<typeof ProgressPrimitive.Root> {
   indicatorClassName?: string;
-  color: string;
+  color?: string;
 }
 
 function Progress({
