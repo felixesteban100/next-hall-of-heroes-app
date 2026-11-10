@@ -11,7 +11,7 @@ const ROUTE_KEYS: Record<string, string> = {
     "/teams": "lastParams_teams",
     "/universes": "lastParams_universes",
     "/powers": "lastParams_powers",
-    "/matchup": "lastParams_compare",
+    "/matchup": "lastParams_matchup",
     "/random": "lastParams_random"
 };
 

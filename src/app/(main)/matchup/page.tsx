@@ -31,10 +31,10 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
     const params = await searchParams;
     const mode = detectMode(params);
 
-    const ids = parseIdList(params.p);
+    const idsBracket = parseIdList(params.p);
     const [characters, characterOptions] = await Promise.all([
-        fetchCharactersJoinedById(ids),
-        searchCharacters("", ids)
+        fetchCharactersJoinedById(idsBracket),
+        searchCharacters("", idsBracket)
     ]);
 
     const idsA = parseIdList(params.a)
@@ -88,9 +88,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                         mode={mode}
                         idsA={idsA}
                         idsB={idsB}
-                        idsBracket={characters.map(c => c.id)}
-                        sizeA={idsA.length}
-                        sizeB={idsB.length}
+                        idsBracket={idsBracket}
                     />
                     {mode !== "bracket" && (
                         <CopySummaryButton
@@ -109,7 +107,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 
             {mode === "bracket" ? (
                 <>
-                    <BracketAddCombobox size={MAX_BRACKET_SIZE} ids={ids} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={sanitize(characters)} />
+                    <BracketAddCombobox size={MAX_BRACKET_SIZE} ids={idsBracket} excludeIds={[...idsA, ...idsB]} initialOptions={characterOptions} characters={sanitize(characters)} />
                     <DynamicBracketView characters={sanitize(characters)} />
                 </>
             ) : (

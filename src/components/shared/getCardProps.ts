@@ -1,4 +1,4 @@
-import { Crown, Hash, Users } from "lucide-react";
+import { Crown, Hash, Users, UsersRoundCollaboration } from "lucide-react";
 import { EntityType } from "./SwipeGrid";
 import { BackData, StatColumn } from "./EntityCard";
 import {
@@ -180,13 +180,13 @@ export const getCardProps = (item: any, type: EntityType) => {
                 {
                     icon: Users,
                     text: `${item.characterCount ?? 0} Characters`,
-                    colorClass: "text-amber-500",
+                    colorClass: "text-yellow-500",
                     title: "Characters",
                 },
                 {
-                    icon: Hash,
-                    text: `${item.id}`,
-                    colorClass: "text-cyan-500",
+                    icon: UsersRoundCollaboration,
+                    text: `${item.teamCount ?? 0} Teams`,
+                    colorClass: "text-green-500",
                     title: "Canon Status",
                 },
             ];

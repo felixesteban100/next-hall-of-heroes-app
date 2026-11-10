@@ -495,7 +495,6 @@ export const EntityFilterBar = ({
                                 <ToggleGroup label="Activation Type"
                                     options={ACTIVATION_TYPE_OPTIONS}
                                     value={draftFilters.activationType} onChange={v => setFilter("activationType", v)} />
-
                             </div>
                         )}
 
@@ -524,14 +523,14 @@ export const EntityFilterBar = ({
                         )}
 
                         {/* ── Universe filters ── */}
-                        {/* {type === "universe" && (
+                        {type === "universe" && (
                             <div className="space-y-4">
                                 <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Universe Properties</Label>
                                 <ToggleGroup label="Type" cols={3}
-                                    options={UNIVERSE_TYPE_OPTIONS}
+                                    options={CHARACTER_TYPE_OPTIONS}
                                     value={draftFilters.type} onChange={v => setFilter("type", v)} />
                             </div>
-                        )} */}
+                        )}
                     </div>
 
                     <DrawerFooter className="border-t pt-3 flex flex-row gap-2">

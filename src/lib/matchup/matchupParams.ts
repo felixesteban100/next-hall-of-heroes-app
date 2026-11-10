@@ -19,6 +19,6 @@ export function detectMode(params: {
     id2?: string;
     p?: string;
 }): MatchMode {
-    if (params.mode === "bracket" || params.p) return "bracket" as const;
+    if (params.mode === "bracket") return "bracket" as const;
     return "matchup" as const;
 }

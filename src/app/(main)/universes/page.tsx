@@ -49,34 +49,44 @@ export default async function UniversePage({
         }
 
         const nameRegex = { $regex: regexPattern, $options: "i" };
-        query.$or = [{ name: nameRegex }, { description: nameRegex }];
+        query.$or = [{ name: nameRegex }, { value: nameRegex }];
     }
 
     if (universeType) query.type = universeType;
 
     const universesPerPage = await collectionUniverses.aggregate([
         { $match: query },
-        { $sort: { [sortProperty]: sortOrientation === "desc" ? -1 : 1 } },
-        { $skip: (page - 1) * pageSize },
-        { $limit: pageSize },
         {
             $lookup: {
-                from: "characters", // Replace with your actual characters collection name in MongoDB
-                localField: "name", // The field on the universe document (e.g. universe name)
-                foreignField: "biography.publisher", // The character field matching it
+                from: "characters",
+                localField: "name",
+                foreignField: "biography.publisher",
                 as: "matchingCharacters"
             }
         },
         {
+            $lookup: {
+                from: "teams", // The teams collection name
+                localField: "id", // The universe ID field (change to "_id" if your universe doc uses ObjectId)
+                foreignField: "universe", // The property on the team document pointing to the universe ID
+                as: "matchingTeams"
+            }
+        },
+        {
             $addFields: {
-                characterCount: { $size: "$matchingCharacters" }
+                characterCount: { $size: "$matchingCharacters" },
+                teamCount: { $size: "$matchingTeams" } // Optional: tracks how many teams belong to this universe
             }
         },
         {
             $project: {
-                matchingCharacters: 0 // Strips out the heavy character array, leaving only the count and universe fields
+                matchingCharacters: 0,
+                matchingTeams: 0 // Strips out both arrays, keeping only the counts and universe fields
             }
-        }
+        },
+        { $sort: { [sortProperty]: sortOrientation === "desc" ? -1 : 1 } },
+        { $skip: (page - 1) * pageSize },
+        { $limit: pageSize },
     ]).toArray();
 
     const sanitizedUniverses = sanitize(universesPerPage);
@@ -98,6 +108,7 @@ export default async function UniversePage({
                 sortOptions={[
                     { value: "id", label: "Id" },
                     { value: "name", label: "Name" },
+                    { value: "characterCount", label: "Characters number" },
                 ]}
             />
 

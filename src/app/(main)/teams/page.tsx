@@ -53,7 +53,7 @@ export default async function TeamsPage({
         }
 
         const nameRegex = { $regex: regexPattern, $options: "i" };
-        query.$or = [{ name: nameRegex }, { description: nameRegex }];
+        query.$or = [{ name: nameRegex }, { value: nameRegex }];
     }
 
     if (alignment) query.alignment = alignment;
