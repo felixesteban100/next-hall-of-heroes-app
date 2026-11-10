@@ -11,10 +11,36 @@ import { StatsBar } from "@/components/home/Statsbar";
 import { FeaturedCharactersRow } from "@/components/home/Featuredcharactersrow";
 import { FeatureCards } from "@/components/home/FeatureCards";
 import { HeroSection } from "@/components/home/Herosection";
+import { connection } from "next/server"; // 🌟 Import connection
+import { unstable_noStore as noStore } from "next/cache";
 
 export const instant = false;
 
+function createSeededRandom(seed: number) {
+  let s = seed;
+  return function () {
+    s += 0x6D2B79F5;
+    let t = s;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 17, t | 1);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleWithSeed<T>(array: T[], seed: number): T[] {
+  const rnd = createSeededRandom(seed);
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export default async function StartPage() {
+  noStore();
+  await connection();
+
   // ── Parallel data fetch ──────────────────────────────────────────────────
   const [
     characterCount,
@@ -22,7 +48,7 @@ export default async function StartPage() {
     teamCount,
     powerCount,
     topCharacters,
-    featuredCharacters,
+    allFeaturedCandidates,
   ] = await Promise.all([
     collectionCharacters.countDocuments({}),
     collectionUniverses.countDocuments({}),
@@ -32,7 +58,7 @@ export default async function StartPage() {
     // Hero background: a few high-class characters with images, pick top by class+tier
     await collectionCharacters.aggregate([
       { $match: { "images.md": { $exists: true, $ne: "" } } },
-      { $sample: { size: 5 } }, // 🎲 Grabs 5 random documents
+      { $sample: { size: 6 } }, // 🎲 Grabs 5 random documents
       {
         $project: {
           name: 1,
@@ -44,33 +70,88 @@ export default async function StartPage() {
     ]).toArray(),
 
     // Featured row: top-scoring characters for the scrollable row
-    await collectionCharacters.aggregate([
-      { $match: { "images.md": { $exists: true, $ne: "" } } },
-      { $sample: { size: 18 } }, // 🎲 Randomly picks 18 records
-      {
-        $project: {
-          id: 1,
-          name: 1,
-          slug: 1,
-          "images.md": 1,
-          imageFocus: 1,
-          "powerstats.total": 1,
-          "biography.alignment": 1,
-          "biography.publisher": 1,
-          _id: 0,
-        },
-      },
-    ])
-      .sort({ "powerstats.total": -1 })
+    // await collectionCharacters.aggregate([
+    //   { $match: { "images.md": { $exists: true, $ne: "" } } },
+    //   { $sample: { size: 18 } }, // 🎲 Randomly picks 18 records
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       name: 1,
+    //       slug: 1,
+    //       "images.md": 1,
+    //       imageFocus: 1,
+    //       "powerstats.total": 1,
+    //       "biography.alignment": 1,
+    //       "biography.publisher": 1,
+    //       _id: 0,
+    //     },
+    //   },
+    // ])
+    //   .sort({ "powerstats.total": -1 })
+    //   .toArray(),
+    // Featured row: daily rotation handled entirely inside MongoDB using $$NOW
+    // collectionCharacters.aggregate([
+    //   { $match: { "images.md": { $exists: true, $ne: "" } } },
+    //   {
+    //     $addFields: {
+    //       todayStr: {
+    //         $dateToString: { format: "%Y-%m-%d", date: "$$NOW" }
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $addFields: {
+    //       dailySortKey: { $concat: [{ $toString: "$_id" }, "-", "$todayStr"] }
+    //     }
+    //   },
+    //   { $sort: { dailySortKey: 1 } },
+    //   { $limit: 18 },
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       name: 1,
+    //       slug: 1,
+    //       "images.md": 1,
+    //       imageFocus: 1,
+    //       "powerstats.total": 1,
+    //       "biography.alignment": 1,
+    //       "biography.publisher": 1,
+    //       _id: 0,
+    //     },
+    //   },
+    // ]).toArray()
+
+    collectionCharacters
+      .find(
+        { "images.md": { $exists: true, $ne: "" } },
+        {
+          projection: {
+            id: 1,
+            name: 1,
+            slug: 1,
+            "images.md": 1,
+            imageFocus: 1,
+            "powerstats.total": 1,
+            "biography.alignment": 1,
+            "biography.publisher": 1,
+            _id: 0,
+          },
+        }
+      )
       .toArray(),
   ]);
+
+  const todayString = new Date().toISOString().slice(0, 10); // e.g. "2026-11-10"
+  const dateSeed = parseInt(todayString.replace(/-/g, ""), 10); // e.g. 20261110
+  const shuffledFeatured = shuffleWithSeed(allFeaturedCandidates, dateSeed);
+  const featuredCharacters = shuffledFeatured.slice(0, 18);
 
   // Sanitize BSON for client props
   const sanitize = <T,>(docs: T[]): T[] => JSON.parse(JSON.stringify(docs));
 
   const heroChars = sanitize(topCharacters).map((c: any) => ({
     name: c.name,
-    image: c.images?.lg ?? c.images?.md ?? "",
+    image: c.images?.md ?? "",
     imageFocus: c.imageFocus ?? "center top",
   }));
 

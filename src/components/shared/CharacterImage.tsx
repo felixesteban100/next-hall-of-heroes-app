@@ -54,7 +54,7 @@ export function CharacterImage({
     return (
         <div className={`relative overflow-hidden ${className}`}>
             <div
-                className="relative w-full h-full transition-transform duration-200"
+                className="relative w-full h-full transition-transform duration-200 bg-background"
                 style={{
                     transform: scale > 1 ? `scale(${scale})` : undefined,
                     transformOrigin: objectPosition,

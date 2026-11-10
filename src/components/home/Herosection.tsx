@@ -1,10 +1,11 @@
 "use client";
 
 import { motion, useMotionValue, useSpring, useTransform, type Variants } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { StartPageSearchLink } from "@/components/startPage/StartPageSearchLink";
 import { Sparkles, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { CharacterImage } from "../shared/CharacterImage";
 
 type FloatingChar = {
     name: string;
@@ -36,6 +37,38 @@ const floatVariants = (i: number) => ({
     },
 });
 
+// Pre-computed stable particle data — no Math.random() at render time
+const PARTICLE_DATA = [
+    { w: 2.4, h: 2.4, top: 12, left: 8, dur: 6.2, delay: 0.0 },
+    { w: 1.2, h: 1.2, top: 27, left: 73, dur: 8.5, delay: 0.7 },
+    { w: 3.0, h: 3.0, top: 45, left: 19, dur: 5.8, delay: 1.4 },
+    { w: 1.8, h: 1.8, top: 63, left: 55, dur: 9.1, delay: 2.1 },
+    { w: 2.1, h: 2.1, top: 78, left: 32, dur: 7.3, delay: 0.4 },
+    { w: 1.4, h: 1.4, top: 91, left: 88, dur: 6.7, delay: 1.9 },
+    { w: 2.7, h: 2.7, top: 5, left: 46, dur: 8.0, delay: 3.1 },
+    { w: 1.1, h: 1.1, top: 34, left: 90, dur: 5.4, delay: 0.2 },
+    { w: 2.3, h: 2.3, top: 55, left: 4, dur: 9.6, delay: 2.8 },
+    { w: 1.6, h: 1.6, top: 70, left: 66, dur: 7.8, delay: 1.1 },
+    { w: 2.8, h: 2.8, top: 18, left: 38, dur: 6.4, delay: 3.5 },
+    { w: 1.3, h: 1.3, top: 83, left: 15, dur: 8.9, delay: 0.9 },
+    { w: 2.0, h: 2.0, top: 40, left: 61, dur: 5.6, delay: 2.3 },
+    { w: 3.0, h: 3.0, top: 95, left: 42, dur: 7.1, delay: 1.6 },
+    { w: 1.5, h: 1.5, top: 22, left: 77, dur: 9.3, delay: 0.6 },
+    { w: 2.6, h: 2.6, top: 58, left: 29, dur: 6.9, delay: 3.8 },
+    { w: 1.9, h: 1.9, top: 74, left: 83, dur: 8.2, delay: 1.3 },
+    { w: 2.2, h: 2.2, top: 10, left: 57, dur: 5.9, delay: 2.6 },
+    { w: 1.7, h: 1.7, top: 48, left: 94, dur: 7.5, delay: 0.1 },
+    { w: 2.9, h: 2.9, top: 86, left: 50, dur: 9.8, delay: 1.8 },
+    { w: 1.2, h: 1.2, top: 30, left: 11, dur: 6.1, delay: 3.2 },
+    { w: 2.5, h: 2.5, top: 65, left: 70, dur: 8.6, delay: 0.5 },
+    { w: 1.8, h: 1.8, top: 2, left: 25, dur: 7.0, delay: 2.0 },
+    { w: 2.1, h: 2.1, top: 52, left: 48, dur: 5.5, delay: 1.0 },
+    { w: 1.4, h: 1.4, top: 38, left: 85, dur: 9.4, delay: 3.6 },
+    { w: 2.8, h: 2.8, top: 80, left: 7, dur: 6.6, delay: 0.8 },
+    { w: 1.6, h: 1.6, top: 15, left: 62, dur: 8.3, delay: 2.4 },
+    { w: 2.3, h: 2.3, top: 93, left: 78, dur: 7.7, delay: 1.5 },
+];
+
 export function HeroSection({ characters }: { characters: FloatingChar[] }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mouseX = useMotionValue(0.5);
@@ -56,13 +89,13 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
     const titleWords = ["Explore", "the", "Ultimate"];
     const titleWords2 = ["Hall", "of", "Heroes", "&", "Villains"];
 
-    // Positions for floating character images
     const positions = [
         { top: "8%", left: "2%", zIndex: 1, scale: 0.85, opacity: 0.55 },
         { top: "5%", right: "3%", zIndex: 1, scale: 0.9, opacity: 0.6 },
         { top: "45%", left: "0%", zIndex: 1, scale: 0.75, opacity: 0.4 },
         { top: "40%", right: "1%", zIndex: 1, scale: 0.8, opacity: 0.5 },
         { top: "70%", left: "5%", zIndex: 1, scale: 0.65, opacity: 0.35 },
+        { top: "70%", right: "5%", zIndex: 1, scale: 0.65, opacity: 0.35 },
     ];
 
     return (
@@ -94,7 +127,7 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
                 className="absolute inset-0 pointer-events-none"
                 style={{ x: parallaxX, y: parallaxY }}
             >
-                {characters.slice(0, 5).map((char, i) => (
+                {characters.slice(0, 6).map((char, i) => (
                     <motion.div
                         key={char.name + i}
                         className="absolute w-32 sm:w-40 md:w-52 lg:w-60 aspect-[2/3] rounded-2xl overflow-hidden border border-white/5"
@@ -109,14 +142,12 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
                         whileInView={{ opacity: positions[i].opacity }}
                         viewport={{ once: true }}
                     >
-                        <img
+                        <CharacterImage
                             src={char.image}
                             alt={char.name}
                             className="w-full h-full object-cover"
-                            style={{ objectPosition: char.imageFocus || "center top" }}
-                            loading="eager"
+                            imageFocus={char.imageFocus}
                         />
-                        {/* Overlay gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                     </motion.div>
                 ))}
@@ -125,7 +156,7 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
             {/* Main content */}
             <div className="relative z-10 text-center max-w-4xl mx-auto space-y-6">
                 {/* Badge */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -133,7 +164,7 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
                 >
                     <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                     Ultimate Multiverse Database & Combat Engine
-                </motion.div>
+                </motion.div> */}
 
                 {/* Title line 1 */}
                 <div className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-tight">
@@ -192,7 +223,7 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
                 </motion.div>
 
                 {/* CTA */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.4, duration: 0.6 }}
@@ -205,7 +236,7 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
                         Enter the Vault
                         <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
                     </Link>
-                </motion.div>
+                </motion.div> */}
             </div>
 
             {/* Scroll hint */}
@@ -222,20 +253,19 @@ export function HeroSection({ characters }: { characters: FloatingChar[] }) {
     );
 }
 
-// Floating particle dots
+// Floating particle dots — uses pre-computed stable data, no Math.random() at render time
 function Particles() {
-    const dots = Array.from({ length: 28 }, (_, i) => i);
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {dots.map((i) => (
+            {PARTICLE_DATA.map((p, i) => (
                 <motion.div
                     key={i}
                     className="absolute rounded-full bg-primary/30"
                     style={{
-                        width: Math.random() * 3 + 1,
-                        height: Math.random() * 3 + 1,
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
+                        width: p.w,
+                        height: p.h,
+                        top: `${p.top}%`,
+                        left: `${p.left}%`,
                     }}
                     animate={{
                         y: [0, -30, 0],
@@ -243,9 +273,9 @@ function Particles() {
                         scale: [1, 1.4, 1],
                     }}
                     transition={{
-                        duration: 4 + Math.random() * 6,
+                        duration: p.dur,
                         repeat: Infinity,
-                        delay: Math.random() * 4,
+                        delay: p.delay,
                         ease: "easeInOut",
                     }}
                 />

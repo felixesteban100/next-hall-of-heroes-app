@@ -165,7 +165,7 @@ export function FeatureCards() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 1 }}
                 className="flex items-center justify-between border-b border-border/40 pb-4 mb-6"
             >
                 <h2 className="text-sm font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
