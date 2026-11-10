@@ -421,9 +421,9 @@ export const TIER_SCORE: Record<number, number> = {
  */
 export const CLASS_SCORE: Record<number, number> = {
     0: 10, // Unassigned
-    1: 55, // Mutant/Powered
+    1: 50, // Mutant/Powered
     2: 45, // Tech/Gadget-based
-    3: 50, // Trained Discipline / Mystic Arts
+    3: 55, // Trained Discipline / Mystic Arts
     4: 35, // Skill/Peak Human
     5: 70, // Cosmic/God-tier
 };
