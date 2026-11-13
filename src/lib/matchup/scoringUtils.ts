@@ -1,6 +1,7 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
 import type { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { ROUNDS } from "@/components/matchup/battle/BattlePanel";
+
+const ROUNDS = 100
 
 export type MatchBreakdown = {
     averagePowerStats: number;

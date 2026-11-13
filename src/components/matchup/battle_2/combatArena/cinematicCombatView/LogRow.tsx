@@ -1,8 +1,7 @@
 import { Crown, HeartPulse, RefreshCw, Shield, Skull, Swords } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Log } from "../useCombatScript";
-
+import { Log } from "@/lib/matchup/combat/adapters";
 
 export default function LogRow({ log }: { log: Log }) {
     const { Icon, leftBorder, labelColor, label } = (() => {

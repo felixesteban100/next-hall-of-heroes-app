@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { EnrichedFighter } from "../CinematicCombatView";
-import Avatar from "./Avatar";
 import { cn } from "@/lib/utils";
+import { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import Avatar from "./teamColumn/Avatar";
 
 // ── Timing constants (must match ClashCard phase delays) ─────────────────────
 // Phase 2 = 900ms → health bar drops
@@ -14,7 +14,8 @@ export const KO_VISUAL_DELAY = 1800;
 export default function TeamColumn({
     fighters, variant, mvp,
     activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend,
-    eventKey,
+    eventKey, availablePlayerIds, isPlayerSide, isPlayerTurn, onSelectActor, selectedActorId,
+    onSelectTarget, selectedTargetId, availableAIIds, isTargetSelectionActive, validTargetIds
 }: {
     fighters: EnrichedFighter[];
     variant: "primary" | "secondary";
@@ -25,10 +26,23 @@ export default function TeamColumn({
     latestHeal?: string;
     latestRevive?: string;
     latestDefend?: string;
-    isDialog?: boolean;
     // A monotonically-increasing key that changes every time the step advances.
     // Used to reset the phase timers whenever a new combat event fires.
     eventKey?: number;
+
+    // New selection props
+    isPlayerSide?: boolean;               // true if this column is the player's team
+    availablePlayerIds?: number[];              // state.availablePlayerIds
+    availableAIIds?: number[];              // state.availablePlayerIds
+    selectedActorId?: number | null;
+    selectedTargetId?: number | null;
+    onSelectActor?: (id: number) => void;
+    isPlayerTurn?: boolean;
+
+    onSelectTarget?: (id: number) => void;
+
+    validTargetIds?: number[];
+    isTargetSelectionActive?: boolean;
 }) {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const avatarRefsMap = useRef(new Map());
@@ -125,11 +139,38 @@ export default function TeamColumn({
                     const displayHp = holdHp ? preEventHp : realCurrentHp;
                     const hpPercent = Math.max(0, Math.min(100, (displayHp / maxHp) * 100));
 
+                    const currentEnergy = f.energy ?? 0;
+                    const maxEnergy = f.maxEnergy ?? 100;
+                    const energyPercent = Math.max(0, Math.min(100, (currentEnergy / maxEnergy) * 100));
+
                     // ── Phase-gated KO visual ─────────────────────────────────
                     // latestKO fires immediately from CinematicCombatView; we delay showing
                     // the KO ring/skull/scale in Avatar until koReady (1800ms).
                     const isKO = (latestKO === f.name && koReady) || (!f.isAlive && latestKO !== f.name);
 
+                    // 🌟 2. Determine if this fighter can be clicked as a target right now
+
+                    const isValidTarget =
+                        isTargetSelectionActive === true &&
+                        validTargetIds?.includes(f.id);
+
+                    const canSelectActor =
+                        !isTargetSelectionActive &&
+                        isPlayerSide &&
+                        isPlayerTurn &&
+                        availablePlayerIds?.includes(f.id);
+
+                    const canSelectTarget = isValidTarget;
+
+                    // console.log(f.name)
+                    // console.log(!isPlayerSide)
+                    // console.log(isPlayerTurn)
+                    // console.log(f.isAlive)
+                    // console.log(availableAIIds?.includes(f.id))
+
+                    const isSelectedActor = selectedActorId === f.id;
+                    const isSelectedTarget = selectedTargetId === f.id;
+                    // console.log(f.name, f.id, "selectedTargetId", selectedTargetId, isSelectedTarget)
                     return (
                         <div
                             key={f.id}
@@ -140,10 +181,35 @@ export default function TeamColumn({
                                     avatarRefsMap.current.delete(f.name);
                                 }
                             }}
+                            // className={cn(
+                            //     "flex flex-col items-center gap-1 transition-all duration-300 transform-gpu",
+                            //     isInvolved ? "scale-105 z-10" : "scale-100 opacity-95"
+                            // )}
+                            onClick={() => {
+                                if (canSelectTarget && onSelectTarget) {
+                                    onSelectTarget(f.id);
+                                } else if (canSelectActor && onSelectActor) {
+                                    onSelectActor(f.id);
+                                }
+                            }}
                             className={cn(
                                 "flex flex-col items-center gap-1 transition-all duration-300 transform-gpu",
-                                isInvolved ? "scale-105 z-10" : "scale-100 opacity-95"
+                                // isInvolved ? "scale-105 z-10" : "scale-100 opacity-95",
+                                (canSelectTarget || canSelectActor) && "cursor-pointer hover:scale-105",
+                                // isValidTarget &&
+                                // "ring-2 ring-destructive ring-offset-2 ring-offset-background rounded-lg",
+                                // isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg scale-105 z-20"
+                                // isSelected && "ring-1 ring-primary ring-offset-2 ring-offset-background rounded-lg scale-105 z-20"
+                                // isValidTarget && "ring-1 ring-secondary rounded-xl animate-pulse"
                             )}
+                        // className={cn(
+                        //     "flex flex-col items-center gap-1 transition-all duration-300 transform-gpu",
+                        //     (canSelectTarget || canSelectActor) && "cursor-pointer hover:scale-105",
+                        //     isSelectedActor &&
+                        //     "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg scale-105 z-20",
+                        //     isSelectedTarget &&
+                        //     "ring-2 ring-destructive ring-offset-2 ring-offset-background rounded-lg scale-105 z-20"
+                        // )}
                         >
                             <Avatar
                                 fighter={f}
@@ -156,12 +222,13 @@ export default function TeamColumn({
                                 isHealing={latestHeal === f.name}
                                 isReviving={latestRevive === f.name}
                                 isDefending={latestDefend === f.name}
-                                isInvolved={isInvolved}
+                                // isInvolved={isInvolved}
+                                isInvolved={isSelectedActor || isSelectedTarget}
                             />
 
                             {/* Phase-synced health bar */}
                             <div className="w-[48px] flex flex-col gap-0.5">
-                                <div className="h-1 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
+                                <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
                                     <div
                                         className={cn(
                                             "h-full rounded-full transition-all duration-700",
@@ -174,11 +241,36 @@ export default function TeamColumn({
                                         style={{ width: `${hpPercent}%` }}
                                     />
                                 </div>
-                                {/* HP text also phase-gated: shows real value only after hpReady */}
                                 <span className="text-[7.5px] font-mono text-center text-muted-foreground/80 leading-none transition-all duration-700">
-                                    {displayHp}/{maxHp}
+                                    {displayHp}/{maxHp} HP
                                 </span>
                             </div>
+                            <div className="w-[48px] flex flex-col gap-0.5">
+                                <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
+                                    <div
+                                        className={cn(
+                                            "h-full rounded-full transition-all duration-700",
+                                            (variant === "primary" ? "bg-primary" : "bg-secondary")
+
+                                        )}
+                                        style={{ width: `${energyPercent}%` }}
+                                    />
+                                </div>
+                                <span className="text-[7.5px] font-mono text-center text-muted-foreground/80 leading-none transition-all duration-700">
+                                    {currentEnergy}/{maxEnergy} EN
+                                </span>
+                            </div>
+                            {/* <div className="flex flex-col gap-0.5">
+                                <div className="h-1 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
+                                    <div
+                                        className="h-full rounded-full bg-cyan-400 transition-all duration-300"
+                                        style={{ width: `${energyPercent}%` }}
+                                    />
+                                </div>
+                                <span className="text-[7px] font-mono text-center text-cyan-400/90 leading-none">
+                                    {currentEnergy} EN
+                                </span>
+                            </div> */}
                         </div>
                     );
                 })}

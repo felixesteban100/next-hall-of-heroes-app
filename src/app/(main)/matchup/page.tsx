@@ -1,5 +1,5 @@
 import { aggregateTeamScores } from "@/lib/matchup";
-import { detectMode, parseIdList } from "@/lib/matchup/matchupParams";
+import { MatchMode, parseIdList } from "@/lib/matchup/matchupParams";
 import { fetchCharactersByIds, fetchCharactersJoinedById } from "@/lib/matchup/fetchCompareEntities";
 import { TeamSelectorCard } from "@/components/matchup/selectors/TeamSelectorCard";
 import VS from "@/components/matchup/VS";
@@ -29,7 +29,7 @@ export const MAX_BRACKET_SIZE = 28;
 
 export default async function ComparePage({ searchParams }: { searchParams: SearchParamsPromise }) {
     const params = await searchParams;
-    const mode = detectMode(params);
+    const mode: MatchMode = params.mode === "bracket" ? "bracket" : "matchup";
 
     const idsBracket = parseIdList(params.p);
     const [characters, characterOptions] = await Promise.all([

@@ -1,8 +1,8 @@
 import { CharacterImage } from "@/components/shared/CharacterImage";
-import { EnrichedFighter } from "../CinematicCombatView";
 import { AnimatePresence, motion } from "framer-motion";
 import { Crown, HeartPlus, Shield, ShieldAlert, Skull, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EnrichedFighter } from "@/lib/matchup/combat/adapters";
 
 export default function Avatar({
     fighter,
@@ -39,6 +39,8 @@ export default function Avatar({
     //                     : dead || isKO ? "border-white"
     //                         : (variant === "primary" ? "border-primary/25" : "border-secondary/25");
 
+    const shieldCount = (fighter.status ?? []).filter((s) => s.type === "shield" && s.duration > 0).length;
+
     const glowClass = isAttacking || isDefending || isInvolved ? (variant === "primary" ? "shadow-[0_0_12px_3px] shadow-primary/55" : "shadow-[0_0_12px_3px] shadow-secondary/55")
         : isReviving ? "shadow-[0_0_14px_3px] shadow-purple-400/60"
             : isHealing ? "shadow-[0_0_10px_2px] shadow-emerald-400/50"
@@ -61,8 +63,6 @@ export default function Avatar({
             ? { type: "spring" as const, stiffness: 280, damping: 24, delay: 0.15 }
             : { type: "spring" as const, stiffness: 420, damping: 22 };
 
-    console.log(fighter)
-
     return (
         <motion.div
             className="flex flex-col items-center gap-1 shrink-0"
@@ -71,7 +71,7 @@ export default function Avatar({
         >
             <div
                 className={cn(
-                    "relative rounded-lg  transition-colors duration-300 shrink-0",
+                    "relative rounded-lg  transition-all duration-300 shrink-0",
                     /* ringColor, */ glowClass
                 )}
                 style={{ width: size, height: size }}
@@ -84,7 +84,7 @@ export default function Avatar({
                     className="w-full h-full rounded-lg"
                 />
 
-                {(isAttacking || isBeingHit || isDefending || isReviving) && !dead && (
+                {(isInvolved/* isAttacking || isBeingHit || isDefending || isReviving */) && !dead && (
                     <div className={cn(
                         "absolute inset-2 rounded-lg ring-2 animate-ping pointer-events-none",
                         variant === "primary" ? "ring-primary/45" : "ring-secondary/45"
@@ -126,6 +126,16 @@ export default function Avatar({
                     </div>
                 )}
 
+                {shieldCount > 0 && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        className="absolute -bottom-1.5 -right-1.5 bg-blue-600 px-1 py-0.5 rounded-full border border-background z-20 flex items-center gap-0.5 shadow-md"
+                    >
+                        <Shield className="size-2.5 text-white" />
+                        <span className="text-[7px] font-bold text-white leading-none">{shieldCount}</span>
+                    </motion.div>
+                )}
+
                 {(isReviving || isHealing) && !dead && (
                     <motion.div
                         initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -148,12 +158,6 @@ export default function Avatar({
                     <div className="absolute inset-0 bg-purple-400/30 animate-ping pointer-events-none rounded-lg" />
                 )}
 
-                {/* {isKO && (
-                    <div className="absolute inset-0 bg-foreground/65 flex items-center justify-center rounded-lg">
-                        <Skull className="size-3.5 text-background" />
-                    </div>
-                )} */}
-
                 <AnimatePresence>
                     {isKO && (
                         <motion.div
@@ -164,7 +168,7 @@ export default function Avatar({
                             transition={{ ...transition, delay: 0.30 }/* { type: "spring", stiffness: 300, damping: 20, delay: 0.15 } */}
                             className="absolute inset-0 bg-black/65 flex items-center justify-center rounded-lg"
                         >
-                            <Skull className="size-3.7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-white" />
+                            <Skull className="size-3.7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] text-white/80" />
                         </motion.div>
                     )}
                 </AnimatePresence>

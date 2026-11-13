@@ -1,22 +1,22 @@
 "use client"
 
 import { MatchMode } from "@/lib/matchup/matchupParams";
-import { BattlePanel } from "@/components/matchup/battle/BattlePanel";
 import { RowsHeader } from "@/components/matchup/rows/RowsHeader";
 import { RowScoreComparer } from "@/components/matchup/rows/RowScoreComparer";
 import { RowGroupedPills } from "@/components/matchup/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/matchup/rows/RowGroupedBadges";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { MatchPredictionOverlay } from "./battle/MatchPredictionOverlay";
+import { MatchPredictionOverlay } from "./MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
 import { StatsRadar } from "./stats/StatRadar";
 import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
-import MatchVerdict from "./battle/MatchVerdict";
+import MatchVerdict from "./MatchVerdict";
 import { TeamProfileSlot } from "./stats/TeamProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/matchup";
 import { PowerFormulaTab } from "./PowerFormulaTab";
 import { RivalryMatrixCard } from "./RivalryMatrixCard";
+import { CombatArena } from "./battle_2/CombatArena";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
@@ -43,7 +43,7 @@ type CharacterComparatorViewProps = {
 
 export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA, entitiesB, entityAName, entityBName, idsA, idsB }: CharacterComparatorViewProps) {
     const [showPredictionOverlay, setShowPredictionOverlay] = useState<boolean>(true);
-    const [activeTab, setActiveTab] = useState<CompareTab>("overview");
+    const [activeTab, setActiveTab] = useState<CompareTab>("combat");
 
     // Create a composite key that changes whenever IDs, team lists, or modes change
     const matchKey = `${mode}-${idsA}-${idsB}`;
@@ -184,13 +184,12 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     {/* COMBAT TAB */}
                     {activeTab === "combat" && (
                         <div className="mb-4">
-                            <BattlePanel
-                                powerEstimateA={teamA.powerEstimate}
-                                powerEstimateB={teamB.powerEstimate}
-                                nameA={entityAName}
-                                nameB={entityBName}
+                            <CombatArena
                                 teamAChars={entitiesA}
                                 teamBChars={entitiesB}
+                                nameA={entityAName}
+                                nameB={entityBName}
+                                playerSide="A"
                             />
                         </div>
                     )}

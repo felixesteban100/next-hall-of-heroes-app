@@ -1,7 +1,7 @@
 import type { TeamAggregate } from "@/lib/matchup";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { Zap, Trophy, ShieldAlert } from "lucide-react";
-import VS from "../VS";
+import VS from "./VS";
 
 type Props = {
     nameA?: string;

@@ -10,15 +10,3 @@ export function parseIdList(raw?: string | string[] | null): number[] {
         .filter((n) => !Number.isNaN(n))
     // .slice(0, MAX_TEAM_SIZE);
 }
-
-export function detectMode(params: {
-    mode?: string;
-    a?: string;
-    b?: string;
-    id1?: string;
-    id2?: string;
-    p?: string;
-}): MatchMode {
-    if (params.mode === "bracket") return "bracket" as const;
-    return "matchup" as const;
-}

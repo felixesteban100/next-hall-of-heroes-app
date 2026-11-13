@@ -7,11 +7,11 @@ import { CharacterImage } from "@/components/shared/CharacterImage";
 import Image from "next/image";
 import { EntityType, useIsMobile } from "./SwipeGrid";
 import { LoadingLink } from "./LoadingLink";
-import { getThemeKey } from "../matchup/battle/battlePanel/cinematicCombatView/PowerOverlay";
-import { getThemeDetails, getThemeOverlay } from "../matchup/battle/battlePanel/cinematicCombatView/powerOverlay/themesOverlays";
 import ScoreBadgeOnCard from "./ScoreBadgeOnCard";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, Team, Universe } from "@/types";
 import { motion } from "framer-motion"
+import { getThemeDetails } from "../matchup/battle_2/combatArena/cinematicCombatView/clashCard/powerOverlay/themesOverlays";
+import { getThemeKey } from "../matchup/battle_2/combatArena/cinematicCombatView/clashCard/PowerOverlay";
 
 export type StatColumn = {
     icon: React.ElementType;

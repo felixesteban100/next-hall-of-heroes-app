@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { FighterState } from "../../useCombatScript";
-import PowerOverlay, { CombatActionType } from "../PowerOverlay";
 import { Power } from "@/types";
 import { CombatPhase } from "../ClashCard";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { cn } from "@/lib/utils";
-import SyncedHealthBar from "./SyncedHealthBar";
 import { Skull } from "lucide-react";
+import { FighterState } from "@/lib/matchup/combat/adapters";
+import PowerOverlay, { CombatActionType } from "./PowerOverlay";
+import SyncedHealthBar from "./SyncedHealthBar";
 
 
 function ImpactOverlay({ visible }: { visible: boolean }) {
@@ -74,7 +74,6 @@ export default function FighterSlot({
     const teamTextClass = isTeamA ? "text-primary" : "text-secondary";
     const teamBorderClass = isTeamA ? "border-primary shadow-primary/40" : "border-secondary shadow-secondary/40";
 
-    console.log(phase)
     // ── Dual overlay visibility ───────────────────────────────────────────────
     // Attacker charge aura: active at phase 0, fades once phase 1 fires
     // (PowerOverlay handles its own fade via po-fade CSS class)
@@ -203,7 +202,7 @@ export default function FighterSlot({
                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-lg z-30"
                         >
-                            <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse text-white" />
+                            <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] text-white/80" />
                         </motion.div>
                     )}
                 </AnimatePresence>
