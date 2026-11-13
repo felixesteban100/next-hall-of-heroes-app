@@ -12,6 +12,37 @@ import { CombatHeader } from "./CombatHeader";
 import { CommandPanel } from "./CommandPanel";
 import CinematicCombatView from "./combatArena/CinematicCombatView";
 
+function getEventDisplayDuration(event: CombatEvent): number {
+    switch (event.type) {
+        case "battle_end":
+            return 6000;
+
+        case "ko":
+            // case "rout":
+            return 4500;
+
+        case "revive":
+            return 4000;
+
+        case "heal":
+            return 3500;
+
+        case "round_start":
+            return 2500;
+
+        case "turn_start":
+            return 2000;
+
+        default:
+            return event.isKO ? 4500 : 3500;
+    }
+}
+
+type PresentationItem = {
+    event?: CombatEvent;
+    onComplete?: () => void;
+};
+
 type TargetMode = {
     active: boolean;
     validIds: number[];
@@ -38,31 +69,138 @@ export function CombatArena({
     const [visibleEvents, setVisibleEvents] = useState<CombatEvent[]>([]);
     const [targetMode, setTargetMode] = useState<TargetMode | null>(null);
 
-    // Initialize engine
+    const [previousHpById, setPreviousHpById] = useState<Record<number, number>>({});
+
+    const presentationQueueRef = useRef<PresentationItem[]>([]);
+    const isPresentingRef = useRef(false);
+
+    const presentationTimerRef =
+        useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const processQueueRef = useRef<() => void>(() => { });
+
+    const processNextEvent = useCallback(() => {
+        const item = presentationQueueRef.current.shift();
+
+        // Nothing left to display
+        if (!item) {
+            isPresentingRef.current = false;
+            return;
+        }
+
+        // Execute callbacks after the preceding events have finished
+        if (item.onComplete) {
+            item.onComplete();
+            processQueueRef.current();
+            return;
+        }
+
+        if (!item.event) {
+            processQueueRef.current();
+            return;
+        }
+
+        const event = item.event;
+
+        isPresentingRef.current = true;
+
+        // Display this event
+        setVisibleEvents((prev) => [...prev, event]);
+
+        // Keep it visible before advancing to the next event
+        presentationTimerRef.current = setTimeout(() => {
+            presentationTimerRef.current = null;
+            processQueueRef.current();
+        }, getEventDisplayDuration(event));
+    }, []);
+
+    processQueueRef.current = processNextEvent;
+
+    const enqueueEvents = useCallback(
+        (events: CombatEvent[], onComplete?: () => void) => {
+            events.forEach((event) => {
+                presentationQueueRef.current.push({ event });
+            });
+
+            if (onComplete) {
+                presentationQueueRef.current.push({ onComplete });
+            }
+
+            // Start processing only if another event isn't already displaying
+            if (!isPresentingRef.current) {
+                isPresentingRef.current = true;
+                processQueueRef.current();
+            }
+        },
+        []
+    );
+
     useEffect(() => {
         if (teamAChars.length === 0 || teamBChars.length === 0) return;
 
+        // Clear any previous presentation
+        if (presentationTimerRef.current) {
+            clearTimeout(presentationTimerRef.current);
+            presentationTimerRef.current = null;
+        }
+
+        presentationQueueRef.current = [];
+        isPresentingRef.current = false;
+
         const engine = new CombatEngine();
+
         engine.initialize(teamAChars, teamBChars, playerSide);
+
         engineRef.current = engine;
+
         setState({ ...engine.getState() });
         setVisibleEvents([]);
+
+        return () => {
+            if (presentationTimerRef.current) {
+                clearTimeout(presentationTimerRef.current);
+            }
+
+            presentationQueueRef.current = [];
+            isPresentingRef.current = false;
+        };
     }, [teamAChars, teamBChars, playerSide]);
 
     const handleAction = useCallback((action: CombatAction) => {
         if (!engineRef.current) return;
 
+        // Capture HP before the engine applies the action.
+        const fightersBeforeAction = engineRef.current.getState().fighters;
+
+        const previousHp = Object.fromEntries(
+            fightersBeforeAction.map((fighter) => [
+                fighter.id,
+                fighter.currentHp,
+            ])
+        );
+
+        setPreviousHpById(previousHp);
+
         const newEvents = engineRef.current.performAction(action);
 
-        // Force a fresh copy of the state
         const freshState = engineRef.current.getState();
         setState({ ...freshState });
-        setVisibleEvents((prev) => [...prev, ...newEvents]);
-    }, []);
+
+        enqueueEvents(newEvents);
+    }, [enqueueEvents]);
 
     const handleSelectActor = useCallback((id: number) => {
         engineRef.current?.selectActor(id);
         setState({ ...engineRef.current!.getState() });
+    }, []);
+
+    const handleDeselectActor = useCallback(() => {
+        engineRef.current?.deselectActor();
+        setTargetMode(null);
+
+        if (engineRef.current) {
+            setState({ ...engineRef.current.getState() });
+        }
     }, []);
 
 
@@ -87,43 +225,64 @@ export function CombatArena({
 
         const timers: ReturnType<typeof setTimeout>[] = [];
 
-        // 1. Wait 1800ms after your turn ends so you can finish reading your own action
-        const aiThinkTimer = setTimeout(() => {
+        const runAI = () => {
+            // Don't let the AI act while previous events are being presented
+            if (isPresentingRef.current) {
+                const waitTimer = setTimeout(runAI, 250);
+                timers.push(waitTimer);
+                return;
+            }
+
             const engine = engineRef.current;
             if (!engine) return;
 
-            // Track where the engine's event log was before the AI acts
             const prevEventCount = engine.getState().events.length;
+
             const action = engine.chooseAIAction();
 
             if (action) {
+                // Capture HP before the AI action.
+                const fightersBeforeAction = engine.getState().fighters;
+
+                const previousHp = Object.fromEntries(
+                    fightersBeforeAction.map((fighter) => [
+                        fighter.id,
+                        fighter.currentHp,
+                    ])
+                );
+
+                setPreviousHpById(previousHp);
+
                 engine.performAction(action);
-                // Grab all events produced (e.g. the AI's attack/shield AND the new round_start banner)
-                const generatedEvents = engine.getState().events.slice(prevEventCount);
 
-                // 2. Stagger each event by 2200ms so ClashCard shows the attack, pauses, then shows Round Start
-                generatedEvents.forEach((ev, index) => {
-                    const stepTimer = setTimeout(() => {
-                        setVisibleEvents((prev) => [...prev, ev]);
+                const generatedEvents = engine
+                    .getState()
+                    .events.slice(prevEventCount);
 
-                        // Only unlock the player's UI controls on the final event
-                        if (index === generatedEvents.length - 1) {
-                            setState({ ...engine.getState() });
-                        }
-                    }, index * 2200);
-
-                    timers.push(stepTimer);
+                // Queue all AI events and update the UI after the last one
+                enqueueEvents(generatedEvents, () => {
+                    setState({ ...engine.getState() });
                 });
             } else {
                 engine.startPlayerPhase();
                 setState({ ...engine.getState() });
             }
-        }, 1800);
+        };
+
+        // Give the player 1.8 seconds before the AI starts thinking
+        const aiThinkTimer = setTimeout(runAI, 1800);
 
         timers.push(aiThinkTimer);
 
-        return () => timers.forEach(clearTimeout);
-    }, [state?.phase, state?.availableAIIds, state?.winner]);
+        return () => {
+            timers.forEach(clearTimeout);
+        };
+    }, [
+        state?.phase,
+        state?.availableAIIds,
+        state?.winner,
+        enqueueEvents,
+    ]);
 
     if (teamAChars.length === 0 || teamBChars.length === 0) {
         return (
@@ -147,14 +306,14 @@ export function CombatArena({
         <div className="flex flex-col gap-3 relative">
             <div className="border border-muted-foreground/20 rounded-xl p-3 flex flex-col gap-3">
                 <CombatHeader state={state} nameA={nameA} nameB={nameB} />
-                <div className="min-h-[220px] flex flex-col items-center justify-center gap-2 text-muted-foreground text-sm w-full">
-                    {state.isPlayerTurn && !state.winner && (
+                <div className="flex w-full flex-col gap-2 text-sm text-muted-foreground">
+                    {/* {state.isPlayerTurn && !state.winner && (
                         <CommandPanel
                             state={state}
                             onAction={handleAction}
                             onTargetModeChange={setTargetMode}
                         />
-                    )}
+                    )} */}
                     <CinematicCombatView
                         fightersA={rosterA}
                         fightersB={rosterB}
@@ -171,23 +330,26 @@ export function CombatArena({
                         isPlayerTurn={state.isPlayerTurn}
                         selectedTargetId={state.selectedTargetId}
                         availableAIIds={state.availableAIIds}
-
+                        onDeselectActor={handleDeselectActor}
                         validTargetIds={targetMode?.validIds ?? []}
                         isTargetSelectionActive={targetMode?.active ?? false}
+                        commandPanelProps={{
+                            state,
+                            onAction: handleAction,
+                            onTargetModeChange: setTargetMode,
+                        }}
+                        renderCommandPanel={(onClose) => (
+                            <CommandPanel
+                                state={state}
+                                onAction={handleAction}
+                                onTargetModeChange={setTargetMode}
+                                onClose={onClose}
+                                compact
+                            />
+                        )}
+                        previousHpById={previousHpById}
                     />
                 </div>
-
-                {/* maybe place here the BattleEnd */}
-                {/* {state.winner && (
-                    <div className="text-center py-2">
-                        <p className="text-lg font-bold text-amber-400">
-                            Side {state.winner} wins the battle!
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {state.winner === playerSide ? "Victory!" : "Defeat"}
-                        </p>
-                    </div>
-                )} */}
             </div>
         </div>
     );

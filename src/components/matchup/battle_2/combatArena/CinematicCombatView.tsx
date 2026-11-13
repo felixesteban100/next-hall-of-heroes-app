@@ -6,6 +6,9 @@ import { Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CombatFighter, CombatEvent } from "@/lib/matchup/combat/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
+import type { ReactNode } from "react";
+import type { ComponentProps } from "react";
+import { CommandPanel } from "../CommandPanel";
 
 // Your existing rich components
 import {
@@ -16,6 +19,8 @@ import {
 import TeamColumn from "./cinematicCombatView/TeamColumn";
 import ClashCard from "./cinematicCombatView/ClashCard";
 import LogRow from "./cinematicCombatView/LogRow";
+
+type CommandPanelProps = ComponentProps<typeof CommandPanel>;
 
 type Props = {
     fightersA: CombatFighter[];
@@ -34,9 +39,12 @@ type Props = {
     onSelectActor: (id: number) => void;
     onSelectTarget: (id: number) => void;
     isPlayerTurn: boolean;
-
+    renderCommandPanel: (onClose: () => void) => ReactNode;
     validTargetIds: number[];
     isTargetSelectionActive: boolean;
+    commandPanelProps: CommandPanelProps;
+    onDeselectActor: () => void;
+    previousHpById: Record<number, number>;
 };
 
 export default function CinematicCombatView({
@@ -53,20 +61,29 @@ export default function CinematicCombatView({
     playerSide,
     selectedActorId,
     selectedTargetId,
-
+    commandPanelProps,
     validTargetIds,
     isTargetSelectionActive,
+    renderCommandPanel,
+    onDeselectActor,
+    previousHpById,
 }: Props) {
     const logRef = useRef<HTMLDivElement>(null);
 
-    // Convert to the shapes your UI already understands
     const enrichedA = useMemo(
-        () => fightersA.map((f) => toEnrichedFighter(f)),
-        [fightersA]
+        () =>
+            fightersA.map((f) =>
+                toEnrichedFighter(f, previousHpById[f.id] ?? f.currentHp)
+            ),
+        [fightersA, previousHpById]
     );
+
     const enrichedB = useMemo(
-        () => fightersB.map((f) => toEnrichedFighter(f)),
-        [fightersB]
+        () =>
+            fightersB.map((f) =>
+                toEnrichedFighter(f, previousHpById[f.id] ?? f.currentHp)
+            ),
+        [fightersB, previousHpById]
     );
 
     const visibleLogs = useMemo(
@@ -82,8 +99,15 @@ export default function CinematicCombatView({
     const latestEvent = events[events.length - 1] ?? null;
 
     const currentActionEvent = useMemo(
-        () => buildActionEvent(latestEvent, fightersA, fightersB, allChars),
-        [latestEvent, fightersA, fightersB, allChars]
+        () =>
+            buildActionEvent(
+                latestEvent,
+                fightersA,
+                fightersB,
+                allChars,
+                previousHpById
+            ),
+        [latestEvent, fightersA, fightersB, allChars, previousHpById]
     );
 
     // Auto-scroll feed
@@ -100,37 +124,17 @@ export default function CinematicCombatView({
     const mvpA = enrichedA.find((f) => f.isAlive)?.name;
     const mvpB = enrichedB.find((f) => f.isAlive)?.name;
 
-    const latestLog = visibleLogs[visibleLogs.length - 1];
+    const eventKey = currentActionEvent?.key;
 
-    const activeAttacker =
-        latestLog &&
-            (latestLog.type === "attack" ||
-                latestLog.type === "ko" ||
-                latestLog.type === "defend")
-            ? latestLog.attackerName
-            : undefined;
+    const [impactedEventKey, setImpactedEventKey] = useState<number | null>(null);
 
-    const activeDefender =
-        latestLog?.type === "attack" ? latestLog.defenderName : undefined;
-    const latestKO = latestLog?.type === "ko" ? latestLog.defenderName : undefined;
-    const latestHeal =
-        latestLog?.type === "heal"
-            ? latestLog.defenderName
-            : undefined;
-    const latestRevive = latestLog?.type === "revive" ? latestLog.defenderName : undefined;
-    const latestDefend = latestLog?.type === "defend" ? latestLog.defenderName : undefined;
-
-    const eventKey = latestLog?.id;
+    const hasImpacted =
+        eventKey !== undefined && impactedEventKey === eventKey;
 
     const teamColumnProps = {
-        activeAttacker,
-        activeDefender,
-        latestKO,
-        latestHeal,
-        latestRevive,
-        latestDefend,
+        actionEvent: currentActionEvent ?? undefined,
         eventKey,
-
+        hasImpacted,
         availablePlayerIds,
         availableAIIds,
         selectedActorId,
@@ -138,15 +142,17 @@ export default function CinematicCombatView({
         onSelectActor,
         onSelectTarget,
         isPlayerTurn,
-
         validTargetIds,
         isTargetSelectionActive,
+        commandPanelProps,
+        renderCommandPanel,
+        onDeselectActor,
     };
 
     return (
-        <div className="flex flex-col gap-4 p-2 sm:p-4 w-full max-w-full overflow-hidden">
+        <div className="flex w-full max-w-full flex-col gap-2 overflow-hidden p-1">
             {/* Mobile */}
-            <div className="flex flex-col gap-4 w-full md:hidden">
+            <div className="flex flex-col gap-2 w-full md:hidden">
                 <div className="w-full rounded-2xl border border-muted-foreground/25 bg-card/85 backdrop-blur-md overflow-hidden min-h-[180px] flex items-center justify-center">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -162,6 +168,11 @@ export default function CinematicCombatView({
                                 allChars={allChars}
                                 teamAChars={teamAChars}
                                 playerSide={playerSide}
+                                onImpact={() => {
+                                    if (eventKey !== undefined) {
+                                        setImpactedEventKey(eventKey);
+                                    }
+                                }}
                             />
                         </motion.div>
                     </AnimatePresence>
@@ -172,15 +183,15 @@ export default function CinematicCombatView({
                         fighters={enrichedA}
                         variant="primary"
                         mvp={mvpA}
-                        {...teamColumnProps}
                         isPlayerSide={playerSide === "A"}
+                        {...teamColumnProps}
                     />
                     <TeamColumn
                         fighters={enrichedB}
                         variant="secondary"
                         mvp={mvpB}
-                        {...teamColumnProps}
                         isPlayerSide={playerSide === "B"}
+                        {...teamColumnProps}
                     />
                 </div>
             </div>
@@ -191,8 +202,8 @@ export default function CinematicCombatView({
                     fighters={enrichedA}
                     variant="primary"
                     mvp={mvpA}
-                    {...teamColumnProps}
                     isPlayerSide={playerSide === "A"}
+                    {...teamColumnProps}
                 />
 
                 <div
@@ -215,6 +226,11 @@ export default function CinematicCombatView({
                                 allChars={allChars}
                                 teamAChars={teamAChars}
                                 playerSide={playerSide}
+                                onImpact={() => {
+                                    if (eventKey !== undefined) {
+                                        setImpactedEventKey(eventKey);
+                                    }
+                                }}
                             />
                         </motion.div>
                     </AnimatePresence>
@@ -224,13 +240,13 @@ export default function CinematicCombatView({
                     fighters={enrichedB}
                     variant="secondary"
                     mvp={mvpB}
-                    {...teamColumnProps}
                     isPlayerSide={playerSide === "B"}
+                    {...teamColumnProps}
                 />
             </div>
 
             {/* Combat Feed */}
-            <div className="flex flex-col gap-1.5 mt-1">
+            <div className="flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth h-[80px]">
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
                     <span className="flex items-center gap-1.5">
                         <Activity className="size-3.5 animate-pulse text-amber-500" />

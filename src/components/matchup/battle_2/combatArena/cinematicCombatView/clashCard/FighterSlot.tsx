@@ -3,7 +3,7 @@ import { Power } from "@/types";
 import { CombatPhase } from "../ClashCard";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { cn } from "@/lib/utils";
-import { Skull } from "lucide-react";
+import { Skull, Lock, Crosshair } from "lucide-react";
 import { FighterState } from "@/lib/matchup/combat/adapters";
 import PowerOverlay, { CombatActionType } from "./PowerOverlay";
 import SyncedHealthBar from "./SyncedHealthBar";
@@ -51,6 +51,7 @@ interface FighterSlotProps {
     prevHp?: number;
     // Timeline-driven props
     phase: CombatPhase;
+    isShielded?: boolean;
 }
 
 
@@ -68,9 +69,15 @@ export default function FighterSlot({
     healPopup,
     prevHp,
     phase,
+    isShielded = false,
 }: FighterSlotProps) {
     if (!fighter) return <div className="w-17" />;
-
+    const isStunned = fighter.status?.some(
+        (status) => status.type === "stun" && status.duration > 0
+    ) ?? false;
+    const isFocused = fighter.status?.some(
+        (status) => status.type === "focus" && status.duration > 0
+    ) ?? false;
     const teamTextClass = isTeamA ? "text-primary" : "text-secondary";
     const teamBorderClass = isTeamA ? "border-primary shadow-primary/40" : "border-secondary shadow-secondary/40";
 
@@ -86,14 +93,15 @@ export default function FighterSlot({
     const showDamageFlash = isDefender && phase >= 2;
     // KO skull: only at phase 3
     const showKO = isKO && phase >= 3;
-    // Damage/heal popup: at phase 2
-    const showPopup = phase >= 2;
+
+    const showDamagePopup = phase >= 2 && !isShielded;
+    const showHealPopup = phase >= 2;
 
     return (
         <div className="flex flex-col items-center gap-1 min-w-18 relative">
 
             <AnimatePresence>
-                {showPopup && damagePopup != null && damagePopup > 0 && (
+                {showDamagePopup && damagePopup != null && damagePopup > 0 && (
                     <motion.span
                         key="damage"
                         initial={{ opacity: 0, y: 10, scale: 0.5 }}
@@ -105,7 +113,7 @@ export default function FighterSlot({
                         (-{damagePopup} HP)
                     </motion.span>
                 )}
-                {showPopup && healPopup != null && healPopup > 0 && (
+                {showHealPopup && healPopup != null && healPopup > 0 && (
                     <motion.span
                         key="heal"
                         initial={{ opacity: 0, y: 10, scale: 0.5 }}
@@ -132,8 +140,34 @@ export default function FighterSlot({
                     <motion.div
                         className="w-full h-full relative"
                         initial={{ filter: "grayscale(0%) contrast(100%)" }}
-                        animate={showKO ? { filter: "grayscale(100%) contrast(125%)" } : { filter: "grayscale(0%) contrast(100%)" }}
-                        transition={{ duration: 0.35 }}
+                        animate={
+                            showKO
+                                ? {
+                                    filter: "grayscale(100%) contrast(125%)",
+                                }
+                                : isStunned
+                                    ? {
+                                        filter: [
+                                            "saturate(100%)",
+                                            "saturate(60%)",
+                                            "saturate(100%)",
+                                        ],
+                                        x: [0, -2, 2, -2, 2, 0],
+                                    }
+                                    : {
+                                        filter: "grayscale(0%) contrast(100%)",
+                                        x: 0,
+                                    }
+                        }
+                        transition={
+                            isStunned && !showKO
+                                ? {
+                                    duration: 1.8,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }
+                                : { duration: 0.35 }
+                        }
                     >
                         <CharacterImage
                             src={fighter.image}
@@ -203,6 +237,53 @@ export default function FighterSlot({
                             className="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-lg z-30"
                         >
                             <Skull className="size-7 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] text-white/80" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 4. Stun effect */}
+                <AnimatePresence>
+                    {isStunned && !showKO && (
+                        <motion.div
+                            key="stun-overlay"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0.15, 0.4, 0.2, 0.4, 0.15] }}
+                            exit={{ opacity: 0 }}
+                            transition={{
+                                duration: 1.8,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                            className="absolute inset-0 z-20 pointer-events-none rounded-lg border-2 border-purple-400 bg-purple-400/20 shadow-[inset_0_0_18px_rgba(168,85,247,0.65)]"
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Lock className="size-6 text-purple-500 drop-shadow-[0_0_8px_rgba(192,132,252,1)]" />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 5. Focus effect */}
+                <AnimatePresence>
+                    {isFocused && !showKO && (
+                        <motion.div
+                            key="focus-overlay"
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            animate={{
+                                opacity: [0.25, 0.55, 0.3, 0.55, 0.25],
+                                scale: [1, 1.015, 1],
+                            }}
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            transition={{
+                                duration: 1.8,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                            className="absolute inset-0 z-15 pointer-events-none rounded-lg border-2 border-green-400 bg-green-400/10 shadow-[inset_0_0_18px_rgba(251,191,36,0.55),0_0_12px_rgba(251,191,36,0.35)]"
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Crosshair className="size-7 text-green-500 drop-shadow-[0_0_8px_rgba(251,191,36,1)]" />
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

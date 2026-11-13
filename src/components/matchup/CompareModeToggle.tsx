@@ -7,7 +7,7 @@ import { MatchMode } from "@/lib/matchup/matchupParams";
 export function CompareModeToggle() {
     const { pushParams } = useParamLoading();
     const searchParams = useSearchParams();
-    const current = searchParams.get("mode");
+    const current = searchParams.get("mode") ?? "matchup";
 
     const go = (next: MatchMode) => {
         if (next === current) return;

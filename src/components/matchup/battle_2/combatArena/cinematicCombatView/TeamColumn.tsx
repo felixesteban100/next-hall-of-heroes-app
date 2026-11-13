@@ -2,50 +2,43 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import { ActionEvent, EnrichedFighter } from "@/lib/matchup/combat/adapters";
 import Avatar from "./teamColumn/Avatar";
+import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 // ── Timing constants (must match ClashCard phase delays) ─────────────────────
 // Phase 2 = 900ms → health bar drops
 // Phase 3 = 1800ms → KO visual state applies
-export const HEALTH_DROP_DELAY = 900;
+export const HEALTH_DROP_DELAY = 750;
 export const KO_VISUAL_DELAY = 1800;
 
 export default function TeamColumn({
-    fighters, variant, mvp,
-    activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend,
+    fighters, variant, mvp, onDeselectActor,
     eventKey, availablePlayerIds, isPlayerSide, isPlayerTurn, onSelectActor, selectedActorId,
-    onSelectTarget, selectedTargetId, availableAIIds, isTargetSelectionActive, validTargetIds
+    onSelectTarget, selectedTargetId, availableAIIds, isTargetSelectionActive, validTargetIds, actionEvent, renderCommandPanel, hasImpacted
 }: {
     fighters: EnrichedFighter[];
     variant: "primary" | "secondary";
     mvp?: string;
-    activeAttacker?: string;
-    activeDefender?: string;
-    latestKO?: string;
-    latestHeal?: string;
-    latestRevive?: string;
-    latestDefend?: string;
-    // A monotonically-increasing key that changes every time the step advances.
-    // Used to reset the phase timers whenever a new combat event fires.
+    actionEvent?: ActionEvent;
     eventKey?: number;
-
-    // New selection props
-    isPlayerSide?: boolean;               // true if this column is the player's team
-    availablePlayerIds?: number[];              // state.availablePlayerIds
-    availableAIIds?: number[];              // state.availablePlayerIds
+    isPlayerSide?: boolean;
+    availablePlayerIds?: number[];
+    availableAIIds?: number[];
     selectedActorId?: number | null;
     selectedTargetId?: number | null;
     onSelectActor?: (id: number) => void;
     isPlayerTurn?: boolean;
-
     onSelectTarget?: (id: number) => void;
-
     validTargetIds?: number[];
     isTargetSelectionActive?: boolean;
+    renderCommandPanel?: (onClose: () => void) => ReactNode;
+    onDeselectActor: () => void;
+    hasImpacted?: boolean;
 }) {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const avatarRefsMap = useRef(new Map());
+    const avatarRefsMap = useRef(new Map<number, HTMLDivElement>());
 
     // ── Phase-delayed visibility of HP changes and KO state ──────────────────
     // `hpReady`  → true after HEALTH_DROP_DELAY (900ms), allows bars to animate
@@ -54,99 +47,303 @@ export default function TeamColumn({
     const [koReady, setKoReady] = useState(false);
     const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+    const [openCommandActorId, setOpenCommandActorId] =
+        useState<number | null>(null);
+
+    const [dropdownPosition, setDropdownPosition] = useState<{
+        top: number;
+        left: number;
+    } | null>(null);
+
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    const programmaticScrollRef = useRef(false);
+    const scrollResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const event = actionEvent;
+
+    const attackerId = actionEvent?.attacker?.id;
+
+    const targetIds = actionEvent?.targets?.map(
+        (target) => target.id
+    ) ?? (actionEvent?.defender ? [actionEvent.defender.id] : []);
+
+    const involvedIds = new Set(
+        [attackerId, ...targetIds].filter(
+            (id): id is number => id !== undefined
+        )
+    );
+
+    const activeAttacker = event?.attacker?.name;
+    const activeDefender = event?.defender?.name;
+
+    const eventType = event?.log.type;
+
+    const eventTargetId = targetIds[0] ?? attackerId;
+
+    const latestKO =
+        eventType === "ko" || event?.log.isKO
+            ? eventTargetId
+            : undefined;
+
+    const latestHeal =
+        eventType === "heal"
+            ? eventTargetId
+            : undefined;
+
+    const latestRevive =
+        eventType === "revive"
+            ? eventTargetId
+            : undefined;
+
+    const latestDefend =
+        eventType === "defend"
+            ? eventTargetId
+            : undefined;
+
+
+    // const involvedNames = new Set(
+    //     [
+    //         activeAttacker,
+    //         activeDefender,
+    //         latestKO,
+    //         latestHeal,
+    //         latestRevive,
+    //         latestDefend,
+    //     ].filter((name): name is string => Boolean(name))
+    // );
+
     useEffect(() => {
-        // Clear any running timers from a previous event
         timersRef.current.forEach(clearTimeout);
         timersRef.current = [];
 
-        // Reset both gates
         setHpReady(false);
         setKoReady(false);
 
         if (eventKey === undefined) return;
 
-        const isHealReviveEvent = latestHeal !== undefined || latestRevive !== undefined;
+        const isHealReviveEvent =
+            latestHeal !== undefined || latestRevive !== undefined;
+
+        const isAnimatedAttack =
+            eventType === "attack" ||
+            eventType === "power" ||
+            eventType === "ko" ||
+            eventType === "battle_end" ||
+            // eventType === "rout" ||
+            (eventType === "defend" && !!event?.log.defenderName);
 
         if (isHealReviveEvent) {
-            // Heals / revives resolve faster — show HP change almost immediately
             timersRef.current.push(setTimeout(() => setHpReady(true), 400));
             timersRef.current.push(setTimeout(() => setKoReady(true), 600));
         } else {
-            timersRef.current.push(setTimeout(() => setHpReady(true), HEALTH_DROP_DELAY));
+            // Attack events wait for ClashCard's actual impact signal.
+            if (!isAnimatedAttack) {
+                timersRef.current.push(
+                    setTimeout(() => setHpReady(true), HEALTH_DROP_DELAY)
+                );
+            } else if (hasImpacted) {
+                setHpReady(true);
+            }
+
             if (latestKO) {
-                timersRef.current.push(setTimeout(() => setKoReady(true), KO_VISUAL_DELAY));
+                timersRef.current.push(
+                    setTimeout(() => setKoReady(true), KO_VISUAL_DELAY)
+                );
             }
         }
 
         return () => timersRef.current.forEach(clearTimeout);
-    }, [eventKey]);
-
-    const involvedNames = new Set(
-        [activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend].filter(Boolean)
-    );
+    }, [
+        eventKey,
+        latestHeal,
+        latestRevive,
+        latestKO,
+        eventType,
+        event?.log.defenderName,
+        hasImpacted,
+    ]);
 
     // ── Scroll to involved fighter ────────────────────────────────────────────
     useEffect(() => {
-        if (involvedNames.size > 0 && scrollContainerRef.current) {
-            const container = scrollContainerRef.current;
+        if (involvedIds.size === 0 || !scrollContainerRef.current) return;
 
-            for (const name of involvedNames) {
-                if (!name) continue;
-                const el = avatarRefsMap.current.get(name);
-                if (el) {
-                    const containerRect = container.getBoundingClientRect();
-                    const elRect = el.getBoundingClientRect();
+        const container = scrollContainerRef.current;
 
-                    const relativeTop = elRect.top - containerRect.top;
-                    const relativeLeft = elRect.left - containerRect.left;
+        for (const id of involvedIds) {
+            const el = avatarRefsMap.current.get(id);
 
-                    const targetScrollTop = container.scrollTop + relativeTop - (container.clientHeight / 2) + (elRect.height / 2);
-                    const targetScrollLeft = container.scrollLeft + relativeLeft - (container.clientWidth / 2) + (elRect.width / 2);
+            if (!el) continue;
 
-                    container.scrollTo({
-                        top: targetScrollTop,
-                        left: targetScrollLeft,
-                        behavior: "smooth"
-                    });
-                    break;
-                }
-            }
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+
+            const targetScrollTop =
+                container.scrollTop +
+                (elRect.top - containerRect.top) -
+                container.clientHeight / 2 +
+                elRect.height / 2;
+
+            const targetScrollLeft =
+                container.scrollLeft +
+                (elRect.left - containerRect.left) -
+                container.clientWidth / 2 +
+                elRect.width / 2;
+
+            container.scrollTo({
+                top: targetScrollTop,
+                left: targetScrollLeft,
+                behavior: "smooth",
+            });
+
+            break;
         }
-    }, [activeAttacker, activeDefender, latestKO, latestHeal, latestRevive, latestDefend]);
+    }, [eventKey, actionEvent]);
+
+    useEffect(() => {
+        if (openCommandActorId === null) {
+            setDropdownPosition(null);
+            onDeselectActor();
+            return;
+        }
+
+        const updatePosition = () => {
+            const avatar = avatarRefsMap.current.get(openCommandActorId);
+            if (!avatar) return;
+
+            const rect = avatar.getBoundingClientRect();
+            const width = Math.min(340, window.innerWidth - 24);
+
+            const viewportLeft = Math.max(
+                12,
+                Math.min(
+                    rect.left + rect.width / 2 - width / 2,
+                    window.innerWidth - width - 12
+                )
+            );
+
+            setDropdownPosition({
+                top: rect.bottom + 8 + window.scrollY,
+                left: viewportLeft + window.scrollX,
+            });
+        };
+
+        const teamColumn = scrollContainerRef.current;
+
+        const handleTeamColumnScroll = () => {
+            // Automatic scrolling: reposition dropdown, but keep it open.
+            if (programmaticScrollRef.current) {
+                updatePosition();
+                return;
+            }
+
+            // Manual scrolling: close and deselect.
+            setOpenCommandActorId(null);
+            setDropdownPosition(null);
+            onDeselectActor();
+        };
+        updatePosition();
+
+        teamColumn?.addEventListener("scroll", handleTeamColumnScroll);
+        window.addEventListener("resize", updatePosition);
+
+        return () => {
+            teamColumn?.removeEventListener("scroll", handleTeamColumnScroll);
+            window.removeEventListener("resize", updatePosition);
+        };
+    }, [openCommandActorId, onDeselectActor]);
+
+    // ── Center selected fighter ──────────────────────────────
+    useEffect(() => {
+        if (selectedActorId === null || selectedActorId === undefined) return;
+
+        const container = scrollContainerRef.current;
+        const avatar = avatarRefsMap.current.get(selectedActorId);
+
+        if (!container || !avatar) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const avatarRect = avatar.getBoundingClientRect();
+
+        const targetScrollTop =
+            container.scrollTop +
+            (avatarRect.top - containerRect.top) -
+            container.clientHeight / 2 +
+            avatarRect.height / 2;
+
+        const targetScrollLeft =
+            container.scrollLeft +
+            (avatarRect.left - containerRect.left) -
+            container.clientWidth / 2 +
+            avatarRect.width / 2;
+
+        programmaticScrollRef.current = true;
+
+        if (scrollResetTimerRef.current) {
+            clearTimeout(scrollResetTimerRef.current);
+        }
+
+        container.scrollTo({
+            top: targetScrollTop,
+            left: targetScrollLeft,
+            behavior: "smooth",
+        });
+
+        scrollResetTimerRef.current = setTimeout(() => {
+            programmaticScrollRef.current = false;
+        }, 800);
+
+    }, [selectedActorId]);
+
+    useEffect(() => {
+        if (!isPlayerTurn) {
+            setOpenCommandActorId(null);
+        }
+    }, [isPlayerTurn]);
 
     return (
-        <div className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0 overflow-hidden">
+        <div ref={dropdownRef} className="flex flex-col items-center gap-2 w-full md:w-auto md:flex-1 min-w-0 overflow-hidden">
             <div
                 ref={scrollContainerRef}
-                className="flex flex-wrap gap-1 sm:gap-3 justify-center max-h-[210px] md:max-h-none w-full py-6 overflow-y-auto md:overflow-y-visible overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative"
+                className="flex flex-wrap gap-1 sm:gap-3 justify-center max-h-[210px] md:max-h-[310px] w-full py-6 overflow-y-auto md:overflow-y-visible overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden relative"
             >
                 {fighters.map((f) => {
-                    const isInvolved = involvedNames.has(f.name);
+                    // const isInvolved = involvedIds.has(f.id);
                     const maxHp = f.maxHp || 100;
 
                     // ── Phase-gated HP display ────────────────────────────────
                     // Before hpReady: show the "before this event" HP.
                     // When hpReady flips: CSS transition-all duration-700 animates the bar drop.
                     // For fighters NOT involved in the current event, show their real HP immediately.
-                    const isDefenderThisEvent = activeDefender === f.name || latestKO === f.name || latestDefend === f.name;
-                    const isHealTarget = latestHeal === f.name || latestRevive === f.name;
+                    const isDefenderThisEvent =
+                        targetIds.includes(f.id) ||
+                        latestKO === f.id ||
+                        latestDefend === f.id;
+                    const isHealTarget = latestHeal === f.id || latestRevive === f.id;
                     const holdHp = !hpReady && (isDefenderThisEvent || isHealTarget);
 
                     const realCurrentHp = f.isAlive ? (f.currentHp ?? maxHp) : 0;
-                    // While holding, show the PRE-event HP so the bar doesn't jump then drop.
-                    // f.prevHp is the HP before the latest log was applied.
                     const preEventHp = f.prevHp !== undefined ? f.prevHp : maxHp;
                     const displayHp = holdHp ? preEventHp : realCurrentHp;
+
                     const hpPercent = Math.max(0, Math.min(100, (displayHp / maxHp) * 100));
 
                     const currentEnergy = f.energy ?? 0;
                     const maxEnergy = f.maxEnergy ?? 100;
                     const energyPercent = Math.max(0, Math.min(100, (currentEnergy / maxEnergy) * 100));
 
+                    const isStunned = f.status?.some(
+                        (status) => status.type === "stun" && status.duration > 0
+                    );
+
+                    const isFocused = f.status?.some(
+                        (status) => status.type === "focus" && status.duration > 0
+                    );
+
                     // ── Phase-gated KO visual ─────────────────────────────────
                     // latestKO fires immediately from CinematicCombatView; we delay showing
                     // the KO ring/skull/scale in Avatar until koReady (1800ms).
-                    const isKO = (latestKO === f.name && koReady) || (!f.isAlive && latestKO !== f.name);
+                    const isKO = (latestKO === f.id && koReady) || (!f.isAlive && latestKO !== f.id);
 
                     // 🌟 2. Determine if this fighter can be clicked as a target right now
 
@@ -176,9 +373,9 @@ export default function TeamColumn({
                             key={f.id}
                             ref={(node) => {
                                 if (node) {
-                                    avatarRefsMap.current.set(f.name, node);
+                                    avatarRefsMap.current.set(f.id, node);
                                 } else {
-                                    avatarRefsMap.current.delete(f.name);
+                                    avatarRefsMap.current.delete(f.id);
                                 }
                             }}
                             // className={cn(
@@ -188,8 +385,16 @@ export default function TeamColumn({
                             onClick={() => {
                                 if (canSelectTarget && onSelectTarget) {
                                     onSelectTarget(f.id);
-                                } else if (canSelectActor && onSelectActor) {
+                                    setOpenCommandActorId(null);
+                                    return;
+                                }
+
+                                if (canSelectActor && onSelectActor) {
                                     onSelectActor(f.id);
+
+                                    setOpenCommandActorId((current) =>
+                                        current === f.id ? null : f.id
+                                    );
                                 }
                             }}
                             className={cn(
@@ -216,15 +421,20 @@ export default function TeamColumn({
                                 size={48}
                                 variant={variant}
                                 isMvp={f.name === mvp}
-                                isAttacking={activeAttacker === f.name}
-                                isBeingHit={activeDefender === f.name}
+                                isAttacking={attackerId === f.id}
+                                isBeingHit={targetIds.includes(f.id)}
                                 isKO={isKO}
-                                isHealing={latestHeal === f.name}
-                                isReviving={latestRevive === f.name}
-                                isDefending={latestDefend === f.name}
-                                // isInvolved={isInvolved}
+                                isHealing={latestHeal === f.id}
+                                isReviving={latestRevive === f.id}
+                                isDefending={latestDefend === f.id}
+                                isStunned={isStunned}
+                                isFocused={isFocused}
                                 isInvolved={isSelectedActor || isSelectedTarget}
+                                eventType={involvedIds.has(f.id) ? eventType : undefined}
+                                eventRole={actionEvent?.activePower?.combatRole}
+                            // isInvolved={isInvolved}
                             />
+
 
                             {/* Phase-synced health bar */}
                             <div className="w-[48px] flex flex-col gap-0.5">
@@ -245,6 +455,7 @@ export default function TeamColumn({
                                     {displayHp}/{maxHp} HP
                                 </span>
                             </div>
+                            {/* Phase-synced energy bar */}
                             <div className="w-[48px] flex flex-col gap-0.5">
                                 <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
                                     <div
@@ -260,21 +471,31 @@ export default function TeamColumn({
                                     {currentEnergy}/{maxEnergy} EN
                                 </span>
                             </div>
-                            {/* <div className="flex flex-col gap-0.5">
-                                <div className="h-1 w-full rounded-full bg-muted/40 overflow-hidden p-[0.5px] border border-muted-foreground/15">
-                                    <div
-                                        className="h-full rounded-full bg-cyan-400 transition-all duration-300"
-                                        style={{ width: `${energyPercent}%` }}
-                                    />
-                                </div>
-                                <span className="text-[7px] font-mono text-center text-cyan-400/90 leading-none">
-                                    {currentEnergy} EN
-                                </span>
-                            </div> */}
                         </div>
                     );
                 })}
             </div>
+            {openCommandActorId !== null &&
+                openCommandActorId === selectedActorId &&
+                isPlayerSide &&
+                isPlayerTurn &&
+                dropdownPosition &&
+                renderCommandPanel &&
+                typeof document !== "undefined" &&
+                createPortal(
+                    <div
+                        ref={dropdownRef}
+                        className="absolute z-[100] w-[340px] max-w-[calc(100vw-24px)] max-h-[min(420px,calc(100vh-24px))] overflow-y-auto rounded-xl bg-background shadow-2xl ring-1 ring-border isolate"
+                        style={{
+                            top: dropdownPosition.top,
+                            left: dropdownPosition.left,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {renderCommandPanel(() => setOpenCommandActorId(null))}
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 }

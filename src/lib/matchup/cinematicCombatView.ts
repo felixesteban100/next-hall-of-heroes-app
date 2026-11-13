@@ -1,6 +1,5 @@
-import { EnrichedFighter } from "@/components/matchup/battle/battlePanel/CinematicCombatView";
-import { Log } from "@/components/matchup/battle/battlePanel/useCombatScript";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
+import { EnrichedFighter, Log } from "./combat/adapters";
 
 export function isRealPower(power: any): power is Power {
     return (
@@ -9,10 +8,6 @@ export function isRealPower(power: any): power is Power {
         !("isFallback" in power) &&
         "combatRole" in power
     );
-}
-
-function getRealPowers(char: CharacterWithJoinTeamUniversePowerEnemies): Power[] {
-    return (char.powers ?? []).filter(isRealPower);
 }
 
 export function resolveActivePower(
@@ -31,7 +26,7 @@ export function resolveActivePower(
     if (chars) {
         const char = chars.find((c) => c.name === attacker.name);
         if (char) {
-            const powers = getRealPowers(char);
+            const powers = (char.powers ?? []).filter(isRealPower);
             if (log.powerName) {
                 const exact = powers.find((p) => p.name === log.powerName);
                 if (exact) return exact;

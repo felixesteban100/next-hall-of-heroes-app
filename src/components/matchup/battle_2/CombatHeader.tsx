@@ -43,7 +43,7 @@ export function CombatHeader({ state, nameA, nameB }: Props) {
                             <span className="text-muted-foreground"> · turn</span>
                         </span>
                     ) : (
-                        <span className="text-muted-foreground">Waiting...</span>
+                        <span className="text-muted-foreground">Select character...</span>
                     )}
                 </div>
             </div>

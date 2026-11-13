@@ -129,6 +129,7 @@ function TeamSection({
 // Collapsible section wrapper
 type SectionKey = "overview" | "teamA" | "teamB" | "awards";
 
+
 function Accordion({
     sectionKey, label, icon: Icon, iconColor, open, onToggle, children,
 }: {
@@ -148,21 +149,30 @@ function Accordion({
             >
                 <div className="flex items-center gap-1.5">
                     <Icon className={cn("size-3 shrink-0", iconColor)} />
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-foreground/80">{label}</span>
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-foreground/80">
+                        {label}
+                    </span>
                 </div>
-                <ChevronRight className={cn("size-3 text-muted-foreground transition-transform duration-200", open && "rotate-90")} />
+
+                <ChevronRight
+                    className={cn(
+                        "size-3 text-muted-foreground transition-transform duration-200",
+                        open && "rotate-90"
+                    )}
+                />
             </button>
+
             <AnimatePresence initial={false}>
                 {open && (
                     <motion.div
                         key="content"
                         initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
+                        animate={{ height: 190, opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.22, ease: "easeInOut" }}
                         className="overflow-hidden"
                     >
-                        <div className="p-2">
+                        <div className="h-[190px] overflow-y-auto overflow-x-hidden overscroll-contain p-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                             {children}
                         </div>
                     </motion.div>

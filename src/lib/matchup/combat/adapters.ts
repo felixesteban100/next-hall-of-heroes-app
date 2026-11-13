@@ -1,6 +1,6 @@
 import type { FallbackItem, Power } from "@/types";
 import { resolveActivePower } from "@/lib/matchup/cinematicCombatView"; // or wherever it lives
-
+import type { LucideIcon } from "lucide-react";
 import type {
     CombatFighter,
     CombatEvent,
@@ -23,7 +23,7 @@ export type Log = {
     powerName?: string;
     actionName?: string;
     text: string;
-    icon: any;
+    icon: LucideIcon;
     colorClass: string;
     variant: "primary" | "secondary";
     isKO?: boolean;
@@ -40,6 +40,8 @@ export type FighterState = {
     image: string;
     powers?: (Power | FallbackItem)[];
     hasRevived?: boolean;
+    isShielded?: boolean;
+    status?: { type: string; duration: number; name: string }[];
     imageFocus: string;
     maxHp: number;
     currentHp: number;
@@ -64,6 +66,7 @@ export type ActionEvent = {
     log: Log;
     attacker?: EnrichedFighter;
     defender?: EnrichedFighter;
+    targets?: EnrichedFighter[];
     activePower?: Power;
 };
 
@@ -135,42 +138,81 @@ export function toEnrichedFighter(f: CombatFighter, prevHp?: number): EnrichedFi
         energy: f.energy ?? 80,
         maxEnergy: f.maxEnergy ?? 100,
         status: f.status ?? [],
+        isShielded: f.status.some(
+            (status) => status.type === "shield" && status.duration > 0
+        ),
     };
 }
+
+
 
 export function buildActionEvent(
     event: CombatEvent | null,
     fightersA: CombatFighter[],
     fightersB: CombatFighter[],
-    allChars: any[]
+    allChars: any[],
+    previousHpById: Record<number, number> = {}
 ): ActionEvent | null {
     if (!event) return null;
 
     const all = [...fightersA, ...fightersB];
 
-    const findByName = (name?: string) => {
-        if (!name) return undefined;
-        return all.find((f) => f.name === name);
+    const findById = (id?: number) => {
+        if (id === undefined) return undefined;
+        return all.find((fighter) => fighter.id === id);
     };
 
-    const attackerFighter = findByName(event.attackerName);
-    const defenderFighter = findByName(event.defenderName);
+    const findByName = (name?: string) => {
+        if (!name) return undefined;
+        return all.find((fighter) => fighter.name === name);
+    };
 
+    // Always enrich fighters with their pre-action HP snapshot.
+    const enrichFighter = (fighter: CombatFighter) =>
+        toEnrichedFighter(
+            fighter,
+            previousHpById[fighter.id] ?? fighter.currentHp
+        );
+
+    // Resolve the actor.
+    const attackerFighter =
+        findById(event.actorId) ??
+        findByName(event.attackerName);
+
+    // Resolve every target using targetIds.
+    const targetFighters = (event.targetIds ?? [])
+        .map((id) => findById(id))
+        .filter(
+            (fighter): fighter is CombatFighter => fighter !== undefined
+        );
+
+    // Fallback for events that only provide defenderName.
+    const defenderFighter =
+        targetFighters[0] ??
+        findByName(event.defenderName);
+
+    // Enrich all fighters with previous HP.
     const enrichedAttacker = attackerFighter
-        ? toEnrichedFighter(attackerFighter)
+        ? enrichFighter(attackerFighter)
         : undefined;
 
+    const enrichedTargets = targetFighters.map(enrichFighter);
+
     const enrichedDefender = defenderFighter
-        ? toEnrichedFighter(defenderFighter)
+        ? enrichFighter(defenderFighter)
         : undefined;
 
     const log = toLegacyLog(event);
 
-    // Prefer the Power object that came from the engine
+    // Prefer the Power object supplied by the combat engine.
     let activePower: Power | undefined = event.power;
 
     if (!activePower && enrichedAttacker) {
-        activePower = resolveActivePower(log, enrichedAttacker as any, allChars);
+        activePower = resolveActivePower(
+            log,
+            enrichedAttacker as any,
+            allChars
+        );
     }
 
     return {
@@ -178,6 +220,7 @@ export function buildActionEvent(
         log,
         attacker: enrichedAttacker,
         defender: enrichedDefender,
+        targets: enrichedTargets,
         activePower,
     };
 }
