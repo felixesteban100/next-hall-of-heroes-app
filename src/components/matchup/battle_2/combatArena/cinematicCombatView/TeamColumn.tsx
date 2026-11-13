@@ -74,8 +74,8 @@ export default function TeamColumn({
         )
     );
 
-    const activeAttacker = event?.attacker?.name;
-    const activeDefender = event?.defender?.name;
+    // const activeAttacker = event?.attacker?.name;
+    // const activeDefender = event?.defender?.name;
 
     const eventType = event?.log.type;
 
