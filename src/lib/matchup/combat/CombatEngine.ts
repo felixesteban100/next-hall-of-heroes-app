@@ -100,6 +100,7 @@ export class CombatEngine {
   // ── Action API ───────────────────────────────────────────
 
   canPerform(action: CombatAction): { ok: boolean; reason?: string } {
+
     if (this.state.winner) {
       return { ok: false, reason: "The battle has already ended" };
     }
@@ -147,10 +148,22 @@ export class CombatEngine {
     }
 
 
-    if (this.state.phase === "player") {
-      if (!this.state.availablePlayerIds.includes(actor.id)) {
-        return { ok: false, reason: "This character already acted this phase" };
-      }
+    // if (this.state.phase === "player") {
+    //   if (!this.state.availablePlayerIds.includes(actor.id)) {
+    //     return { ok: false, reason: "This character already acted this phase" };
+    //   }
+    // }
+
+    const availableIds =
+      this.state.phase === "player"
+        ? this.state.availablePlayerIds
+        : this.state.availableAIIds;
+
+    if (!availableIds.includes(action.actorId)) {
+      return {
+        ok: false,
+        reason: "This fighter is not eligible to act.",
+      };
     }
 
     if (action.type === "use_power") {
@@ -393,7 +406,6 @@ export class CombatEngine {
       role = chosenRole;
     }
 
-
     const powerName = power.name.toLowerCase();
 
     const isHealingPower =
@@ -401,14 +413,19 @@ export class CombatEngine {
       powerName.includes("regene") ||
       powerName.includes("recovery");
 
-    actor.energy = Math.max(0, actor.energy - cost);
-    actor.cooldowns[power.id] = 1;
+    // Only spend resources after the action has passed target validation.
+    const spendPower = () => {
+      actor.energy = Math.max(0, actor.energy - cost);
+      actor.cooldowns[power.id] = 1;
+    };
 
     // HEALING / SELF-REVIVAL
     if (isHealingPower) {
       const targetId = targetIds[0] ?? actor.id;
 
-      const target = this.state.fighters.find((fighter) => fighter.id === targetId);
+      const target = this.state.fighters.find(
+        (fighter) => fighter.id === targetId
+      );
 
       if (!target || target.side !== actor.side) return [];
 
@@ -417,18 +434,33 @@ export class CombatEngine {
 
       const isRevive = !target.isAlive;
 
-      if (isRevive && (target.id !== actor.id || target.hasRevived)) return [];
-      if (!isRevive && target.currentHp >= target.maxHp) return [];
+      if (isRevive && (target.id !== actor.id || target.hasRevived)) {
+        return [];
+      }
 
-      const healAmount = Math.round(target.maxHp * 0.28 + (power.tier ?? 1) * 8);
+      if (!isRevive && target.currentHp >= target.maxHp) {
+        return [];
+      }
+
+      spendPower();
+
+      const healAmount = Math.round(
+        target.maxHp * 0.28 + (power.tier ?? 1) * 8
+      );
 
       const previousHp = target.currentHp;
 
-      target.currentHp = Math.min(target.maxHp, target.currentHp + healAmount);
+      target.currentHp = Math.min(
+        target.maxHp,
+        target.currentHp + healAmount
+      );
 
       const actualHealing = target.currentHp - previousHp;
 
-      if (isRevive) target.isAlive = true; target.hasRevived = true;
+      if (isRevive) {
+        target.isAlive = true;
+        target.hasRevived = true;
+      }
 
       return [{
         id: this.nextEventId(),
@@ -458,6 +490,8 @@ export class CombatEngine {
 
       if (!target) return [];
 
+      spendPower();
+
       const focusStatus = {
         id: `focus-${target.id}-${power.id}-${Date.now()}`,
         type: "focus" as const,
@@ -476,7 +510,7 @@ export class CombatEngine {
         targetIds: [target.id],
         power,
         status: focusStatus,
-        text: `${actor.name} uses [${power.name}] and grants ${target.name} Focus! Their next damaging attack is empowered by ${focusStatus.value * 100}!`,
+        text: `${actor.name} uses [${power.name}] and grants ${target.name} Focus! Their next damaging attack is empowered by ${focusStatus.value * 100}%!`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: target.name,
@@ -495,31 +529,26 @@ export class CombatEngine {
 
       if (!target) return [];
 
-      // Apply stun for the target's next round.
-      this.applyStatus(target, {
+      spendPower();
+
+      const stunStatus = {
         id: `stun-${target.id}-${power.id}-${Date.now()}`,
-        type: "stun",
+        type: "stun" as const,
         name: "Stunned",
         duration: 2,
         value: 1,
         sourceId: actor.id,
-      });
+      };
+
+      this.applyStatus(target, stunStatus);
 
       return [{
         id: this.nextEventId(),
-        // type: "status_applied",
         type: "power",
         actorId: actor.id,
         targetIds: [target.id],
         power,
-        status: {
-          id: `stun-${target.id}-${power.id}`,
-          type: "stun",
-          name: "Stunned",
-          duration: 2,
-          value: 1,
-          sourceId: actor.id,
-        },
+        status: stunStatus,
         text: `${actor.name} uses [${power.name}] and completely disables ${target.name}!`,
         side: actor.side,
         attackerName: actor.name,
@@ -530,6 +559,8 @@ export class CombatEngine {
 
     // DEFENSIVE
     if (role === "Defensive") {
+      spendPower();
+
       // Apply two independent shield charges.
       for (let i = 0; i < 2; i++) {
         this.applyStatus(actor, {
@@ -558,10 +589,15 @@ export class CombatEngine {
 
     // OFFENSIVE
     const target = this.state.fighters.find(
-      (f) => f.id === targetIds[0] && f.isAlive
+      (fighter) =>
+        fighter.id === targetIds[0] &&
+        fighter.isAlive &&
+        fighter.side !== actor.side
     );
 
     if (!target) return [];
+
+    spendPower();
 
     if (this.hasShield(target)) {
       this.consumeShield(target);
@@ -670,16 +706,28 @@ export class CombatEngine {
         (fighter.isAlive || this.canSelfRevive(fighter))
     );
 
-    // Both teams still have fighters capable of continuing.
+    // Both teams can still continue.
     if (teamAHasFighters && teamBHasFighters) {
       return null;
     }
 
-    // Neither team can continue.
+    // Neither team can continue: draw.
     if (!teamAHasFighters && !teamBHasFighters) {
-      return null; // Handle a draw here if your game supports it.
+      this.state.winner = "draw";
+
+      const event: CombatEvent = {
+        id: this.nextEventId(),
+        type: "battle_end",
+        text: "The battle ends in a draw!",
+        side: this.state.playerSide,
+      };
+
+      this.state.events.push(event);
+
+      return event;
     }
 
+    // One team can continue: victory.
     const winner: Side = teamAHasFighters ? "A" : "B";
 
     this.state.winner = winner;
@@ -751,10 +799,30 @@ export class CombatEngine {
   // }
 
   startPlayerPhase() {
+    if (this.state.winner) return;
+
+    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
+
     const idsPlayer = this.getActionableIds(this.state.playerSide);
-    const idsAI = this.getActionableIds(
-      this.state.playerSide === "A" ? "B" : "A"
-    );
+    const idsAI = this.getActionableIds(aiSide);
+
+    // Neither side has an actionable fighter.
+    if (idsPlayer.length === 0 && idsAI.length === 0) {
+      this.checkWinCondition();
+
+      if (!this.state.winner) {
+        // Fighters may simply be stunned. Advance to expire their statuses.
+        this.advanceRoundAndTickCooldowns();
+      }
+
+      return;
+    }
+
+    // No eligible player fighters: skip directly to the AI phase.
+    if (idsPlayer.length === 0) {
+      this.startAIPhase();
+      return;
+    }
 
     this.state.phase = "player";
     this.state.isPlayerTurn = true;
@@ -762,25 +830,31 @@ export class CombatEngine {
     this.state.availablePlayerIds = [...idsPlayer];
     this.state.availableAIIds = [...idsAI];
 
-    // Prefer a living character; otherwise select a character
-    // who is eligible for self-revival.
-    // const livingIds = this.getLivingIds(this.state.playerSide);
-
-    this.state.selectedActorId =
-      /* livingIds[0] ?? idsPlayer[0] ?? */ null;
+    this.state.selectedActorId = null;
 
     this.pushEvent({
       type: "turn_start",
-      text: `Player Phase – select a character`,
+      text: "Player Phase – select a character",
       side: this.state.playerSide,
     });
   }
 
   startAIPhase() {
-    const aiSide =
-      this.state.playerSide === "A" ? "B" : "A";
+    if (this.state.winner) return;
+
+    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
 
     const ids = this.getActionableIds(aiSide);
+
+    if (ids.length === 0) {
+      this.checkWinCondition();
+
+      if (!this.state.winner) {
+        this.advanceRoundAndTickCooldowns();
+      }
+
+      return;
+    }
 
     this.state.phase = "ai";
     this.state.isPlayerTurn = false;
@@ -789,7 +863,7 @@ export class CombatEngine {
 
     this.pushEvent({
       type: "turn_start",
-      text: `Enemy Phase`,
+      text: "Enemy Phase",
       side: aiSide,
     });
   }
@@ -843,7 +917,11 @@ export class CombatEngine {
       .map((id) => this.getFighter(id))
       .filter(
         (f): f is CombatFighter =>
-          !!f && (f.isAlive || this.canSelfRevive(f))
+          !!f &&
+          (f.isAlive || this.canSelfRevive(f)) &&
+          !f.status.some(
+            (status) => status.type === "stun" && status.duration > 0
+          )
       );
 
     if (candidates.length === 0) return null;
@@ -933,6 +1011,8 @@ export class CombatEngine {
         name.includes("regene") ||
         name.includes("recovery");
 
+      const role = power.combatRole;
+
       if (isHealingPower) {
         const injuredAllies = allies.filter(
           (fighter) => fighter.currentHp < fighter.maxHp
@@ -948,6 +1028,24 @@ export class CombatEngine {
           actorId: actor.id,
           powerId: power.id,
           targetIds: [target.id],
+        });
+      } else if (role === "Utility") {
+        if (allies.length === 0) continue;
+
+        const target = allies[Math.floor(Math.random() * allies.length)];
+
+        possibleActions.push({
+          type: "use_power",
+          actorId: actor.id,
+          powerId: power.id,
+          targetIds: [target.id],
+        });
+      } else if (role === "Defensive") {
+        possibleActions.push({
+          type: "use_power",
+          actorId: actor.id,
+          powerId: power.id,
+          targetIds: [actor.id],
         });
       } else {
         possibleActions.push({
@@ -1027,12 +1125,12 @@ export class CombatEngine {
 
       // 🌟 2. Tick down status durations and filter out expired ones (duration <= 0)
       fighter.status = fighter.status
-        .map((status) =>
-          status.type === "shield"
+        .map(status =>
+          status.type === "shield" || status.type === "focus"
             ? status
             : { ...status, duration: status.duration - 1 }
         )
-        .filter((status) => status.duration > 0);
+        .filter(status => status.duration > 0);
 
       // 3. Regenerate Energy each round
       this.regenerateEnergy(fighter);
@@ -1378,5 +1476,15 @@ export class CombatEngine {
           )
       )
       .map((fighter) => fighter.id);
+  }
+
+  finishAIPhase() {
+    if (this.state.phase !== "ai") return;
+
+    this.state.availableAIIds = [];
+    this.state.selectedActorId = null;
+    this.state.selectedTargetId = null;
+
+    this.advanceRoundAndTickCooldowns();
   }
 }

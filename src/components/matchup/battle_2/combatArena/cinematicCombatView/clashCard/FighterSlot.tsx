@@ -247,17 +247,17 @@ export default function FighterSlot({
                         <motion.div
                             key="stun-overlay"
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: [0.15, 0.4, 0.2, 0.4, 0.15] }}
+                            animate={{ opacity: [0.8, 1, 0.8] }}
                             exit={{ opacity: 0 }}
                             transition={{
                                 duration: 1.8,
                                 repeat: Infinity,
                                 ease: "easeInOut",
                             }}
-                            className="absolute inset-0 z-20 pointer-events-none rounded-lg border-2 border-purple-400 bg-purple-400/20 shadow-[inset_0_0_18px_rgba(168,85,247,0.65)]"
+                            className="absolute inset-0 z-20 pointer-events-none "
                         >
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <Lock className="size-6 text-purple-500 drop-shadow-[0_0_8px_rgba(192,132,252,1)]" />
+                                <Lock className="size-64 text-purple-500" />
                             </div>
                         </motion.div>
                     )}
@@ -270,7 +270,7 @@ export default function FighterSlot({
                             key="focus-overlay"
                             initial={{ opacity: 0, scale: 0.96 }}
                             animate={{
-                                opacity: [0.25, 0.55, 0.3, 0.55, 0.25],
+                                opacity: [0.8, 1, 0.8],
                                 scale: [1, 1.015, 1],
                             }}
                             exit={{ opacity: 0, scale: 0.96 }}
@@ -279,10 +279,10 @@ export default function FighterSlot({
                                 repeat: Infinity,
                                 ease: "easeInOut",
                             }}
-                            className="absolute inset-0 z-15 pointer-events-none rounded-lg border-2 border-green-400 bg-green-400/10 shadow-[inset_0_0_18px_rgba(251,191,36,0.55),0_0_12px_rgba(251,191,36,0.35)]"
+                            className="absolute inset-0 z-15 pointer-events-none"
                         >
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <Crosshair className="size-7 text-green-500 drop-shadow-[0_0_8px_rgba(251,191,36,1)]" />
+                                <Crosshair className="size-7 text-green-500" />
                             </div>
                         </motion.div>
                     )}

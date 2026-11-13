@@ -130,6 +130,8 @@ function TeamSection({
 type SectionKey = "overview" | "teamA" | "teamB" | "awards";
 
 
+
+
 function Accordion({
     sectionKey, label, icon: Icon, iconColor, open, onToggle, children,
 }: {
@@ -142,37 +144,46 @@ function Accordion({
     children: React.ReactNode;
 }) {
     return (
-        <div className="rounded-lg border border-muted-foreground/15 overflow-hidden">
-            <button
-                onClick={() => onToggle(sectionKey)}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 bg-muted/10 hover:bg-muted/20 transition-colors"
-            >
-                <div className="flex items-center gap-1.5">
-                    <Icon className={cn("size-3 shrink-0", iconColor)} />
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-foreground/80">
-                        {label}
-                    </span>
-                </div>
+        <div className={cn("relative", open ? "z-50" : "z-0")}>
+            <div className="rounded-lg border border-muted-foreground/15 bg-background">
+                <button
+                    type="button"
+                    onClick={() => onToggle(sectionKey)}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 bg-muted/10 hover:bg-muted/20 transition-colors rounded-lg"
+                >
+                    <div className="flex items-center gap-1.5">
+                        <Icon className={cn("size-3 shrink-0", iconColor)} />
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-foreground/80">
+                            {label}
+                        </span>
+                    </div>
 
-                <ChevronRight
-                    className={cn(
-                        "size-3 text-muted-foreground transition-transform duration-200",
-                        open && "rotate-90"
-                    )}
-                />
-            </button>
+                    <ChevronRight
+                        className={cn(
+                            "size-3 text-muted-foreground transition-transform duration-200",
+                            open && "rotate-90"
+                        )}
+                    />
+                </button>
+            </div>
 
-            <AnimatePresence initial={false}>
+            <AnimatePresence>
                 {open && (
                     <motion.div
                         key="content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 190, opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.22, ease: "easeInOut" }}
-                        className="overflow-hidden"
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-muted-foreground/20 bg-background shadow-xl"
                     >
-                        <div className="h-[190px] overflow-y-auto overflow-x-hidden overscroll-contain p-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                        <div
+                            className="h-[190px] overflow-y-auto overflow-x-hidden p-2"
+                            style={{
+                                WebkitOverflowScrolling: "touch",
+                                scrollbarWidth: "none",
+                            }}
+                        >
                             {children}
                         </div>
                     </motion.div>
@@ -181,6 +192,8 @@ function Accordion({
         </div>
     );
 }
+
+
 
 
 // ── Battle End Screen (finish / rout) ────────────────────────────────────────
@@ -283,7 +296,7 @@ export function BattleEndScreen({ isVictory, log, meta }: {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.16 }}
-                    className="flex flex-col gap-1"
+                    className="flex flex-col gap-1 relative z-10"
                 >
                     {/* Overview */}
                     <Accordion sectionKey="overview" label="Overview" icon={Activity} iconColor="text-violet-400" open={open === "overview"} onToggle={toggle}>

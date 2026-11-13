@@ -41,7 +41,7 @@ function TiltCard({ char, index }: { char: FeaturedChar; index: number }) {
 
     const alignmentColor =
         char.alignment === "good"
-            ? "text-cyan-400 border-cyan-400/30 bg-cyan-400/10"
+            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
             : char.alignment === "bad"
                 ? "text-rose-400 border-rose-400/30 bg-rose-400/10"
                 : "text-amber-400 border-amber-400/30 bg-amber-400/10";

@@ -10,7 +10,7 @@ import { createPortal } from "react-dom";
 // ── Timing constants (must match ClashCard phase delays) ─────────────────────
 // Phase 2 = 900ms → health bar drops
 // Phase 3 = 1800ms → KO visual state applies
-export const HEALTH_DROP_DELAY = 750;
+export const HEALTH_DROP_DELAY = 5000;
 export const KO_VISUAL_DELAY = 1800;
 
 export default function TeamColumn({
@@ -418,7 +418,7 @@ export default function TeamColumn({
                         >
                             <Avatar
                                 fighter={f}
-                                size={48}
+                                size={55}
                                 variant={variant}
                                 isMvp={f.name === mvp}
                                 isAttacking={attackerId === f.id}

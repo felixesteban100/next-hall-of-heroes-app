@@ -20,6 +20,13 @@ export function CombatHeader({ state, nameA, nameB }: Props) {
     const totalA = state.fighters.filter((f) => f.side === "A").length;
     const totalB = state.fighters.filter((f) => f.side === "B").length;
 
+    /* const resultText =
+  state.winner === "draw"
+    ? "DRAW"
+    : state.winner
+      ? `TEAM ${state.winner} WINS`
+      : ""; */
+
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-muted-foreground/20 pb-3">
             <div className="flex items-center gap-3">

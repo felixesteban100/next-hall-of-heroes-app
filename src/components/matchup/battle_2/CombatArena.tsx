@@ -68,6 +68,7 @@ export function CombatArena({
     const [state, setState] = useState<CombatState | null>(null);
     const [visibleEvents, setVisibleEvents] = useState<CombatEvent[]>([]);
     const [targetMode, setTargetMode] = useState<TargetMode | null>(null);
+    const targetModeRef = useRef<TargetMode | null>(null);
 
     const [previousHpById, setPreviousHpById] = useState<Record<number, number>>({});
 
@@ -78,6 +79,33 @@ export function CombatArena({
         useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const processQueueRef = useRef<() => void>(() => { });
+
+    const handleTargetModeChange = useCallback(
+        (next: TargetMode | null) => {
+            const previous = targetModeRef.current;
+
+            // Always keep the latest onConfirm callback.
+            targetModeRef.current = next;
+
+            // Only update React state when the actual targeting mode changes.
+            const unchanged =
+                previous === null && next === null ||
+                (
+                    previous !== null &&
+                    next !== null &&
+                    previous.active === next.active &&
+                    previous.validIds.length === next.validIds.length &&
+                    previous.validIds.every(
+                        (id, index) => id === next.validIds[index]
+                    )
+                );
+
+            if (!unchanged) {
+                setTargetMode(next);
+            }
+        },
+        []
+    );
 
     const processNextEvent = useCallback(() => {
         const item = presentationQueueRef.current.shift();
@@ -195,8 +223,10 @@ export function CombatArena({
     }, []);
 
     const handleDeselectActor = useCallback(() => {
-        engineRef.current?.deselectActor();
+        targetModeRef.current = null;
         setTargetMode(null);
+
+        engineRef.current?.deselectActor();
 
         if (engineRef.current) {
             setState({ ...engineRef.current.getState() });
@@ -205,10 +235,14 @@ export function CombatArena({
 
 
     const handleSelectTarget = useCallback((id: number) => {
-        if (targetMode?.active) {
-            if (!targetMode.validIds.includes(id)) return;
+        const currentTargetMode = targetModeRef.current;
 
-            targetMode.onConfirm(id);
+        if (currentTargetMode?.active) {
+            if (!currentTargetMode.validIds.includes(id)) return;
+
+            currentTargetMode.onConfirm(id);
+
+            targetModeRef.current = null;
             setTargetMode(null);
             return;
         }
@@ -218,7 +252,7 @@ export function CombatArena({
         if (engineRef.current) {
             setState({ ...engineRef.current.getState() });
         }
-    }, [targetMode]);
+    }, []);
 
     useEffect(() => {
         if (!state || state.phase !== "ai" || state.winner) return;
@@ -238,6 +272,12 @@ export function CombatArena({
 
             const prevEventCount = engine.getState().events.length;
 
+            console.log("[AI] Starting turn", {
+                round: engine.getState().round,
+                phase: engine.getState().phase,
+                availableAIIds: engine.getState().availableAIIds,
+            });
+
             const action = engine.chooseAIAction();
 
             if (action) {
@@ -255,16 +295,28 @@ export function CombatArena({
 
                 engine.performAction(action);
 
+                console.log("[AI] After action", {
+                    round: engine.getState().round,
+                    phase: engine.getState().phase,
+                    availablePlayerIds: engine.getState().availablePlayerIds,
+                    availableAIIds: engine.getState().availableAIIds,
+                });
+
+                // If the action was rejected, the AI phase will still be active.
+                // Finish it so the combat cannot get stuck.
+                if (engine.getState().phase === "ai") {
+                    engine.finishAIPhase();
+                }
+
                 const generatedEvents = engine
                     .getState()
                     .events.slice(prevEventCount);
 
                 // Queue all AI events and update the UI after the last one
-                enqueueEvents(generatedEvents, () => {
-                    setState({ ...engine.getState() });
-                });
+                setState({ ...engine.getState() });
+                enqueueEvents(generatedEvents);
             } else {
-                engine.startPlayerPhase();
+                engine.finishAIPhase();
                 setState({ ...engine.getState() });
             }
         };
@@ -283,6 +335,21 @@ export function CombatArena({
         state?.winner,
         enqueueEvents,
     ]);
+
+    useEffect(() => {
+        if (!state) return;
+
+        console.log("[COMBAT DEBUG]", {
+            round: state.round,
+            phase: state.phase,
+            isPlayerTurn: state.isPlayerTurn,
+            availablePlayerIds: state.availablePlayerIds,
+            availableAIIds: state.availableAIIds,
+            winner: state.winner,
+            isPresenting: isPresentingRef.current,
+            queuedEvents: presentationQueueRef.current.length,
+        });
+    }, [state]);
 
     if (teamAChars.length === 0 || teamBChars.length === 0) {
         return (
@@ -307,13 +374,6 @@ export function CombatArena({
             <div className="border border-muted-foreground/20 rounded-xl p-3 flex flex-col gap-3">
                 <CombatHeader state={state} nameA={nameA} nameB={nameB} />
                 <div className="flex w-full flex-col gap-2 text-sm text-muted-foreground">
-                    {/* {state.isPlayerTurn && !state.winner && (
-                        <CommandPanel
-                            state={state}
-                            onAction={handleAction}
-                            onTargetModeChange={setTargetMode}
-                        />
-                    )} */}
                     <CinematicCombatView
                         fightersA={rosterA}
                         fightersB={rosterB}
@@ -336,13 +396,13 @@ export function CombatArena({
                         commandPanelProps={{
                             state,
                             onAction: handleAction,
-                            onTargetModeChange: setTargetMode,
+                            onTargetModeChange: handleTargetModeChange,
                         }}
                         renderCommandPanel={(onClose) => (
                             <CommandPanel
                                 state={state}
                                 onAction={handleAction}
-                                onTargetModeChange={setTargetMode}
+                                onTargetModeChange={handleTargetModeChange}
                                 onClose={onClose}
                                 compact
                             />

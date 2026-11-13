@@ -180,9 +180,9 @@ export type CombatState = {
     round: number;
     teamOrders: TeamOrder[];
     events: CombatEvent[];
-    winner: Side | null;
+    // winner: Side | null;
+    winner: Side | "draw" | null;
     playerSide: Side;
-
     // Phase system
     phase: "player" | "ai";
     isPlayerTurn: boolean;
