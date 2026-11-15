@@ -20,7 +20,7 @@ import CombatFeed from "./components/combatFeed/CombatFeed";
 import { useEffect, useRef, useState } from "react";
 import { LogsIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@base-ui/react";
+import { Separator } from "@/components/ui/separator";
 
 type Props = {
     fightersA: CombatFighter[];
@@ -184,7 +184,7 @@ export default function CinematicCombatView({
                     isPlayerSide={playerSide === "A"}
                     {...teamColumnProps}
                 />
-                <Separator orientation="vertical" className={`size-2 text-foreground`} />
+                <Separator orientation="vertical" className={`w-3 text-white`} />
                 <TeamColumn
                     className="flex-1 min-w-0 h-full"
                     fighters={enrichedB}
