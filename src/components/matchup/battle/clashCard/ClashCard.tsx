@@ -20,10 +20,8 @@ export default function ClashCard(props: ClashCardProps) {
         return <AwaitingCombat />;
     }
 
-    const { log, attacker, defender, activePower } = event;
+    const { log, attacker, defender } = event;
     const eventType = log.type as string;
-
-    console.log(activePower)
 
     switch (eventType) {
         case "battle_end": {

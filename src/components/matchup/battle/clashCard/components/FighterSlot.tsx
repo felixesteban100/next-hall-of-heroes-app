@@ -89,7 +89,6 @@ export default function FighterSlot({
 
     return (
         <div className="relative flex min-w-24 flex-col items-center gap-1.5 sm:min-w-28 sm:gap-2">
-
             <AnimatePresence>
                 {showDamagePopup && damagePopup != null && damagePopup > 0 && (
                     <motion.span
@@ -206,11 +205,11 @@ export default function FighterSlot({
                     </div>
                 )}
 
-                <ScoreBadgeOnCard
+                {/* <ScoreBadgeOnCard
                     entity={fighter.original}
                     score={fighter.overall}
                     side="front"
-                />
+                /> */}
 
                 <ImpactOverlay visible={impactVisible} />
 

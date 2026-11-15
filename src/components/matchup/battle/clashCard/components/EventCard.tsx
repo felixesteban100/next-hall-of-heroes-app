@@ -16,7 +16,7 @@ import type {
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import type { CombatActionType } from "@/components/shared/powerOverlay/PowerOverlay";
 
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { Crosshair, Lock, Shield } from "lucide-react";
 import FighterClash from "./FighterClash";
 import FighterCard from "../../combatArena/components/teamColumn/components/FighterCard";
@@ -178,7 +178,55 @@ export default function EventCard({
             </div>
 
             {/* Character */}
-            {character && (
+            <AnimatePresence mode="wait">
+                {character && (
+                    <motion.div
+                        key={character.id}
+                        initial={{
+                            opacity: 0,
+                            y: 45,
+                            scale: 0.85,
+                            filter: "blur(8px)",
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            filter: "blur(0px)",
+                        }}
+                        exit={{
+                            opacity: 0,
+                            y: -35,
+                            scale: 0.9,
+                            filter: "blur(6px)",
+                        }}
+                        transition={{
+                            duration: 0.55,
+                            delay: 0.5,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
+                    >
+                        <FighterSlot
+                            fighter={character}
+                            roleLabel={presentation.roleLabel}
+                            isTeamA={isTeamA}
+                            action={presentation.action ?? log.actionName as CombatActionType}
+                            showOverlay={true}
+                            badgeColorClass={badgeColor}
+                            activePower={activePower}
+                            healPopup={
+                                presentation.popupType === "heal"
+                                    ? log.healing ?? null
+                                    : null
+                            }
+                            prevHp={character.prevHp}
+                            phase={phase}
+                            isDefender={false}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            {/* {character && (
                 <FighterSlot
                     fighter={character}
                     roleLabel={presentation.roleLabel}
@@ -196,7 +244,7 @@ export default function EventCard({
                     phase={phase}
                     isDefender={false}
                 />
-            )}
+            )} */}
 
             {/* {character &&
                 <FighterCard

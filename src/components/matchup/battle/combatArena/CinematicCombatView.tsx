@@ -122,7 +122,7 @@ export default function CinematicCombatView({
     }, [isDialogOpen]);
 
     return (
-        <div className="flex w-full max-w-full flex-col  overflow-hidden p-1">
+        <div className="flex w-full max-w-full flex-col  overflow-hidden p-1 space-y-3">
             <div style={{ height: 300 }} className="flex w-full">
                 <TeamColumn
                     className="flex-1 min-w-0 h-full"

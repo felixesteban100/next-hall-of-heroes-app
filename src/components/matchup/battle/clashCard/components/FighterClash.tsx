@@ -411,10 +411,10 @@ export default function FighterClash({
                                 className={cn(
                                     "h-[2px] w-full",
                                     isDefend
-                                        ? "bg-cyan-400"
-                                        : roleStyle
-                                            ? roleStyle.border.replace("border-", "bg-")
-                                            : eventStyle.border.replace("border-", "bg-")
+                                        ? "bg-cyan-400" : `bg-${leftIsAttacker ? "primary" : "secondary"}`
+                                    /* : roleStyle
+                                        ? roleStyle.border.replace("border-", "bg-")
+                                        : eventStyle.border.replace("border-", "bg-") */
                                 )}
                             />
 
@@ -424,7 +424,9 @@ export default function FighterClash({
                                     <span
                                         className={cn(
                                             "h-1.5 w-1.5 rounded-full",
-                                            isDefend ? "bg-cyan-400" : "bg-primary"
+                                            // isDefend ? "bg-cyan-400" : "bg-primary"
+                                            isDefend
+                                                ? "bg-cyan-400" : `bg-${leftIsAttacker ? "primary" : "secondary"}`
                                         )}
                                     />
                                     <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -433,7 +435,9 @@ export default function FighterClash({
                                     <span
                                         className={cn(
                                             "h-1.5 w-1.5 rounded-full",
-                                            isDefend ? "bg-cyan-400" : "bg-primary"
+                                            // isDefend ? "bg-cyan-400" : "bg-primary"
+                                            isDefend
+                                                ? "bg-cyan-400" : `bg-${leftIsAttacker ? "primary" : "secondary"}`
                                         )}
                                     />
                                 </div>

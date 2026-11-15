@@ -7,7 +7,7 @@ import { getThemeOverlay } from "./themesOverlays";
 let activeAudioInstance: HTMLAudioElement | null = null;
 const audioCache: Record<string, HTMLAudioElement> = {};
 
-function playOverlaySound(themeKey: ThemeKey) {
+function playOverlaySound(themeKey: ThemeKey, action: CombatActionType) {
     if (typeof window === "undefined") return;
 
     const soundMap: Record<ThemeKey, string> = {
@@ -74,7 +74,7 @@ function playOverlaySound(themeKey: ThemeKey) {
         probability: "/sounds/temporal.mp3"
     };
 
-    const soundPath = soundMap[themeKey] || "/sounds/combat.mp3";
+    const soundPath = soundMap[themeKey] || (action === "attack" ? "/sounds/combat.mp3" : "/sounds/cosmic.mp3");
 
     try {
         if (activeAudioInstance) {
@@ -213,7 +213,7 @@ export default function PowerOverlay({ action, powerName, visible = true, side, 
     // 🚀 Restored audio playback trigger on visibility change
     useEffect(() => {
         if (visible && playSound) {
-            playOverlaySound(key);
+            playOverlaySound(key, action);
         }
     }, [visible, key]);
 
