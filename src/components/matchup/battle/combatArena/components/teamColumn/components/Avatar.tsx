@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
 import { PowerRole } from "@/types";
+import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
 
 function getEventVisual(
     eventType?: string,
@@ -230,6 +231,11 @@ export default function Avatar({
                 )}
                 style={{ width: size, height: size }}
             >
+                <ScoreBadgeOnCard
+                    entity={fighter.original}
+                    score={fighter.overall}
+                    side="front"
+                />
                 <CharacterImage
                     src={fighter.image}
                     alt={fighter.name}

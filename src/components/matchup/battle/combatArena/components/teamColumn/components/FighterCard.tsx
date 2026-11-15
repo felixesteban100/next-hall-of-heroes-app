@@ -6,6 +6,8 @@ import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
 import Avatar from "./Avatar";
 import FighterResourceBar from "./FighterResourceBar";
 import { useIsMobile } from "@/components/shared/SwipeGrid";
+import { useState } from "react";
+import { motion, useAnimationControls } from "framer-motion";
 
 type AvatarProps = ComponentProps<typeof Avatar>;
 
@@ -52,6 +54,44 @@ export default function FighterCard({
     onClick,
     setAvatarRef,
 }: Props) {
+    const shakeControls = useAnimationControls();
+
+    const handleCardClick = () => {
+        if (!isSelectable) {
+            void shakeControls.start({
+                x: [0, -25, 25, -22, 22, -18, 18, -12, 12, 0],
+                rotate: [0, -5, 5, -4, 4, -2, 2, 0],
+                scale: [1, 0.92, 1.05, 0.95, 1],
+                backgroundColor: [
+                    "rgba(239, 68, 68, 0)",
+                    "rgba(239, 68, 68, 0.35)",
+                    "rgba(239, 68, 68, 0.15)",
+                    "rgba(239, 68, 68, 0)",
+                ],
+                borderColor: [
+                    "rgba(239, 68, 68, 0)",
+                    "rgba(239, 68, 68, 1)",
+                    "rgba(239, 68, 68, 1)",
+                    "rgba(239, 68, 68, 0)",
+                ],
+                boxShadow: [
+                    "0 0 0px rgba(239, 68, 68, 0)",
+                    "0 0 30px 8px rgba(239, 68, 68, 0.9)",
+                    "0 0 20px 5px rgba(239, 68, 68, 0.7)",
+                    "0 0 0px rgba(239, 68, 68, 0)",
+                ],
+                transition: {
+                    duration: 0.8,
+                    ease: "easeInOut",
+                },
+            });
+
+            return;
+        }
+
+        onClick();
+    };
+
     const maxHp = fighter.maxHp || 100;
 
     const realCurrentHp = fighter.isAlive
@@ -72,7 +112,7 @@ export default function FighterCard({
     return (
         <div
             ref={setAvatarRef}
-            onClick={onClick}
+            onClick={handleCardClick}
             className={cn(
                 "relative flex flex-col items-center gap-1 p-1 transition-all duration-200 transform-gpu",
                 isSelectable && "cursor-pointer hover:-translate-y-0.5",
@@ -131,22 +171,30 @@ export default function FighterCard({
                     </rect>
                 </svg>
             )}
+            <motion.div
+                animate={shakeControls}
+                className={cn(
+                    "relative flex flex-col items-center gap-1 rounded-lg border border-transparent p-1 cursor-pointer",
+                    isSelectable && "hover:-translate-y-0.5 transition-transform duration-200"
+                )}
+            >
+                <Avatar
+                    // className="relative z-10"
+                    fighter={fighter}
+                    size={avatarSize}
+                    variant={variant}
+                    isAttacking={attackerId === fighter.id}
+                    isBeingHit={targetIds.includes(fighter.id)}
+                    isKO={isKO}
+                    isHealing={latestHeal === fighter.id}
+                    isReviving={latestRevive === fighter.id}
+                    isDefending={latestDefend === fighter.id}
+                    isInvolved={isSelectedActor || isSelectedTarget}
+                    eventType={eventType}
+                    eventRole={eventRole}
+                />
+            </motion.div>
 
-            <Avatar
-                // className="relative z-10"
-                fighter={fighter}
-                size={avatarSize}
-                variant={variant}
-                isAttacking={attackerId === fighter.id}
-                isBeingHit={targetIds.includes(fighter.id)}
-                isKO={isKO}
-                isHealing={latestHeal === fighter.id}
-                isReviving={latestRevive === fighter.id}
-                isDefending={latestDefend === fighter.id}
-                isInvolved={isSelectedActor || isSelectedTarget}
-                eventType={eventType}
-                eventRole={eventRole}
-            />
 
             {/* Phase-synced health bar */}
             <FighterResourceBar

@@ -17,6 +17,7 @@ import { useCombatContext } from "./combatArena/context/CombatContext"
 type Props = {
     onClose?: () => void;
     compact?: boolean;
+    availableHeight?: number;
 };
 
 type Step = "action" | "power" | "hybrid-role" | "target";
@@ -24,6 +25,7 @@ type Step = "action" | "power" | "hybrid-role" | "target";
 export function CommandPanel({
     onClose,
     compact = false,
+    availableHeight,
 }: Props) {
     const {
         state,
@@ -326,16 +328,21 @@ export function CommandPanel({
     return (
         <div
             className={cn(
-                "mx-auto w-full",
-                compact
-                    ? "max-w-none"
-                    : "mt-2 max-w-4xl"
+                "mx-auto flex w-full flex-col",
+                compact ? "max-w-none" : "mt-2 max-w-4xl"
             )}
+            style={
+                compact && availableHeight
+                    ? { maxHeight: availableHeight }
+                    : undefined
+            }
         >
-            <div className={cn(
-                "overflow-hidden rounded-xl border border-white/10 bg-card/95",
-                compact ? "px-2 py-2" : "px-2.5 py-2"
-            )}>
+            <div
+                className={cn(
+                    "flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-card/95",
+                    compact ? "px-2 py-2" : "px-2.5 py-2"
+                )}
+            >
                 {/* Fighter header */}
                 {!compact && (
                     <div className="flex items-center gap-2.5 border-b border-white/10 pb-2">
@@ -398,7 +405,12 @@ export function CommandPanel({
                 )}
 
                 {/* Command content */}
-                <div className={compact ? "p-2" : "p-3 sm:p-4"}>
+                <div
+                    className={cn(
+                        "min-h-0",
+                        compact ? "overflow-y-auto p-2" : "p-3 sm:p-4"
+                    )}
+                >
                     {/* ACTION SELECTION */}
                     {step === "action" && (
                         <div className="space-y-2">
@@ -450,7 +462,7 @@ export function CommandPanel({
 
                     {/* POWER SELECTION */}
                     {step === "power" && (
-                        <div className="flex max-h-[260px] min-h-0 flex-col gap-1.5 overflow-hidden">
+                        <div className="flex min-h-0 flex-col gap-1.5">
                             {/* Header */}
                             <div className="flex items-center justify-between gap-2">
                                 <div className="min-w-0">
@@ -485,13 +497,9 @@ export function CommandPanel({
 
                             {/* Scrollable power list */}
                             <div
-                                className="hide-scrollbar"
+                                className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
                                 style={{
-                                    height: "80px",
-                                    minHeight: "80px",
-                                    maxHeight: "80px",
-                                    overflowY: "auto",
-                                    overflowX: "hidden",
+                                    maxHeight: compact ? undefined : 260,
                                     overscrollBehavior: "contain",
                                 }}
                             >

@@ -5,12 +5,11 @@ import type { CombatPhase } from "../types";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { cn } from "@/lib/utils";
 import { Skull, Lock } from "lucide-react";
-import type { FighterState } from "@/lib/matchup/combat/adapters";
+import type { EnrichedFighter, FighterState } from "@/lib/matchup/combat/adapters";
 import PowerOverlay, {
     type CombatActionType,
 } from "@/components/shared/powerOverlay/PowerOverlay";
 import SyncedHealthBar from "./SyncedHealthBar";
-import { computeMatchScore } from "@/lib/matchup";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
 
 function ImpactOverlay({ visible }: { visible: boolean }) {
@@ -37,7 +36,7 @@ function ImpactOverlay({ visible }: { visible: boolean }) {
 }
 
 interface FighterSlotProps {
-    fighter?: FighterState;
+    fighter?: EnrichedFighter;
     roleLabel: string;
     isTeamA: boolean;
     isKO?: boolean;
@@ -167,11 +166,7 @@ export default function FighterSlot({
                                 : { duration: 0.35 }
                         }
                     >
-                        {/* <ScoreBadgeOnCard
-                            entity={}
-                            score={computeMatchScore(e).overall}
-                            side="front"
-                        /> */}
+
                         <CharacterImage
                             src={fighter.image}
                             alt={fighter.name}
@@ -210,6 +205,12 @@ export default function FighterSlot({
                         />
                     </div>
                 )}
+
+                <ScoreBadgeOnCard
+                    entity={fighter.original}
+                    score={fighter.overall}
+                    side="front"
+                />
 
                 <ImpactOverlay visible={impactVisible} />
 

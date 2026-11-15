@@ -1,4 +1,4 @@
-import type { FallbackItem, Power, PowerRole } from "@/types";
+import type { CharacterWithJoinTeamUniversePowerEnemies, FallbackItem, Power, PowerRole } from "@/types";
 import { resolveActivePower } from "@/lib/matchup/cinematicCombatView"; // or wherever it lives
 import type { LucideIcon } from "lucide-react";
 import type {
@@ -59,6 +59,7 @@ export type EnrichedFighter = FighterState & {
     energy: number;
     maxEnergy: number;
     status: { type: string; duration: number; name: string }[];
+    original: CharacterWithJoinTeamUniversePowerEnemies;
 };
 
 export type ActionEvent = {
@@ -114,6 +115,7 @@ export function toLegacyLog(event: CombatEvent): Log {
 export function toEnrichedFighter(f: CombatFighter, prevHp?: number): EnrichedFighter {
     return {
         // Identity
+        original: f.original,
         id: f.id,
         name: f.name,
 

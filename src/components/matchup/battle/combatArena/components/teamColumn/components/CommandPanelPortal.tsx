@@ -1,4 +1,3 @@
-
 "use client";
 
 import { createPortal } from "react-dom";
@@ -22,6 +21,11 @@ export default function CommandPanelPortal({
 }: Props) {
     if (typeof document === "undefined") return null;
 
+    const availableHeight = Math.max(
+        100,
+        window.innerHeight - position.top - 12
+    );
+
     return createPortal(
         <AnimatePresence mode="popLayout">
             <motion.div
@@ -34,14 +38,15 @@ export default function CommandPanelPortal({
                     stiffness: 500,
                     damping: 22,
                 }}
-                className="absolute z-[100] w-[340px] max-w-[calc(100vw-24px)] max-h-[min(420px,calc(100vh-24px))] overflow-y-auto rounded-xl bg-background shadow-2xl ring-1 ring-border isolate"
+                className="fixed z-[100] w-[340px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-xl bg-background shadow-2xl ring-1 ring-border isolate"
                 style={{
                     top: position.top,
                     left: position.left,
+                    maxHeight: availableHeight,
                 }}
                 onClick={(event) => event.stopPropagation()}
             >
-                <CommandPanel onClose={onClose} compact />
+                <CommandPanel onClose={onClose} compact availableHeight={availableHeight} />
             </motion.div>
         </AnimatePresence>,
         document.body

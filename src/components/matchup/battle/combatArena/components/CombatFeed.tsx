@@ -26,7 +26,7 @@ export default function CombatFeed({ logs }: CombatFeedProps) {
     }, [logs.length]);
 
     return (
-        <div className="flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth h-[80px]">
+        <div style={{ height: 200 }} className="flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth ">
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
                 <span className="flex items-center gap-1.5">
                     <Activity className="size-3.5 animate-pulse text-amber-500" />
@@ -40,7 +40,8 @@ export default function CombatFeed({ logs }: CombatFeedProps) {
 
             <div
                 ref={logRef}
-                className="flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth h-[120px]"
+                style={{ height: 200 }}
+                className="flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 scroll-smooth"
             >
                 {logs.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground/50 italic">

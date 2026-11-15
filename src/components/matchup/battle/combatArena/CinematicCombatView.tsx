@@ -19,6 +19,7 @@ import CombatFeed from "./components/CombatFeed";
 import { useEffect } from "react";
 import { LogsIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@base-ui/react";
 
 type Props = {
     fightersA: CombatFighter[];
@@ -90,17 +91,39 @@ export default function CinematicCombatView({
         };
     }, [dialogEvent, handleClose]);
 
+    useEffect(() => {
+        if (!isDialogOpen) return;
+
+        const scrollY = window.scrollY;
+        const body = document.body;
+        const html = document.documentElement;
+
+        const previousBodyOverflow = body.style.overflow;
+        const previousBodyPosition = body.style.position;
+        const previousBodyTop = body.style.top;
+        const previousBodyWidth = body.style.width;
+        const previousHtmlOverflow = html.style.overflow;
+
+        body.style.overflow = "hidden";
+        body.style.position = "fixed";
+        body.style.top = `-${scrollY}px`;
+        body.style.width = "100%";
+        html.style.overflow = "hidden";
+
+        return () => {
+            body.style.overflow = previousBodyOverflow;
+            body.style.position = previousBodyPosition;
+            body.style.top = previousBodyTop;
+            body.style.width = previousBodyWidth;
+            html.style.overflow = previousHtmlOverflow;
+
+            window.scrollTo(0, scrollY);
+        };
+    }, [isDialogOpen]);
+
     return (
-        <div className="flex w-full max-w-full flex-col gap-2 overflow-hidden p-1">
-            {canReopen && (
-                <Button
-                    onClick={handleOpen}
-                    className="w-[10px]"
-                >
-                    <LogsIcon /> View Last Event
-                </Button>
-            )}
-            <div style={{ height: 300 }} className="flex w-full gap-3 p-2">
+        <div className="flex w-full max-w-full flex-col  overflow-hidden p-1">
+            <div style={{ height: 300 }} className="flex w-full">
                 <TeamColumn
                     className="flex-1 min-w-0 h-full"
                     fighters={enrichedA}
@@ -108,7 +131,7 @@ export default function CinematicCombatView({
                     isPlayerSide={playerSide === "A"}
                     {...teamColumnProps}
                 />
-
+                <Separator orientation="vertical" className={`size-2 text-foreground`} />
                 <TeamColumn
                     className="flex-1 min-w-0 h-full"
                     fighters={enrichedB}
@@ -119,10 +142,15 @@ export default function CinematicCombatView({
             </div>
 
             <CombatFeed logs={visibleLogs} />
-
-
-
-            {/* Dialog ClashCard */}
+            {canReopen && (
+                <Button
+                    style={{ width: 230 }}
+                    className="mx-auto"
+                    onClick={handleOpen}
+                >
+                    <LogsIcon /> View Last Event
+                </Button>
+            )}
 
             {/* Combat Event Dialog */}
             <AnimatePresence>

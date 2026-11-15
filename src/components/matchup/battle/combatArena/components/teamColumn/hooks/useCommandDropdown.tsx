@@ -68,8 +68,8 @@ export function useCommandDropdown({
             );
 
             setDropdownPosition({
-                top: rect.bottom + 8 + window.scrollY,
-                left: viewportLeft + window.scrollX,
+                top: rect.bottom + 8,
+                left: viewportLeft,
             });
         };
 
