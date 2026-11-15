@@ -1,6 +1,6 @@
 
 import { AnimatePresence, motion } from "framer-motion";
-import type { Power } from "@/types";
+import type { Power, PowerRole } from "@/types";
 import type { CombatPhase } from "../types";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ interface FighterSlotProps {
     showOverlay?: boolean;
     isDefender?: boolean;
     badgeColorClass?: string;
-    activePower: Power | { name: string } | undefined;
+    activePower: Power | { name: string, combatRole: PowerRole } | undefined;
     damagePopup?: number | null;
     healPopup?: number | null;
     prevHp?: number;

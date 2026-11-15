@@ -679,7 +679,7 @@ export class CombatEngine {
     return {
       id: this.nextEventId(),
       type: "status_applied",
-      power: { name: "Defense" },
+      power: { name: "Defense", combatRole: "Defensive" },
       powerName: "Defense",
       actorId: actor.id,
       text: `${actor.name} raises a protective shield.`,

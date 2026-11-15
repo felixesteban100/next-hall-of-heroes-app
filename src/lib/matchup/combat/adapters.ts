@@ -1,4 +1,4 @@
-import type { FallbackItem, Power } from "@/types";
+import type { FallbackItem, Power, PowerRole } from "@/types";
 import { resolveActivePower } from "@/lib/matchup/cinematicCombatView"; // or wherever it lives
 import type { LucideIcon } from "lucide-react";
 import type {
@@ -67,7 +67,7 @@ export type ActionEvent = {
     attacker?: EnrichedFighter;
     defender?: EnrichedFighter;
     targets?: EnrichedFighter[];
-    activePower?: Power | { name: string };
+    activePower?: Power | { name: string, combatRole: PowerRole };
 };
 
 // OLD TYPES 
@@ -205,7 +205,7 @@ export function buildActionEvent(
     const log = toLegacyLog(event);
 
     // Prefer the Power object supplied by the combat engine.
-    let activePower: Power | { name: string } | undefined = event.power;
+    let activePower: Power | { name: string, combatRole: PowerRole } | undefined = event.power;
 
     if (!activePower && enrichedAttacker) {
         activePower = resolveActivePower(
