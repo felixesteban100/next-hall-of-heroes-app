@@ -137,7 +137,7 @@ export default function FighterCard({
                     {/* Faint full perimeter track */}
                     <rect
                         x="1.5"
-                        y="2"
+                        y="8"
                         width={frameSize - 3}
                         height={frameSize - 3}
                         rx="12"
@@ -150,7 +150,7 @@ export default function FighterCard({
                     {/* Traveling dash/dot circulating along the border */}
                     <rect
                         x="1.5"
-                        y="1.5"
+                        y="8"
                         width={frameSize - 3}
                         height={frameSize - 3}
                         rx="12"
