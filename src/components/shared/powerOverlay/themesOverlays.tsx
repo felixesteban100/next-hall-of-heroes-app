@@ -14,7 +14,7 @@ import {
     CircleDashed,
     Dices
 } from "lucide-react";
-import { ThemeKey } from ".";
+import { ThemeKey } from "./PowerOverlay";
 
 const iconFx = (IconComponent: React.ElementType, colorClass: string, anim: any) => (
     <motion.div
