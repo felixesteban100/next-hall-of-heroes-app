@@ -67,7 +67,7 @@ export type ActionEvent = {
     attacker?: EnrichedFighter;
     defender?: EnrichedFighter;
     targets?: EnrichedFighter[];
-    activePower?: Power;
+    activePower?: Power | { name: string };
 };
 
 // OLD TYPES 
@@ -205,7 +205,7 @@ export function buildActionEvent(
     const log = toLegacyLog(event);
 
     // Prefer the Power object supplied by the combat engine.
-    let activePower: Power | undefined = event.power;
+    let activePower: Power | { name: string } | undefined = event.power;
 
     if (!activePower && enrichedAttacker) {
         activePower = resolveActivePower(

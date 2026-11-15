@@ -14,7 +14,7 @@ import {
     CircleDashed,
     Dices
 } from "lucide-react";
-import { ThemeKey } from "../PowerOverlay";
+import { ThemeKey } from ".";
 
 const iconFx = (IconComponent: React.ElementType, colorClass: string, anim: any) => (
     <motion.div
@@ -26,7 +26,7 @@ const iconFx = (IconComponent: React.ElementType, colorClass: string, anim: any)
             repeatType: "reverse",
             ease: "easeInOut",
         }}
-        className="absolute inset-0 pointer-events-none overflow-visible z-[99] flex items-center justify-center"
+        className="absolute inset-0 pointer-events-none overflow-visible z-99 flex items-center justify-center"
     >
         <IconComponent className={`w-36 h-36 sm:w-44 sm:h-44 filter drop-shadow-[0_0_25px_currentColor] ${colorClass}`} />
     </motion.div>

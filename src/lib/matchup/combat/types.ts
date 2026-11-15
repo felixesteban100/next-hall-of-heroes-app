@@ -160,7 +160,7 @@ export type CombatEvent = {
     type: CombatEventType;
     actorId?: number;
     targetIds?: number[];
-    power?: Power;
+    power?: Power | { name: string };
     damage?: number;
     healing?: number;
     status?: StatusEffect;

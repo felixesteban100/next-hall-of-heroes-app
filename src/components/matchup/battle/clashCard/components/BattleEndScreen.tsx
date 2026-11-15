@@ -9,12 +9,22 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { BattleMetadata, FighterTelemetry } from "@/lib/matchup/combat/adapters";
+import type {
+    ActionEvent,
+    BattleMetadata,
+    FighterTelemetry,
+} from "@/lib/matchup/combat/adapters";
+
+import type { ElementType, ReactNode } from "react";
 
 // ── Battle-end helpers ────────────────────────────────────────────────────────
 
 function StatBar({ value, max = 100, colorClass }: { value: number; max?: number; colorClass: string }) {
-    const pct = Math.min(100, Math.round((value / max) * 100));
+    const safeMax = Math.max(1, max);
+    const pct = Math.max(
+        0,
+        Math.min(100, Math.round((value / safeMax) * 100))
+    );
     return (
         <div className="h-1 w-full rounded-full bg-muted/30 overflow-hidden">
             <motion.div
@@ -27,7 +37,7 @@ function StatBar({ value, max = 100, colorClass }: { value: number; max?: number
     );
 }
 
-function MiniStat({ label, value, Icon, color }: { label: string; value: string | number; Icon: React.ElementType; color: string }) {
+function MiniStat({ label, value, Icon, color }: { label: string; value: string | number; Icon: ElementType; color: string }) {
     return (
         <div className="flex items-center gap-1">
             <Icon className={cn("size-2.5 shrink-0", color)} />
@@ -80,9 +90,6 @@ function TeamSection({
     variant: "primary" | "secondary";
 }) {
     const accent = variant === "primary" ? "text-primary" : "text-secondary";
-    // const border = variant === "primary" ? "border-primary/30" : "border-secondary/30";
-    // const bg = variant === "primary" ? "bg-primary/5" : "bg-secondary/5";
-
     const totalDmg = fighters.reduce((s, f) => s + f.damageDealt, 0);
     const totalBlk = fighters.reduce((s, f) => s + f.damageBlocked, 0);
     const totalHeal = fighters.reduce((s, f) => s + f.healingDone, 0);
@@ -92,7 +99,7 @@ function TeamSection({
 
     return (
         /* rounded-xl border bg, border */
-        <div className={cn("flex flex-col gap-1.5 p-2 ",)}>
+        <div className="flex flex-col gap-1.5 p-2">
             <div className="flex items-center justify-between">
                 <span className={cn("text-[8px] font-black uppercase tracking-widest", accent)}>{label}</span>
                 <div className="flex gap-2">
@@ -137,11 +144,11 @@ function Accordion({
 }: {
     sectionKey: SectionKey;
     label: string;
-    icon: React.ElementType;
+    icon: ElementType;
     iconColor: string;
     open: boolean;
     onToggle: (k: SectionKey) => void;
-    children: React.ReactNode;
+    children: ReactNode;
 }) {
     return (
         <div className={cn("relative", open ? "z-50" : "z-0")}>
@@ -197,17 +204,20 @@ function Accordion({
 
 
 // ── Battle End Screen (finish / rout) ────────────────────────────────────────
-export function BattleEndScreen({ isVictory, log, meta }: {
+export function BattleEndScreen({
+    isVictory,
+    log,
+    meta,
+}: {
     isVictory: boolean;
-    log: any;
+    log: ActionEvent["log"];
     meta: BattleMetadata | undefined;
 }) {
     const [open, setOpen] = useState<SectionKey | null>(null);
     const toggle = (k: SectionKey) => setOpen(prev => prev === k ? null : k);
 
     return (
-        <div className="flex flex-col gap-1.5 py-2 px-2 w-full h-full overflow-y-auto [scrollbar-width:none]">
-
+        <div className="flex flex-col gap-1.5 py-2 px-2 mx-auto max-w-xl h-full overflow-y-auto [scrollbar-width:none]">
             {/* ── Always-visible banner ── */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.85 }}

@@ -10,8 +10,8 @@ import { LoadingLink } from "./LoadingLink";
 import ScoreBadgeOnCard from "./ScoreBadgeOnCard";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, Team, Universe } from "@/types";
 import { motion } from "framer-motion"
-import { getThemeDetails } from "../matchup/battle_2/combatArena/cinematicCombatView/clashCard/powerOverlay/themesOverlays";
-import { getThemeKey } from "../matchup/battle_2/combatArena/cinematicCombatView/clashCard/PowerOverlay";
+import { getThemeDetails } from "./powerOverlay/themesOverlays";
+import { getThemeKey } from "./powerOverlay/PowerOverlay";
 
 export type StatColumn = {
     icon: React.ElementType;

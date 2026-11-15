@@ -21,16 +21,14 @@ export function StatsRadar({
     data,
     nameA = "A",
     nameB = "B",
-    showA,
-    showB,
+    visible,
 }: {
     data: PointRadar[];
     nameA?: string;
     nameB?: string;
-    showA: boolean;
-    showB: boolean;
+    visible: boolean;
 }) {
-    if (!showA && !showB) {
+    if (visible) {
         return (
             <p className="text-center text-sm text-muted-foreground py-8">
                 Select characters to see stats radar
@@ -49,40 +47,36 @@ export function StatsRadar({
                         className="text-muted-foreground"
                     />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    {showA && (
-                        <Radar
-                            // name={nameA}
-                            // dataKey="A"
-                            // stroke="hsl(var(--primary))"
-                            // fill="hsl(var(--primary))"
-                            // fillOpacity={0.3}
-                            // strokeWidth={2}
-                            name={nameA}
-                            dataKey="A"
-                            stroke={COLOR_A}
-                            fill={COLOR_A}
-                            fillOpacity={0.3}
-                            strokeWidth={2}
-                            dot={{ r: 3, fill: COLOR_A }}
-                        />
-                    )}
-                    {showB && (
-                        <Radar
-                            // name={nameB}
-                            // dataKey="B"
-                            // stroke="hsl(var(--secondary))"
-                            // fill="hsl(var(--secondary))"
-                            // fillOpacity={0.3}
-                            // strokeWidth={2}
-                            name={nameB}
-                            dataKey="B"
-                            stroke={COLOR_B}
-                            fill={COLOR_B}
-                            fillOpacity={0.3}
-                            strokeWidth={2}
-                            dot={{ r: 3, fill: COLOR_B }}
-                        />
-                    )}
+                    <Radar
+                        // name={nameA}
+                        // dataKey="A"
+                        // stroke="hsl(var(--primary))"
+                        // fill="hsl(var(--primary))"
+                        // fillOpacity={0.3}
+                        // strokeWidth={2}
+                        name={nameA}
+                        dataKey="A"
+                        stroke={COLOR_A}
+                        fill={COLOR_A}
+                        fillOpacity={0.3}
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: COLOR_A }}
+                    />
+                    <Radar
+                        // name={nameB}
+                        // dataKey="B"
+                        // stroke="hsl(var(--secondary))"
+                        // fill="hsl(var(--secondary))"
+                        // fillOpacity={0.3}
+                        // strokeWidth={2}
+                        name={nameB}
+                        dataKey="B"
+                        stroke={COLOR_B}
+                        fill={COLOR_B}
+                        fillOpacity={0.3}
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: COLOR_B }}
+                    />
                     <Legend
                         formatter={(value) => (
                             <span className="text-muted-foreground text-xs">{value}</span>

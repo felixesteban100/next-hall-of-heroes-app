@@ -1,102 +1,116 @@
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
-import type { CombatState, CombatAction, Row } from "@/lib/matchup/combat/types";
 import type { Power, PowerRole } from "@/types";
 import { cn } from "@/lib/utils";
-import { Swords, Shield, ArrowLeftRight, SkipForward, Zap, HeartPulse, Lock } from "lucide-react";
+import {
+    Swords,
+    Shield,
+    Zap,
+    HeartPulse,
+    Lock,
+    Key,
+} from "lucide-react";
 import { combatRoleConfig } from "@/lib/matchup/combat/combatRole";
+import { useCombatContext } from "./combatArena/context/CombatContext"
 
 type Props = {
-    state: CombatState;
-    onAction: (action: CombatAction) => void;
-    onTargetModeChange?: (
-        targetState: {
-            active: boolean;
-            validIds: number[];
-            onConfirm: (targetId: number) => void;
-        } | null
-    ) => void;
     onClose?: () => void;
     compact?: boolean;
 };
 
 type Step = "action" | "power" | "hybrid-role" | "target";
 
+export function CommandPanel({
+    onClose,
+    compact = false,
+}: Props) {
+    const {
+        state,
+        onAction,
+        onTargetModeChange,
+    } = useCombatContext();
 
-export function CommandPanel({ state, onAction, onTargetModeChange, onClose, compact = false, }: Props) {
     const [step, setStep] = useState<Step>("action");
     const [selectedPowerId, setSelectedPowerId] = useState<number | null>(null);
     const [chosenRole, setChosenRole] = useState<PowerRole | null>(null);
 
     const actor = useMemo(() => {
-        return state.fighters.find((f) => f.id === state.selectedActorId) ?? null;
-    }, [state.fighters, state.selectedActorId]);
+        if (!state) return null;
+
+        return (
+            state.fighters.find(
+                (fighter) => fighter.id === state.selectedActorId
+            ) ?? null
+        );
+    }, [state]);
 
     const selectedPower = useMemo(() => {
         if (!actor || selectedPowerId == null) return null;
-        return actor.powers.find((p) => p.id === selectedPowerId) ?? null;
+
+        return (
+            actor.powers.find((power) => power.id === selectedPowerId) ??
+            null
+        );
     }, [actor, selectedPowerId]);
 
     const enemies = useMemo(() => {
-        if (!actor) return [];
-        return state.fighters.filter((f) => f.side !== actor.side && f.isAlive);
-    }, [state.fighters, actor]);
-
-    const allies = useMemo(() => {
-        if (!actor) return [];
+        if (!actor || !state) return [];
 
         return state.fighters.filter(
-            (fighter) =>
-                fighter.side === actor.side &&
-                fighter.isAlive
+            (fighter) => fighter.side !== actor.side && fighter.isAlive
         );
-    }, [state.fighters, actor]);
+    }, [state, actor]);
+
+    const allies = useMemo(() => {
+        if (!actor || !state) return [];
+
+        return state.fighters.filter(
+            (fighter) => fighter.side === actor.side && fighter.isAlive
+        );
+    }, [state, actor]);
 
     const healingTargets = useMemo(() => {
-        if (!actor) return [];
+        if (!actor || !state) return [];
 
         return state.fighters.filter((fighter) => {
             if (fighter.side !== actor.side) return false;
 
-            // Living fighters can heal injured living allies.
             if (actor.isAlive) {
                 return fighter.isAlive && fighter.currentHp < fighter.maxHp;
             }
 
-            // A KO'd fighter can only select themselves for revival.
             return (
                 fighter.id === actor.id &&
                 !fighter.isAlive &&
                 !fighter.hasRevived
             );
         });
-    }, [state.fighters, actor]);
+    }, [state, actor]);
 
     const isUtilityPower = useCallback(
-        (power: Power | null) => power?.combatRole === "Utility",
+        (power: Power | null, role?: PowerRole | null) =>
+            role === "Utility" || power?.combatRole === "Utility",
         []
     );
 
-    const isHealingPower = useCallback(
-        (power: Power | null) => {
-            if (!power) return false;
-            const name = power.name.toLowerCase();
-            return (
-                name.includes("heal") ||
-                name.includes("regeneration") ||
-                name.includes("healing factor") ||
-                name.includes("recovery")
-                ||
-                name.includes("immort")
-            );
-        },
-        []
-    );
+    const isHealingPower = useCallback((power: Power | null) => {
+        if (!power) return false;
+
+        const name = power.name.toLowerCase();
+
+        return (
+            name.includes("heal") ||
+            name.includes("regen") ||
+            name.includes("healing factor") ||
+            name.includes("recovery") ||
+            name.includes("immort")
+        );
+    }, []);
 
     const isSupportPower =
         isHealingPower(selectedPower) ||
-        isUtilityPower(selectedPower);
+        isUtilityPower(selectedPower, chosenRole);
 
     const showAllies = isSupportPower;
 
@@ -105,7 +119,7 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
         setStep("action");
         setSelectedPowerId(null);
         setChosenRole(null);
-    }, [state.selectedActorId]);
+    }, [state?.selectedActorId]);
 
     const handleSelectTarget = useCallback((targetId: number) => {
         if (!actor) return;
@@ -134,26 +148,28 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
 
 
     useEffect(() => {
-        if (!onTargetModeChange) return;
+        if (!state) {
+            onTargetModeChange(null);
+            return;
+        }
 
         if (step === "target" && actor) {
-            const validTargets = isUtilityPower(selectedPower)
+            const validTargets = isUtilityPower(selectedPower, chosenRole)
                 ? allies
                 : showAllies
                     ? healingTargets
                     : enemies;
 
-            const validIds = validTargets.map((fighter) => fighter.id);
-
             onTargetModeChange({
                 active: true,
-                validIds,
+                validIds: validTargets.map((fighter) => fighter.id),
                 onConfirm: handleSelectTarget,
             });
         } else {
             onTargetModeChange(null);
         }
     }, [
+        state,
         step,
         actor,
         showAllies,
@@ -161,12 +177,13 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
         allies,
         enemies,
         selectedPower,
+        chosenRole,
         isUtilityPower,
         handleSelectTarget,
         onTargetModeChange,
     ]);
 
-    if (!state.isPlayerTurn || state.winner) return null;
+    if (!state || !state.isPlayerTurn || state.winner) return null;
 
     if (!actor) {
         return (
@@ -240,15 +257,17 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
     };
 
     const handleChooseHybridRole = (role: PowerRole) => {
+        if (selectedPowerId === null) return;
+
         setChosenRole(role);
 
         if (role === "Defensive") {
             onAction({
                 type: "use_power",
                 actorId: actor.id,
-                powerId: selectedPowerId!,
+                powerId: selectedPowerId,
                 targetIds: [actor.id],
-                chosenRole: "Defensive",
+                chosenRole: role,
             });
 
             setStep("action");
@@ -257,7 +276,6 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
             return;
         }
 
-        // Offensive → go to target selection.
         setStep("target");
     };
 
@@ -287,16 +305,16 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
         return Math.round(14 + tier * 5 + score * 0.18);
     };
 
-    const hpPercent = actor
+    const hpPercent = actor.maxHp > 0
         ? Math.max(0, Math.min(100, (actor.currentHp / actor.maxHp) * 100))
         : 0;
 
-    const energyPercent = actor
+    const energyPercent = actor.maxEnergy > 0
         ? Math.max(0, Math.min(100, (actor.energy / actor.maxEnergy) * 100))
         : 0;
 
     const targetDescription = showAllies
-        ? isUtilityPower(selectedPower)
+        ? isUtilityPower(selectedPower, chosenRole)
             ? "Choose yourself or a living ally"
             : "Choose an injured ally in the arena"
         : "Choose an opponent in the arena";
@@ -306,12 +324,14 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
     // ── Render ──────────────────────────────────────────────────
 
     return (
-        <div className={cn(
-            "mx-auto w-full",
-            compact
-                ? "max-w-none"
-                : "mt-2 max-w-4xl"
-        )}>
+        <div
+            className={cn(
+                "mx-auto w-full",
+                compact
+                    ? "max-w-none"
+                    : "mt-2 max-w-4xl"
+            )}
+        >
             <div className={cn(
                 "overflow-hidden rounded-xl border border-white/10 bg-card/95",
                 compact ? "px-2 py-2" : "px-2.5 py-2"
@@ -376,7 +396,6 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
                         </div>
                     </div>
                 )}
-
 
                 {/* Command content */}
                 <div className={compact ? "p-2" : "p-3 sm:p-4"}>
@@ -614,6 +633,24 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
                                     <Shield className="size-3.5" />
                                     Defensive
                                 </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleChooseHybridRole("Control")}
+                                    className="flex items-center justify-center gap-1.5 rounded-md border border-purple-500/20 bg-purple-500/5 px-2 py-2 text-xs font-medium text-purple-400 transition hover:bg-purple-500/10"
+                                >
+                                    <Lock className="size-3.5" />
+                                    Control
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleChooseHybridRole("Utility")}
+                                    className="flex items-center justify-center gap-1.5 rounded-md border border-green-500/20 bg-green-500/5 px-2 py-2 text-xs font-medium text-green-400 transition hover:bg-green-500/10"
+                                >
+                                    <Key className="size-3.5" />
+                                    Utility
+                                </button>
                             </div>
                         </div>
                     )}
@@ -647,15 +684,12 @@ export function CommandPanel({ state, onAction, onTargetModeChange, onClose, com
                             </div>
 
                             <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2">
-                                {showAllies ? (
-                                    <HeartPulse className="size-4 shrink-0 text-primary" />
-                                ) : (
-                                    <Swords className="size-4 shrink-0 text-primary" />
-                                )}
-
                                 <div className="min-w-0">
                                     <p className="text-xs font-medium">
-                                        {showAllies ? "Select an ally" : "Select an enemy"}
+                                        {isUtilityPower(selectedPower, chosenRole) ||
+                                            isHealingPower(selectedPower)
+                                            ? "Select an ally"
+                                            : "Select an enemy"}
                                     </p>
                                     <p className="text-[10px] text-muted-foreground">{targetDescription}</p>
                                 </div>

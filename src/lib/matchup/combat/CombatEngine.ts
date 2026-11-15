@@ -8,6 +8,7 @@ import type {
   StatusEffect,
   BattleMetadata,
   FighterTelemetry,
+  StatusEffectType,
 } from "./types";
 import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { computeMatchScore } from "@/lib/matchup/scoringUtils";
@@ -481,23 +482,24 @@ export class CombatEngine {
 
     // UTILITY — FOCUS
     if (role === "Utility") {
+      const targetId = targetIds[0] ?? actor.id;
+
       const target = this.state.fighters.find(
-        (fighter) =>
-          fighter.id === (targetIds[0] ?? actor.id) &&
-          fighter.isAlive &&
-          fighter.side === actor.side
+        (fighter) => fighter.id === targetId
       );
 
-      if (!target) return [];
+      if (!target || !target.isAlive || target.side !== actor.side) {
+        return [];
+      }
 
       spendPower();
 
-      const focusStatus = {
-        id: `focus-${target.id}-${power.id}-${Date.now()}`,
-        type: "focus" as const,
-        name: "Focused",
+      const focusStatus: StatusEffect = {
+        id: `focus-${this.nextEventId()}`,
+        type: "focus",
+        name: "Focus",
         duration: 2,
-        value: 0.40,
+        value: 0.4,
         sourceId: actor.id,
       };
 
@@ -506,15 +508,12 @@ export class CombatEngine {
       return [{
         id: this.nextEventId(),
         type: "status_applied",
+        power,
         actorId: actor.id,
         targetIds: [target.id],
-        power,
         status: focusStatus,
-        text: `${actor.name} uses [${power.name}] and grants ${target.name} Focus! Their next damaging attack is empowered by ${focusStatus.value * 100}%!`,
+        text: `${target.name} gained Focus!`,
         side: actor.side,
-        attackerName: actor.name,
-        defenderName: target.name,
-        powerName: power.name,
       }];
     }
 
@@ -617,20 +616,30 @@ export class CombatEngine {
       }];
     }
 
-    const focusStatus = actor.status.find(
+    // Calculate bonus from ALL active Focus stacks.
+    const focusStacks = actor.status.filter(
       (status) => status.type === "focus" && status.duration > 0
     );
 
-    const finalDamage = focusStatus
-      ? Math.round(damage * (1 + focusStatus.value))
-      : damage;
+    const totalFocusBonus = focusStacks.reduce(
+      (total, status) => total + status.value,
+      0
+    );
+
+    const finalDamage = Math.round(
+      damage * (1 + totalFocusBonus)
+    );
 
     target.currentHp = Math.max(0, target.currentHp - finalDamage);
 
     // Consume Focus only after damage successfully lands.
-    if (focusStatus) {
+    if (focusStacks.length > 0) {
+      const focusIds = new Set(
+        focusStacks.map((status) => status.id)
+      );
+
       actor.status = actor.status.filter(
-        (status) => status.id !== focusStatus.id
+        (status) => !focusIds.has(status.id)
       );
     }
 
@@ -647,7 +656,7 @@ export class CombatEngine {
       targetIds: [target.id],
       power,
       damage: finalDamage,
-      text: `${actor.name} unleashes [${power.name}] on ${target.name} for ${finalDamage} damage${focusStatus ? " (FOCUS BONUS!)" : ""}${isKO ? " — KO!" : "!"}`,
+      text: `${actor.name} unleashes [${power.name}] on ${target.name} for ${finalDamage} damage${focusStacks.length > 0 ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)` : ""}${isKO ? " — KO!" : "!"}`,
       side: actor.side,
       isKO,
       attackerName: actor.name,
@@ -670,6 +679,8 @@ export class CombatEngine {
     return {
       id: this.nextEventId(),
       type: "status_applied",
+      power: { name: "Defense" },
+      powerName: "Defense",
       actorId: actor.id,
       text: `${actor.name} raises a protective shield.`,
       side: actor.side,
@@ -877,6 +888,7 @@ export class CombatEngine {
   private afterAIAction(actorId: number) {
     this.state.availableAIIds = [];
     this.state.selectedTargetId = null;
+    this.state.selectedActorId = null;
     // 🌟 Safely tick down cooldowns and advance round
     this.advanceRoundAndTickCooldowns();
   }
@@ -909,31 +921,20 @@ export class CombatEngine {
 
 
   chooseAIAction(): CombatAction | null {
-    if (this.state.phase !== "ai" || this.state.availableAIIds.length === 0) {
-      return null;
-    }
+    if (this.state.phase !== "ai") return null;
 
-    const candidates = this.state.availableAIIds
+    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
+
+    const candidates = this.getActionableIds(aiSide)
       .map((id) => this.getFighter(id))
-      .filter(
-        (f): f is CombatFighter =>
-          !!f &&
-          (f.isAlive || this.canSelfRevive(f)) &&
-          !f.status.some(
-            (status) => status.type === "stun" && status.duration > 0
-          )
-      );
+      .filter((f): f is CombatFighter => !!f);
 
     if (candidates.length === 0) return null;
 
     // Prioritize KO'd characters who can revive themselves.
-    const revivalCandidates = candidates.filter(
-      (fighter) => !fighter.isAlive && this.canSelfRevive(fighter)
-    );
+    const revivalCandidates = candidates.filter((fighter) => !fighter.isAlive && this.canSelfRevive(fighter));
 
-    const livingCandidates = candidates.filter(
-      (fighter) => fighter.isAlive
-    );
+    const livingCandidates = candidates.filter((fighter) => fighter.isAlive);
 
     const actor = revivalCandidates.length > 0
       ? revivalCandidates[Math.floor(Math.random() * revivalCandidates.length)]
@@ -941,6 +942,8 @@ export class CombatEngine {
 
     if (!actor) return null;
 
+    // console.log(actor.id)
+    // this.selectActor(actor.id);
     this.regenerateEnergy(actor);
 
     // A KO'd AI character can only perform self-revival.
@@ -978,11 +981,9 @@ export class CombatEngine {
 
     if (enemies.length === 0) return null;
 
-    const randomEnemy =
-      enemies[Math.floor(Math.random() * enemies.length)];
+    const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
 
-    const randomAlly =
-      allies[Math.floor(Math.random() * allies.length)];
+    // const randomAlly = allies[Math.floor(Math.random() * allies.length)];
 
     const possibleActions: CombatAction[] = [
       {
@@ -1086,16 +1087,15 @@ export class CombatEngine {
     };
   }
 
-  // private applyStatus(fighter: CombatFighter, status: StatusEffect) {
-  //   fighter.status = fighter.status.filter((s) => s.type !== status.type);
-  //   fighter.status.push(status);
-  // }
-
   private applyStatus(fighter: CombatFighter, status: StatusEffect) {
-    // Allow shields to stack infinitely; overwrite other status types to refresh them
-    if (status.type !== "shield") {
-      fighter.status = fighter.status.filter((s) => s.type !== status.type);
+    const stackableStatuses: StatusEffectType[] = ["shield", "focus"];
+
+    if (!stackableStatuses.includes(status.type)) {
+      fighter.status = fighter.status.filter(
+        (s) => s.type !== status.type
+      );
     }
+
     fighter.status.push(status);
   }
 

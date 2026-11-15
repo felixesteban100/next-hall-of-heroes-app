@@ -16,7 +16,7 @@ import { TeamProfileSlot } from "./stats/TeamProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/matchup";
 import { PowerFormulaTab } from "./PowerFormulaTab";
 import { RivalryMatrixCard } from "./RivalryMatrixCard";
-import { CombatArena } from "./battle_2/CombatArena";
+import { CombatArena } from "./battle/combatArena/CombatArena";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";
@@ -42,17 +42,17 @@ type CharacterComparatorViewProps = {
 }
 
 export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA, entitiesB, entityAName, entityBName, idsA, idsB }: CharacterComparatorViewProps) {
-    const [showPredictionOverlay, setShowPredictionOverlay] = useState<boolean>(true);
+    // const [showPredictionOverlay, setShowPredictionOverlay] = useState<boolean>(true);
     const [activeTab, setActiveTab] = useState<CompareTab>("combat");
 
     // Create a composite key that changes whenever IDs, team lists, or modes change
-    const matchKey = `${mode}-${idsA}-${idsB}`;
+    // const matchKey = `${mode}-${idsA}-${idsB}`;
 
     // Reset prediction overlay and tab to 'overview' every time the match context changes
-    useEffect(() => {
+    /* useEffect(() => {
         setShowPredictionOverlay(true);
         setActiveTab("overview");
-    }, [matchKey]);
+    }, [matchKey]); */
 
     // Determine actual winner based on overall scores calculated by your backend/lib
     const actualWinner = useMemo(() => {
@@ -105,7 +105,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     return (
         <>
             <div className="relative w-full max-w-5xl">
-                {(hasBothSides && showPredictionOverlay) && (
+                {/* {(hasBothSides && showPredictionOverlay) && (
                     <MatchPredictionOverlay
                         entityAName={entityAName}
                         entityBName={entityBName}
@@ -114,9 +114,9 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                         actualWinner={actualWinner}
                         onReveal={() => setShowPredictionOverlay(false)}
                     />
-                )}
-
-                <div className={`transition-all duration-500 ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 overflow-hidden" : "opacity-100 max-h-none"}`}>
+                )} */}
+                {/* ${hasBothSides && showPredictionOverlay ? "filter blur-md pointer-events-none select-none opacity-50 overflow-hidden" : "opacity-100 max-h-none"} */}
+                <div className={`transition-all duration-500 max-h-none`}>
                     {/* Tab bar */}
                     <div className="flex gap-1 mb-4 border-b border-muted-foreground/20">
                         {TABS.map(tab => (
@@ -231,7 +231,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                                         Stats radar
                                     </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} showA={!showPredictionOverlay} showB={!showPredictionOverlay} />
+                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} visible={hasBothSides} />
                                 </div>
                             </div>
                         </div>

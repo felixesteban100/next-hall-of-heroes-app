@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { getThemeOverlay } from "./powerOverlay/themesOverlays";
+import { getThemeOverlay } from "./themesOverlays";
 
 // Global singleton tracker to ensure only one overlay sound plays at any time
 let activeAudioInstance: HTMLAudioElement | null = null;
@@ -130,7 +130,7 @@ export function getThemeKey(action: CombatActionType, powerName?: string): Theme
     /* weapon proficiency???  */
     if (/\b(heal|rege)/.test(n)) return "heal";
     if (/\b(immor)/.test(n)) return "revive";
-    if (/\b(dura)/.test(n)) return "defend";
+    if (/\b(dura|defense)/.test(n)) return "defend";
 
     if (/\b(proba)/.test(n)) return "probability"
     if (/\b(cursed energy)/.test(n)) return "cursedEnergy";
