@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type {
     CombatFighter,
     CombatEvent,
+    Side,
 } from "@/lib/matchup/combat/types";
 
 import type {
@@ -12,11 +13,11 @@ import type {
 } from "@/types";
 
 import TeamColumn from "./components/teamColumn/TeamColumn";
-import ClashCard from "../clashCard/ClashCard";
+import ClashCard from "./components/clashCard/ClashCard";
 import { useCombatDialog } from "./hooks/useCombatDialog";
 import { useCombatPresentation } from "./hooks/useCombatPresentation";
-import CombatFeed from "./components/CombatFeed";
-import { useEffect } from "react";
+import CombatFeed from "./components/combatFeed/CombatFeed";
+import { useEffect, useRef, useState } from "react";
 import { LogsIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@base-ui/react";
@@ -29,6 +30,8 @@ type Props = {
     teamBChars: CharacterWithJoinTeamUniversePowerEnemies[];
     playerSide: "A" | "B";
     previousHpById: Record<number, number>;
+    battleStarted: boolean;
+    onStartBattle: (firstSide: Side) => void;
 };
 
 export default function CinematicCombatView({
@@ -39,7 +42,57 @@ export default function CinematicCombatView({
     teamBChars,
     playerSide,
     previousHpById,
+    battleStarted,
+    onStartBattle,
 }: Props) {
+    const [isRolling, setIsRolling] = useState(false);
+
+    const [diceResult, setDiceResult] = useState<{
+        a: number;
+        b: number;
+        winner: Side;
+    } | null>(null);
+
+    const diceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (diceTimerRef.current) {
+                clearTimeout(diceTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handleStartClick = () => {
+        if (isRolling || battleStarted) return;
+
+        setIsRolling(true);
+        setDiceResult(null);
+
+        let diceA = 0;
+        let diceB = 0;
+
+        // Reroll automatically if both dice tie.
+        do {
+            diceA = Math.floor(Math.random() * 6) + 1;
+            diceB = Math.floor(Math.random() * 6) + 1;
+        } while (diceA === diceB);
+
+        const winner: Side = diceA > diceB ? "A" : "B";
+
+        diceTimerRef.current = setTimeout(() => {
+            setDiceResult({
+                a: diceA,
+                b: diceB,
+                winner,
+            });
+
+            setIsRolling(false);
+
+            onStartBattle(winner);
+        }, 1300);
+    };
+
     const {
         enrichedA,
         enrichedB,
@@ -142,14 +195,106 @@ export default function CinematicCombatView({
             </div>
 
             <CombatFeed logs={visibleLogs} />
-            {canReopen && (
-                <Button
-                    style={{ width: 230 }}
-                    className="mx-auto"
-                    onClick={handleOpen}
-                >
-                    <LogsIcon /> View Last Event
-                </Button>
+            {!battleStarted ? (
+                <div className="flex flex-col items-center gap-3 py-2">
+                    <AnimatePresence mode="wait">
+                        {isRolling && (
+                            <motion.div
+                                key="rolling"
+                                className="flex items-center gap-8"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                            >
+                                <motion.div
+                                    className="flex size-16 items-center justify-center rounded-xl border border-primary/40 bg-card text-3xl font-bold shadow-lg"
+                                    animate={{
+                                        rotate: [0, 180, 360, 540, 720],
+                                        scale: [1, 1.15, 1],
+                                    }}
+                                    transition={{
+                                        duration: 1.3,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    🎲
+                                </motion.div>
+
+                                <motion.div
+                                    className="flex size-16 items-center justify-center rounded-xl border border-primary/40 bg-card text-3xl font-bold shadow-lg"
+                                    animate={{
+                                        rotate: [0, -180, -360, -540, -720],
+                                        scale: [1, 1.15, 1],
+                                    }}
+                                    transition={{
+                                        duration: 1.3,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    🎲
+                                </motion.div>
+                            </motion.div>
+                        )}
+
+                        {/* {!isRolling && diceResult && (
+                            <motion.div
+                                key="result"
+                                className="flex flex-col items-center gap-2"
+                                initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ type: "spring", stiffness: 250, damping: 18 }}
+                            >
+                                <div className="flex items-center gap-8">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-muted-foreground">
+                                            Team A
+                                        </span>
+                                        <div className="flex size-14 items-center justify-center rounded-xl border border-border bg-card text-2xl font-bold">
+                                            {diceResult.a}
+                                        </div>
+                                    </div>
+
+                                    <span className="text-sm font-bold text-muted-foreground">
+                                        VS
+                                    </span>
+
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-muted-foreground">
+                                            Team B
+                                        </span>
+                                        <div className="flex size-14 items-center justify-center rounded-xl border border-border bg-card text-2xl font-bold">
+                                            {diceResult.b}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p className="text-sm font-semibold">
+                                    Team {diceResult.winner} goes first!
+                                </p>
+                            </motion.div>
+                        )} */}
+                    </AnimatePresence>
+
+                    {!isRolling && !diceResult && (
+                        <Button
+                            style={{ width: 230 }}
+                            className="mx-auto animate-bounce"
+                            onClick={handleStartClick}
+                        >
+                            🎲 Start Battle
+                        </Button>
+                    )}
+                </div>
+            ) : (
+                canReopen && (
+                    <Button
+                        style={{ width: 230 }}
+                        className="mx-auto"
+                        onClick={handleOpen}
+                    >
+                        <LogsIcon /> View Last Event
+                    </Button>
+                )
             )}
 
             {/* Combat Event Dialog */}
@@ -177,7 +322,7 @@ export default function CinematicCombatView({
                             className="relative z-10 flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-background/95 shadow-2xl sm:rounded-2xl"
                             style={{
                                 width: "min(calc(90vw - 16px), 900px)",
-                                height: "min(calc(90dvh - 16px), 800px)",
+                                height: "min(calc(70dvh - 16px), 800px)",
                             }}
                             initial={{
                                 opacity: 0,

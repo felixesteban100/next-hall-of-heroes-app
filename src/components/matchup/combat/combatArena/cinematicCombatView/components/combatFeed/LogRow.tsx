@@ -124,7 +124,7 @@ export default function LogRow({ log }: { log: Log }) {
     const style = LOG_STYLES[log.type] ?? {
         Icon: log.icon ?? Swords,
         leftBorder:
-            log.variant === "primary"
+            log.side === "A"
                 ? "border-l-primary"
                 : "border-l-secondary",
         labelColor:
@@ -133,7 +133,7 @@ export default function LogRow({ log }: { log: Log }) {
                 ? "text-primary"
                 : "text-secondary"),
         label: "EVENT",
-    };
+    }
 
     const { Icon, leftBorder, labelColor, label } = style;
 
@@ -146,11 +146,10 @@ export default function LogRow({ log }: { log: Log }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.18 }}
             className={cn(
-                "flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2",
-                "rounded-r-lg border-l-2 bg-muted/15",
-                "text-[10px] sm:text-[11px]",
+                "flex min-w-0 items-center gap-2 rounded-r-lg border-l-[3px] bg-muted/15 px-2.5 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-[11px]",
                 leftBorder
             )}
+            style={{ borderLeft: "5px solid #ff0000" }}
         >
             {/* Event icon */}
             <Icon

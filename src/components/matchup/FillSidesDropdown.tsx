@@ -52,19 +52,46 @@ export function FillSidesDropdown({
             let finalA = [...curA];
             let finalB = [...curB];
 
+            const replacing = type === "replace";
+
+            // Process Team A
             if (target === "A" || target === "both") {
-                const count = type === "replace" ? (curA.length > 0 ? curA.length : MAX_TEAM_SIZE) : Math.max(0, MAX_TEAM_SIZE - curA.length);
-                const exclude = type === "replace" ? [] : curA;
-                const newIds = count > 0 ? await sampleCharacterIds(count, exclude) : [];
-                finalA = type === "replace" ? newIds : [...curA, ...newIds];
+                const count = replacing
+                    ? (curA.length > 0 ? curA.length : MAX_TEAM_SIZE)
+                    : Math.max(0, MAX_TEAM_SIZE - curA.length);
+
+                // Never select characters already assigned to Team B.
+                // When filling, also exclude characters already in Team A.
+                const exclude = replacing
+                    ? (target === "both" ? [] : curB)
+                    : [...curA, ...curB];
+
+                const newIds = count > 0
+                    ? await sampleCharacterIds(count, exclude)
+                    : [];
+
+                finalA = replacing ? newIds : [...curA, ...newIds];
             }
 
+            // Process Team B
             if (target === "B" || target === "both") {
-                const count = type === "replace" ? (curB.length > 0 ? curB.length : MAX_TEAM_SIZE) : Math.max(0, MAX_TEAM_SIZE - curB.length);
-                const exclude = type === "replace" ? [] : curB;
-                const newIds = count > 0 ? await sampleCharacterIds(count, exclude) : [];
-                finalB = type === "replace" ? newIds : [...curB, ...newIds];
+                const count = replacing
+                    ? (curB.length > 0 ? curB.length : MAX_TEAM_SIZE)
+                    : Math.max(0, MAX_TEAM_SIZE - curB.length);
+
+                // Exclude Team A's FINAL IDs, including newly sampled characters.
+                // Also exclude Team B's existing IDs when filling.
+                const exclude = replacing
+                    ? (target === "both" ? finalA : curA)
+                    : [...finalA, ...curB];
+
+                const newIds = count > 0
+                    ? await sampleCharacterIds(count, exclude)
+                    : [];
+
+                finalB = replacing ? newIds : [...curB, ...newIds];
             }
+
 
             params.set("mode", "matchup");
             ["id1", "id2", "p", "size"].forEach((k) => params.delete(k));

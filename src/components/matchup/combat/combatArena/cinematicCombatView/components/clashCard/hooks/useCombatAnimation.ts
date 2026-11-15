@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ActionEvent } from "@/lib/matchup/combat/adapters";
 import type { CombatPhase } from "../types";
 
-import { KO_VISUAL_DELAY } from "../../combatArena/components/teamColumn/TeamColumn";
+import { KO_VISUAL_DELAY } from "../../teamColumn/TeamColumn";
 
 const PHASE_1_DELAY = 600;
 const PHASE_2_FALLBACK_DELAY = 800;

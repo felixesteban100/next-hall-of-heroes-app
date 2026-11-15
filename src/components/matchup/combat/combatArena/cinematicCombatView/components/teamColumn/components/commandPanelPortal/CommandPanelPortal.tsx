@@ -2,8 +2,8 @@
 
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { CommandPanel } from "./CommandPanel";
 
-import { CommandPanel } from "../../../../CommandPanel";
 
 type Props = {
     actorId: number;

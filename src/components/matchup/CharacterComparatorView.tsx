@@ -7,16 +7,16 @@ import { RowGroupedPills } from "@/components/matchup/rows/RowGroupedPills";
 import { RowGroupedBadges } from "@/components/matchup/rows/RowGroupedBadges";
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { useEffect, useMemo, useState } from "react";
-import { MatchPredictionOverlay } from "./MatchPredictionOverlay";
+import { MatchPredictionOverlay } from "./overview/MatchPredictionOverlay";
 import { cn } from "@/lib/utils";
 import { StatsRadar } from "./stats/StatRadar";
 import { ChartArea, List, Swords, Zap, LucideIcon, BookText, Calculator } from "lucide-react";
-import MatchVerdict from "./MatchVerdict";
-import { TeamProfileSlot } from "./stats/TeamProfileSlot";
+import MatchVerdict from "./overview/MatchVerdict";
+import { TeamProfileSlot } from "./overview/TeamProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/matchup";
-import { PowerFormulaTab } from "./PowerFormulaTab";
-import { RivalryMatrixCard } from "./RivalryMatrixCard";
-import { CombatArena } from "./battle/combatArena/CombatArena";
+import { PowerFormulaTab } from "./calculations/PowerFormulaTab";
+import { RivalryMatrixCard } from "./overview/RivalryMatrixCard";
+import { CombatArena } from "./combat/combatArena/CombatArena";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";

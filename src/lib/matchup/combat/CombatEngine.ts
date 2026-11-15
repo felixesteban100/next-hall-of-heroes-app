@@ -53,6 +53,11 @@ export class CombatEngine {
       events: [],
       winner: null,
       playerSide,
+
+      battleStarted: false,
+      startingSide: "A",
+      activeSide: "A",
+
       isPlayerTurn: false,
       selectedActorId: null,
       phase: "player",
@@ -61,7 +66,7 @@ export class CombatEngine {
       selectedTargetId: null
     };
 
-    this.startPlayerPhase();
+    this.startSidePhase(this.state.startingSide);
   }
 
   private toFighter(
@@ -106,6 +111,10 @@ export class CombatEngine {
       return { ok: false, reason: "The battle has already ended" };
     }
 
+    if (!this.state.battleStarted) {
+      return { ok: false, reason: "The battle has not started yet" };
+    }
+
 
     const actor = this.state.fighters.find(
       (f) => f.id === action.actorId
@@ -113,6 +122,10 @@ export class CombatEngine {
 
     if (!actor) {
       return { ok: false, reason: "Invalid actor" };
+    }
+
+    if (actor.side !== this.state.activeSide) {
+      return { ok: false, reason: "This fighter's side is not currently acting" };
     }
 
     const isStunned = actor.status.some(
@@ -792,6 +805,11 @@ export class CombatEngine {
       events: [],
       winner: null,
       playerSide: "A",
+
+      battleStarted: false,
+      startingSide: "A",
+      activeSide: "A",
+
       phase: "player",
       isPlayerTurn: false,
       selectedActorId: null,
@@ -809,88 +827,94 @@ export class CombatEngine {
   //     .map((f) => f.id);
   // }
 
-  startPlayerPhase() {
-    if (this.state.winner) return;
+  // ── Phase Management ───────────────────────────────────────
 
-    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
-
-    const idsPlayer = this.getActionableIds(this.state.playerSide);
-    const idsAI = this.getActionableIds(aiSide);
-
-    // Neither side has an actionable fighter.
-    if (idsPlayer.length === 0 && idsAI.length === 0) {
-      this.checkWinCondition();
-
-      if (!this.state.winner) {
-        // Fighters may simply be stunned. Advance to expire their statuses.
-        this.advanceRoundAndTickCooldowns();
-      }
-
-      return;
-    }
-
-    // No eligible player fighters: skip directly to the AI phase.
-    if (idsPlayer.length === 0) {
-      this.startAIPhase();
-      return;
-    }
-
-    this.state.phase = "player";
-    this.state.isPlayerTurn = true;
-
-    this.state.availablePlayerIds = [...idsPlayer];
-    this.state.availableAIIds = [...idsAI];
-
-    this.state.selectedActorId = null;
-
-    this.pushEvent({
-      type: "turn_start",
-      text: "Player Phase – select a character",
-      side: this.state.playerSide,
-    });
+  private getOppositeSide(side: Side): Side {
+    return side === "A" ? "B" : "A";
   }
 
-  startAIPhase() {
-    if (this.state.winner) return;
+  // Called after the dice roll.
+  startBattle(firstSide: Side) {
+    if (this.state.battleStarted || this.state.winner) return;
 
-    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
+    this.state.battleStarted = true;
+    this.state.startingSide = firstSide;
+    this.state.round = 1;
 
-    const ids = this.getActionableIds(aiSide);
+    this.startSidePhase(firstSide);
+  }
 
+  // Starts the phase for whichever side should act.
+  private startSidePhase(side: Side) {
+    if (this.state.winner || !this.state.battleStarted) return;
+
+    const ids = this.getActionableIds(side);
+
+    // No fighters on either side can act.
     if (ids.length === 0) {
       this.checkWinCondition();
 
-      if (!this.state.winner) {
+      if (this.state.winner) return;
+
+      // If the first side cannot act, try the other side.
+      if (side === this.state.startingSide) {
+        this.startSidePhase(this.getOppositeSide(side));
+      } else {
+        // Both phases have been skipped; advance the round.
         this.advanceRoundAndTickCooldowns();
       }
 
       return;
     }
 
-    this.state.phase = "ai";
-    this.state.isPlayerTurn = false;
-    this.state.availableAIIds = [...ids];
+    this.state.activeSide = side;
+
+    // Determine whether this is the human or AI phase.
+    const isPlayerSide = side === this.state.playerSide;
+
+    this.state.phase = isPlayerSide ? "player" : "ai";
+    this.state.isPlayerTurn = isPlayerSide;
+
+    this.state.availablePlayerIds = isPlayerSide ? [...ids] : [];
+    this.state.availableAIIds = isPlayerSide ? [] : [...ids];
+
     this.state.selectedActorId = null;
+    this.state.selectedTargetId = null;
 
     this.pushEvent({
       type: "turn_start",
-      text: "Enemy Phase",
-      side: aiSide,
+      text: isPlayerSide
+        ? "Player Phase – select a character"
+        : "Enemy Phase",
+      side,
     });
   }
 
-  private afterPlayerAction(actorId: number) {
+  // Called after the active side uses its action.
+  private finishActivePhase() {
+    if (this.state.winner) return;
+
     this.state.availablePlayerIds = [];
+    this.state.availableAIIds = [];
     this.state.selectedActorId = null;
-    this.startAIPhase();
+    this.state.selectedTargetId = null;
+
+    // The starting side has acted, so the opposing side goes next.
+    if (this.state.activeSide === this.state.startingSide) {
+      this.startSidePhase(this.getOppositeSide(this.state.activeSide));
+      return;
+    }
+
+    // Both sides have acted. Start the next round.
+    this.advanceRoundAndTickCooldowns();
+  }
+
+  private afterPlayerAction(actorId: number) {
+    this.finishActivePhase();
   }
 
   private afterAIAction(actorId: number) {
-    this.state.availableAIIds = [];
-    this.state.selectedTargetId = null;
-    this.state.selectedActorId = null;
-    // 🌟 Safely tick down cooldowns and advance round
-    this.advanceRoundAndTickCooldowns();
+    this.finishActivePhase();
   }
 
   selectActor(id: number) {
@@ -923,7 +947,7 @@ export class CombatEngine {
   chooseAIAction(): CombatAction | null {
     if (this.state.phase !== "ai") return null;
 
-    const aiSide: Side = this.state.playerSide === "A" ? "B" : "A";
+    const aiSide = this.state.activeSide;
 
     const candidates = this.getActionableIds(aiSide)
       .map((id) => this.getFighter(id))
@@ -1141,7 +1165,7 @@ export class CombatEngine {
       text: `—— Round ${this.state.round} ——`,
       side: "A",
     });
-    this.startPlayerPhase();
+    this.startSidePhase(this.state.startingSide);
   }
 
   private generateBattleMetadata(winner: Side): BattleMetadata {
@@ -1481,10 +1505,6 @@ export class CombatEngine {
   finishAIPhase() {
     if (this.state.phase !== "ai") return;
 
-    this.state.availableAIIds = [];
-    this.state.selectedActorId = null;
-    this.state.selectedTargetId = null;
-
-    this.advanceRoundAndTickCooldowns();
+    this.finishActivePhase();
   }
 }

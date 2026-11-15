@@ -1,7 +1,7 @@
 import { aggregateTeamScores } from "@/lib/matchup";
 import { MatchMode, parseIdList } from "@/lib/matchup/matchupParams";
 import { fetchCharactersByIds, fetchCharactersJoinedById } from "@/lib/matchup/fetchCompareEntities";
-import { TeamSelectorCard } from "@/components/matchup/selectors/TeamSelectorCard";
+import { TeamSelectorCard } from "@/components/matchup/teamSelectorCard/TeamSelectorCard";
 import VS from "@/components/matchup/VS";
 import { CompareModeToggle } from "@/components/matchup/CompareModeToggle";
 import { CopySummaryButton } from "@/components/matchup/CopySummaryButton";

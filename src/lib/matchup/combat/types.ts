@@ -175,19 +175,24 @@ export type CombatEvent = {
 
 export type CombatState = {
     fighters: CombatFighter[];
-    turnOrder: number[];               // can still be used for preferred order
+    turnOrder: number[];
     currentTurnIndex: number;
     round: number;
     teamOrders: TeamOrder[];
     events: CombatEvent[];
-    // winner: Side | null;
     winner: Side | "draw" | null;
     playerSide: Side;
+
+    // Battle and turn order
+    battleStarted: boolean;
+    startingSide: Side;
+    activeSide: Side;
+
     // Phase system
     phase: "player" | "ai";
     isPlayerTurn: boolean;
     selectedActorId: number | null;
-    availablePlayerIds: number[];      // characters that can still act this phase
-    availableAIIds: number[];          // same for AI
+    availablePlayerIds: number[];
+    availableAIIds: number[];
     selectedTargetId: number | null;
 };

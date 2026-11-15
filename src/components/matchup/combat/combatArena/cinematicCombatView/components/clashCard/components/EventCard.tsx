@@ -19,7 +19,7 @@ import type { CombatActionType } from "@/components/shared/powerOverlay/PowerOve
 import { AnimatePresence, motion } from "framer-motion"
 import { Crosshair, Lock, Shield } from "lucide-react";
 import FighterClash from "./FighterClash";
-import FighterCard from "../../combatArena/components/teamColumn/components/FighterCard";
+import FighterCard from "../../teamColumn/components/FighterCard";
 
 type Props = {
     event: ActionEvent;
@@ -158,8 +158,8 @@ export default function EventCard({
             <div className="flex items-center gap-2">
                 <div
                     className={cn(
-                        eventStyle.bg,
-                        eventStyle.border
+                        // eventStyle.bg,
+                        // eventStyle.border
                     )}
                 >
                     <EventIcon

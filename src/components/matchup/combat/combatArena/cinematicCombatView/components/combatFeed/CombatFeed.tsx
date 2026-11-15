@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { Activity } from "lucide-react";
 import type { ComponentProps } from "react";
 
-import LogRow from "../LogRow";
+import LogRow from "./LogRow";
 
 type LogEntry = ComponentProps<typeof LogRow>["log"];
 

@@ -12,7 +12,7 @@ import {
     Key,
 } from "lucide-react";
 import { combatRoleConfig } from "@/lib/matchup/combat/combatRole";
-import { useCombatContext } from "./combatArena/context/CombatContext"
+import { useCombatContext } from "../../../../context/CombatContext";
 
 type Props = {
     onClose?: () => void;
@@ -328,7 +328,7 @@ export function CommandPanel({
     return (
         <div
             className={cn(
-                "mx-auto flex w-full flex-col",
+                "mx-auto flex w-full min-h-0 flex-col",
                 compact ? "max-w-none" : "mt-2 max-w-4xl"
             )}
             style={
@@ -408,7 +408,7 @@ export function CommandPanel({
                 <div
                     className={cn(
                         "min-h-0",
-                        compact ? "overflow-y-auto p-2" : "p-3 sm:p-4"
+                        compact ? "p-2" : "p-3 sm:p-4"
                     )}
                 >
                     {/* ACTION SELECTION */}
@@ -462,7 +462,7 @@ export function CommandPanel({
 
                     {/* POWER SELECTION */}
                     {step === "power" && (
-                        <div className="flex min-h-0 flex-col gap-1.5">
+                        <div className="flex min-h-0 flex-col">
                             {/* Header */}
                             <div className="flex items-center justify-between gap-2">
                                 <div className="min-w-0">
@@ -497,9 +497,11 @@ export function CommandPanel({
 
                             {/* Scrollable power list */}
                             <div
-                                className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+                                className="hide-scrollbar min-h-0 overflow-y-auto overflow-x-hidden"
                                 style={{
-                                    maxHeight: compact ? undefined : 260,
+                                    maxHeight: compact
+                                        ? `max(0px, ${availableHeight ?? 400}px - 110px)`
+                                        : 260,
                                     overscrollBehavior: "contain",
                                 }}
                             >

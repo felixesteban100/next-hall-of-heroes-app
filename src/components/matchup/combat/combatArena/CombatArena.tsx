@@ -6,14 +6,15 @@ import type {
     CombatState,
     CombatAction,
     CombatEvent,
+    Side,
 } from "@/lib/matchup/combat/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { CombatHeader } from "../CombatHeader";
-import CinematicCombatView from "./CinematicCombatView";
+import { CombatHeader } from "./CombatHeader";
+import CinematicCombatView from "./cinematicCombatView/CinematicCombatView";
 import {
     CombatProvider,
     type TargetMode,
-} from "./context/CombatContext";
+} from "./cinematicCombatView/context/CombatContext";
 
 function getEventDisplayDuration(event: CombatEvent): number {
     switch (event.type) {
@@ -221,6 +222,21 @@ export function CombatArena({
         enqueueEvents(generatedEvents);
     }, [enqueueEvents]);
 
+    const handleStartBattle = useCallback((firstSide: Side) => {
+        const engine = engineRef.current;
+        if (!engine || engine.getState().battleStarted) return;
+
+        const previousEventCount = engine.getState().events.length;
+
+        engine.startBattle(firstSide);
+
+        const freshState = engine.getState();
+        const generatedEvents = freshState.events.slice(previousEventCount);
+
+        setState({ ...freshState });
+        enqueueEvents(generatedEvents);
+    }, [enqueueEvents]);
+
     const handleSelectActor = useCallback((id: number) => {
         const engine = engineRef.current;
         if (!engine) return;
@@ -239,7 +255,6 @@ export function CombatArena({
             setState({ ...engineRef.current.getState() });
         }
     }, []);
-
 
     const handleSelectTarget = useCallback((id: number) => {
         const currentTargetMode = targetModeRef.current;
@@ -262,7 +277,12 @@ export function CombatArena({
     }, []);
 
     useEffect(() => {
-        if (!state || state.phase !== "ai" || state.winner) return;
+        if (
+            !state ||
+            !state.battleStarted ||
+            state.phase !== "ai" ||
+            state.winner
+        ) return;
 
         const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -332,6 +352,7 @@ export function CombatArena({
         };
     }, [
         state?.phase,
+        state?.battleStarted,
         state?.availableAIIds,
         state?.winner,
         enqueueEvents,
@@ -377,6 +398,8 @@ export function CombatArena({
                     teamBChars={teamBChars}
                     playerSide={state.playerSide}
                     previousHpById={previousHpById}
+                    battleStarted={state.battleStarted}
+                    onStartBattle={handleStartBattle}
                 />
             </CombatProvider>
         </div>

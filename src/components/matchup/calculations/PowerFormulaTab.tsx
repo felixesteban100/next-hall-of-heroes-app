@@ -4,7 +4,7 @@ import { computeMatchScore } from "@/lib/matchup/scoringUtils";
 import { aggregateTeamScores } from "@/lib/matchup/teamUtils";
 import { Shield, Zap, Skull, Award, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp, Cpu, Activity } from "lucide-react";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
-import { CharacterImage } from "../shared/CharacterImage";
+import { CharacterImage } from "../../shared/CharacterImage";
 
 interface PowerFormulaTabProps {
     sideA: CharacterWithJoinTeamUniversePowerEnemies[];

@@ -5,7 +5,7 @@ import type {
     ActionEvent,
     EnrichedFighter,
 } from "@/lib/matchup/combat/adapters";
-import CommandPanelPortal from "./components/CommandPanelPortal";
+import CommandPanelPortal from "./components/commandPanelPortal/CommandPanelPortal";
 import { useCombatContext } from "../../context/CombatContext";
 import { useCombatTiming } from "./hooks/useCombatTiming";
 import { useFighterScroll } from "./hooks/useFighterScroll";

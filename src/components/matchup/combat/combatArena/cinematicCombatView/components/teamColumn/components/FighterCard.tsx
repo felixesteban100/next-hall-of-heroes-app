@@ -127,7 +127,9 @@ export default function FighterCard({
                     height={frameSize}
                     viewBox={`0 0 ${frameSize} ${frameSize}`}
                     style={{
-                        top: `calc(0.25rem - ${(frameSize - avatarSize) / 8}px)`,
+                        // top: `calc(0.25rem - ${(frameSize - avatarSize) / 8}px)`,
+                        top: `calc(0.25rem - 1px - ${(frameSize - avatarSize) / 8}px)`
+                        // top: "3"
                     }}
                     className={cn(
                         "pointer-events-none absolute left-1/2 -translate-x-1/2 z-0 overflow-visible",
@@ -140,11 +142,11 @@ export default function FighterCard({
                         y="8"
                         width={frameSize - 3}
                         height={frameSize - 3}
-                        rx="12"
+                        rx="8"
                         fill="none"
                         stroke="currentColor"
                         strokeOpacity="0.2"
-                        strokeWidth="1.5"
+                        strokeWidth="2"
                     />
 
                     {/* Traveling dash/dot circulating along the border */}
@@ -153,7 +155,7 @@ export default function FighterCard({
                         y="8"
                         width={frameSize - 3}
                         height={frameSize - 3}
-                        rx="12"
+                        rx="8"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"

@@ -2,11 +2,11 @@
 
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
-import { TeamAddCombobox } from "@/components/matchup/selectors/TeamAddCombobox";
+import { TeamAddCombobox } from "@/components/matchup/teamSelectorCard/TeamAddCombobox";
 import { CharacterOption } from "@/types";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { MAX_BRACKET_SIZE } from "@/app/(main)/matchup/page";
-import RemoveCharacterOfTeamButton from "../selectors/RemoveCharacterOfTeamButton";
+import RemoveCharacterOfTeamButton from "../teamSelectorCard/RemoveCharacterOfTeamButton";
 
 type Props = {
     ids: number[];

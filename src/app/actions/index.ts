@@ -300,20 +300,34 @@ function stripSynergyFields(c: any): CharacterOption {
     return rest as CharacterOption;
 } */
 
+
 export async function sampleCharacterIds(
     count: number,
     excludeIds: number[] = []
 ) {
-    const exclude = excludeIds.map(Number).filter((n) => !Number.isNaN(n));
+    const exclude = [...new Set(
+        excludeIds
+            .map(Number)
+            .filter((n) => Number.isInteger(n))
+    )];
+
+    const safeCount = Math.max(0, Math.floor(count));
+
+    if (safeCount === 0) return [];
+
     const rows = await collectionCharacters
         .aggregate<{ id: number }>([
-            { $match: exclude.length ? { id: { $nin: exclude } } : {} },
-            { $sample: { size: Math.min(Math.max(count, 1)) } },
+            ...(exclude.length
+                ? [{ $match: { id: { $nin: exclude } } }]
+                : []),
+            { $sample: { size: safeCount } },
             { $project: { _id: 0, id: 1 } },
         ])
         .toArray();
+
     return rows.map((r) => r.id);
 }
+
 
 
 type SharedTeam = {
