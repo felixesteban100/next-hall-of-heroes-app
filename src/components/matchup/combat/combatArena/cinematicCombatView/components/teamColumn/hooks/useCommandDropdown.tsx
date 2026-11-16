@@ -19,6 +19,7 @@ type UseCommandDropdownProps = {
     scrollContainerRef: ContainerRef;
     programmaticScrollRef: BooleanRef;
     onDeselectActor: () => void;
+    keepOpenOnTeamScroll?: boolean;
 };
 
 export function useCommandDropdown({
@@ -26,6 +27,7 @@ export function useCommandDropdown({
     scrollContainerRef,
     programmaticScrollRef,
     onDeselectActor,
+    keepOpenOnTeamScroll = false,
 }: UseCommandDropdownProps) {
     const [openCommandActorId, setOpenCommandActorId] =
         useState<number | null>(null);
@@ -76,12 +78,11 @@ export function useCommandDropdown({
         const teamColumn = scrollContainerRef.current;
 
         const handleTeamColumnScroll = () => {
-            if (programmaticScrollRef.current) {
+            if (programmaticScrollRef.current || keepOpenOnTeamScroll) {
                 updatePosition();
                 return;
             }
 
-            // Closing the panel triggers the deselection effect above.
             setOpenCommandActorId(null);
             setDropdownPosition(null);
         };
@@ -104,6 +105,7 @@ export function useCommandDropdown({
         scrollContainerRef,
         programmaticScrollRef,
         onDeselectActor,
+        keepOpenOnTeamScroll,
     ]);
 
     return {

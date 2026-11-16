@@ -198,7 +198,7 @@ export function FeaturedCharactersRow({ characters }: { characters: FeaturedChar
                 >
                     <div>
                         <h2 className="text-xl font-black tracking-tight text-foreground">
-                            Featured <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Champions</span>
+                            Today's Featured <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Champions</span>
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">Top-tier entities from across the multiverse</p>
                     </div>

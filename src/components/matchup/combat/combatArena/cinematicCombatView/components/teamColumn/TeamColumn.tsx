@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type {
     ActionEvent,
     EnrichedFighter,
@@ -37,6 +37,26 @@ export default function TeamColumn({
     className,
     isDialogOpen = false,
 }: Props) {
+    const sortedFighters = useMemo(() => {
+        return fighters
+            .map((fighter, index) => ({ fighter, index }))
+            .sort((a, b) => {
+                // Living fighters always appear before KO'd fighters.
+                if (a.fighter.isAlive !== b.fighter.isAlive) {
+                    return a.fighter.isAlive ? -1 : 1;
+                }
+
+                // Stronger characters appear first.
+                const powerDifference =
+                    (b.fighter.overall ?? 0) - (a.fighter.overall ?? 0);
+
+                // Preserve original order when power scores are equal.
+                return powerDifference || a.index - b.index;
+            })
+            .map(({ fighter }) => fighter);
+    }, [fighters]);
+
+
     const {
         state,
         targetMode,
@@ -89,6 +109,12 @@ export default function TeamColumn({
         selectedActorId,
     });
 
+    const isPlayerTurn = state?.isPlayerTurn ?? false;
+    const availablePlayerIds = state?.availablePlayerIds ?? [];
+
+    const isTargetSelectionActive = targetMode?.active ?? false;
+    const validTargetIds = targetMode?.validIds ?? [];
+
     const {
         openCommandActorId,
         setOpenCommandActorId,
@@ -98,13 +124,8 @@ export default function TeamColumn({
         scrollContainerRef,
         programmaticScrollRef,
         onDeselectActor,
+        keepOpenOnTeamScroll: isTargetSelectionActive,
     });
-
-    const isPlayerTurn = state?.isPlayerTurn ?? false;
-    const availablePlayerIds = state?.availablePlayerIds ?? [];
-
-    const isTargetSelectionActive = targetMode?.active ?? false;
-    const validTargetIds = targetMode?.validIds ?? [];
 
     const { hpReady, koReady } = useCombatTiming({
         eventKey,
@@ -125,16 +146,57 @@ export default function TeamColumn({
         }
     }, [isDialogOpen, isPlayerTurn, setOpenCommandActorId]);
 
+    useEffect(() => {
+        if (openCommandActorId === null) return;
+
+        const handleScroll = (event: Event) => {
+            // During target selection, allow scrolling inside either TeamColumn.
+            if (isTargetSelectionActive) {
+                const isTeamColumnScroll = event.composedPath().some(
+                    (element) =>
+                        element instanceof HTMLElement &&
+                        element.hasAttribute("data-team-column-scroll")
+                );
+
+                if (isTeamColumnScroll) return;
+            }
+
+            // Preserve normal scrolling behavior inside the active TeamColumn.
+            if (
+                event.target instanceof Node &&
+                scrollContainerRef.current?.contains(event.target)
+            ) {
+                return;
+            }
+
+            setOpenCommandActorId(null);
+        };
+
+        window.addEventListener("scroll", handleScroll, true);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll, true);
+        };
+    }, [
+        openCommandActorId,
+        isTargetSelectionActive,
+        scrollContainerRef,
+        setOpenCommandActorId,
+    ]);
+
+
     if (!state) return null;
+
 
     return (
         <div className={`h-full min-h-0 w-full ${className ?? ""}`}>
             <div
                 ref={scrollContainerRef}
+                data-team-column-scroll
                 className="h-full min-h-0 w-full overflow-y-auto overflow-x-hidden p-1 pt-5  [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
                 <div className="flex flex-wrap gap-1 justify-center w-full pb-10">
-                    {fighters.map((fighter) => {
+                    {sortedFighters.map((fighter) => {
                         const isValidTarget =
                             !isDialogOpen &&
                             isTargetSelectionActive &&

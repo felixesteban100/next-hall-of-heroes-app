@@ -26,7 +26,9 @@ export class CombatEngine {
   initialize(
     teamA: CharacterWithJoinTeamUniversePowerEnemies[],
     teamB: CharacterWithJoinTeamUniversePowerEnemies[],
-    playerSide: Side = "A"
+    playerSide: Side = "A",
+    nameA: string,
+    nameB: string
   ) {
     const idsA = new Set(teamA.map((c) => c.id));
     const cleanTeamB = teamB.filter((c) => !idsA.has(c.id));
@@ -45,6 +47,8 @@ export class CombatEngine {
     );
 
     this.state = {
+      teamAName: nameA ?? "Team A",
+      teamBName: nameB ?? "Team B",
       fighters: [...fightersA, ...fightersB],
       turnOrder: [],
       currentTurnIndex: 0,
@@ -327,32 +331,8 @@ export class CombatEngine {
     const target = this.state.fighters.find((f) => f.id === targetId && f.isAlive);
     if (!target) return [];
 
-    if (this.hasShield(target)) {
-      this.consumeShield(target);
 
-      return [{
-        id: this.nextEventId(),
-        type: "defend",
-        actorId: actor.id,
-        targetIds: [target.id],
-        damage: 0,
-        text: `${target.name}'s shield absorbs the attack from ${actor.name}!`,
-        side: actor.side,
-        attackerName: actor.name,
-        defenderName: target.name,
-      }];
-    }
-
-    const base =
-      16 +
-      actor.powerstats.strength * 0.32 +
-      actor.powerstats.combat * 0.18 +
-      actor.overall * 0.12;
-
-    const baseDamage = Math.max(
-      8,
-      Math.round(base + (Math.random() * 14 - 7))
-    );
+    const baseDamage = this.calculateDamage(actor);
 
     const focusStatus = actor.status.find(
       (status) => status.type === "focus" && status.duration > 0
@@ -362,7 +342,28 @@ export class CombatEngine {
       ? Math.round(baseDamage * (1 + focusStatus.value))
       : baseDamage;
 
-    target.currentHp = Math.max(0, target.currentHp - damage);
+    const shieldResult = this.resolveShieldDamage(target, damage);
+    const finalDamage = shieldResult.damage;
+    const damageBlocked = damage - finalDamage;
+
+    if (finalDamage === 0) {
+      return [{
+        id: this.nextEventId(),
+        type: "defend",
+        actorId: actor.id,
+        targetIds: [target.id],
+        damage: 0,
+        damageBlocked,
+        text: `${target.name}'s ${shieldResult.shieldsConsumed > 0
+          ? `${shieldResult.shieldsConsumed} shields`
+          : "shields"} absorb the attack from ${actor.name}!`,
+        side: actor.side,
+        attackerName: actor.name,
+        defenderName: target.name,
+      }];
+    }
+
+    target.currentHp = Math.max(0, target.currentHp - finalDamage);
 
     // Consume Focus only after damage successfully lands.
     if (focusStatus) {
@@ -380,7 +381,7 @@ export class CombatEngine {
         type: isKO ? "ko" : "attack",
         actorId: actor.id,
         targetIds: [target.id],
-        damage,
+        damage: finalDamage,
         text: `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} for ${damage} damage${focusStatus ? ` (${focusStatus.value * 100}% boost)` : ""}${isKO ? " — KO!" : "!"}`,
         side: actor.side,
         isKO,
@@ -400,17 +401,7 @@ export class CombatEngine {
     const power = actor.powers.find((p) => p.id === powerId);
     if (!power) return [];
 
-    const tierBonus = (power.tier ?? 1) * 0.09;
-    const scoreBonus = Math.min(power.score ?? 40, 100) / 110;
-    const multiplier = 1.15 + tierBonus + scoreBonus;
-
-    const base =
-      20 +
-      actor.powerstats.power * 0.38 +
-      actor.powerstats.combat * 0.15 +
-      actor.overall * 0.18;
-
-    const damage = Math.max(12, Math.round(base * multiplier));
+    const damage = this.calculateDamage(actor, power.score ?? 50);
 
     const { energy: cost } = this.getPowerCost(power);
 
@@ -611,24 +602,6 @@ export class CombatEngine {
 
     spendPower();
 
-    if (this.hasShield(target)) {
-      this.consumeShield(target);
-
-      return [{
-        id: this.nextEventId(),
-        type: "defend",
-        actorId: actor.id,
-        targetIds: [target.id],
-        power,
-        damage,
-        text: `${target.name}'s shield absorbs [${power.name}]!`,
-        side: actor.side,
-        attackerName: actor.name,
-        defenderName: target.name,
-        powerName: power.name,
-      }];
-    }
-
     // Calculate bonus from ALL active Focus stacks.
     const focusStacks = actor.status.filter(
       (status) => status.type === "focus" && status.duration > 0
@@ -643,7 +616,28 @@ export class CombatEngine {
       damage * (1 + totalFocusBonus)
     );
 
-    target.currentHp = Math.max(0, target.currentHp - finalDamage);
+    const shieldResult = this.resolveShieldDamage(target, finalDamage);
+    const actualDamage = shieldResult.damage;
+    const damageBlocked = finalDamage - actualDamage;
+
+    if (actualDamage === 0) {
+      return [{
+        id: this.nextEventId(),
+        type: "defend",
+        actorId: actor.id,
+        targetIds: [target.id],
+        power,
+        damage: 0,
+        damageBlocked,
+        text: `${target.name}'s shields absorb [${power.name}]!`,
+        side: actor.side,
+        attackerName: actor.name,
+        defenderName: target.name,
+        powerName: power.name,
+      }];
+    }
+
+    target.currentHp = Math.max(0, target.currentHp - actualDamage);
 
     // Consume Focus only after damage successfully lands.
     if (focusStacks.length > 0) {
@@ -661,15 +655,16 @@ export class CombatEngine {
     if (isKO) {
       target.isAlive = false;
     }
-
+    const totalIncomingDamage = actualDamage + damageBlocked;
     return [{
       id: this.nextEventId(),
       type: isKO ? "ko" : "power",
       actorId: actor.id,
       targetIds: [target.id],
       power,
-      damage: finalDamage,
-      text: `${actor.name} unleashes [${power.name}] on ${target.name} for ${finalDamage} damage${focusStacks.length > 0 ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)` : ""}${isKO ? " — KO!" : "!"}`,
+      damage: actualDamage,
+      damageBlocked,
+      text: `${actor.name} unleashes [${power.name}] on ${target.name} for ${totalIncomingDamage} total damage${focusStacks.length > 0 ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)` : ""}${damageBlocked > 0 ? ` — ${target.name}'s SHIELD absorbs ${damageBlocked} damage${actualDamage > 0 ? `, allowing ${actualDamage} damage through to HP` : ", completely preventing all damage"}` : ` — ${actualDamage} damage dealt to HP`}${isKO ? " — KO!" : "!"}`,
       side: actor.side,
       isKO,
       attackerName: actor.name,
@@ -761,7 +756,9 @@ export class CombatEngine {
     const event: CombatEvent = {
       id: this.nextEventId(),
       type: "battle_end",
-      text: `Team ${winner} wins the battle!`,
+      text: `${winner === "A"
+        ? this.state.teamAName
+        : this.state.teamBName} wins the battle!`,
       side: winner,
       metadata,
     };
@@ -797,6 +794,8 @@ export class CombatEngine {
 
   private createEmptyState(): CombatState {
     return {
+      teamAName: "Team A",
+      teamBName: "Team B",
       fighters: [],
       turnOrder: [],
       currentTurnIndex: 0,
@@ -817,6 +816,20 @@ export class CombatEngine {
       availableAIIds: [],
       selectedTargetId: null
     };
+  }
+
+  private calculateDamage(
+    actor: CombatFighter,
+    attackScore: number = 50
+  ): number {
+    const randomScore = Math.random() * 100;
+
+    const damage =
+      actor.overall * 0.90 +
+      Math.min(100, Math.max(0, attackScore)) * 0.08 +
+      randomScore * 0.02;
+
+    return Math.max(1, Math.round(damage));
   }
 
   // ── Phase Management ───────────────────────────────────────
@@ -1123,16 +1136,56 @@ export class CombatEngine {
     fighter.status.push(status);
   }
 
-  private hasShield(fighter: CombatFighter): boolean {
-    return fighter.status.some((s) => s.type === "shield" && s.duration > 0);
-  }
+  // private hasShield(fighter: CombatFighter): boolean {
+  //   return fighter.status.some((s) => s.type === "shield" && s.duration > 0);
+  // }
 
-  private consumeShield(fighter: CombatFighter): boolean {
-    const shieldIndex = fighter.status.findIndex((s) => s.type === "shield" && s.duration > 0);
-    if (shieldIndex === -1) return false;
+  // private consumeShield(fighter: CombatFighter): boolean {
+  //   const shieldIndex = fighter.status.findIndex((s) => s.type === "shield" && s.duration > 0);
+  //   if (shieldIndex === -1) return false;
 
-    fighter.status.splice(shieldIndex, 1);
-    return true;
+  //   fighter.status.splice(shieldIndex, 1);
+  //   return true;
+  // }
+
+  private resolveShieldDamage(
+    target: CombatFighter,
+    incomingDamage: number
+  ): { damage: number; shieldsConsumed: number } {
+    const shields = target.status.filter(
+      (status) => status.type === "shield" && status.duration > 0
+    );
+
+    const shieldCount = shields.length;
+
+    if (shieldCount === 0) {
+      return {
+        damage: incomingDamage,
+        shieldsConsumed: 0,
+      };
+    }
+
+    const totalProtection = target.currentHp * shieldCount;
+
+    // Shields completely absorb the attack.
+    // They are not consumed unless damage exceeds their combined protection.
+    if (incomingDamage <= totalProtection) {
+      return {
+        damage: 0,
+        shieldsConsumed: 0,
+      };
+    }
+
+    // Damage exceeded the combined protection.
+    // Consume all shields and apply only the excess damage.
+    target.status = target.status.filter(
+      (status) => !shields.includes(status)
+    );
+
+    return {
+      damage: incomingDamage - totalProtection,
+      shieldsConsumed: shieldCount,
+    };
   }
 
   private advanceRoundAndTickCooldowns() {
@@ -1189,17 +1242,11 @@ export class CombatEngine {
           (event.damage ?? 0) > 0
       );
 
-      // The attacker owns the attempted action, but the defender receives
-      // credit for the damage their shield prevented.
       const blockedEvents = incomingEvents.filter(
-        (event) => event.type === "defend" && (event.damage ?? 0) > 0
+        (event) => (event.damageBlocked ?? 0) > 0
       );
 
       const attacksLanded = damagingEvents.length;
-
-      const blockedCount = fighterEvents.filter(
-        (event) => event.type === "defend" && (event.damage ?? 0) > 0
-      ).length;
 
       const damageDealt = damagingEvents.reduce(
         (total, event) => total + (event.damage ?? 0),
@@ -1219,9 +1266,20 @@ export class CombatEngine {
         );
 
       const damageBlocked = blockedEvents.reduce(
-        (total, event) => total + (event.damage ?? 0),
+        (total, event) => total + (event.damageBlocked ?? 0),
         0
       );
+
+      const offensiveEvents = fighterEvents.filter(
+        (event) =>
+          event.type === "attack" ||
+          event.type === "power" ||
+          event.type === "ko" ||
+          (event.type === "defend" && (event.damageBlocked ?? 0) > 0)
+      );
+
+      const attempts = offensiveEvents.length;
+
 
       const healingDone = fighterEvents.reduce(
         (total, event) => total + (event.healing ?? 0),
@@ -1236,7 +1294,6 @@ export class CombatEngine {
         (event) => event.type === "revive"
       ).length;
 
-      const attempts = attacksLanded + blockedCount;
 
       return {
         name: fighter.name,
@@ -1420,6 +1477,8 @@ export class CombatEngine {
       winner === "A" ? teamAPowerAvg : teamBPowerAvg;
 
     return {
+      teamAName: this.state.teamAName,
+      teamBName: this.state.teamBName,
       totalRounds: this.state.round,
       totalKoCount,
 

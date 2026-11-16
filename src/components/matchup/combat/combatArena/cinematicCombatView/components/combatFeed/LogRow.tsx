@@ -140,67 +140,131 @@ export default function LogRow({ log }: { log: Log }) {
     const hasDamage = typeof log.damage === "number" && log.damage > 0;
     const hasHealing = typeof log.healing === "number" && log.healing > 0;
 
+
     return (
         <motion.div
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.18 }}
             className={cn(
-                "flex min-w-0 items-center gap-2 rounded-r-lg border-l-[3px] bg-muted/15 px-2.5 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-[11px]",
+                "min-w-0 rounded-r-lg border-l-[3px] bg-muted/15 px-2.5 py-2 sm:px-3 sm:py-2.5 shrink-0",
                 leftBorder
             )}
-        // className="flex items-center gap-2 test-border bg-muted/15 px-3 py-2"
-        // style={{ borderLeft: "5px solid #ff0000" }}
         >
-            {/* Event icon */}
-            <Icon
-                className={cn(
-                    "size-3 sm:size-3.5 shrink-0",
-                    labelColor
-                )}
-            />
+            {/* Event header */}
+            <div className="flex min-w-0 items-center gap-2">
+                {/* Event icon */}
+                <Icon
+                    className={cn(
+                        "size-3 shrink-0 sm:size-3.5",
+                        labelColor
+                    )}
+                />
 
-            {/* Event type */}
-            <span
-                className={cn(
-                    "font-black text-[9px] sm:text-[10px]",
-                    "tracking-wide shrink-0",
-                    labelColor
-                )}
-            >
-                {label}
-            </span>
-
-            {/* Event description */}
-            <span className="text-foreground/85 truncate min-w-0 flex-1">
-                {log.text}
-            </span>
-
-            {/* Damage */}
-            {hasDamage && (
-                <span className="text-rose-400 font-bold shrink-0">
-                    -{log.damage} HP
-                </span>
-            )}
-
-            {/* Healing */}
-            {hasHealing && (
-                <span className="text-emerald-400 font-bold shrink-0">
-                    +{log.healing} HP
-                </span>
-            )}
-
-            {/* Power / action name */}
-            {(log.powerName || log.actionName) && (
+                {/* Event type */}
                 <span
                     className={cn(
-                        "text-muted-foreground/60 text-[8.5px] sm:text-[9.5px]",
-                        "shrink-0 hidden sm:block truncate max-w-[110px]"
+                        "shrink-0 text-[9px] font-black tracking-wide sm:text-[10px]",
+                        labelColor
                     )}
                 >
-                    {log.powerName || log.actionName}
+                    {label}
                 </span>
-            )}
+
+                {/* Power / action name */}
+                {(log.powerName || log.actionName) && (
+                    <span className="min-w-0 truncate text-[8.5px] text-muted-foreground/60 sm:text-[9.5px]">
+                        {log.powerName || log.actionName}
+                    </span>
+                )}
+
+                <div className="flex-1" />
+
+                {/* Damage */}
+                {hasDamage && (
+                    <span className="shrink-0 text-[10px] font-bold text-rose-400 sm:text-[11px]">
+                        -{log.damage} HP
+                    </span>
+                )}
+
+                {/* Healing */}
+                {hasHealing && (
+                    <span className="shrink-0 text-[10px] font-bold text-emerald-400 sm:text-[11px]">
+                        +{log.healing} HP
+                    </span>
+                )}
+            </div>
+
+            {/* Event description */}
+            <p className="mt-1.5 min-w-0 whitespace-normal break-words text-[10px] leading-relaxed text-foreground/85 sm:text-[11px]">
+                {log.text}
+            </p>
         </motion.div>
     );
+
+
+    // return (
+    //     <motion.div
+    //         initial={{ opacity: 0, x: -8 }}
+    //         animate={{ opacity: 1, x: 0 }}
+    //         transition={{ duration: 0.18 }}
+    //         className={cn(
+    //             "flex min-w-0 items-center gap-2 rounded-r-lg border-l-[3px] bg-muted/15 px-2.5 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-[11px]",
+    //             leftBorder
+    //         )}
+    //     // className="flex items-center gap-2 test-border bg-muted/15 px-3 py-2"
+    //     // style={{ borderLeft: "5px solid #ff0000" }}
+    //     >
+    //         {/* Event icon */}
+    //         <Icon
+    //             className={cn(
+    //                 "size-3 sm:size-3.5 shrink-0",
+    //                 labelColor
+    //             )}
+    //         />
+
+    //         {/* Event type */}
+    //         <span
+    //             className={cn(
+    //                 "font-black text-[9px] sm:text-[10px]",
+    //                 "tracking-wide shrink-0",
+    //                 labelColor
+    //             )}
+    //         >
+    //             {label}
+    //         </span>
+
+    //         {/* Event description */}
+    //         {/* truncate */}
+    //         <span className="text-foreground/85 text-wrap min-w-0 flex-1">
+    //             {log.text}
+    //         </span>
+
+    //         {/* Damage */}
+    //         {hasDamage && (
+    //             <span className="text-rose-400 font-bold shrink-0">
+    //                 -{log.damage} HP
+    //             </span>
+    //         )}
+
+    //         {/* Healing */}
+    //         {hasHealing && (
+    //             <span className="text-emerald-400 font-bold shrink-0">
+    //                 +{log.healing} HP
+    //             </span>
+    //         )}
+
+    //         {/* Power / action name */}
+    //         {(log.powerName || log.actionName) && (
+    //             <span
+    //                 className={cn(
+    //                     "text-muted-foreground/60 text-[8.5px] sm:text-[9.5px]",
+    //                     "shrink-0 hidden sm:block truncate max-w-[110px]"
+    //                 )}
+    //             >
+    //                 {log.powerName || log.actionName}
+    //             </span>
+    //         )}
+    //     </motion.div>
+    // );
 }

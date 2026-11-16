@@ -122,6 +122,8 @@ export type FighterTelemetry = {
 };
 
 export type BattleMetadata = {
+    teamAName: string;
+    teamBName: string;
     totalRounds: number;
     totalKoCount: number;
     winnerPowerAvg: number;
@@ -162,6 +164,7 @@ export type CombatEvent = {
     targetIds?: number[];
     power?: Power | { name: string, combatRole: PowerRole };
     damage?: number;
+    damageBlocked?: number;
     healing?: number;
     status?: StatusEffect;
     text: string;
@@ -174,6 +177,8 @@ export type CombatEvent = {
 };
 
 export type CombatState = {
+    teamAName: string;
+    teamBName: string;
     fighters: CombatFighter[];
     turnOrder: number[];
     currentTurnIndex: number;

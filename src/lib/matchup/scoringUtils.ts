@@ -1,8 +1,6 @@
 import { CLASS_SCORE, POWER_TIER_SCORE, TIER_SCORE } from "@/lib/constants";
 import type { Character, CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 
-const ROUNDS = 100
-
 export type MatchBreakdown = {
     averagePowerStats: number;
     tier: number;
@@ -93,40 +91,5 @@ export function computeMatchScore(
         threat: round1(threat),
         weaknessPenalty: round1(weaknessPenalty),
         overall: round1(overall),
-    };
-}
-
-export function simulateSpar(scoreA: number, scoreB: number, rounds = ROUNDS) {
-    let aWins = 0;
-    let bWins = 0;
-    let draws = 0;
-
-    const avgScore = (scoreA + scoreB) / 2;
-    const varianceScale = Math.max(0.05, 0.15 * (100 / Math.max(avgScore, 50)));
-
-    for (let i = 0; i < rounds; i++) {
-        const jitterA = scoreA * (1 + (Math.random() * (varianceScale * 2) - varianceScale));
-        const jitterB = scoreB * (1 + (Math.random() * (varianceScale * 2) - varianceScale));
-
-        const d = jitterA - jitterB;
-        const maxVal = Math.max(jitterA, jitterB, 1);
-        const pct = Math.abs(d) / maxVal;
-
-        if (pct < 0.06) {
-            draws++;
-        } else if (jitterA > jitterB) {
-            aWins++;
-        } else {
-            bWins++;
-        }
-    }
-
-    return {
-        aWins,
-        bWins,
-        draws,
-        aWinPct: Math.round((aWins / rounds) * 100),
-        bWinPct: Math.round((bWins / rounds) * 100),
-        drawPct: Math.round((draws / rounds) * 100),
     };
 }

@@ -175,7 +175,7 @@ export function CombatArena({
 
         const engine = new CombatEngine();
 
-        engine.initialize(teamAChars, teamBChars, playerSide);
+        engine.initialize(teamAChars, teamBChars, playerSide, nameA, nameB);
 
         engineRef.current = engine;
 
@@ -190,7 +190,7 @@ export function CombatArena({
             presentationQueueRef.current = [];
             isPresentingRef.current = false;
         };
-    }, [teamAChars, teamBChars, playerSide]);
+    }, [teamAChars, teamBChars, playerSide, nameA, nameB]);
 
     const handleAction = useCallback((action: CombatAction) => {
         const engine = engineRef.current;

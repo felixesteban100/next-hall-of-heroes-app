@@ -177,7 +177,7 @@ export default function FighterCard({
                 animate={shakeControls}
                 className={cn(
                     "relative flex flex-col items-center gap-1 rounded-lg border border-transparent p-1 cursor-pointer",
-                    isSelectable && "hover:-translate-y-0.5 transition-transform duration-200"
+                    isSelectable && "transition-transform duration-200"
                 )}
             >
                 <Avatar
