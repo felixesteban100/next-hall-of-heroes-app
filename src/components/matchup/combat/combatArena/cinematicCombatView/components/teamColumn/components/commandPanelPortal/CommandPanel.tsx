@@ -485,7 +485,7 @@ export function CommandPanel({
                             </div>
 
                             {/* Energy */}
-                            <div className="flex items-center justify-between rounded-md bg-sky-500/5 px-2 py-1">
+                            <div className="flex items-center justify-between px-2 py-1">
                                 <span className="text-[10px] text-muted-foreground">
                                     Available energy
                                 </span>

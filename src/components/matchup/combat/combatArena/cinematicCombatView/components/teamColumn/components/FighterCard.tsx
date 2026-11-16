@@ -115,7 +115,7 @@ export default function FighterCard({
             onClick={handleCardClick}
             className={cn(
                 "relative flex flex-col items-center gap-1 p-1 transition-all duration-200 transform-gpu",
-                isSelectable && "cursor-pointer hover:-translate-y-0.5",
+                isSelectable && "cursor-pointer",
                 // !isSelectable && "opacity-75"
             )}
         >

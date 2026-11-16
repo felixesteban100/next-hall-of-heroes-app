@@ -104,7 +104,7 @@ export default function FighterSlot({
                         animate={{ opacity: 1, y: -10, scale: 1 }}
                         exit={{ opacity: 0, y: -35, scale: 0.8 }}
                         transition={{ duration: 1 }}
-                        className="pointer-events-none absolute left-1/2 top-7 z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-red-500 drop-shadow-md sm:text-xs"
+                        className="pointer-events-none absolute left-1/2  z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-red-500 drop-shadow-md sm:text-xs"
                     >
                         (-{damagePopup} HP)
                     </motion.span>
@@ -117,7 +117,7 @@ export default function FighterSlot({
                         animate={{ opacity: 1, y: -10, scale: 1 }}
                         exit={{ opacity: 0, y: -35, scale: 0.8 }}
                         transition={{ duration: 1 }}
-                        className="pointer-events-none absolute left-1/2 top-7 z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-emerald-400 drop-shadow-md sm:text-xs"
+                        className="pointer-events-none absolute left-1/2  z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-emerald-400 drop-shadow-md sm:text-xs"
                     >
                         (+{healPopup} HP)
                     </motion.span>

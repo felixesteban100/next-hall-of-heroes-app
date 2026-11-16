@@ -64,14 +64,15 @@ function playOverlaySound(themeKey: ThemeKey, action: CombatActionType) {
         heatVision: "/sounds/heatVision.mp3",
         absorb: "/sounds/absorb.mp3",
         shockwave: "/sounds/absorb.mp3",
-        none: "/sounds/combat.mp3",
-        insect: "/sounds/combat.mp3",
-        animal: "/sounds/combat.mp3",
-        snake: "/sounds/combat.mp3",
+        insect: "/sounds/cosmic.mp3",
+        animal: "/sounds/cosmic.mp3",
+        snake: "/sounds/cosmic.mp3",
         strength: "/sounds/combat.mp3",
         sense: "/sounds/wind.mp3",
         cursedEnergy: "/sounds/shadow.mp3",
-        probability: "/sounds/temporal.mp3"
+        probability: "/sounds/temporal.mp3",
+        ninjutsu: "/sounds/ninjutsu.mp3",
+        none: action === "attack" ? "/sounds/combat.mp3" : "/sounds/cosmic.mp3",
     };
 
     const soundPath = soundMap[themeKey] || (action === "attack" ? "/sounds/combat.mp3" : "/sounds/cosmic.mp3");
@@ -105,7 +106,7 @@ export type CombatActionType = "attack" | "defend" | "heal" | "revive";
 export type ThemeKey =
     | "psychic" | "combat" | "ice" | "water" | "fire" | "lightning" | "construct" | "teleport" | "nullify" | "sense" | "cursedEnergy"
     | "mystic" | "temporal" | "diamond" | "tech" | "shadow" | "light" | "explosion" | "transform" | "archery" | "strength"
-    | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature" | "elastic" | "wings" | "size" | "weather"
+    | "cosmic" | "magnetic" | "gravity" | "sonic" | "poison" | "nature" | "elastic" | "wings" | "size" | "weather" | "ninjutsu"
     | "wind" | "earth" | "radiation" | "blood" | "web" | "omnitrix" | "speed" | "breathing" | "detective" | "snake"
     | "defend" | "heal" | "revive" | "genius" | "fourthWall" | "energy" | "claws" | "sword" | "firearms" | "animal"
     | "invisible" | "intangible" | "stealth" | "mist" | "heatVision" | "absorb" | "shockwave" | "insect"
@@ -132,6 +133,7 @@ export function getThemeKey(action: CombatActionType, powerName?: string): Theme
     if (/\b(immor)/.test(n)) return "revive";
     if (/\b(dura|defense)/.test(n)) return "defend";
 
+    if (/\b(ninjutsu)/.test(n)) return "ninjutsu";
     if (/\b(proba)/.test(n)) return "probability"
     if (/\b(cursed energy)/.test(n)) return "cursedEnergy";
     if (/\b(sense|reflex)/.test(n)) return "sense";
@@ -189,7 +191,6 @@ export function getThemeKey(action: CombatActionType, powerName?: string): Theme
     if (/\b(techology|cyber|android|gadget|repulsor|nanite|tech)/.test(n)) return "tech";
     if (/\b(energy blast|blast|beam|power blast|force blast|repulsor|optic|concussive|energy)/.test(n)) return "energy";
     if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "combat";
-    if (/\b(hand-to-hand|martial|brawl|punch|melee|combat)/.test(n)) return "none";
     if (/\b(genius|intelligent|intelligence|smart|intellect|tactical|strateg|analysis|super.?mind|omniscient|calculation)/.test(n)) return "genius";
     return "none";
     // return "combat";

@@ -217,6 +217,7 @@ export default function FighterClash({
                 )}
             </div>
 
+
             {/* Combat Scene */}
             <div className="grid w-full max-w-5xl min-w-0 grid-cols-2 items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(180px,220px)_minmax(0,1fr)] md:items-center md:gap-4">
 
@@ -358,8 +359,9 @@ export default function FighterClash({
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.15, duration: 0.25 }}
+                            /* max-w-5xl w-[80%]  */
                             className={cn(
-                                "max-w-5xl w-[80%] relative flex min-w-0 items-center justify-center",
+                                "relative flex min-w-0 items-center justify-center",
                                 "overflow-hidden rounded-xl border px-3 py-2.5",
                                 "shadow-lg backdrop-blur-md",
                                 roleStyle
@@ -389,7 +391,8 @@ export default function FighterClash({
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.22, duration: 0.3 }}
                             /* rounded-xl border border-white/10 bg-gradient-to-b from-background/95 to-background/70 shadow-lg backdrop-blur-md */
-                            className="max-w-5xl w-[80%] relative min-w-0 overflow-hidden "
+                            /* max-w-5xl w-[80%] */
+                            className=" relative min-w-0 overflow-hidden "
                         >
                             {/* Top accent */}
                             <div className={cn("h-[2px] w-full", accentColorClass /* : roleStyle ? roleStyle.border.replace("border-", "bg-") : eventStyle.border.replace("border-", "bg-") */)} />

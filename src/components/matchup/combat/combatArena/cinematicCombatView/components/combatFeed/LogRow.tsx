@@ -149,6 +149,7 @@ export default function LogRow({ log }: { log: Log }) {
                 "flex min-w-0 items-center gap-2 rounded-r-lg border-l-[3px] bg-muted/15 px-2.5 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-[11px]",
                 leftBorder
             )}
+        // className="flex items-center gap-2 test-border bg-muted/15 px-3 py-2"
         // style={{ borderLeft: "5px solid #ff0000" }}
         >
             {/* Event icon */}
