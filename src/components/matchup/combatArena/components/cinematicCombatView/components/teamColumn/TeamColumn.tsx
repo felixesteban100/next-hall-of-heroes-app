@@ -150,9 +150,20 @@ export default function TeamColumn({
         if (openCommandActorId === null) return;
 
         const handleScroll = (event: Event) => {
+            const path = event.composedPath();
+
+            // Keep the command panel open when scrolling inside the panel itself.
+            const isCommandPanelScroll = path.some(
+                (element) =>
+                    element instanceof HTMLElement &&
+                    element.hasAttribute("data-command-panel-scroll")
+            );
+
+            if (isCommandPanelScroll) return;
+
             // During target selection, allow scrolling inside either TeamColumn.
             if (isTargetSelectionActive) {
-                const isTeamColumnScroll = event.composedPath().some(
+                const isTeamColumnScroll = path.some(
                     (element) =>
                         element instanceof HTMLElement &&
                         element.hasAttribute("data-team-column-scroll")

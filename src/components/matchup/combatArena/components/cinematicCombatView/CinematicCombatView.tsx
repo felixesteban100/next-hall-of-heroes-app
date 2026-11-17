@@ -18,7 +18,7 @@ import { useCombatDialog } from "./hooks/useCombatDialog";
 import { useCombatPresentation } from "./hooks/useCombatPresentation";
 import CombatFeed from "./components/combatFeed/CombatFeed";
 import { useEffect, useRef, useState } from "react";
-import { LogsIcon, X } from "lucide-react";
+import { LogsIcon, X, ChevronLeft, ChevronRight, SkipForward, } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -114,9 +114,17 @@ export default function CinematicCombatView({
         dialogEvent,
         hasImpacted,
         canReopen,
+        eventPosition,
+        totalEvents,
+        canGoPrevious,
+        canGoNext,
+        isViewingLatest,
         handleImpact,
         handleClose,
         handleOpen,
+        handlePrevious,
+        handleNext,
+        handleGoToLatest,
     } = useCombatDialog(currentActionEvent, playerSide);
 
     const isDialogOpen = dialogEvent !== null;
@@ -292,7 +300,7 @@ export default function CinematicCombatView({
                         className="mx-auto"
                         onClick={handleOpen}
                     >
-                        <LogsIcon /> View Last Event
+                        <LogsIcon /> View Combat History
                     </Button>
                 )
             )}
@@ -346,17 +354,71 @@ export default function CinematicCombatView({
                             }}
                         >
                             {/* Close Button */}
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={handleClose}
                                 aria-label="Close combat dialog"
                                 className="absolute right-3 top-3 z-50 flex size-9 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/80 backdrop-blur-md transition-colors hover:bg-white/15 hover:text-white"
                             >
                                 <X className="size-4" />
-                            </button>
+                            </button> */}
+
+                            {/* Event Navigation */}
+                            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-card/80 px-3 py-2 sm:px-4">
+
+                                {/* Previous */}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!canGoPrevious}
+                                    onClick={handlePrevious}
+                                    className="h-8 gap-1 px-2 text-xs"
+                                >
+                                    <ChevronLeft className="size-4" />
+                                    <span className="hidden sm:inline">Previous</span>
+                                </Button>
+
+                                {/* Event Counter */}
+                                <div className="flex min-w-0 flex-col items-center">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                        Combat History
+                                    </span>
+
+                                    <span className="text-xs font-bold tabular-nums">
+                                        Event {eventPosition} of {totalEvents}
+                                    </span>
+                                </div>
+
+                                {/* Next and Latest */}
+                                <div className="flex items-center gap-1">
+                                    {!isViewingLatest && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleGoToLatest}
+                                            className="h-8 gap-1 px-2 text-xs"
+                                            title="Go to latest event"
+                                        >
+                                            <SkipForward className="size-3.5" />
+                                            <span className="hidden sm:inline">Latest</span>
+                                        </Button>
+                                    )}
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={!canGoNext}
+                                        onClick={handleNext}
+                                        className="h-8 gap-1 px-2 text-xs"
+                                    >
+                                        <span className="hidden sm:inline">Next</span>
+                                        <ChevronRight className="size-4" />
+                                    </Button>
+                                </div>
+                            </div>
 
                             {/* Event Content */}
-                            <div className="h-full min-h-0 w-full flex-1">
+                            <div className="min-h-0 w-full flex-1 overflow-hidden">
                                 <ClashCard
                                     event={dialogEvent}
                                     allChars={allChars}

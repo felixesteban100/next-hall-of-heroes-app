@@ -312,11 +312,11 @@ export function CommandPanel({
         onClose?.();
     };
 
-    const handlePass = () => {
+    /* const handlePass = () => {
         onAction({ type: "pass", actorId: actor.id });
         setStep("action");
         onClose?.();
-    };
+    }; */
 
     const getPowerCost = (power: Power) => {
         const tier = Math.min(power.tier ?? 1, 10);
@@ -520,6 +520,7 @@ export function CommandPanel({
 
                             {/* Scrollable power list */}
                             <div
+                                data-command-panel-scroll
                                 className="hide-scrollbar min-h-0 overflow-y-auto overflow-x-hidden"
                                 style={{
                                     maxHeight: compact
