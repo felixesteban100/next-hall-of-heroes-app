@@ -327,7 +327,7 @@ export default function CinematicCombatView({
 
                         {/* Dialog Panel */}
                         <motion.div
-                            className="relative z-10 flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-background/95 shadow-2xl sm:rounded-2xl"
+                            className="relative z-10 flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-background/20 shadow-2xl sm:rounded-2xl"
                             style={{
                                 width: "min(calc(90vw - 16px), 900px)",
                                 height: "min(calc(70dvh - 16px), 800px)",
