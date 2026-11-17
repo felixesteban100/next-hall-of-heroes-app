@@ -402,7 +402,7 @@ export function EntityCard({
                                             className="h-full w-full object-contain pointer-events-none" />
                                     </div>
                                 )}
-                                {backData.kind == "power" ? getPowerIcon("") : null}
+                                {backData.kind == "power" ? getPowerIcon("h-12 w-16") : null}
                                 <div className="flex items-center gap-2 shrink-0">
                                     {badge}
                                     <span

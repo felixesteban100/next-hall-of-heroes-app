@@ -18,7 +18,7 @@ import {
     POWER_TIER_COLOR,
     POWER_TIER_ICON,
 } from "@/lib/constants";
-import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterAlignmentVarColor, getCharacterGenderIcon, getCharacterThematicMix, getPowerThematicMix } from "@/lib/character_utils";
+import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
 import { computeMatchScore } from "@/lib/matchup";

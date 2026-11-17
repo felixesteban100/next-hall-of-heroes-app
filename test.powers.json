@@ -1,0 +1,542 @@
+[
+  {
+    "value": "Radiation, Radioactivity, Nuclear Energy",
+    "name": "Radiation, Radioactivity, Nuclear Energy☢️",
+    "id": 108
+  },
+  {
+    "value": "Illusion",
+    "name": "Illusion 👁️🌀",
+    "id": 107
+  },
+  {
+    "value": "Vibration",
+    "name": "Vibration/Shockwave 📳〰️",
+    "id": 106
+  },
+  {
+    "value": "Stealth Mastery",
+    "name": "Stealth/Camouflage Mastery 🙈👀🤫",
+    "id": 105
+  },
+  {
+    "value": "Cursed Energy",
+    "name": "Cursed Energy👻⚡",
+    "id": 104
+  },
+  {
+    "value": "Power/Magic Nullification",
+    "name": "Power/Magic Nullification 🚫⚡",
+    "id": 103
+  },
+  {
+    "value": "Wing Manifestation",
+    "name": "Wing Manifestation 🪽",
+    "id": 102
+  },
+  {
+    "value": "Blood",
+    "name": "Blood 🩸",
+    "id": 101
+  },
+  {
+    "value": "Control Manipulation / Mind Control",
+    "name": "Control Manipulation / Mind Control 🎮🧠",
+    "id": 100
+  },
+  {
+    "value": "Sword Arts",
+    "name": "Sword Arts ⚔✨",
+    "id": 99
+  },
+  {
+    "value": "Gravity",
+    "name": "Gravity 🌍💨↕",
+    "id": 98
+  },
+  {
+    "value": "Explosion",
+    "name": "Explosion 💥",
+    "id": 97
+  },
+  {
+    "value": "Fear inducement",
+    "name": "Fear inducement 😱",
+    "id": 96
+  },
+  {
+    "value": "Dark force",
+    "name": "Dark force/Darkness/Shadow 🌑",
+    "id": 95
+  },
+  {
+    "value": "Cryokinesis",
+    "name": "Cryokinesis, Ice, Cold, Freezing Powers 🧊❄🥶",
+    "id": 94
+  },
+  {
+    "value": "Archery",
+    "name": "Archery 🎯🏹",
+    "id": 93
+  },
+  {
+    "value": "Elasticity",
+    "name": "Elasticity / Superhuman Flexibility📏",
+    "id": 92
+  },
+  {
+    "value": "Weather",
+    "name": "Weather ⛅🌩🌨🌧☁⛈",
+    "id": 91
+  },
+  {
+    "value": "Electricity / Electrokinesis",
+    "name": "Electricity / Electrokinesis ⚡",
+    "id": 90
+  },
+  {
+    "value": "Transformation",
+    "name": "Transformation 💫🚀🧬✨",
+    "id": 89
+  },
+  {
+    "value": "Insect Arts",
+    "name": "Insect Arts 🐛🐜🐝🕷🐞🦋🦟",
+    "id": 88
+  },
+  {
+    "value": "Earth",
+    "name": "Geokinesis / Earth 🌍",
+    "id": 87
+  },
+  {
+    "value": "Mist",
+    "name": "Mist / Cloud / Fog ☁🌫",
+    "id": 86
+  },
+  {
+    "value": "Air",
+    "name": "Aerokinesis / Air 💨",
+    "id": 85
+  },
+  {
+    "value": "Plant Ranged Weaponry ",
+    "name": "Plant Ranged Weaponry 🌱🔫",
+    "id": 84
+  },
+  {
+    "value": "Serpent/Snake Companionship",
+    "name": "Serpent Companionship 🐍",
+    "id": 83
+  },
+  {
+    "value": "Breathing Techniques",
+    "name": "Breathing Techniques 👃💨",
+    "id": 82
+  },
+  {
+    "value": "Hydrokinesis",
+    "name": "Hydrokinesis / Water Powers 💦💧",
+    "id": 81
+  },
+  {
+    "value": "Magnetokinesis",
+    "name": "Magnetokinesis 🧲",
+    "id": 80
+  },
+  {
+    "value": "Invisible",
+    "name": "Invisible 👁🙈🚫",
+    "id": 79
+  },
+  {
+    "value": "Cybernetic Enhancements",
+    "name": "Cybernetic Enhancements 🧬🤖",
+    "id": 78
+  },
+  {
+    "value": "Metamorphosis",
+    "name": "Metamorphosis 🧬🔁",
+    "id": 77
+  },
+  {
+    "value": "Omnitrix",
+    "name": "Omnitrix ⌚👽👾",
+    "id": 76
+  },
+  {
+    "value": "Underwater Adaptation",
+    "name": "Underwater Adaptation / water 👃🌊",
+    "id": 75
+  },
+  {
+    "value": "Ninjutsu",
+    "name": "Ninjutsu",
+    "id": 74
+  },
+  {
+    "value": "Probability",
+    "name": "Probability 🎲",
+    "id": 73
+  },
+  {
+    "value": "Shapeshifting / Shape-Shifting",
+    "name": "Shapeshifting / Shape-Shifting 🔄",
+    "id": 72
+  },
+  {
+    "value": "Lantern Ring Mastery",
+    "name": "Lantern Ring Mastery 💍",
+    "id": 71
+  },
+  {
+    "value": "Enhanced Stamina",
+    "name": "Enhanced Stamina 💪",
+    "id": 70
+  },
+  {
+    "value": "Energy Constructs",
+    "name": "Energy Constructs ⚡",
+    "id": 69
+  },
+  {
+    "value": "Animal Mimicry",
+    "name": "Animal Mimicry 🐾",
+    "id": 68
+  },
+  {
+    "value": "Animal Communication",
+    "name": "Animal Communication 🐾🗣️",
+    "id": 67
+  },
+  {
+    "value": "Healing Factor",
+    "name": "Healing Factor 🩺",
+    "id": 66
+  },
+  {
+    "value": "Omnipotence",
+    "name": "Omnipotence ✨",
+    "id": 65
+  },
+  {
+    "value": "Adaptation",
+    "name": "Adaptation 🔄",
+    "id": 64
+  },
+  {
+    "value": "Elemental Control",
+    "name": "Elemental Control 🌍",
+    "id": 63
+  },
+  {
+    "value": "Reality Warping",
+    "name": "Reality Warping 🌀",
+    "id": 62
+  },
+  {
+    "value": "Energy Projection",
+    "name": "Energy Projection ⚡",
+    "id": 61
+  },
+  {
+    "value": "Engineering Genius",
+    "name": "Engineering Genius 🛠️🧠",
+    "id": 60
+  },
+  {
+    "value": "Genius-Level Intellect",
+    "name": "Genius-Level Intellect 🧠",
+    "id": 59
+  },
+  {
+    "value": "Martial Arts",
+    "name": "Martial Arts 🥋",
+    "id": 58
+  },
+  {
+    "value": "Pyrokinesis",
+    "name": "Pyrokinesis / Fire, Flame 🔥",
+    "id": 57
+  },
+  {
+    "value": "Diamond Form",
+    "name": "Diamond Form 💎",
+    "id": 56
+  },
+  {
+    "value": "Magic",
+    "name": "Magic",
+    "id": 55
+  },
+  {
+    "value": "Expert Marksman",
+    "name": "Expert Marksman / Gun Proficiency 🎯🔫",
+    "id": 54
+  },
+  {
+    "value": "Superhuman Intelligence",
+    "name": "Superhuman Intelligence 🧠",
+    "id": 53
+  },
+  {
+    "value": "Enhanced Reflexes",
+    "name": "Enhanced/Superhuman Reflexes ⚡",
+    "id": 52
+  },
+  {
+    "value": "Telekinesis",
+    "name": "Telekinesis 🧠",
+    "id": 51
+  },
+  {
+    "value": "Teleportation",
+    "name": "Teleportation 🌌",
+    "id": 50
+  },
+  {
+    "value": "Android Physiology",
+    "name": "Android Physiology 🤖",
+    "id": 49
+  },
+  {
+    "value": "Dragon Physiology",
+    "name": "Dragon Physiology 🐉",
+    "id": 48
+  },
+  {
+    "value": "Lightsaber Combat",
+    "name": "Lightsaber Combat ⚔️",
+    "id": 47
+  },
+  {
+    "value": "Dimensional Travel",
+    "name": "Dimensional Travel 🌌",
+    "id": 46
+  },
+  {
+    "value": "Energy Absorption",
+    "name": "Energy Absorption ⚡",
+    "id": 45
+  },
+  {
+    "value": "Claws",
+    "name": "Claws 🔪",
+    "id": 44
+  },
+  {
+    "value": "Enhanced Strength",
+    "name": "Enhanced Strength 💪",
+    "id": 43
+  },
+  {
+    "value": "Tactical Genius",
+    "name": "Tactical Genius 🧠🔍",
+    "id": 42
+  },
+  {
+    "value": "Skilled Marksman",
+    "name": "Skilled Marksman / Firearm 🎯🔫",
+    "id": 41
+  },
+  {
+    "value": "Telepathy",
+    "name": "Telepathy 🧠",
+    "id": 40
+  },
+  {
+    "value": "Regeneration",
+    "name": "Regeneration ⚕️",
+    "id": 39
+  },
+  {
+    "value": "Web Generation",
+    "name": "Web Generation 🕸️",
+    "id": 38
+  },
+  {
+    "value": "Master Detective",
+    "name": "Master Detective 🔍",
+    "id": 37
+  },
+  {
+    "value": "Invulnerability",
+    "name": "Invulnerability 🔒",
+    "id": 36
+  },
+  {
+    "value": "Cosmic Awareness",
+    "name": "Cosmic Awareness 🌌",
+    "id": 35
+  },
+  {
+    "value": "Skilled Combatant",
+    "name": "Skilled Combatant ⚔️",
+    "id": 34
+  },
+  {
+    "value": "Immortality",
+    "name": "Immortality",
+    "id": 33
+  },
+  {
+    "value": "Mystic Arts",
+    "name": "Mystic Arts 🧙",
+    "id": 32
+  },
+  {
+    "value": "Animalistic Agility",
+    "name": "Animalistic Agility 🐾",
+    "id": 31
+  },
+  {
+    "value": "Tactical Expertise",
+    "name": "Tactical Expertise 🔍",
+    "id": 30
+  },
+  {
+    "value": "Hand-to-Hand Combat",
+    "name": "Hand-to-Hand Combat 👊",
+    "id": 29
+  },
+  {
+    "value": "Heat Vision",
+    "name": "Heat Vision 🔥👀",
+    "id": 28
+  },
+  {
+    "value": "Light",
+    "name": "Light 💡",
+    "id": 27
+  },
+  {
+    "value": "Detective Skills",
+    "name": "Detective Skills 🕵️‍♂️",
+    "id": 26
+  },
+  {
+    "value": "Power Mimicry",
+    "name": "Power Mimicry 💫",
+    "id": 25
+  },
+  {
+    "value": "Time Travel",
+    "name": "Time Travel ⏳",
+    "id": 24
+  },
+  {
+    "value": "Force Field Generation",
+    "name": "Force Field Generation 🛡️",
+    "id": 23
+  },
+  {
+    "value": "Acrobatics",
+    "name": "Acrobatics/Superhuman Agility 🤸",
+    "id": 22
+  },
+  {
+    "value": "Weapon Proficiency",
+    "name": "Weapon Proficiency 🔫",
+    "id": 21
+  },
+  {
+    "value": "Absorption and Mimicry of Materials",
+    "name": "Absorption and Mimicry of Materials 🔄",
+    "id": 20
+  },
+  {
+    "value": "Intangibility",
+    "name": "Intangibility 👻",
+    "id": 19
+  },
+  {
+    "value": "Gadgets",
+    "name": "Gadgets 🔧",
+    "id": 18
+  },
+  {
+    "value": "Expert Strategist",
+    "name": "Expert Strategist 🧠",
+    "id": 17
+  },
+  {
+    "value": "Enhanced Senses",
+    "name": "Enhanced Senses 👀",
+    "id": 16
+  },
+  {
+    "value": "Superhuman Strength",
+    "name": "Superhuman Strength 💪",
+    "id": 15
+  },
+  {
+    "value": "Advanced Technology",
+    "name": "Advanced Technology 🛠️",
+    "id": 14
+  },
+  {
+    "value": "Durability",
+    "name": "Durability 🛡️",
+    "id": 13
+  },
+  {
+    "value": "Sorcery",
+    "name": "Sorcery 🧙",
+    "id": 12
+  },
+  {
+    "value": "Enhanced Durability",
+    "name": "Enhanced Durability 🛡️💪",
+    "id": 11
+  },
+  {
+    "value": "Sound",
+    "name": "Sound 🔊",
+    "id": 10
+  },
+  {
+    "value": "Flight",
+    "name": "Flight ✈️",
+    "id": 9
+  },
+  {
+    "value": "Superhuman Speed",
+    "name": "Superhuman Speed 🏃‍♂️💨",
+    "id": 8
+  },
+  {
+    "value": "Healing",
+    "name": "Healing ⚕️",
+    "id": 7
+  },
+  {
+    "value": "Size",
+    "name": "Size 📏",
+    "id": 6
+  },
+  {
+    "value": "Temporal",
+    "name": "Temporal 🕰️",
+    "id": 5
+  },
+  {
+    "value": "Bounty Hunting Skills",
+    "name": "Bounty Hunting Skills 🎯",
+    "id": 4
+  },
+  {
+    "value": "Energy",
+    "name": "Energy ⚡",
+    "id": 3
+  },
+  {
+    "value": "Concussive Blasts",
+    "name": "Concussive Blasts 💥",
+    "id": 2
+  },
+  {
+    "value": "Breaking the Fourth Wall",
+    "name": "Breaking the Fourth Wall",
+    "id": 1
+  }
+]

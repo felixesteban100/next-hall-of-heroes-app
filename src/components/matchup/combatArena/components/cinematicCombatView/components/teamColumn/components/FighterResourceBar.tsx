@@ -13,6 +13,7 @@ type Props = {
     colorMode?: "health" | "energy";
     hold?: boolean;
     ready?: boolean;
+    colorValue?: string;
 };
 
 export default function FighterResourceBar({
@@ -25,6 +26,7 @@ export default function FighterResourceBar({
     colorMode = "energy",
     hold = false,
     ready = true,
+    colorValue,
 }: Props) {
     const safeMax = max > 0 ? max : 100;
 
@@ -66,9 +68,12 @@ export default function FighterResourceBar({
                 <div
                     className={cn(
                         "h-full rounded-full transition-all duration-700",
-                        barColor
+                        colorValue ? "" : barColor
                     )}
-                    style={{ width: `${percent}%` }}
+                    style={{
+                        width: `${percent}%`,
+                        background: colorValue
+                    }}
                 />
             </div>
 

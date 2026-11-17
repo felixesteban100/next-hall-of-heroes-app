@@ -8,6 +8,7 @@ import FighterResourceBar from "./FighterResourceBar";
 import { useIsMobile } from "@/components/shared/SwipeGrid";
 import { useState } from "react";
 import { motion, useAnimationControls } from "framer-motion";
+import { getCharacterThematicMix } from "@/lib/character_utils";
 
 type AvatarProps = ComponentProps<typeof Avatar>;
 
@@ -108,6 +109,8 @@ export default function FighterCard({
     const isSelectable = isValidTarget || canSelectActor;
     const avatarSize = size ?? (useIsMobile() === true ? 60 : 80);
     const frameSize = avatarSize + 1;
+
+    const colors = getCharacterThematicMix(fighter.original)
 
     return (
         <div
@@ -225,6 +228,7 @@ export default function FighterCard({
                 label="EN"
                 variant={variant}
                 colorMode="energy"
+                colorValue={colors.background}
             />
         </div>
     );

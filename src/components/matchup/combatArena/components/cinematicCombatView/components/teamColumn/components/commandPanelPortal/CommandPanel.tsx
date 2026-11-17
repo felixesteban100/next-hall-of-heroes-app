@@ -156,11 +156,23 @@ export function CommandPanel({
         }
 
         if (step === "target" && actor) {
+            const isStunPower =
+                chosenRole === "Control" ||
+                selectedPower?.combatRole === "Control";
+
             const validTargets = isUtilityPower(selectedPower, chosenRole)
                 ? allies
                 : showAllies
                     ? healingTargets
-                    : enemies;
+                    : isStunPower
+                        ? enemies.filter((fighter) =>
+                            !fighter.status.some(
+                                (status) =>
+                                    status.type === "stun_immune" &&
+                                    status.duration > 0
+                            )
+                        )
+                        : enemies;
 
             onTargetModeChange({
                 active: true,
@@ -197,10 +209,12 @@ export function CommandPanel({
         );
     }
 
-    // const availablePowers = actor.powers.filter((p) => {
-    //     const cd = actor.cooldowns[p.id] ?? 0;
-    //     return cd <= 0; // ← This completely hides powers on cooldown!
-    // });
+    const activeShieldCount = actor.status.filter(
+        (status) => status.type === "shield" && status.duration > 0
+    ).length;
+
+    const hasMaxShields = activeShieldCount >= 4;
+
     const availablePowers = actor.powers;
 
     // ── Handlers ────────────────────────────────────────────────
@@ -217,6 +231,7 @@ export function CommandPanel({
 
 
     const handleSelectPower = (power: Power) => {
+        if (power.combatRole === "Defensive" && hasMaxShields) return;
         setSelectedPowerId(power.id);
         setChosenRole(null);
 
@@ -259,6 +274,7 @@ export function CommandPanel({
     };
 
     const handleChooseHybridRole = (role: PowerRole) => {
+        if (role === "Defensive" && hasMaxShields) return;
         if (selectedPowerId === null) return;
 
         setChosenRole(role);
@@ -290,6 +306,7 @@ export function CommandPanel({
     }; */
 
     const handleDefend = () => {
+        if (hasMaxShields) return;
         onAction({ type: "defend", actorId: actor.id });
         setStep("action");
         onClose?.();
@@ -315,11 +332,17 @@ export function CommandPanel({
         ? Math.max(0, Math.min(100, (actor.energy / actor.maxEnergy) * 100))
         : 0;
 
+    const isStunPower =
+        chosenRole === "Control" ||
+        selectedPower?.combatRole === "Control";
+
     const targetDescription = showAllies
         ? isUtilityPower(selectedPower, chosenRole)
             ? "Choose yourself or a living ally"
             : "Choose an injured ally in the arena"
-        : "Choose an opponent in the arena";
+        : isStunPower
+            ? "Choose an opponent without stun immunity"
+            : "Choose an opponent in the arena";
 
 
 
@@ -445,7 +468,7 @@ export function CommandPanel({
                                     icon={<Shield className="size-4" />}
                                     label="Defend"
                                     onClick={handleDefend}
-                                    disabled={!actor.isAlive}
+                                    disabled={!actor.isAlive || hasMaxShields}
                                     variant="defend"
                                 />
 
@@ -520,10 +543,12 @@ export function CommandPanel({
                                             const cd = actor.cooldowns[power.id] ?? 0;
                                             const isHeal = isHealingPower(power);
                                             const hasHealingTarget = healingTargets.length > 0;
+                                            const isDefensivePower = power.combatRole === "Defensive";
 
                                             const disabled =
                                                 (!actor.isAlive && !isHeal) ||
                                                 (isHeal && !hasHealingTarget) ||
+                                                (hasMaxShields && isDefensivePower) ||
                                                 cd > 0 ||
                                                 !canAfford;
 
@@ -638,7 +663,11 @@ export function CommandPanel({
                                 <button
                                     type="button"
                                     onClick={() => handleChooseHybridRole("Defensive")}
-                                    className="flex items-center justify-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-500/5 px-2 py-2 text-xs font-medium text-cyan-400 transition hover:bg-cyan-500/10"
+                                    disabled={hasMaxShields}
+                                    className={cn(
+                                        "flex items-center justify-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-500/5 px-2 py-2 text-xs font-medium text-cyan-400 transition hover:bg-cyan-500/10",
+                                        "disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-cyan-500/5"
+                                    )}
                                 >
                                     <Shield className="size-3.5" />
                                     Defensive

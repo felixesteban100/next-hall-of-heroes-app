@@ -9,12 +9,12 @@ import type {
     Side,
 } from "@/lib/matchup/combat/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { CombatHeader } from "./CombatHeader";
-import CinematicCombatView from "./cinematicCombatView/CinematicCombatView";
+import { CombatHeader } from "./components/CombatHeader";
+import CinematicCombatView from "./components/cinematicCombatView/CinematicCombatView";
 import {
     CombatProvider,
     type TargetMode,
-} from "./cinematicCombatView/context/CombatContext";
+} from "./components/cinematicCombatView/context/CombatContext";
 
 function getEventDisplayDuration(event: CombatEvent): number {
     switch (event.type) {

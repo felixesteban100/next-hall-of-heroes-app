@@ -10,6 +10,7 @@ import {
     RefreshCw,
     Shield,
     ShieldAlert,
+    ShieldCheck,
     Skull,
     Sparkles,
     Swords,
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
 import { PowerRole } from "@/types";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
+import { MAX_SHIELDS_PER_FIGHTER } from "@/lib/matchup/combat/CombatEngine";
 
 function getEventVisual(
     eventType?: string,
@@ -176,9 +178,16 @@ export default function Avatar({
         (s) => s.type === "focus" && s.duration > 0
     ).length;
 
-    const stunnedCount = (fighter.status ?? []).filter(
+    const stunStatus = (fighter.status ?? []).find(
         (s) => s.type === "stun" && s.duration > 0
-    ).length;
+    );
+
+    const stunImmunityStatus = (fighter.status ?? []).find(
+        (s) => s.type === "stun_immune" && s.duration > 0
+    );
+
+    const isStunned = !!stunStatus;
+    const isStunImmune = !!stunImmunityStatus;
 
     const eventVisual = getEventVisual(
         eventType,
@@ -291,19 +300,7 @@ export default function Avatar({
                     />
                 )}
 
-                {/* Active shield count */}
-                {shieldCount > 0 && !dead && (
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -bottom-1.5 -right-1.5 bg-blue-600 px-1 py-0.5 rounded-full border border-background z-20 flex items-center gap-0.5 shadow-md"
-                    >
-                        <Shield className="size-2.5 text-white" />
-                        <span className="text-[7px] font-bold text-white leading-none">
-                            {shieldCount}
-                        </span>
-                    </motion.div>
-                )}
+
 
                 {/* Healing animation */}
                 {isHealing && (
@@ -319,13 +316,43 @@ export default function Avatar({
                     <div className="absolute inset-0 bg-yellow-400/30 animate-ping pointer-events-none rounded-lg" />
                 )}
 
-                {stunnedCount > 0 && !dead && (
+                {/* Active shield count */}
+                {shieldCount > 0 && !dead && (
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 z-30 flex items-center justify-center size-5 rounded-full bg-purple-500"
+                        className="absolute -bottom-1.5 -right-1.5 z-20 bg-blue-600 px-1 py-0.5 rounded-full border border-background flex items-center gap-0.5 shadow-md"
+                    >
+                        <Shield className="size-2.5 text-white" />
+                        <span className="text-[7px] font-bold text-white leading-none">
+                            {shieldCount}/{MAX_SHIELDS_PER_FIGHTER}
+                        </span>
+                    </motion.div>
+                )}
+
+                {isStunned && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1.5 -right-1.5 z-30 bg-purple-600 px-1 py-0.5 rounded-full border border-background flex items-center gap-0.5 shadow-md"
                     >
                         <Lock className="size-3 text-white" />
+                        <span className="text-[7px] font-bold text-white leading-none">
+                            {stunStatus.duration}T
+                        </span>
+                    </motion.div>
+                )}
+
+                {isStunImmune && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1.5 -right-1.5 z-30 bg-emerald-600 px-1 py-0.5 rounded-full border border-background flex items-center gap-0.5 shadow-md"
+                    >
+                        <ShieldCheck className="size-3 text-white" />
+                        <span className="text-[7px] font-bold text-white leading-none">
+                            {stunImmunityStatus.duration}T
+                        </span>
                     </motion.div>
                 )}
 
@@ -333,7 +360,7 @@ export default function Avatar({
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 bg-green-600 px-1 py-0.5 rounded-full border border-background z-20 flex items-center gap-0.5 shadow-md"
+                        className="absolute -bottom-1.5 -left-1.5 z-20 bg-green-600 px-1 py-0.5 rounded-full border border-background flex items-center gap-0.5 shadow-md"
                     >
                         <Crosshair className="size-2.5 text-white" />
                         <span className="text-[7px] font-bold text-white leading-none">

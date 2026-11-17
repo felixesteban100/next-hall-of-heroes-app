@@ -14,9 +14,12 @@ import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from
 import { computeMatchScore } from "@/lib/matchup/scoringUtils";
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
 
+export const MAX_SHIELDS_PER_FIGHTER = 4
+
 export class CombatEngine {
   state: CombatState;
   private eventId = 1;
+  private readonly MAX_SHIELDS_PER_FIGHTER = MAX_SHIELDS_PER_FIGHTER;
 
   constructor() {
     this.state = this.createEmptyState();
@@ -85,6 +88,14 @@ export class CombatEngine {
       isRealPower
     ) as Power[];
 
+    const maxEnergy = Math.round(
+      50 + overall * 0.5
+    );
+
+    const startingEnergy = Math.round(
+      maxEnergy * 0.7
+    );
+
     return {
       id: c.id,
       name: c.name ?? "Unknown",
@@ -93,8 +104,8 @@ export class CombatEngine {
       row,
       maxHp,
       currentHp: maxHp,
-      energy: 80,
-      maxEnergy: 100,
+      energy: startingEnergy,
+      maxEnergy,
       overall,
       powerstats: c.powerstats,
       powers: realPowers,
@@ -126,6 +137,33 @@ export class CombatEngine {
 
     if (!actor) {
       return { ok: false, reason: "Invalid actor" };
+    }
+
+    const activeShieldCount = actor.status.filter(
+      (status) => status.type === "shield" && status.duration > 0
+    ).length;
+
+    if (action.type === "defend" && activeShieldCount >= 4) {
+      return {
+        ok: false,
+        reason: `${actor.name} already has the maximum of 4 shields`,
+      };
+    }
+
+    if (action.type === "use_power") {
+      const power = actor.powers.find(
+        (p) => p.id === action.powerId
+      );
+
+      if (
+        power?.combatRole === "Defensive" &&
+        activeShieldCount >= 4
+      ) {
+        return {
+          ok: false,
+          reason: `${actor.name} already has the maximum of 4 shields`,
+        };
+      }
     }
 
     if (actor.side !== this.state.activeSide) {
@@ -202,8 +240,31 @@ export class CombatEngine {
 
       const target = this.getFighter(targetId);
 
+
       if (!target) {
         return { ok: false, reason: "Invalid target" };
+      }
+
+      let effectiveRole = power.combatRole;
+      if (
+        effectiveRole === "Hybrid / Versatile" &&
+        action.chosenRole
+      ) {
+        effectiveRole = action.chosenRole;
+      }
+
+      if (
+        effectiveRole === "Control" &&
+        target.status.some(
+          (status) =>
+            status.type === "stun_immune" &&
+            status.duration > 0
+        )
+      ) {
+        return {
+          ok: false,
+          reason: `${target.name} is immune to stun`,
+        };
       }
 
       const name = power.name.toLowerCase();
@@ -343,8 +404,10 @@ export class CombatEngine {
       : baseDamage;
 
     const shieldResult = this.resolveShieldDamage(target, damage);
+
     const finalDamage = shieldResult.damage;
-    const damageBlocked = damage - finalDamage;
+    const damageBlocked = shieldResult.damageBlocked;
+    const totalIncomingDamage = finalDamage + damageBlocked;
 
     if (finalDamage === 0) {
       return [{
@@ -354,9 +417,12 @@ export class CombatEngine {
         targetIds: [target.id],
         damage: 0,
         damageBlocked,
-        text: `${target.name}'s ${shieldResult.shieldsConsumed > 0
-          ? `${shieldResult.shieldsConsumed} shields`
-          : "shields"} absorb the attack from ${actor.name}!`,
+        text:
+          `${actor.name}'s attack deals ${totalIncomingDamage} damage, ` +
+          `but ${target.name}'s SHIELD absorbs all ${damageBlocked} damage! ` +
+          `${shieldResult.shieldsConsumed} shield consumed — ` +
+          `${shieldResult.shieldsRemaining} remaining. ` +
+          `HP unchanged (${target.currentHp}/${target.maxHp}).`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: target.name,
@@ -382,7 +448,16 @@ export class CombatEngine {
         actorId: actor.id,
         targetIds: [target.id],
         damage: finalDamage,
-        text: `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} for ${damage} damage${focusStatus ? ` (${focusStatus.value * 100}% boost)` : ""}${isKO ? " — KO!" : "!"}`,
+        damageBlocked,
+        text:
+          `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} ` +
+          `for ${totalIncomingDamage} total damage` +
+          `${focusStatus ? ` (${focusStatus.value * 100}% boost)` : ""}` +
+          `${damageBlocked > 0
+            ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${finalDamage} damage through to HP. ` +
+            `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
+            : ` — ${finalDamage} damage dealt to HP.`}` +
+          `${isKO ? " — KO!" : ""}`,
         side: actor.side,
         isKO,
         attackerName: actor.name,
@@ -521,6 +596,7 @@ export class CombatEngine {
       }];
     }
 
+
     // CONTROL
     if (role === "Control") {
       const target = this.state.fighters.find(
@@ -532,18 +608,29 @@ export class CombatEngine {
 
       if (!target) return [];
 
-      spendPower();
+      // Stun immunity prevents the stun and does not consume energy.
+      const isStunImmune = target.status.some(
+        (status) =>
+          status.type === "stun_immune" && status.duration > 0
+      );
 
-      const stunStatus = {
-        id: `stun-${target.id}-${power.id}-${Date.now()}`,
-        type: "stun" as const,
+      if (isStunImmune) return [];
+
+      const stunStatus: StatusEffect = {
+        id: `stun-${target.id}-${power.id}-${this.nextEventId()}`,
+        type: "stun",
         name: "Stunned",
         duration: 2,
         value: 1,
         sourceId: actor.id,
       };
 
-      this.applyStatus(target, stunStatus);
+      // Only spend resources if the stun was successfully applied.
+      const applied = this.applyStatus(target, stunStatus);
+
+      if (!applied) return [];
+
+      spendPower();
 
       return [{
         id: this.nextEventId(),
@@ -552,7 +639,7 @@ export class CombatEngine {
         targetIds: [target.id],
         power,
         status: stunStatus,
-        text: `${actor.name} uses [${power.name}] and completely disables ${target.name}!`,
+        text: `${actor.name} uses [${power.name}] and stuns ${target.name} for 2 turns!`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: target.name,
@@ -560,13 +647,16 @@ export class CombatEngine {
       }];
     }
 
+
     // DEFENSIVE
     if (role === "Defensive") {
       spendPower();
 
-      // Apply two independent shield charges.
+      let shieldsAdded = 0;
+
+      // Attempt to apply two shields, respecting the character limit.
       for (let i = 0; i < 2; i++) {
-        this.applyStatus(actor, {
+        const applied = this.applyStatus(actor, {
           id: `shield-${actor.id}-${power.id}-${Date.now()}-${i}`,
           type: "shield",
           name: power.name,
@@ -574,7 +664,13 @@ export class CombatEngine {
           value: 1,
           sourceId: actor.id,
         });
+
+        if (applied) shieldsAdded++;
       }
+
+      const totalShields = actor.status.filter(
+        (status) => status.type === "shield" && status.duration > 0
+      ).length;
 
       return [{
         id: this.nextEventId(),
@@ -582,7 +678,9 @@ export class CombatEngine {
         actorId: actor.id,
         targetIds: [actor.id],
         power,
-        text: `${actor.name} activates [${power.name}] and gains two protective shields!`,
+        text: shieldsAdded > 0
+          ? `${actor.name} activates [${power.name}] and gains ${shieldsAdded} protective shield${shieldsAdded > 1 ? "s" : ""}! (${totalShields}/4 shields)`
+          : `${actor.name} activates [${power.name}], but already has the maximum of 4 shields!`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: actor.name,
@@ -617,8 +715,10 @@ export class CombatEngine {
     );
 
     const shieldResult = this.resolveShieldDamage(target, finalDamage);
+
     const actualDamage = shieldResult.damage;
-    const damageBlocked = finalDamage - actualDamage;
+    const damageBlocked = shieldResult.damageBlocked;
+    const totalIncomingDamage = actualDamage + damageBlocked;
 
     if (actualDamage === 0) {
       return [{
@@ -629,7 +729,13 @@ export class CombatEngine {
         power,
         damage: 0,
         damageBlocked,
-        text: `${target.name}'s shields absorb [${power.name}]!`,
+        text:
+          `${actor.name} unleashes [${power.name}] on ${target.name} ` +
+          `for ${totalIncomingDamage} total damage, but the SHIELD ` +
+          `absorbs all ${damageBlocked} damage! ` +
+          `${shieldResult.shieldsConsumed} shield consumed — ` +
+          `${shieldResult.shieldsRemaining} remaining. ` +
+          `HP unchanged (${target.currentHp}/${target.maxHp}).`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: target.name,
@@ -655,7 +761,6 @@ export class CombatEngine {
     if (isKO) {
       target.isAlive = false;
     }
-    const totalIncomingDamage = actualDamage + damageBlocked;
     return [{
       id: this.nextEventId(),
       type: isKO ? "ko" : "power",
@@ -664,7 +769,17 @@ export class CombatEngine {
       power,
       damage: actualDamage,
       damageBlocked,
-      text: `${actor.name} unleashes [${power.name}] on ${target.name} for ${totalIncomingDamage} total damage${focusStacks.length > 0 ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)` : ""}${damageBlocked > 0 ? ` — ${target.name}'s SHIELD absorbs ${damageBlocked} damage${actualDamage > 0 ? `, allowing ${actualDamage} damage through to HP` : ", completely preventing all damage"}` : ` — ${actualDamage} damage dealt to HP`}${isKO ? " — KO!" : "!"}`,
+      text:
+        `${actor.name} unleashes [${power.name}] on ${target.name} ` +
+        `for ${totalIncomingDamage} total damage` +
+        `${focusStacks.length > 0
+          ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)`
+          : ""}` +
+        `${damageBlocked > 0
+          ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${actualDamage} damage through to HP. ` +
+          `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
+          : ` — ${actualDamage} damage dealt to HP.`}` +
+        `${isKO ? " — KO!" : ""}`,
       side: actor.side,
       isKO,
       attackerName: actor.name,
@@ -675,7 +790,7 @@ export class CombatEngine {
 
 
   private resolveDefend(actor: CombatFighter): CombatEvent {
-    this.applyStatus(actor, {
+    const applied = this.applyStatus(actor, {
       id: `shield-${actor.id}-${Date.now()}`,
       type: "shield",
       name: "Guard",
@@ -684,13 +799,19 @@ export class CombatEngine {
       sourceId: actor.id,
     });
 
+    const totalShields = actor.status.filter(
+      (status) => status.type === "shield" && status.duration > 0
+    ).length;
+
     return {
       id: this.nextEventId(),
       type: "status_applied",
       power: { name: "Defense", combatRole: "Defensive" },
       powerName: "Defense",
       actorId: actor.id,
-      text: `${actor.name} raises a protective shield.`,
+      text: applied
+        ? `${actor.name} raises a protective shield! (${totalShields}/4 shields)`
+        : `${actor.name} already has the maximum of 4 shields!`,
       side: actor.side,
       attackerName: actor.name,
     };
@@ -1022,17 +1143,24 @@ export class CombatEngine {
 
     // const randomAlly = allies[Math.floor(Math.random() * allies.length)];
 
+    const activeShieldCount = actor.status.filter(
+      (status) => status.type === "shield" && status.duration > 0
+    ).length;
+
     const possibleActions: CombatAction[] = [
       {
         type: "basic_attack",
         actorId: actor.id,
         targetIds: [randomEnemy.id],
       },
-      {
+    ];
+
+    if (activeShieldCount < 4) {
+      possibleActions.push({
         type: "defend",
         actorId: actor.id,
-      },
-    ];
+      });
+    }
 
     const readyPowers = actor.powers.filter((power) => {
       const cooldown = actor.cooldowns[power.id] ?? 0;
@@ -1079,6 +1207,7 @@ export class CombatEngine {
           targetIds: [target.id],
         });
       } else if (role === "Defensive") {
+        if (activeShieldCount >= 4) continue;
         possibleActions.push({
           type: "use_power",
           actorId: actor.id,
@@ -1100,15 +1229,17 @@ export class CombatEngine {
     ];
   }
 
-
-
   private regenerateEnergy(fighter: CombatFighter) {
+    const overall = fighter.overall ?? 50;
+
     const regen = Math.round(
-      14 +
-      fighter.powerstats.power * 0.07 +
-      fighter.powerstats.intelligence * 0.05
+      4 + overall * 0.12
     );
-    fighter.energy = Math.min(fighter.maxEnergy, fighter.energy + regen);
+
+    fighter.energy = Math.min(
+      fighter.maxEnergy,
+      fighter.energy + regen
+    );
   }
 
   private getPowerCost(power: Power): { energy: number; cooldown: number } {
@@ -1124,9 +1255,23 @@ export class CombatEngine {
     };
   }
 
-  private applyStatus(fighter: CombatFighter, status: StatusEffect) {
+  private applyStatus(
+    fighter: CombatFighter,
+    status: StatusEffect
+  ): boolean {
     const stackableStatuses: StatusEffectType[] = ["shield", "focus"];
 
+    // Stun immunity prevents new stuns.
+    if (
+      status.type === "stun" &&
+      fighter.status.some(
+        (s) => s.type === "stun_immune" && s.duration > 0
+      )
+    ) {
+      return false;
+    }
+
+    // Stun is non-stackable: a new stun replaces the existing one.
     if (!stackableStatuses.includes(status.type)) {
       fighter.status = fighter.status.filter(
         (s) => s.type !== status.type
@@ -1134,6 +1279,7 @@ export class CombatEngine {
     }
 
     fighter.status.push(status);
+    return true;
   }
 
   // private hasShield(fighter: CombatFighter): boolean {
@@ -1151,7 +1297,13 @@ export class CombatEngine {
   private resolveShieldDamage(
     target: CombatFighter,
     incomingDamage: number
-  ): { damage: number; shieldsConsumed: number } {
+  ): {
+    damage: number;
+    damageBlocked: number;
+    shieldsConsumed: number;
+    shieldsRemaining: number;
+    totalProtection: number;
+  } {
     const shields = target.status.filter(
       (status) => status.type === "shield" && status.duration > 0
     );
@@ -1161,30 +1313,38 @@ export class CombatEngine {
     if (shieldCount === 0) {
       return {
         damage: incomingDamage,
+        damageBlocked: 0,
         shieldsConsumed: 0,
+        shieldsRemaining: 0,
+        totalProtection: 0,
       };
     }
 
+    // Protection is calculated using HP and all shields
+    // active immediately before this attack.
     const totalProtection = target.currentHp * shieldCount;
 
-    // Shields completely absorb the attack.
-    // They are not consumed unless damage exceeds their combined protection.
-    if (incomingDamage <= totalProtection) {
-      return {
-        damage: 0,
-        shieldsConsumed: 0,
-      };
-    }
+    // Every damaging attack consumes exactly ONE shield.
+    const consumedShield = shields[0];
 
-    // Damage exceeded the combined protection.
-    // Consume all shields and apply only the excess damage.
     target.status = target.status.filter(
-      (status) => !shields.includes(status)
+      (status) => status !== consumedShield
     );
 
+    // Only damage exceeding total protection reaches HP.
+    const actualDamage = Math.max(
+      0,
+      incomingDamage - totalProtection
+    );
+
+    const damageBlocked = incomingDamage - actualDamage;
+
     return {
-      damage: incomingDamage - totalProtection,
-      shieldsConsumed: shieldCount,
+      damage: actualDamage,
+      damageBlocked,
+      shieldsConsumed: 1,
+      shieldsRemaining: shieldCount - 1,
+      totalProtection,
     };
   }
 
@@ -1200,14 +1360,38 @@ export class CombatEngine {
         fighter.cooldowns[powerId] = Math.max(0, (fighter.cooldowns[powerId] ?? 0) - 1);
       }
 
-      // 🌟 2. Tick down status durations and filter out expired ones (duration <= 0)
+      // 2. Tick down status durations and detect expired stuns.
+      const hadActiveStun = fighter.status.some(
+        (status) => status.type === "stun" && status.duration > 0
+      );
+
       fighter.status = fighter.status
-        .map(status =>
+        .map((status) =>
           status.type === "shield" || status.type === "focus"
             ? status
             : { ...status, duration: status.duration - 1 }
         )
-        .filter(status => status.duration > 0);
+        .filter((status) => status.duration > 0);
+
+      const hasActiveStun = fighter.status.some(
+        (status) => status.type === "stun" && status.duration > 0
+      );
+
+      // When the stun expires, grant one round of stun immunity.
+      if (hadActiveStun && !hasActiveStun) {
+        fighter.status = fighter.status.filter(
+          (status) => status.type !== "stun_immune"
+        );
+
+        fighter.status.push({
+          id: `stun-immune-${fighter.id}-${this.state.round}`,
+          type: "stun_immune",
+          name: "Stun Immunity",
+          duration: 1,
+          value: 1,
+          sourceId: fighter.id,
+        });
+      }
 
       // 3. Regenerate Energy each round
       this.regenerateEnergy(fighter);
@@ -1522,7 +1706,6 @@ export class CombatEngine {
     };
   }
 
-
   private canSelfRevive(fighter: CombatFighter): boolean {
     if (fighter.isAlive || fighter.hasRevived) {
       return false;
@@ -1546,7 +1729,6 @@ export class CombatEngine {
       );
     });
   }
-
 
   private getActionableIds(side: Side): number[] {
     return this.state.fighters

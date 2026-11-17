@@ -16,7 +16,7 @@ import { TeamProfileSlot } from "./overview/TeamProfileSlot";
 import { avgTeamPowerstats, groupAlignments, groupClasses, groupEnemies, groupGenders, groupPowers, groupPublishers, groupRaces, groupTeams, groupTiers, groupWeaknesses, hasNemesisLink, radarData, radarDataFromStats, TeamAggregate } from "@/lib/matchup";
 import { PowerFormulaTab } from "./calculations/PowerFormulaTab";
 import { RivalryMatrixCard } from "./overview/RivalryMatrixCard";
-import { CombatArena } from "./combat/combatArena/CombatArena";
+import { CombatArena } from "./combatArena/CombatArena";
 
 
 type CompareTab = "overview" | "combat" | "stats" | "info" | "calculations";

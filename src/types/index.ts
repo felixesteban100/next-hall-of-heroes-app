@@ -136,6 +136,10 @@ export type Power = {
     duration: "Instantaneous" | "Timed" | "Persistent";
     actions?: PowerAction[]; // Optional list of specific moves
     combatRole: PowerRole
+
+    // Energy and cooldown overrides
+    energyCost?: number;
+    cooldown?: number;
 };
 
 export interface FallbackItem {

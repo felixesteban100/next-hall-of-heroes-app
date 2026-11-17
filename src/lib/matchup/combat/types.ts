@@ -10,6 +10,7 @@ export type StatusEffectType =
     | "regen"
     | "focus"
     | "stun"
+    | "stun_immune"
     | "slow"
     | "burn"
     | "weaken"
