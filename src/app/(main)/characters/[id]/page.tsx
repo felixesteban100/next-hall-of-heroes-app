@@ -13,7 +13,6 @@ import { BookIcon, Brain, CalendarIcon, Gauge, HandFist, HouseIcon, LetterTextIc
 import { MiniEntityGrid } from "@/components/shared/MiniGridItems";
 import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
-import { computeMatchScore } from "@/lib/matchup";
 
 import CompareWithButton from "@/components/shared/CompareWithButton";
 
@@ -88,8 +87,6 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
         { icon: ShieldOff, label: "Weaknesses", val: character.weaknesses?.length ? character.weaknesses.join(", ") : "An unknown weakness" },
         { icon: Paperclip, label: "Origin", val: val(biography.origin, "An unknown origin") },
     ];
-
-    const characterScore = computeMatchScore(character)
 
     // Powers
     const externalPowers = character.powers.filter(
@@ -219,10 +216,10 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* Scores */}
-            {characterScore && <div id={"Scores"} className="space-y-2">
+            {character.overall && <div id={"Scores"} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                    {Object.entries(characterScore).map(([key, value]) => (
+                    {Object.entries(character.overall).map(([key, value]) => (
                         <div key={key} className={`${key == "overall" && "col-span-2 lg:col-span-3"} flex flex-col justify-between gap-2 border p-3 rounded bg-muted`}>
                             {/* <span className="font-light capitalize">{key}: <span className="font-bold">{value}</span></span> */}
                             <p className="text-sm font-light flex gap-1.5 items-center capitalize">

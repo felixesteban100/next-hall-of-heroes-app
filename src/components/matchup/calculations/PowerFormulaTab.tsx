@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { computeMatchScore } from "@/lib/matchup/scoringUtils";
 import { aggregateTeamScores } from "@/lib/matchup/teamUtils";
 import { Shield, Zap, Skull, Award, Users, Sparkles, AlertTriangle, ChevronDown, ChevronUp, Cpu, Activity } from "lucide-react";
 import { CHARACTER_CLASS, CHARACTER_CLASS_COLOR, CHARACTER_CLASS_ICON, CHARACTER_TIER, CHARACTER_TIER_COLOR, CHARACTER_TIER_ICON } from "@/lib/constants";
 import { CharacterImage } from "../../shared/CharacterImage";
+import { computeMatchScore } from "@/lib/matchup";
 
 interface PowerFormulaTabProps {
     sideA: CharacterWithJoinTeamUniversePowerEnemies[];
@@ -108,7 +108,7 @@ const SideFormulaCard = ({
                 <div className="text-right bg-background/50 border border-border/40 px-4 py-2 rounded-xl">
                     <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">Power Rating</span>
                     <span className={`text-2xl sm:text-3xl font-black ${accentText}`}>
-                        {isTeam ? aggregate.powerEstimate : (computeMatchScore(entities[0])?.overall ?? 0)}
+                        {isTeam ? aggregate.powerEstimate : (entities[0]?.overall ?? 0)}
                     </span>
                 </div>
             </div>
@@ -174,7 +174,7 @@ const SideFormulaCard = ({
                 </div>
 
                 <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
-                    {entities.sort((e1, e2) => computeMatchScore(e2).overall - computeMatchScore(e1).overall).map((entity) => {
+                    {entities.sort((e1, e2) => e2.overall - e1.overall).map((entity) => {
                         const score = computeMatchScore(entity);
                         const isExpanded = expandedMemberId === entity.id;
                         const TierIcon = CHARACTER_TIER_ICON[entity.tier]

@@ -4,7 +4,7 @@ import { sanitize } from "@/lib/utils";
 import { UrlParamSyncer } from "@/components/random/UrlParamSyncer";
 import { RandomPageClient, BatchExtreme } from "@/components/random/RandomPageClient";
 import { CHARACTER_TIER } from "@/lib/constants";
-import { buildEnemiesLookup, buildPowersLookup, buildTeamsLookup, buildUniverseLookup } from "@/lib/character_utils";
+import { buildEnemiesLookup, buildPowersLookup, buildTeamsLookup, buildUniverseLookup } from "@/lib/character_utilsAggregationPipelines";
 import { MAX_TEAM_SIZE } from "../matchup/page";
 
 export const instant = false;

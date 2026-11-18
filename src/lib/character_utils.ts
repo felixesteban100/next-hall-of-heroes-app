@@ -2,6 +2,7 @@ import { MAX_TEAM_SIZE } from "@/app/(main)/matchup/page";
 import { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { Frown, Mars, Meh, PersonStanding, Smile, Venus } from "lucide-react";
 import { CHARACTER_CLASS_COLOR, CHARACTER_TIER_COLOR, CHARACTER_TYPE_COLOR, POWER_ACTIVATION_TYPE_COLOR, POWER_COMBAT_ROLE_COLOR, POWER_TIER_COLOR } from "./constants";
+import { buildEnemiesLookup, buildPowersLookup, buildTeamsLookup, buildUniverseLookup } from "./character_utilsAggregationPipelines";
 
 export function getCharacterAlignmentColor(alignment: string) {
     switch (alignment) {
@@ -158,362 +159,90 @@ export function joinTeam_universe_power_enemies_toCharacter(
     sortDirection: string,
     offset: number,
     howManyPerPage: number,
-    options: { includeEnemies?: boolean } = {}  // ← add this
+    options: { includeEnemies?: boolean } = {}
 ) {
     const { includeEnemies = true } = options;
+    const direction = sortDirection === "desc" ? -1 : 1;
 
+    // // Overall must be calculated after powers and enemies are resolved.
+    // if (sortBy === "overall") {
+    //     return [
+    //         { $match: { ...queryOptions } },
+
+    //         ...buildUniverseLookup(),
+    //         ...buildPowersLookup(),
+    //         ...(includeEnemies ? buildTeamsLookup() : []),
+    //         ...buildEnemiesLookup(),
+
+    //         ...buildOverallScoreStage(),
+
+    //         {
+    //             $sort: {
+    //                 _overallSortScore: direction,
+    //                 _id: 1,
+    //             },
+    //         },
+    //         { $skip: offset },
+    //         { $limit: howManyPerPage },
+
+    //         { $project: { _overallSortScore: 0, _id: 0 } },
+
+    //         ...(includeEnemies
+    //             ? []
+    //             : [
+    //                 {
+    //                     $project: {
+    //                         id: 1,
+    //                         name: 1,
+    //                         images: 1,
+    //                         tier: 1,
+    //                         class: 1,
+    //                         character_type: 1,
+    //                         "biography.fullName": 1,
+    //                         "biography.alignment": 1,
+    //                         "biography.publisher.logo": 1,
+    //                         "appearance.gender": 1,
+    //                         "powerstats.total": 1,
+    //                         imageFocus: 1,
+    //                     },
+    //                 },
+    //             ]),
+    //     ];
+    // }
+
+    // Keep the existing efficient pipeline for stored fields.
     return [
         { $match: { ...queryOptions } },
-        { $sort: { [sortBy]: sortDirection === "desc" ? -1 : 1, _id: 1 } },
+        { $sort: { [sortBy]: direction, _id: 1 } },
         { $skip: offset },
         { $limit: howManyPerPage },
         { $project: { _id: 0 } },
+
         ...buildUniverseLookup(),
         ...(includeEnemies ? buildPowersLookup() : []),
         ...(includeEnemies ? buildTeamsLookup() : []),
         ...(includeEnemies ? buildEnemiesLookup() : []),
-        ...(includeEnemies === false ?
-            [{
-                $project: {
-                    id: 1,
-                    name: 1,
-                    images: 1,
-                    tier: 1,
-                    class: 1,
-                    character_type: 1,
-                    "biography.fullName": 1,
-                    "biography.alignment": 1,
-                    "biography.publisher.logo": 1,  // or just .logo if that's all CardFooter uses
-                    "appearance.gender": 1,
-                    "powerstats.total": 1,     // if you show the score
-                    "imageFocus": 1,
-                    _id: 0
-                }
-            }] : []
-        )
-    ];
-}
 
-
-// 1. Powers Pipeline Stage
-export function buildPowersLookup() {
-    return [
-        {
-            $lookup: {
-                from: "powers",
-                let: { rawPowers: { $ifNull: ["$powers", []] } },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $or: [
-                                    { $in: ["$id", "$$rawPowers"] },
-                                    {
-                                        $gt: [
-                                            {
-                                                $size: {
-                                                    $filter: {
-                                                        input: "$$rawPowers",
-                                                        as: "p",
-                                                        cond: {
-                                                            $and: [
-                                                                { $eq: [{ $type: "$$p" }, "string"] },
-                                                                {
-                                                                    $or: [
-                                                                        { $ne: [{ $indexOfCP: [{ $toLower: "$name" }, { $toLower: "$$p" }] }, -1] },
-                                                                        { $ne: [{ $indexOfCP: [{ $toLower: "$$p" }, { $toLower: "$name" }] }, -1] }
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            0
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ],
-                as: "matchedPowers"
-            }
-        },
-        {
-            $addFields: {
-                powers: {
-                    $concatArrays: [
-                        "$matchedPowers",
-                        {
-                            $map: {
-                                input: {
-                                    $filter: {
-                                        input: { $ifNull: ["$powers", []] },
-                                        as: "item",
-                                        cond: {
-                                            $and: [
-                                                { $eq: [{ $type: "$$item" }, "string"] },
-                                                {
-                                                    $not: {
-                                                        $gt: [
-                                                            {
-                                                                $size: {
-                                                                    $filter: {
-                                                                        input: "$matchedPowers.name",
-                                                                        as: "mpName",
-                                                                        cond: {
-                                                                            $or: [
-                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$mpName" }, { $toLower: "$$item" }] }, -1] },
-                                                                                { $ne: [{ $indexOfCP: [{ $toLower: "$$item" }, { $toLower: "$$mpName" }] }, -1] }
-                                                                            ]
-                                                                        }
-                                                                    }
-                                                                }
-                                                            },
-                                                            0
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                as: "str",
-                                in: { name: "$$str", isFallback: true }
-                            }
-                        }
-                    ]
-                }
-            }
-        },
-        { $project: { matchedPowers: 0 } }
-    ];
-}
-
-// 2. Universe Lookup Stage
-export function buildUniverseLookup() {
-    return [
-        {
-            $lookup: {
-                from: "universes",
-                let: { rawPublisher: "$biography.publisher" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $or: [
-                                    { $eq: ["$id", "$$rawPublisher"] },
-                                    { $eq: ["$value", "$$rawPublisher"] },
-                                    { $eq: ["$name", "$$rawPublisher"] }
-                                ]
-                            }
-                        }
+        ...(includeEnemies === false
+            ? [
+                {
+                    $project: {
+                        id: 1,
+                        name: 1,
+                        images: 1,
+                        tier: 1,
+                        class: 1,
+                        character_type: 1,
+                        "biography.fullName": 1,
+                        "biography.alignment": 1,
+                        "biography.publisher.logo": 1,
+                        "appearance.gender": 1,
+                        "powerstats.total": 1,
+                        imageFocus: 1,
+                        _id: 0,
                     },
-                    { $project: { teams: 0 } }
-                ],
-                as: "biography.publisher"
-            }
-        },
-        { $unwind: { path: "$biography.publisher", preserveNullAndEmptyArrays: true } }
-    ];
-}
-
-// 3. Teams Lookup Stage
-export function buildTeamsLookup() {
-    return [
-        {
-            $lookup: {
-                from: "teams",
-                let: { rawAffiliations: "$connections.groupAffiliation" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $or: [
-                                    { $in: ["$id", { $ifNull: ["$$rawAffiliations", []] }] },
-                                    { $in: ["$name", { $ifNull: ["$$rawAffiliations", []] }] }
-                                ]
-                            }
-                        }
-                    },
-                    { $project: { universe: 0 } }
-                ],
-                as: "matchedTeams"
-            }
-        },
-        {
-            $addFields: {
-                "connections.groupAffiliation": {
-                    $concatArrays: [
-                        "$matchedTeams",
-                        {
-                            $map: {
-                                input: {
-                                    $filter: {
-                                        input: { $ifNull: ["$connections.groupAffiliation", []] },
-                                        as: "item",
-                                        cond: {
-                                            $and: [
-                                                { $eq: [{ $type: "$$item" }, "string"] },
-                                                { $not: { $in: ["$$item", "$matchedTeams.name"] } }
-                                            ]
-                                        }
-                                    }
-                                },
-                                as: "strName",
-                                in: { name: "$$strName", isFallback: true }
-                            }
-                        }
-                    ]
-                }
-            }
-        },
-        { $project: { matchedTeams: 0 } }
-    ];
-}
-
-// 4. Enemies Lookup Stage
-export function buildEnemiesLookup() {
-    const publisherToString = (fieldPath: string) => ({
-        $toLower: {
-            $trim: {
-                input: {
-                    $let: {
-                        vars: { pub: { $ifNull: [fieldPath, null] } },
-                        in: {
-                            $cond: {
-                                if: { $eq: [{ $type: "$$pub" }, "string"] },
-                                then: "$$pub",
-                                else: {
-                                    $ifNull: [
-                                        "$$pub.name",
-                                        { $ifNull: ["$$pub.value", ""] }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    return [
-        {
-            $lookup: {
-                from: "characters",
-                let: {
-                    enemies: { $ifNull: ["$connections.enemies", []] },
-                    parentPublisher: publisherToString("$biography.publisher")
                 },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    // At least one enemy matches this character
-                                    {
-                                        $anyElementTrue: {
-                                            $map: {
-                                                input: "$$enemies",
-                                                as: "e",
-                                                in: {
-                                                    $or: [
-                                                        // Exact ID match
-                                                        {
-                                                            $eq: [
-                                                                { $toString: "$id" },
-                                                                { $toString: "$$e" }
-                                                            ]
-                                                        },
-                                                        // Regex name match (case-insensitive)
-                                                        {
-                                                            $regexMatch: {
-                                                                input: { $ifNull: ["$name", ""] },
-                                                                regex: { $toString: "$$e" },
-                                                                options: "i"
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            }
-                                        }
-                                    },
-                                    // Same publisher
-                                    {
-                                        $eq: [
-                                            publisherToString("$biography.publisher"),
-                                            "$$parentPublisher"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            id: 1,
-                            name: 1,
-                            image: "$images.md",
-                            alignment: "$biography.alignment"
-                        }
-                    }
-                ],
-                as: "resolvedEnemies"
-            }
-        },
-        {
-            $addFields: {
-                "connections.enemies": {
-                    $concatArrays: [
-                        "$resolvedEnemies",
-                        {
-                            $map: {
-                                input: {
-                                    $filter: {
-                                        input: { $ifNull: ["$connections.enemies", []] },
-                                        as: "e",
-                                        cond: {
-                                            $not: {
-                                                $anyElementTrue: {
-                                                    $map: {
-                                                        input: "$resolvedEnemies",
-                                                        as: "r",
-                                                        in: {
-                                                            $or: [
-                                                                // matched by ID
-                                                                {
-                                                                    $eq: [
-                                                                        { $toString: "$$r.id" },
-                                                                        { $toString: "$$e" }
-                                                                    ]
-                                                                },
-                                                                // matched by name (same regex logic)
-                                                                {
-                                                                    $regexMatch: {
-                                                                        input: { $ifNull: ["$$r.name", ""] },
-                                                                        regex: { $toString: "$$e" },
-                                                                        options: "i"
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                as: "unmatched",
-                                in: { name: "$$unmatched", isFallback: true }
-                            }
-                        }
-                    ]
-                }
-            }
-        },
-        { $project: { resolvedEnemies: 0 } }
+            ]
+            : []),
     ];
 }

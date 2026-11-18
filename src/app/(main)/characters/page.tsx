@@ -110,6 +110,7 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
                     // { value: "powerstats.total", label: "Power total" },
                     { value: "name", label: "Name" },
                     // { value: "appearance.age", label: "Age" },
+                    { value: "overall", label: "Overall" },
                 ]}
                 extraData={{ universes: sanitizedUniverses, teams: sanitizedTeams, powers: sanitizedPowers }}
             />

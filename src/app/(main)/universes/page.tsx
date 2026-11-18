@@ -22,8 +22,12 @@ export default async function UniversePage({
     const params = await searchParams;
     const page = params.page ? parseInt(params.page) : 1;
     const pageSize = 12;
-    const sortProperty = params.sort?.toString() || "id";
-    const sortOrientation = params.sortOrientation?.toString() || "desc";
+
+    const allowedSortProperties = ["id", "name", "characterCount"] as const;
+    const requestedSort = params.sort?.toString() || "id";
+    const sortProperty = allowedSortProperties.includes(requestedSort as typeof allowedSortProperties[number]) ? requestedSort : "id";
+    const sortOrientation = params.sortOrientation?.toString().toLowerCase() || "desc";
+    const sortDirection: 1 | -1 = ["desc", "descending", "-1"].includes(sortOrientation) ? -1 : 1;
 
     const name = params.name?.toString() || "";
     const universeType = params.type?.toString() || "";
@@ -84,7 +88,9 @@ export default async function UniversePage({
                 matchingTeams: 0 // Strips out both arrays, keeping only the counts and universe fields
             }
         },
-        { $sort: { [sortProperty]: sortOrientation === "desc" ? -1 : 1 } },
+        {
+            $sort: { [sortProperty]: sortDirection, ...(sortProperty === "id" ? { name: 1 } : { id: 1 }) }
+        },
         { $skip: (page - 1) * pageSize },
         { $limit: pageSize },
     ]).toArray();

@@ -11,7 +11,6 @@ import type {
   StatusEffectType,
 } from "./types";
 import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
-import { computeMatchScore } from "@/lib/matchup/scoringUtils";
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
 
 export const MAX_SHIELDS_PER_FIGHTER = 4
@@ -83,7 +82,7 @@ export class CombatEngine {
   ): CombatFighter {
     const durability = c.powerstats?.durability ?? 50;
     const maxHp = Math.max(40, durability * 2);
-    const overall = computeMatchScore(c as any).overall ?? 50;
+    const overall = c.overall ?? 50;
     const realPowers = (Array.isArray(c.powers) ? c.powers : []).filter(
       isRealPower
     ) as Power[];

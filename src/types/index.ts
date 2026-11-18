@@ -54,6 +54,7 @@ export type Character = {
     weaknesses: string[];
     character_type: string; // anime, cartoon, comic, game, movie, novel, real, tv
     imageFocus: string;
+    overall: number;
 }
 
 export type Universe = {

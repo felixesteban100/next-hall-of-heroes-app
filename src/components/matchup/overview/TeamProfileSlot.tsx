@@ -1,6 +1,5 @@
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { ViewTransition } from "react";
-import { computeMatchScore } from "@/lib/matchup";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
@@ -34,7 +33,7 @@ export function TeamProfileSlot({
     return (
         <div className="min-w-0 p-2 sm:p-3 md:p-4 border-r border-muted-foreground/20 last:border-r-0 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full mt-2">
-                {entities.map(c => ({ ...c, overall: computeMatchScore(c).overall })).sort((a, b) => b.overall - a.overall).map((e) => (
+                {entities.map(c => ({ ...c })).sort((a, b) => b.overall - a.overall).map((e) => (
                     <LoadingLink key={e.id} href={`/characters/${e.id}`} className="flex flex-col justify-center items-center">
                         <div
                             key={e.id}
@@ -54,7 +53,7 @@ export function TeamProfileSlot({
                             </ViewTransition>
                             <ScoreBadgeOnCard
                                 entity={e}
-                                score={computeMatchScore(e).overall}
+                                score={e.overall}
                                 side="front"
                             />
                         </div>

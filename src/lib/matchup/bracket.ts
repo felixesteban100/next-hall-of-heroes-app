@@ -1,5 +1,4 @@
 import { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import { computeMatchScore } from "./scoringUtils";
 
 export type BracketFighter = {
     id: string | number;
@@ -24,7 +23,7 @@ function getFighter(character: CharacterWithJoinTeamUniversePowerEnemies): Brack
     return {
         id: character.id,
         name: character.name,
-        overall: computeMatchScore(character).overall,
+        overall: character.overall,
         image: character.images.md,
         imageFocus: character.imageFocus,
     };

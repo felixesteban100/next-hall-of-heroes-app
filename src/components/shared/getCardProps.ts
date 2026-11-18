@@ -21,7 +21,6 @@ import {
 import { getCharacterAlignmentText, getCharacterAlignmentTextColor, getCharacterGenderIcon } from "@/lib/character_utils";
 import { getAlignmentIcon } from "@/lib/character_utils";
 import { PowerRole } from "@/types";
-import { computeMatchScore } from "@/lib/matchup";
 
 export const getCardProps = (item: any, type: EntityType) => {
     switch (type) {
@@ -67,7 +66,7 @@ export const getCardProps = (item: any, type: EntityType) => {
 
             return {
                 wholeEntity: item,
-                score: computeMatchScore(item).overall,
+                score: item.overall,
                 title: item.name,
                 id: item.id,
                 image: item.images?.md || "/placeholder.png",
