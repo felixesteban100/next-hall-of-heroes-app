@@ -15,6 +15,7 @@ import { MasonryGallery } from "@/components/shared/MasonryGallery";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 
 import CompareWithButton from "@/components/shared/CompareWithButton";
+import { computeMatchScore } from "@/lib/matchup";
 
 export const instant = false;
 
@@ -113,6 +114,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
     );
 
     const characterPropertiesColor = getCharacterThematicMix(character)
+
+    const characterScore = computeMatchScore(character)
 
     return (
         <div className="pb-8 space-y-6 pt-5">
@@ -216,10 +219,10 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* Scores */}
-            {character.overall && <div id={"Scores"} className="space-y-2">
+            {characterScore && <div id={"Scores"} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Scores</p>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                    {Object.entries(character.overall).map(([key, value]) => (
+                    {Object.entries(characterScore).map(([key, value]) => (
                         <div key={key} className={`${key == "overall" && "col-span-2 lg:col-span-3"} flex flex-col justify-between gap-2 border p-3 rounded bg-muted`}>
                             {/* <span className="font-light capitalize">{key}: <span className="font-bold">{value}</span></span> */}
                             <p className="text-sm font-light flex gap-1.5 items-center capitalize">
