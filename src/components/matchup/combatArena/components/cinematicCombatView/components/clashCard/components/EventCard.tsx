@@ -11,7 +11,7 @@ import FighterSlot from "./FighterSlot";
 import type {
     ActionEvent,
     EnrichedFighter,
-} from "@/lib/matchup/combat/adapters";
+} from "@/lib/matchup/combat/adapters/adapters";
 
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import type { CombatActionType } from "@/components/shared/powerOverlay/PowerOverlay";

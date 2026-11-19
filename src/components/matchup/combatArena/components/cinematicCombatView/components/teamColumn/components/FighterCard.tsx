@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
-import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import type { EnrichedFighter } from "@/lib/matchup/combat/adapters/adapters";
 import Avatar from "./Avatar";
 import FighterResourceBar from "./FighterResourceBar";
 import { useIsMobile } from "@/components/shared/SwipeGrid";
@@ -26,12 +26,14 @@ type Props = {
     isSelectedActor: boolean;
     isSelectedTarget: boolean;
     isValidTarget: boolean;
+    isProtected?: boolean;
     canSelectActor?: boolean;
     eventType?: AvatarProps["eventType"];
     eventRole?: AvatarProps["eventRole"];
     onClick: () => void;
     setAvatarRef: (node: HTMLDivElement | null) => void;
     size?: number;
+    isMultiTargetSelected?: boolean;
 };
 
 export default function FighterCard({
@@ -49,11 +51,13 @@ export default function FighterCard({
     isSelectedActor,
     isSelectedTarget,
     isValidTarget,
+    isProtected = false,
     canSelectActor,
     eventType,
     eventRole,
     onClick,
     setAvatarRef,
+    isMultiTargetSelected = false,
 }: Props) {
     const shakeControls = useAnimationControls();
 
@@ -148,8 +152,9 @@ export default function FighterCard({
                         rx="8"
                         fill="none"
                         stroke="currentColor"
-                        strokeOpacity="0.2"
-                        strokeWidth="2"
+                        strokeOpacity={isMultiTargetSelected ? 1 : 0.2}
+                        strokeWidth={isMultiTargetSelected ? 2.5 : 2}
+                        className="transition-all duration-200"
                     />
 
                     {/* Traveling dash/dot circulating along the border */}
@@ -194,6 +199,7 @@ export default function FighterCard({
                     isHealing={latestHeal === fighter.id}
                     isReviving={latestRevive === fighter.id}
                     isDefending={latestDefend === fighter.id}
+                    isProtected={isProtected}
                     isInvolved={isSelectedActor || isSelectedTarget}
                     eventType={eventType}
                     eventRole={eventRole}
@@ -229,6 +235,16 @@ export default function FighterCard({
                 variant={variant}
                 colorMode="energy"
                 colorValue={colors.background}
+            />
+
+            {/* Fatigue bar */}
+            <FighterResourceBar
+                size={avatarSize}
+                current={fighter.fatigue}
+                max={100}
+                label="FAT"
+                variant={variant}
+                colorMode="fatigue"
             />
         </div>
     );

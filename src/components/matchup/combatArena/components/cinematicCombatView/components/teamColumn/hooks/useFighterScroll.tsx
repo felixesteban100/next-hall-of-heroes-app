@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ActionEvent } from "@/lib/matchup/combat/adapters";
+import type { ActionEvent } from "@/lib/matchup/combat/adapters/adapters";
 
 type UseFighterScrollProps = {
     eventKey?: number;

@@ -1,6 +1,6 @@
 
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
-import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import type { EnrichedFighter } from "@/lib/matchup/combat/adapters/adapters";
 
 export function isTeamACharacter(
     character: EnrichedFighter | null | undefined,

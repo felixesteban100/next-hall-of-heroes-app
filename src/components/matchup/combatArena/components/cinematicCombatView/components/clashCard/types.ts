@@ -8,9 +8,9 @@ import type {
 import type {
     ActionEvent,
     EnrichedFighter,
-} from "@/lib/matchup/combat/adapters";
+} from "@/lib/matchup/combat/adapters/adapters";
 
-import type { Side } from "@/lib/matchup/combat/types";
+import type { Side } from "@/lib/matchup/combat/types/types";
 
 export type CombatPhase = 0 | 1 | 2 | 3;
 

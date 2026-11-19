@@ -5,7 +5,7 @@ import type { CombatPhase } from "../types";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { cn } from "@/lib/utils";
 import { Skull, Lock } from "lucide-react";
-import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import type { EnrichedFighter } from "@/lib/matchup/combat/adapters/adapters";
 import PowerOverlay, {
     type CombatActionType,
 } from "@/components/shared/powerOverlay/PowerOverlay";
@@ -51,6 +51,7 @@ interface FighterSlotProps {
     activePower: Power | { name: string; combatRole: PowerRole } | undefined;
     damagePopup?: number | null;
     healPopup?: number | null;
+    fatiguePopup?: number | null;
     prevHp?: number;
     phase: CombatPhase;
     isShielded?: boolean;
@@ -68,6 +69,7 @@ export default function FighterSlot({
     activePower,
     damagePopup,
     healPopup,
+    fatiguePopup,
     prevHp,
     phase,
     isShielded = false,
@@ -91,6 +93,7 @@ export default function FighterSlot({
 
     const showDamagePopup = phase >= 2 && !isShielded;
     const showHealPopup = phase >= 2;
+    const showFatiguePopup = phase >= 2 && !isDefender;
 
     return (
         <div className="relative flex w-full min-w-0 max-w-36 flex-col items-center gap-1.5 sm:gap-2">
@@ -122,6 +125,21 @@ export default function FighterSlot({
                         (+{healPopup} HP)
                     </motion.span>
                 )}
+
+                {showFatiguePopup &&
+                    fatiguePopup != null &&
+                    fatiguePopup > 0 && (
+                        <motion.span
+                            key="fatigue"
+                            initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                            animate={{ opacity: 1, y: -10, scale: 1 }}
+                            exit={{ opacity: 0, y: -35, scale: 0.8 }}
+                            transition={{ duration: 1 }}
+                            className="pointer-events-none absolute left-1/2 z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-orange-400 drop-shadow-md sm:text-xs"
+                        >
+                            (+{fatiguePopup} FAT)
+                        </motion.span>
+                    )}
             </AnimatePresence>
 
             {/* Fighter Role */}

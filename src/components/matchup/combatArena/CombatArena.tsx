@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CombatEngine } from "@/lib/matchup/combat/CombatEngine";
+import { CombatEngine } from "@/lib/matchup/combat/engine/CombatEngine";
 import type {
     CombatState,
     CombatAction,
     CombatEvent,
     Side,
-} from "@/lib/matchup/combat/types";
+} from "@/lib/matchup/combat/types/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies } from "@/types";
 import { CombatHeader } from "./components/CombatHeader";
 import CinematicCombatView from "./components/cinematicCombatView/CinematicCombatView";
@@ -82,24 +82,49 @@ export function CombatArena({
         (next: TargetMode | null) => {
             const previous = targetModeRef.current;
 
-            // Always keep the latest onConfirm callback.
-            targetModeRef.current = next;
+            // Preserve selected targets when only the callbacks are refreshed.
+            const shouldPreserveSelection =
+                previous !== null &&
+                next !== null &&
+                previous.active === next.active &&
+                previous.selectionMode === next.selectionMode &&
+                previous.validIds.length === next.validIds.length &&
+                previous.validIds.every(
+                    (id, index) => id === next.validIds[index]
+                );
 
-            // Only update React state when the actual targeting mode changes.
+            const normalizedNext =
+                shouldPreserveSelection && next.selectedIds === undefined
+                    ? {
+                        ...next,
+                        selectedIds: previous.selectedIds ?? [],
+                    }
+                    : next;
+
+            // Always keep the latest callbacks.
+            targetModeRef.current = normalizedNext;
+
             const unchanged =
-                previous === null && next === null ||
+                previous === null && normalizedNext === null ||
                 (
                     previous !== null &&
-                    next !== null &&
-                    previous.active === next.active &&
-                    previous.validIds.length === next.validIds.length &&
+                    normalizedNext !== null &&
+                    previous.active === normalizedNext.active &&
+                    previous.selectionMode === normalizedNext.selectionMode &&
+                    previous.validIds.length === normalizedNext.validIds.length &&
                     previous.validIds.every(
-                        (id, index) => id === next.validIds[index]
+                        (id, index) => id === normalizedNext.validIds[index]
+                    ) &&
+                    (previous.selectedIds ?? []).length ===
+                    (normalizedNext.selectedIds ?? []).length &&
+                    (previous.selectedIds ?? []).every(
+                        (id, index) =>
+                            id === (normalizedNext.selectedIds ?? [])[index]
                     )
                 );
 
             if (!unchanged) {
-                setTargetMode(next);
+                setTargetMode(normalizedNext);
             }
         },
         []
@@ -262,10 +287,31 @@ export function CombatArena({
         if (currentTargetMode?.active) {
             if (!currentTargetMode.validIds.includes(id)) return;
 
+            // Multiple selection: toggle the selected target.
+            if (currentTargetMode.selectionMode === "multiple") {
+                const selectedIds = currentTargetMode.selectedIds ?? [];
+
+                const nextSelectedIds = selectedIds.includes(id)
+                    ? selectedIds.filter((selectedId) => selectedId !== id)
+                    : [...selectedIds, id];
+
+                const nextMode = {
+                    ...currentTargetMode,
+                    selectedIds: nextSelectedIds,
+                };
+
+                targetModeRef.current = nextMode;
+                setTargetMode(nextMode);
+
+                return;
+            }
+
+            // Single selection: preserve the existing behavior.
             currentTargetMode.onConfirm(id);
 
             targetModeRef.current = null;
             setTargetMode(null);
+
             return;
         }
 

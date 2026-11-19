@@ -9,7 +9,8 @@ import type {
   BattleMetadata,
   FighterTelemetry,
   StatusEffectType,
-} from "./types";
+  TeamOrderType,
+} from "../types/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
 
@@ -69,7 +70,11 @@ export class CombatEngine {
       phase: "player",
       availablePlayerIds: [],
       availableAIIds: [],
-      selectedTargetId: null
+      selectedTargetId: null,
+      lastActorBySide: {
+        A: null,
+        B: null,
+      },
     };
 
     this.startSidePhase(this.state.startingSide);
@@ -114,6 +119,7 @@ export class CombatEngine {
       isAlive: true,
       image: c.images?.md ?? "",
       imageFocus: c.imageFocus ?? "50% 18%",
+      fatigue: 0,
     };
   }
 
@@ -147,22 +153,6 @@ export class CombatEngine {
         ok: false,
         reason: `${actor.name} already has the maximum of 4 shields`,
       };
-    }
-
-    if (action.type === "use_power") {
-      const power = actor.powers.find(
-        (p) => p.id === action.powerId
-      );
-
-      if (
-        power?.combatRole === "Defensive" &&
-        activeShieldCount >= 4
-      ) {
-        return {
-          ok: false,
-          reason: `${actor.name} already has the maximum of 4 shields`,
-        };
-      }
     }
 
     if (actor.side !== this.state.activeSide) {
@@ -201,6 +191,46 @@ export class CombatEngine {
         return { ok: false, reason: "Invalid actor" };
       }
     }
+    if (action.type === "team_order") {
+      if (action.teamOrderType !== "protect") {
+        return { ok: false, reason: "Unsupported team order" };
+      }
+
+      const targetId = action.targetIds?.[0];
+      const target = targetId != null ? this.getFighter(targetId) : undefined;
+
+      if (!actor.isAlive) {
+        return { ok: false, reason: "A KO'd fighter cannot protect an ally" };
+      }
+
+      if (!target || !target.isAlive) {
+        return { ok: false, reason: "Invalid protection target" };
+      }
+
+      if (target.side !== actor.side) {
+        return { ok: false, reason: "You can only protect an ally" };
+      }
+
+      if (target.id === actor.id) {
+        return { ok: false, reason: "You cannot protect yourself" };
+      }
+
+      if (
+        this.state.teamOrders.some(
+          (order) =>
+            order.type === "protect" &&
+            order.side === actor.side &&
+            order.targetId === target.id &&
+            order.duration > 0 &&
+            (order.value ?? 0) > 0
+        )
+      ) {
+        return {
+          ok: false,
+          reason: `${target.name} is already protected`,
+        };
+      }
+    }
 
 
     // if (this.state.phase === "player") {
@@ -231,20 +261,22 @@ export class CombatEngine {
         return { ok: false, reason: "Power not found" };
       }
 
-      const targetId = action.targetIds?.[0];
+      const targetIds = [...new Set(action.targetIds ?? [])];
 
-      if (targetId == null) {
+      if (targetIds.length === 0) {
         return { ok: false, reason: "No target selected" };
       }
 
-      const target = this.getFighter(targetId);
+      const targets = targetIds.map((id) => this.getFighter(id));
 
-
-      if (!target) {
+      if (targets.some((target) => !target)) {
         return { ok: false, reason: "Invalid target" };
       }
 
+      const validTargets = targets as CombatFighter[];
+
       let effectiveRole = power.combatRole;
+
       if (
         effectiveRole === "Hybrid / Versatile" &&
         action.chosenRole
@@ -252,54 +284,166 @@ export class CombatEngine {
         effectiveRole = action.chosenRole;
       }
 
-      if (
-        effectiveRole === "Control" &&
-        target.status.some(
-          (status) =>
-            status.type === "stun_immune" &&
-            status.duration > 0
-        )
-      ) {
-        return {
-          ok: false,
-          reason: `${target.name} is immune to stun`,
-        };
-      }
+      const isAllySupportPower =
+        effectiveRole === "Utility" ||
+        effectiveRole === "Defensive";
 
-      const name = power.name.toLowerCase();
+      if (isAllySupportPower) {
+        const uniqueTargetIds = targetIds;
 
-      const isHealingPower =
-        name.includes("heal") ||
-        name.includes("regene") ||
-        name.includes("recovery");
-      const isUtilityPower = power.combatRole === "Utility";
+        const livingAllyIds = this.state.fighters
+          .filter(
+            (fighter) =>
+              fighter.side === actor.side &&
+              fighter.isAlive
+          )
+          .map((fighter) => fighter.id);
 
-      if (isHealingPower) {
-        if (target.side !== actor.side) {
-          return { ok: false, reason: "Healing powers require an ally" };
-        }
+        const eligibleDefensiveTargetIds = this.state.fighters
+          .filter((fighter) => {
+            if (
+              fighter.side !== actor.side ||
+              !fighter.isAlive
+            ) {
+              return false;
+            }
 
-        // A KO'd actor must revive themselves, never another fighter.
-        if (!actor.isAlive && target.id !== actor.id) {
-          return { ok: false, reason: "Self-revival must target the actor" };
-        }
+            const activeShields = fighter.status.filter(
+              (status) =>
+                status.type === "shield" &&
+                status.duration > 0
+            ).length;
 
-        if (!target.isAlive) {
-          if (target.id !== actor.id || target.hasRevived) {
-            return { ok: false, reason: "Invalid revival target" };
-          }
-        } else if (target.currentHp >= target.maxHp) {
-          return { ok: false, reason: "Target already has full HP" };
-        }
-      } else if (isUtilityPower) {
-        if (target.side !== actor.side || !target.isAlive) {
+            return activeShields < this.MAX_SHIELDS_PER_FIGHTER;
+          })
+          .map((fighter) => fighter.id);
+
+        const expectedTargetIds =
+          effectiveRole === "Defensive"
+            ? eligibleDefensiveTargetIds
+            : livingAllyIds;
+
+        if (
+          power.targetType === "Self" &&
+          (
+            uniqueTargetIds.length !== 1 ||
+            uniqueTargetIds[0] !== actor.id
+          )
+        ) {
           return {
             ok: false,
-            reason: "Utility powers require a living ally",
+            reason: "This power must target the acting fighter",
           };
         }
-      } else if (!target.isAlive) {
-        return { ok: false, reason: "Invalid target" };
+
+        if (
+          power.targetType === "Single Target" &&
+          uniqueTargetIds.length !== 1
+        ) {
+          return {
+            ok: false,
+            reason: "This power can only target one ally",
+          };
+        }
+
+        if (
+          power.targetType === "Area of Effect (AoE)" ||
+          power.targetType === "Self / AoE"
+        ) {
+          if (
+            uniqueTargetIds.length !== expectedTargetIds.length ||
+            !expectedTargetIds.every((id) =>
+              uniqueTargetIds.includes(id)
+            )
+          ) {
+            return {
+              ok: false,
+              reason: "This power must target all eligible allies",
+            };
+          }
+        }
+
+        if (power.targetType === "Single Target / AoE") {
+          if (
+            uniqueTargetIds.some(
+              (id) => !expectedTargetIds.includes(id)
+            )
+          ) {
+            return {
+              ok: false,
+              reason: "This power contains an invalid ally target",
+            };
+          }
+        }
+      }
+
+      if (
+        effectiveRole === "Hybrid / Versatile" &&
+        action.chosenRole
+      ) {
+        effectiveRole = action.chosenRole;
+      }
+
+      for (const target of validTargets) {
+        if (
+          effectiveRole === "Control" &&
+          target.status.some(
+            (status) =>
+              status.type === "stun_immune" &&
+              status.duration > 0
+          )
+        ) {
+          return {
+            ok: false,
+            reason: `${target.name} is immune to stun`,
+          };
+        }
+
+        const name = power.name.toLowerCase();
+
+        const isHealingPower =
+          name.includes("heal") ||
+          name.includes("regene") ||
+          name.includes("recovery");
+
+        const isUtilityPower = effectiveRole === "Utility";
+
+        if (isHealingPower) {
+          if (target.side !== actor.side) {
+            return { ok: false, reason: "Healing powers require an ally" };
+          }
+
+          if (!actor.isAlive && target.id !== actor.id) {
+            return {
+              ok: false,
+              reason: "Self-revival must target the actor",
+            };
+          }
+
+          if (!target.isAlive) {
+            if (target.id !== actor.id || target.hasRevived) {
+              return { ok: false, reason: "Invalid revival target" };
+            }
+          } else if (target.currentHp >= target.maxHp) {
+            return { ok: false, reason: "Target already has full HP" };
+          }
+        } else if (effectiveRole === "Defensive") {
+          if (target.side !== actor.side || !target.isAlive) {
+            return {
+              ok: false,
+              reason: "Defensive powers require a living ally",
+            };
+          }
+        } else if (isUtilityPower) {
+          if (target.side !== actor.side || !target.isAlive) {
+            return {
+              ok: false,
+              reason: "Utility powers require a living ally",
+            };
+          }
+        } else if (!target.isAlive || target.side === actor.side) {
+          return { ok: false, reason: "Invalid enemy target" };
+        }
       }
 
       if ((actor.cooldowns[power.id] ?? 0) > 0) {
@@ -317,7 +461,6 @@ export class CombatEngine {
           reason: `Not enough energy (needs ${energy})`,
         };
       }
-
     }
 
     return { ok: true };
@@ -352,6 +495,13 @@ export class CombatEngine {
       case "swap_row":
         events = [this.resolveSwapRow(actor, action.newRow ?? "front")];
         break;
+      case "team_order":
+        events = this.resolveTeamOrder(
+          actor,
+          action.teamOrderType!,
+          action.targetIds?.[0]
+        );
+        break;
       case "pass":
         events = [
           {
@@ -367,6 +517,11 @@ export class CombatEngine {
     }
 
     this.state.events.push(...events);
+
+    if (events.length > 0) {
+      actor.fatigue = Math.min(100, actor.fatigue + 30);
+      this.state.lastActorBySide[actor.side] = actor.id;
+    }
 
     const endEvent = this.checkWinCondition();
 
@@ -387,10 +542,59 @@ export class CombatEngine {
   }
 
   // ── Resolvers ──────────────────────────────────────────
-  private resolveBasicAttack(actor: CombatFighter, targetId?: number): CombatEvent[] {
-    const target = this.state.fighters.find((f) => f.id === targetId && f.isAlive);
-    if (!target) return [];
+  private resolveProtectionTarget(
+    intendedTarget: CombatFighter
+  ): {
+    target: CombatFighter;
+    protectedTarget?: CombatFighter;
+  } {
+    const order = this.state.teamOrders.find(
+      (item) =>
+        item.type === "protect" &&
+        item.side === intendedTarget.side &&
+        item.targetId === intendedTarget.id &&
+        item.duration > 0 &&
+        (item.value ?? 0) > 0
+    );
 
+    if (!order) {
+      return { target: intendedTarget };
+    }
+
+    const protectorId = Number(order.id.split("-")[1]);
+    const protector = this.getFighter(protectorId);
+
+    if (!protector) {
+      this.state.teamOrders = this.state.teamOrders.filter(
+        (item) => item.id !== order.id
+      );
+
+      return { target: intendedTarget };
+    }
+
+    order.value = (order.value ?? 0) - 1;
+
+    if (order.value <= 0) {
+      this.state.teamOrders = this.state.teamOrders.filter(
+        (item) => item.id !== order.id
+      );
+    }
+
+    return {
+      target: protector,
+      protectedTarget: intendedTarget,
+    };
+  }
+
+
+  private resolveBasicAttack(actor: CombatFighter, targetId?: number): CombatEvent[] {
+    const selectedTarget = this.state.fighters.find(
+      (f) => f.id === targetId && f.isAlive
+    );
+
+    if (!selectedTarget) return [];
+
+    const { target, protectedTarget } = this.resolveProtectionTarget(selectedTarget);
 
     const baseDamage = this.calculateDamage(actor);
 
@@ -417,11 +621,14 @@ export class CombatEngine {
         damage: 0,
         damageBlocked,
         text:
-          `${actor.name}'s attack deals ${totalIncomingDamage} damage, ` +
-          `but ${target.name}'s SHIELD absorbs all ${damageBlocked} damage! ` +
-          `${shieldResult.shieldsConsumed} shield consumed — ` +
-          `${shieldResult.shieldsRemaining} remaining. ` +
-          `HP unchanged (${target.currentHp}/${target.maxHp}).`,
+          protectedTarget
+            ? `${actor.name} strikes ${protectedTarget.name}, but ${target.name} intercepts the attack! `
+            : `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} ` +
+            `${actor.name}'s attack deals ${totalIncomingDamage} damage, ` +
+            `but ${target.name}'s SHIELD absorbs all ${damageBlocked} damage! ` +
+            `${shieldResult.shieldsConsumed} shield consumed — ` +
+            `${shieldResult.shieldsRemaining} remaining. ` +
+            `HP unchanged (${target.currentHp}/${target.maxHp}).`,
         side: actor.side,
         attackerName: actor.name,
         defenderName: target.name,
@@ -439,6 +646,13 @@ export class CombatEngine {
 
     const isKO = target.currentHp <= 0;
     if (isKO) target.isAlive = false;
+    if (isKO) {
+      this.state.teamOrders = this.state.teamOrders.filter(
+        (order) =>
+          order.type !== "protect" ||
+          Number(order.id.split("-")[1]) !== target.id
+      );
+    }
 
     return [
       {
@@ -449,14 +663,17 @@ export class CombatEngine {
         damage: finalDamage,
         damageBlocked,
         text:
-          `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} ` +
-          `for ${totalIncomingDamage} total damage` +
-          `${focusStatus ? ` (${focusStatus.value * 100}% boost)` : ""}` +
-          `${damageBlocked > 0
-            ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${finalDamage} damage through to HP. ` +
-            `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
-            : ` — ${finalDamage} damage dealt to HP.`}` +
-          `${isKO ? " — KO!" : ""}`,
+          protectedTarget
+            ? `${actor.name} strikes ${protectedTarget.name}, but ${target.name} intercepts the attack! `
+            : `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} ` +
+            `${actor.name} strikes ${target.name}${focusStatus ? " with Focus" : ""} ` +
+            `for ${totalIncomingDamage} total damage` +
+            `${focusStatus ? ` (${focusStatus.value * 100}% boost)` : ""}` +
+            `${damageBlocked > 0
+              ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${finalDamage} damage through to HP. ` +
+              `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
+              : ` — ${finalDamage} damage dealt to HP.`}` +
+            `${isKO ? " — KO!" : ""}`,
         side: actor.side,
         isKO,
         attackerName: actor.name,
@@ -500,204 +717,260 @@ export class CombatEngine {
 
     // HEALING / SELF-REVIVAL
     if (isHealingPower) {
-      const targetId = targetIds[0] ?? actor.id;
+      const selectedTargets = [...new Set(targetIds.length > 0 ? targetIds : [actor.id])];
 
-      const target = this.state.fighters.find(
-        (fighter) => fighter.id === targetId
-      );
+      const events: CombatEvent[] = [];
 
-      if (!target || target.side !== actor.side) return [];
+      for (const targetId of selectedTargets) {
+        const target = this.state.fighters.find(
+          (fighter) => fighter.id === targetId
+        );
 
-      // A KO'd character can only revive themselves.
-      if (!actor.isAlive && target.id !== actor.id) return [];
+        if (!target || target.side !== actor.side) continue;
 
-      const isRevive = !target.isAlive;
+        // A KO'd character can only revive themselves.
+        if (!actor.isAlive && target.id !== actor.id) continue;
 
-      if (isRevive && (target.id !== actor.id || target.hasRevived)) {
-        return [];
+        const isRevive = !target.isAlive;
+
+        if (isRevive && (target.id !== actor.id || target.hasRevived)) {
+          continue;
+        }
+
+        if (!isRevive && target.currentHp >= target.maxHp) {
+          continue;
+        }
+
+        const healAmount = Math.round(
+          target.maxHp * 0.28 + (power.tier ?? 1) * 8
+        );
+
+        const previousHp = target.currentHp;
+
+        target.currentHp = Math.min(
+          target.maxHp,
+          target.currentHp + healAmount
+        );
+
+        const actualHealing = target.currentHp - previousHp;
+
+        if (isRevive) {
+          target.isAlive = true;
+          target.hasRevived = true;
+        }
+
+        events.push({
+          id: this.nextEventId(),
+          type: isRevive ? "revive" : "heal",
+          actorId: actor.id,
+          targetIds: [target.id],
+          power,
+          healing: actualHealing,
+          text: isRevive
+            ? `${actor.name} regenerates and revives themselves with ${actualHealing} HP!`
+            : `${actor.name} uses [${power.name}] and restores ${actualHealing} HP to ${target.name}!`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: target.name,
+          powerName: power.name,
+        });
       }
 
-      if (!isRevive && target.currentHp >= target.maxHp) {
-        return [];
-      }
+      if (events.length === 0) return [];
 
       spendPower();
 
-      const healAmount = Math.round(
-        target.maxHp * 0.28 + (power.tier ?? 1) * 8
-      );
-
-      const previousHp = target.currentHp;
-
-      target.currentHp = Math.min(
-        target.maxHp,
-        target.currentHp + healAmount
-      );
-
-      const actualHealing = target.currentHp - previousHp;
-
-      if (isRevive) {
-        target.isAlive = true;
-        target.hasRevived = true;
-      }
-
-      return [{
-        id: this.nextEventId(),
-        type: isRevive ? "revive" : "heal",
-        actorId: actor.id,
-        targetIds: [target.id],
-        power,
-        healing: actualHealing,
-        text: isRevive
-          ? `${actor.name} regenerates and revives themselves with ${actualHealing} HP!`
-          : `${actor.name} uses [${power.name}] and restores ${actualHealing} HP to ${target.name}!`,
-        side: actor.side,
-        attackerName: actor.name,
-        defenderName: target.name,
-        powerName: power.name,
-      }];
+      return events;
     }
 
     // UTILITY — FOCUS
     if (role === "Utility") {
-      const targetId = targetIds[0] ?? actor.id;
+      const selectedTargets = [...new Set(targetIds)];
 
-      const target = this.state.fighters.find(
-        (fighter) => fighter.id === targetId
-      );
+      const events: CombatEvent[] = [];
 
-      if (!target || !target.isAlive || target.side !== actor.side) {
-        return [];
+      for (const targetId of selectedTargets) {
+        const target = this.state.fighters.find(
+          (fighter) => fighter.id === targetId
+        );
+
+        if (!target || !target.isAlive || target.side !== actor.side) {
+          continue;
+        }
+
+        const focusStatus: StatusEffect = {
+          id: `focus-${this.nextEventId()}`,
+          type: "focus",
+          name: "Focus",
+          duration: 2,
+          value: 0.4,
+          sourceId: actor.id,
+        };
+
+        const applied = this.applyStatus(target, focusStatus);
+
+        if (!applied) continue;
+
+        events.push({
+          id: this.nextEventId(),
+          type: "status_applied",
+          power,
+          actorId: actor.id,
+          targetIds: [target.id],
+          status: focusStatus,
+          text: `${target.name} gained Focus!`,
+          side: actor.side,
+        });
       }
+
+      if (events.length === 0) return [];
 
       spendPower();
 
-      const focusStatus: StatusEffect = {
-        id: `focus-${this.nextEventId()}`,
-        type: "focus",
-        name: "Focus",
-        duration: 2,
-        value: 0.4,
-        sourceId: actor.id,
-      };
-
-      this.applyStatus(target, focusStatus);
-
-      return [{
-        id: this.nextEventId(),
-        type: "status_applied",
-        power,
-        actorId: actor.id,
-        targetIds: [target.id],
-        status: focusStatus,
-        text: `${target.name} gained Focus!`,
-        side: actor.side,
-      }];
+      return events;
     }
-
 
     // CONTROL
     if (role === "Control") {
-      const target = this.state.fighters.find(
-        (fighter) =>
-          fighter.id === targetIds[0] &&
-          fighter.isAlive &&
-          fighter.side !== actor.side
-      );
+      const selectedTargets = [...new Set(targetIds)];
 
-      if (!target) return [];
+      const events: CombatEvent[] = [];
 
-      // Stun immunity prevents the stun and does not consume energy.
-      const isStunImmune = target.status.some(
-        (status) =>
-          status.type === "stun_immune" && status.duration > 0
-      );
+      for (const targetId of selectedTargets) {
+        const target = this.state.fighters.find(
+          (fighter) =>
+            fighter.id === targetId &&
+            fighter.isAlive &&
+            fighter.side !== actor.side
+        );
 
-      if (isStunImmune) return [];
+        if (!target) continue;
 
-      const stunStatus: StatusEffect = {
-        id: `stun-${target.id}-${power.id}-${this.nextEventId()}`,
-        type: "stun",
-        name: "Stunned",
-        duration: 2,
-        value: 1,
-        sourceId: actor.id,
-      };
+        // Stun immunity prevents the stun.
+        const isStunImmune = target.status.some(
+          (status) =>
+            status.type === "stun_immune" && status.duration > 0
+        );
 
-      // Only spend resources if the stun was successfully applied.
-      const applied = this.applyStatus(target, stunStatus);
+        if (isStunImmune) continue;
 
-      if (!applied) return [];
-
-      spendPower();
-
-      return [{
-        id: this.nextEventId(),
-        type: "power",
-        actorId: actor.id,
-        targetIds: [target.id],
-        power,
-        status: stunStatus,
-        text: `${actor.name} uses [${power.name}] and stuns ${target.name} for 2 turns!`,
-        side: actor.side,
-        attackerName: actor.name,
-        defenderName: target.name,
-        powerName: power.name,
-      }];
-    }
-
-
-    // DEFENSIVE
-    if (role === "Defensive") {
-      spendPower();
-
-      let shieldsAdded = 0;
-
-      // Attempt to apply two shields, respecting the character limit.
-      for (let i = 0; i < 2; i++) {
-        const applied = this.applyStatus(actor, {
-          id: `shield-${actor.id}-${power.id}-${Date.now()}-${i}`,
-          type: "shield",
-          name: power.name,
+        const stunStatus: StatusEffect = {
+          id: `stun-${target.id}-${power.id}-${this.nextEventId()}`,
+          type: "stun",
+          name: "Stunned",
           duration: 2,
           value: 1,
           sourceId: actor.id,
-        });
+        };
 
-        if (applied) shieldsAdded++;
+        const applied = this.applyStatus(target, stunStatus);
+
+        if (!applied) continue;
+
+        events.push({
+          id: this.nextEventId(),
+          type: "power",
+          actorId: actor.id,
+          targetIds: [target.id],
+          power,
+          status: stunStatus,
+          text: `${actor.name} uses [${power.name}] and stuns ${target.name} for 2 turns!`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: target.name,
+          powerName: power.name,
+        });
       }
 
-      const totalShields = actor.status.filter(
-        (status) => status.type === "shield" && status.duration > 0
-      ).length;
+      if (events.length === 0) return [];
 
-      return [{
-        id: this.nextEventId(),
-        type: "defend",
-        actorId: actor.id,
-        targetIds: [actor.id],
-        power,
-        text: shieldsAdded > 0
-          ? `${actor.name} activates [${power.name}] and gains ${shieldsAdded} protective shield${shieldsAdded > 1 ? "s" : ""}! (${totalShields}/4 shields)`
-          : `${actor.name} activates [${power.name}], but already has the maximum of 4 shields!`,
-        side: actor.side,
-        attackerName: actor.name,
-        defenderName: actor.name,
-        powerName: power.name,
-      }];
+      spendPower();
+
+      return events;
     }
 
-    // OFFENSIVE
-    const target = this.state.fighters.find(
-      (fighter) =>
-        fighter.id === targetIds[0] &&
-        fighter.isAlive &&
-        fighter.side !== actor.side
-    );
+    // DEFENSIVE — MULTI-TARGET
+    if (role === "Defensive") {
+      const selectedTargets = [...new Set(targetIds)];
 
-    if (!target) return [];
+      const events: CombatEvent[] = [];
 
-    spendPower();
+      for (const targetId of selectedTargets) {
+        const target = this.state.fighters.find(
+          (fighter) =>
+            fighter.id === targetId &&
+            fighter.isAlive &&
+            fighter.side === actor.side
+        );
+
+        if (!target) continue;
+
+        let shieldsAdded = 0;
+
+        // Attempt to apply two shields to this target.
+        for (let i = 0; i < 2; i++) {
+          const applied = this.applyStatus(target, {
+            id: `shield-${target.id}-${power.id}-${this.nextEventId()}-${i}`,
+            type: "shield",
+            name: power.name,
+            duration: 2,
+            value: 1,
+            sourceId: actor.id,
+          });
+
+          if (applied) shieldsAdded++;
+        }
+
+        if (shieldsAdded === 0) continue;
+
+        const totalShields = target.status.filter(
+          (status) =>
+            status.type === "shield" &&
+            status.duration > 0
+        ).length;
+
+        events.push({
+          id: this.nextEventId(),
+          type: "defend",
+          actorId: actor.id,
+          targetIds: [target.id],
+          power,
+          text:
+            `${actor.name} activates [${power.name}] and grants ` +
+            `${target.name} ${shieldsAdded} protective shield` +
+            `${shieldsAdded > 1 ? "s" : ""}! ` +
+            `(${totalShields}/4 shields)`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: target.name,
+          powerName: power.name,
+        });
+      }
+
+      if (events.length === 0) return [];
+
+      // Spend energy and apply cooldown once for the entire activation.
+      spendPower();
+
+      return events;
+    }
+
+
+    // OFFENSIVE — MULTI-TARGET
+    const selectedTargets = [...new Set(targetIds)];
+
+    const validTargets = selectedTargets
+      .map((targetId) =>
+        this.state.fighters.find(
+          (fighter) =>
+            fighter.id === targetId &&
+            fighter.isAlive &&
+            fighter.side !== actor.side
+        )
+      )
+      .filter((target): target is CombatFighter => target !== undefined);
+
+    if (validTargets.length === 0) return [];
 
     // Calculate bonus from ALL active Focus stacks.
     const focusStacks = actor.status.filter(
@@ -709,43 +982,119 @@ export class CombatEngine {
       0
     );
 
-    const finalDamage = Math.round(
+    const baseFinalDamage = Math.round(
       damage * (1 + totalFocusBonus)
     );
 
-    const shieldResult = this.resolveShieldDamage(target, finalDamage);
+    const events: CombatEvent[] = [];
+    let focusWasConsumed = false;
 
-    const actualDamage = shieldResult.damage;
-    const damageBlocked = shieldResult.damageBlocked;
-    const totalIncomingDamage = actualDamage + damageBlocked;
+    for (const [index, selectedTarget] of validTargets.entries()) {
+      const damageMultiplier = index === 0 ? 1 : 0.75;
 
-    if (actualDamage === 0) {
-      return [{
+      const targetDamage = Math.round(
+        baseFinalDamage * damageMultiplier
+      );
+      // Resolve protection independently for each selected enemy.
+      const { target, protectedTarget } =
+        this.resolveProtectionTarget(selectedTarget);
+
+      // Apply the target's shields after interception.
+      const shieldResult = this.resolveShieldDamage(
+        target,
+        targetDamage
+      );
+
+      const actualDamage = shieldResult.damage;
+      const damageBlocked = shieldResult.damageBlocked;
+      const totalIncomingDamage = actualDamage + damageBlocked;
+
+      const interceptionText = protectedTarget
+        ? ` (intercepted from ${protectedTarget.name})`
+        : "";
+
+      // All incoming damage was absorbed by shields.
+      if (actualDamage === 0) {
+        events.push({
+          id: this.nextEventId(),
+          type: "defend",
+          actorId: actor.id,
+          targetIds: [target.id],
+          power,
+          damage: 0,
+          damageBlocked,
+          text:
+            `${actor.name} unleashes [${power.name}] on ${target.name}` +
+            `${interceptionText} for ${totalIncomingDamage} total damage` +
+            `${damageMultiplier < 1 ? " (75% AoE damage)" : " (100% primary damage)"}` +
+            `but the SHIELD absorbs all ${damageBlocked} damage! ` +
+            `${shieldResult.shieldsConsumed} shield consumed — ` +
+            `${shieldResult.shieldsRemaining} remaining. ` +
+            `HP unchanged (${target.currentHp}/${target.maxHp}).`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: target.name,
+          powerName: power.name,
+        });
+
+        continue;
+      }
+
+      // Apply damage to the actual recipient.
+      target.currentHp = Math.max(
+        0,
+        target.currentHp - actualDamage
+      );
+
+      focusWasConsumed = true;
+
+      const isKO = target.currentHp <= 0;
+
+      if (isKO) {
+        target.isAlive = false;
+
+        // Remove protection if the KO'd fighter was a protector.
+        this.state.teamOrders = this.state.teamOrders.filter(
+          (order) =>
+            order.type !== "protect" ||
+            Number(order.id.split("-")[1]) !== target.id
+        );
+      }
+
+      events.push({
         id: this.nextEventId(),
-        type: "defend",
+        type: isKO ? "ko" : "power",
         actorId: actor.id,
         targetIds: [target.id],
         power,
-        damage: 0,
+        damage: actualDamage,
         damageBlocked,
         text:
-          `${actor.name} unleashes [${power.name}] on ${target.name} ` +
-          `for ${totalIncomingDamage} total damage, but the SHIELD ` +
-          `absorbs all ${damageBlocked} damage! ` +
-          `${shieldResult.shieldsConsumed} shield consumed — ` +
-          `${shieldResult.shieldsRemaining} remaining. ` +
-          `HP unchanged (${target.currentHp}/${target.maxHp}).`,
+          `${actor.name} unleashes [${power.name}] on ${target.name}` +
+          `${interceptionText} for ${totalIncomingDamage} total damage` +
+          `${focusStacks.length > 0
+            ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)`
+            : ""}` +
+          `${damageBlocked > 0
+            ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${actualDamage} damage through to HP. ` +
+            `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
+            : ` — ${actualDamage} damage dealt to HP.`}` +
+          `${isKO ? " — KO!" : ""}`,
         side: actor.side,
+        isKO,
         attackerName: actor.name,
         defenderName: target.name,
         powerName: power.name,
-      }];
+      });
     }
 
-    target.currentHp = Math.max(0, target.currentHp - actualDamage);
+    if (events.length === 0) return [];
 
-    // Consume Focus only after damage successfully lands.
-    if (focusStacks.length > 0) {
+    // Spend resources once for the entire power activation.
+    spendPower();
+
+    // Consume Focus once if at least one target took HP damage.
+    if (focusWasConsumed && focusStacks.length > 0) {
       const focusIds = new Set(
         focusStacks.map((status) => status.id)
       );
@@ -755,38 +1104,9 @@ export class CombatEngine {
       );
     }
 
-    const isKO = target.currentHp <= 0;
+    return events;
 
-    if (isKO) {
-      target.isAlive = false;
-    }
-    return [{
-      id: this.nextEventId(),
-      type: isKO ? "ko" : "power",
-      actorId: actor.id,
-      targetIds: [target.id],
-      power,
-      damage: actualDamage,
-      damageBlocked,
-      text:
-        `${actor.name} unleashes [${power.name}] on ${target.name} ` +
-        `for ${totalIncomingDamage} total damage` +
-        `${focusStacks.length > 0
-          ? ` (${focusStacks.length} FOCUS STACKS: +${Math.round(totalFocusBonus * 100)}% DAMAGE!)`
-          : ""}` +
-        `${damageBlocked > 0
-          ? ` — SHIELD absorbs ${damageBlocked} damage, allowing ${actualDamage} damage through to HP. ` +
-          `${shieldResult.shieldsConsumed} shield consumed — ${shieldResult.shieldsRemaining} remaining.`
-          : ` — ${actualDamage} damage dealt to HP.`}` +
-        `${isKO ? " — KO!" : ""}`,
-      side: actor.side,
-      isKO,
-      attackerName: actor.name,
-      defenderName: target.name,
-      powerName: power.name,
-    }];
   }
-
 
   private resolveDefend(actor: CombatFighter): CombatEvent {
     const applied = this.applyStatus(actor, {
@@ -814,6 +1134,52 @@ export class CombatEngine {
       side: actor.side,
       attackerName: actor.name,
     };
+  }
+
+  private resolveTeamOrder(
+    actor: CombatFighter,
+    orderType: TeamOrderType,
+    targetId?: number
+  ): CombatEvent[] {
+    if (orderType !== "protect" || targetId == null) return [];
+
+    const target = this.getFighter(targetId);
+
+    if (!target || !target.isAlive || target.side !== actor.side) {
+      return [];
+    }
+
+    const orderId = `protect-${actor.id}-${target.id}`;
+
+    this.state.teamOrders = this.state.teamOrders.filter(
+      (order) =>
+        !(
+          order.type === "protect" &&
+          order.side === actor.side &&
+          order.targetId === target.id
+        )
+    );
+
+    this.state.teamOrders.push({
+      id: orderId,
+      type: "protect",
+      name: `${actor.name} protects ${target.name}`,
+      side: actor.side,
+      targetId: target.id,
+      duration: 2,
+      value: 2,
+    });
+
+    return [{
+      id: this.nextEventId(),
+      type: "team_order",
+      actorId: actor.id,
+      targetIds: [target.id],
+      text: `${actor.name} takes a protective position beside ${target.name}! Protection lasts 2 rounds or until 2 attacks are intercepted.`,
+      side: actor.side,
+      attackerName: actor.name,
+      defenderName: target.name,
+    }];
   }
 
   private resolveSwapRow(actor: CombatFighter, newRow: Row): CombatEvent {
@@ -934,7 +1300,11 @@ export class CombatEngine {
       selectedActorId: null,
       availablePlayerIds: [],
       availableAIIds: [],
-      selectedTargetId: null
+      selectedTargetId: null,
+      lastActorBySide: {
+        A: null,
+        B: null,
+      },
     };
   }
 
@@ -944,10 +1314,14 @@ export class CombatEngine {
   ): number {
     const randomScore = Math.random() * 100;
 
-    const damage =
+    const fatiguePenalty = (actor.fatigue / 100) * 0.15;
+
+    const baseDamage =
       actor.overall * 0.90 +
       Math.min(100, Math.max(0, attackScore)) * 0.08 +
       randomScore * 0.02;
+
+    const damage = baseDamage * (1 - fatiguePenalty);
 
     return Math.max(1, Math.round(damage));
   }
@@ -1241,16 +1615,24 @@ export class CombatEngine {
     );
   }
 
-  private getPowerCost(power: Power): { energy: number; cooldown: number } {
+  private getPowerCost(
+    power: Power,
+    fighter?: CombatFighter
+  ): { energy: number; cooldown: number } {
     const tier = Math.min(power.tier ?? 1, 10);
     const score = Math.min(power.score ?? 40, 100);
 
-    const energy = Math.round(14 + tier * 5 + score * 0.18);
-    const cooldown = 1;
+    const baseEnergy = Math.round(14 + tier * 5 + score * 0.18);
+
+    const fatigueSurcharge = fighter
+      ? Math.round((fighter.fatigue / 100) * 8)
+      : 0;
+
+    const energy = baseEnergy + fatigueSurcharge;
 
     return {
-      energy: Math.min(45, Math.max(12, energy)),
-      cooldown,
+      energy: Math.min(53, Math.max(12, energy)),
+      cooldown: 1,
     };
   }
 
@@ -1270,6 +1652,35 @@ export class CombatEngine {
       return false;
     }
 
+    // Enforce the maximum of 4 active shields.
+    if (status.type === "shield") {
+      const activeShields = fighter.status.filter(
+        (s) => s.type === "shield" && s.duration > 0
+      );
+
+      // Repair existing states that already exceed the limit.
+      if (activeShields.length > 4) {
+        let kept = 0;
+
+        fighter.status = fighter.status.filter((s) => {
+          if (s.type !== "shield" || s.duration <= 0) {
+            return true;
+          }
+
+          kept++;
+          return kept <= 4;
+        });
+      }
+
+      const currentShieldCount = fighter.status.filter(
+        (s) => s.type === "shield" && s.duration > 0
+      ).length;
+
+      if (currentShieldCount >= 4) {
+        return false;
+      }
+    }
+
     // Stun is non-stackable: a new stun replaces the existing one.
     if (!stackableStatuses.includes(status.type)) {
       fighter.status = fighter.status.filter(
@@ -1280,6 +1691,7 @@ export class CombatEngine {
     fighter.status.push(status);
     return true;
   }
+
 
   // private hasShield(fighter: CombatFighter): boolean {
   //   return fighter.status.some((s) => s.type === "shield" && s.duration > 0);
@@ -1350,6 +1762,24 @@ export class CombatEngine {
   private advanceRoundAndTickCooldowns() {
     this.state.round++;
 
+    this.state.teamOrders = this.state.teamOrders
+      .map((order) => ({
+        ...order,
+        duration: order.duration - 1,
+      }))
+      .filter((order) => {
+        if (order.duration <= 0) return false;
+
+        if (order.type === "protect") {
+          const protectorId = Number(order.id.split("-")[1]);
+          const protector = this.getFighter(protectorId);
+
+          return !!protector?.isAlive && (order.value ?? 0) > 0;
+        }
+
+        return true;
+      });
+
     for (const fighter of this.state.fighters) {
       if (!fighter.isAlive) continue;
 
@@ -1394,6 +1824,13 @@ export class CombatEngine {
 
       // 3. Regenerate Energy each round
       this.regenerateEnergy(fighter);
+
+      // 4. Recover fatigue only if the fighter did not act last round.
+      const lastActorId = this.state.lastActorBySide[fighter.side];
+
+      if (fighter.id !== lastActorId) {
+        fighter.fatigue = Math.max(0, fighter.fatigue - 20);
+      }
     }
 
     this.pushEvent({
@@ -1730,16 +2167,27 @@ export class CombatEngine {
   }
 
   private getActionableIds(side: Side): number[] {
-    return this.state.fighters
-      .filter(
-        (fighter) =>
-          fighter.side === side &&
-          (fighter.isAlive || this.canSelfRevive(fighter)) &&
-          !fighter.status.some(
-            (status) => status.type === "stun" && status.duration > 0
-          )
-      )
-      .map((fighter) => fighter.id);
+    const eligibleFighters = this.state.fighters.filter(
+      (fighter) =>
+        fighter.side === side &&
+        (fighter.isAlive || this.canSelfRevive(fighter)) &&
+        !fighter.status.some(
+          (status) => status.type === "stun" && status.duration > 0
+        )
+    );
+
+    const lastActorId = this.state.lastActorBySide[side];
+
+    // Exclude the previous actor when another fighter can act.
+    const rotatedFighters = eligibleFighters.filter(
+      (fighter) => fighter.id !== lastActorId
+    );
+
+    // Allow the previous actor if they are the only eligible fighter.
+    const availableFighters =
+      rotatedFighters.length > 0 ? rotatedFighters : eligibleFighters;
+
+    return availableFighters.map((fighter) => fighter.id);
   }
 
   finishAIPhase() {

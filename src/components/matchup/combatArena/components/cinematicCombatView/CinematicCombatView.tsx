@@ -6,7 +6,7 @@ import type {
     CombatFighter,
     CombatEvent,
     Side,
-} from "@/lib/matchup/combat/types";
+} from "@/lib/matchup/combat/types/types";
 
 import type {
     CharacterWithJoinTeamUniversePowerEnemies,

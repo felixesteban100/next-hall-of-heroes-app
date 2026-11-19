@@ -130,6 +130,17 @@ export default function FighterClash({
         ? damageValue
         : null;
 
+    // Fatigue information
+    const fatigueValue = 30;
+
+    const leftFatiguePopup = leftIsAttacker
+        ? fatigueValue
+        : null;
+
+    const rightFatiguePopup = rightIsAttacker
+        ? fatigueValue
+        : null;
+
     const leftIsTeamA = isTeamACharacter(
         leftFighter,
         teamAChars
@@ -270,6 +281,7 @@ export default function FighterClash({
                                         badgeColorClass={isDefend && !leftIsAttacker ? "text-cyan-400" : undefined}
                                         activePower={activePower}
                                         damagePopup={leftDamagePopup}
+                                        fatiguePopup={leftFatiguePopup}
                                         prevHp={leftFighter.prevHp}
                                         phase={phase}
                                         isDefender={!leftIsAttacker && !isDefend}
@@ -330,6 +342,7 @@ export default function FighterClash({
                                         badgeColorClass={isDefend && !rightIsAttacker ? "text-cyan-400" : undefined}
                                         activePower={activePower}
                                         damagePopup={rightDamagePopup}
+                                        fatiguePopup={rightFatiguePopup}
                                         prevHp={rightFighter.prevHp}
                                         phase={phase}
                                         isDefender={!rightIsAttacker && !isDefend}

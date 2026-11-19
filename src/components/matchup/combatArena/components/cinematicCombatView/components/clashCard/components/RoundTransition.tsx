@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 import { EVENT_STYLES } from "../constants/eventStyles";
 
-import type { ActionEvent } from "@/lib/matchup/combat/adapters";
+import type { ActionEvent } from "@/lib/matchup/combat/adapters/adapters";
 
 type Props = {
     event: ActionEvent;

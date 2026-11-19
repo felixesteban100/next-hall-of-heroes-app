@@ -11,8 +11,9 @@ import {
     Lock,
     Key,
 } from "lucide-react";
-import { combatRoleConfig } from "@/lib/matchup/combat/combatRole";
+import { combatRoleConfig } from "@/lib/matchup/combat/utils/combatRole";
 import { useCombatContext } from "../../../../context/CombatContext";
+import { CombatFighter } from "@/lib/matchup/combat/types/types";
 
 type Props = {
     onClose?: () => void;
@@ -29,6 +30,7 @@ export function CommandPanel({
 }: Props) {
     const {
         state,
+        targetMode,
         onAction,
         onTargetModeChange,
     } = useCombatContext();
@@ -36,6 +38,8 @@ export function CommandPanel({
     const [step, setStep] = useState<Step>("action");
     const [selectedPowerId, setSelectedPowerId] = useState<number | null>(null);
     const [chosenRole, setChosenRole] = useState<PowerRole | null>(null);
+    const [isProtecting, setIsProtecting] = useState(false);
+    const [targetingChoice, setTargetingChoice] = useState<"single" | "multiple">("single");
 
     const actor = useMemo(() => {
         if (!state) return null;
@@ -71,6 +75,12 @@ export function CommandPanel({
             (fighter) => fighter.side === actor.side && fighter.isAlive
         );
     }, [state, actor]);
+
+    const protectTargets = useMemo(() => {
+        if (!actor) return [];
+
+        return allies.filter((fighter) => fighter.id !== actor.id);
+    }, [allies, actor]);
 
     const healingTargets = useMemo(() => {
         if (!actor || !state) return [];
@@ -110,9 +120,69 @@ export function CommandPanel({
         );
     }, []);
 
+    const getValidTargets = useCallback(
+        (power: Power | null, role?: PowerRole | null) => {
+            if (!actor) return [];
+
+            const isStunPower =
+                role === "Control" || power?.combatRole === "Control";
+
+            const isDefensivePower =
+                role === "Defensive" || power?.combatRole === "Defensive";
+
+            if (isDefensivePower) {
+                const eligibleAllies = allies.filter(hasShieldCapacity);
+
+                if (power?.targetType === "Self") {
+                    return eligibleAllies.filter(
+                        (fighter) => fighter.id === actor.id
+                    );
+                }
+
+                return eligibleAllies;
+            }
+
+            if (isUtilityPower(power, role)) {
+                if (power?.targetType === "Self") {
+                    return allies.filter((fighter) => fighter.id === actor.id);
+                }
+
+                return allies;
+            }
+
+            if (isHealingPower(power)) {
+                return healingTargets;
+            }
+
+            if (isStunPower) {
+                return enemies.filter((fighter) =>
+                    !fighter.status.some(
+                        (status) =>
+                            status.type === "stun_immune" &&
+                            status.duration > 0
+                    )
+                );
+            }
+
+            return enemies;
+        },
+        [
+            actor,
+            allies,
+            enemies,
+            healingTargets,
+            isUtilityPower,
+            isHealingPower,
+        ]
+    );
+
+
+
     const isSupportPower =
         isHealingPower(selectedPower) ||
-        isUtilityPower(selectedPower, chosenRole);
+        isUtilityPower(selectedPower, chosenRole) ||
+        chosenRole === "Defensive" ||
+        selectedPower?.combatRole === "Defensive";
 
     const showAllies = isSupportPower;
 
@@ -121,12 +191,21 @@ export function CommandPanel({
         setStep("action");
         setSelectedPowerId(null);
         setChosenRole(null);
+        setIsProtecting(false);
+        setTargetingChoice("single");
     }, [state?.selectedActorId]);
 
     const handleSelectTarget = useCallback((targetId: number) => {
         if (!actor) return;
 
-        if (selectedPowerId != null) {
+        if (isProtecting) {
+            onAction({
+                type: "team_order",
+                actorId: actor.id,
+                teamOrderType: "protect",
+                targetIds: [targetId],
+            });
+        } else if (selectedPowerId != null) {
             onAction({
                 type: "use_power",
                 actorId: actor.id,
@@ -145,8 +224,41 @@ export function CommandPanel({
         setStep("action");
         setSelectedPowerId(null);
         setChosenRole(null);
+        setIsProtecting(false);
+        setTargetingChoice("single");
         onClose?.();
-    }, [actor, selectedPowerId, chosenRole, onAction, onClose]);
+    }, [
+        actor,
+        isProtecting,
+        selectedPowerId,
+        chosenRole,
+        onAction,
+        onClose,
+    ]);
+
+    const handleSelectMultipleTargets = useCallback(
+        (targetIds: number[]) => {
+            if (!actor || targetIds.length === 0 || selectedPowerId == null) {
+                return;
+            }
+
+            onAction({
+                type: "use_power",
+                actorId: actor.id,
+                powerId: selectedPowerId,
+                targetIds,
+                chosenRole: chosenRole ?? undefined,
+            });
+
+            setStep("action");
+            setSelectedPowerId(null);
+            setChosenRole(null);
+            setIsProtecting(false);
+            setTargetingChoice("single");
+            onClose?.();
+        },
+        [actor, selectedPowerId, chosenRole, onAction, onClose]
+    );
 
 
     useEffect(() => {
@@ -156,28 +268,20 @@ export function CommandPanel({
         }
 
         if (step === "target" && actor) {
-            const isStunPower =
-                chosenRole === "Control" ||
-                selectedPower?.combatRole === "Control";
-
-            const validTargets = isUtilityPower(selectedPower, chosenRole)
-                ? allies
-                : showAllies
-                    ? healingTargets
-                    : isStunPower
-                        ? enemies.filter((fighter) =>
-                            !fighter.status.some(
-                                (status) =>
-                                    status.type === "stun_immune" &&
-                                    status.duration > 0
-                            )
-                        )
-                        : enemies;
+            const validTargets = isProtecting
+                ? protectTargets
+                : getValidTargets(selectedPower, chosenRole);
 
             onTargetModeChange({
                 active: true,
                 validIds: validTargets.map((fighter) => fighter.id),
+                selectionMode:
+                    selectedPower?.targetType === "Single Target / AoE" &&
+                        targetingChoice === "multiple"
+                        ? "multiple"
+                        : "single",
                 onConfirm: handleSelectTarget,
+                onConfirmMultiple: handleSelectMultipleTargets,
             });
         } else {
             onTargetModeChange(null);
@@ -186,14 +290,14 @@ export function CommandPanel({
         state,
         step,
         actor,
-        showAllies,
-        healingTargets,
-        allies,
-        enemies,
+        isProtecting,
+        protectTargets,
         selectedPower,
         chosenRole,
-        isUtilityPower,
+        targetingChoice,
+        getValidTargets,
         handleSelectTarget,
+        handleSelectMultipleTargets,
         onTargetModeChange,
     ]);
 
@@ -209,10 +313,15 @@ export function CommandPanel({
         );
     }
 
-    const activeShieldCount = actor.status.filter(
-        (status) => status.type === "shield" && status.duration > 0
-    ).length;
+    const getActiveShieldCount = (fighter: CombatFighter) =>
+        fighter.status.filter(
+            (status) => status.type === "shield" && status.duration > 0
+        ).length;
 
+    const hasShieldCapacity = (fighter: CombatFighter) =>
+        getActiveShieldCount(fighter) < 4;
+
+    const activeShieldCount = getActiveShieldCount(actor);
     const hasMaxShields = activeShieldCount >= 4;
 
     const availablePowers = actor.powers;
@@ -225,13 +334,21 @@ export function CommandPanel({
         setStep("target");
     };
 
+    const handleProtect = () => {
+        if (!actor.isAlive || protectTargets.length === 0) return;
+
+        setSelectedPowerId(null);
+        setChosenRole(null);
+        setIsProtecting(true);
+        setStep("target");
+    };
+
     const handleUsePower = () => {
         setStep("power");
     };
 
 
     const handleSelectPower = (power: Power) => {
-        if (power.combatRole === "Defensive" && hasMaxShields) return;
         setSelectedPowerId(power.id);
         setChosenRole(null);
 
@@ -256,8 +373,11 @@ export function CommandPanel({
             return;
         }
 
-        // Defensive powers execute once, targeting themselves.
-        if (power.combatRole === "Defensive") {
+        // Utility Self powers automatically target the acting fighter.
+        if (
+            isUtilityPower(power) &&
+            power.targetType === "Self"
+        ) {
             onAction({
                 type: "use_power",
                 actorId: actor.id,
@@ -270,16 +390,64 @@ export function CommandPanel({
             return;
         }
 
+        // Defensive Self powers automatically target the acting fighter.
+        if (
+            power.combatRole === "Defensive" &&
+            power.targetType === "Self"
+        ) {
+            onAction({
+                type: "use_power",
+                actorId: actor.id,
+                powerId: power.id,
+                targetIds: [actor.id],
+            });
+
+            setStep("action");
+            setSelectedPowerId(null);
+            return;
+        }
+
+        // AoE powers automatically target every valid fighter.
+        if (
+            power.targetType === "Area of Effect (AoE)" ||
+            (
+                isUtilityPower(power) &&
+                power.targetType === "Self / AoE"
+            ) ||
+            (
+                power.combatRole === "Defensive" &&
+                power.targetType === "Self / AoE"
+            )
+        ) {
+            const targets = getValidTargets(power);
+
+            if (targets.length === 0) return;
+
+            onAction({
+                type: "use_power",
+                actorId: actor.id,
+                powerId: power.id,
+                targetIds: targets.map((fighter) => fighter.id),
+            });
+
+            setStep("action");
+            setSelectedPowerId(null);
+            return;
+        }
+
         setStep("target");
     };
 
     const handleChooseHybridRole = (role: PowerRole) => {
-        if (role === "Defensive" && hasMaxShields) return;
-        if (selectedPowerId === null) return;
+        if (selectedPowerId === null || !selectedPower) return;
 
         setChosenRole(role);
 
-        if (role === "Defensive") {
+        // Defensive Self powers automatically target the acting fighter.
+        if (
+            role === "Defensive" &&
+            selectedPower.targetType === "Self"
+        ) {
             onAction({
                 type: "use_power",
                 actorId: actor.id,
@@ -291,12 +459,64 @@ export function CommandPanel({
             setStep("action");
             setSelectedPowerId(null);
             setChosenRole(null);
+            setTargetingChoice("single");
+            return;
+        }
+
+        // Utility Self powers automatically target the acting fighter.
+        if (
+            role === "Utility" &&
+            selectedPower.targetType === "Self"
+        ) {
+            onAction({
+                type: "use_power",
+                actorId: actor.id,
+                powerId: selectedPowerId,
+                targetIds: [actor.id],
+                chosenRole: role,
+            });
+
+            setStep("action");
+            setSelectedPowerId(null);
+            setChosenRole(null);
+            setTargetingChoice("single");
+            return;
+        }
+
+        // Hybrid AoE powers automatically target every valid fighter
+        // after the player chooses their combat role.
+        if (
+            selectedPower.targetType === "Area of Effect (AoE)" ||
+            (
+                role === "Utility" &&
+                selectedPower.targetType === "Self / AoE"
+            ) ||
+            (
+                role === "Defensive" &&
+                selectedPower.targetType === "Self / AoE"
+            )
+        ) {
+            const targets = getValidTargets(selectedPower, role);
+
+            if (targets.length === 0) return;
+
+            onAction({
+                type: "use_power",
+                actorId: actor.id,
+                powerId: selectedPowerId,
+                targetIds: targets.map((fighter) => fighter.id),
+                chosenRole: role,
+            });
+
+            setStep("action");
+            setSelectedPowerId(null);
+            setChosenRole(null);
+            setTargetingChoice("single");
             return;
         }
 
         setStep("target");
     };
-
 
     /* const handleSwap = () => {
         const newRow: Row = actor.row === "front" ? "back" : "front";
@@ -336,15 +556,19 @@ export function CommandPanel({
         chosenRole === "Control" ||
         selectedPower?.combatRole === "Control";
 
-    const targetDescription = showAllies
-        ? isUtilityPower(selectedPower, chosenRole)
+    const isDefensivePower =
+        chosenRole === "Defensive" ||
+        selectedPower?.combatRole === "Defensive";
+
+    const targetDescription = isProtecting
+        ? "Choose a living teammate other than yourself"
+        : isDefensivePower || isUtilityPower(selectedPower, chosenRole)
             ? "Choose yourself or a living ally"
-            : "Choose an injured ally in the arena"
-        : isStunPower
-            ? "Choose an opponent without stun immunity"
-            : "Choose an opponent in the arena";
-
-
+            : isHealingPower(selectedPower)
+                ? "Choose an injured ally in the arena"
+                : isStunPower
+                    ? "Choose an opponent without stun immunity"
+                    : "Choose an opponent in the arena";
 
     // ── Render ──────────────────────────────────────────────────
 
@@ -447,7 +671,7 @@ export function CommandPanel({
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-1.5">
+                            <div className="grid grid-cols-4 gap-1.5">
                                 <ActionButton
                                     icon={<Swords className="size-4" />}
                                     label="Attack"
@@ -470,6 +694,14 @@ export function CommandPanel({
                                     onClick={handleDefend}
                                     disabled={!actor.isAlive || hasMaxShields}
                                     variant="defend"
+                                />
+
+                                <ActionButton
+                                    icon={<Shield className="size-4" />}
+                                    label="Protect"
+                                    onClick={handleProtect}
+                                    disabled={!actor.isAlive || protectTargets.length === 0}
+                                    variant="protect"
                                 />
 
                                 {/* <ActionButton
@@ -544,12 +776,15 @@ export function CommandPanel({
                                             const cd = actor.cooldowns[power.id] ?? 0;
                                             const isHeal = isHealingPower(power);
                                             const hasHealingTarget = healingTargets.length > 0;
-                                            const isDefensivePower = power.combatRole === "Defensive";
+
+                                            const isDefensive = power.combatRole === "Defensive";
+                                            const hasDefensiveTarget =
+                                                getValidTargets(power).length > 0;
 
                                             const disabled =
                                                 (!actor.isAlive && !isHeal) ||
                                                 (isHeal && !hasHealingTarget) ||
-                                                (hasMaxShields && isDefensivePower) ||
+                                                (isDefensive && !hasDefensiveTarget) ||
                                                 cd > 0 ||
                                                 !canAfford;
 
@@ -601,6 +836,8 @@ export function CommandPanel({
                                                             <span>{power.combatRole}</span>
                                                             <span>·</span>
                                                             <span>Tier {power.tier ?? 1}</span>
+                                                            <span>·</span>
+                                                            <span>Target {power.targetType ?? 1}</span>
                                                         </div>
                                                     </div>
 
@@ -664,7 +901,7 @@ export function CommandPanel({
                                 <button
                                     type="button"
                                     onClick={() => handleChooseHybridRole("Defensive")}
-                                    disabled={hasMaxShields}
+                                    disabled={getValidTargets(selectedPower, "Defensive").length === 0}
                                     className={cn(
                                         "flex items-center justify-center gap-1.5 rounded-md border border-cyan-500/20 bg-cyan-500/5 px-2 py-2 text-xs font-medium text-cyan-400 transition hover:bg-cyan-500/10",
                                         "disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-cyan-500/5"
@@ -702,9 +939,41 @@ export function CommandPanel({
                                 <div className="min-w-0">
                                     <p className="text-[9px] text-muted-foreground">Target selection</p>
                                     <h3 className="truncate text-xs font-semibold">
-                                        {selectedPower?.name ?? "Basic Attack"}
+                                        {isProtecting
+                                            ? "Protect an ally"
+                                            : selectedPower?.name ?? "Basic Attack"}
                                     </h3>
                                 </div>
+
+                                {selectedPower?.targetType === "Single Target / AoE" && (
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => setTargetingChoice("single")}
+                                            className={cn(
+                                                "rounded-md border px-2 py-1.5 text-[10px] font-bold transition",
+                                                targetingChoice === "single"
+                                                    ? "border-primary bg-primary/10 text-primary"
+                                                    : "border-white/10 bg-muted/20 text-muted-foreground"
+                                            )}
+                                        >
+                                            Single Target
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setTargetingChoice("multiple")}
+                                            className={cn(
+                                                "rounded-md border px-2 py-1.5 text-[10px] font-bold transition",
+                                                targetingChoice === "multiple"
+                                                    ? "border-primary bg-primary/10 text-primary"
+                                                    : "border-white/10 bg-muted/20 text-muted-foreground"
+                                            )}
+                                        >
+                                            Multiple Targets
+                                        </button>
+                                    </div>
+                                )}
 
                                 <button
                                     type="button"
@@ -726,10 +995,14 @@ export function CommandPanel({
                             <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2">
                                 <div className="min-w-0">
                                     <p className="text-xs font-medium">
-                                        {isUtilityPower(selectedPower, chosenRole) ||
-                                            isHealingPower(selectedPower)
-                                            ? "Select an ally"
-                                            : "Select an enemy"}
+                                        {isProtecting
+                                            ? "Choose an ally to protect"
+                                            : isUtilityPower(selectedPower, chosenRole) ||
+                                                chosenRole === "Defensive" ||
+                                                selectedPower?.combatRole === "Defensive" ||
+                                                isHealingPower(selectedPower)
+                                                ? "Select an ally"
+                                                : "Select an enemy"}
                                     </p>
                                     <p className="text-[10px] text-muted-foreground">{targetDescription}</p>
                                 </div>
@@ -740,6 +1013,28 @@ export function CommandPanel({
                                     {chosenRole} ability
                                 </p>
                             )}
+
+                            {selectedPower?.targetType === "Single Target / AoE" &&
+                                targetingChoice === "multiple" && (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {targetMode?.selectedIds?.length ?? 0} targets selected
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            disabled={!targetMode?.selectedIds?.length}
+                                            onClick={() =>
+                                                targetMode?.onConfirmMultiple?.(
+                                                    targetMode.selectedIds ?? []
+                                                )
+                                            }
+                                            className="rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-[10px] font-bold text-primary transition hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-30"
+                                        >
+                                            Confirm targets
+                                        </button>
+                                    </div>
+                                )}
                         </div>
                     )}
                 </div>
@@ -758,7 +1053,7 @@ function ActionButton({
     label: string;
     onClick: () => void;
     disabled?: boolean;
-    variant?: "default" | "attack" | "power" | "defend" | "muted";
+    variant?: "default" | "attack" | "power" | "defend" | "protect" | "muted";
 }) {
     const styles = {
         default: "border-white/10 bg-muted/30 hover:bg-muted/50",
@@ -766,6 +1061,7 @@ function ActionButton({
         power: "border-violet-500/20 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10",
         defend: "border-cyan-500/20 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/10",
         muted: "border-white/10 bg-muted/20 text-muted-foreground hover:bg-muted/40",
+        protect: "border-amber-500/20 bg-amber-500/5 text-amber-400 hover:bg-amber-500/10",
     };
 
     return (

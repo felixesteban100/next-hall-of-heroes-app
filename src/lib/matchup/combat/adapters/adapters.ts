@@ -8,9 +8,9 @@ import type {
     BattleMetadata,
     FighterTelemetry,
     Side,
-} from "./types";
+} from "../types/types";
 
-export type { BattleMetadata, FighterTelemetry } from "./types";
+export type { BattleMetadata, FighterTelemetry } from "../types/types";
 
 // OLD TYPES 
 export type LogType = "attack" | "heal" | "defend" | "revive" | "ko" | "finish" | "rout";
@@ -60,6 +60,7 @@ export type EnrichedFighter = FighterState & {
     maxEnergy: number;
     status: { type: string; duration: number; name: string }[];
     original: CharacterWithJoinTeamUniversePowerEnemies;
+    fatigue: number; // 0–100
 };
 
 export type ActionEvent = {
@@ -139,6 +140,7 @@ export function toEnrichedFighter(f: CombatFighter, prevHp?: number): EnrichedFi
         // 🌟 Map engine values here
         energy: f.energy ?? 80,
         maxEnergy: f.maxEnergy ?? 100,
+        fatigue: f.fatigue ?? 0,
         status: f.status ?? [],
         isShielded: f.status.some(
             (status) => status.type === "shield" && status.duration > 0

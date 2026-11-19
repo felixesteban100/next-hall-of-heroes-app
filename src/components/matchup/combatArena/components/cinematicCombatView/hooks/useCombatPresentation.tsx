@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import type {
     CombatFighter,
     CombatEvent,
-} from "@/lib/matchup/combat/types";
+} from "@/lib/matchup/combat/types/types";
 
 import type {
     CharacterWithJoinTeamUniversePowerEnemies,
@@ -15,7 +15,7 @@ import {
     toEnrichedFighter,
     toLegacyLog,
     buildActionEvent,
-} from "@/lib/matchup/combat/adapters";
+} from "@/lib/matchup/combat/adapters/adapters";
 
 type Props = {
     fightersA: CombatFighter[];

@@ -1,3 +1,5 @@
+import type { StatusEffectType } from "@/lib/matchup/combat/types/types";
+
 export type Character = {
     _id: { $oid: string };
     id: number;
@@ -106,6 +108,12 @@ export type Team = {
     enemyTeamIds?: number[];
 }
 
+export type PowerStatusEffect = {
+    type: StatusEffectType;
+    duration: number;
+    value: number;
+};
+
 export type PowerAction = {
     name: string;
     description: string;
@@ -135,12 +143,14 @@ export type Power = {
     range: "Self" | "Touch" | "Melee" | "Ranged" | "Melee / Ranged" | "Global";
     targetType: "Self" | "Single Target" | "Area of Effect (AoE)" | "Single Target / AoE" | "Self / AoE";
     duration: "Instantaneous" | "Timed" | "Persistent";
-    actions?: PowerAction[]; // Optional list of specific moves
     combatRole: PowerRole
+    actions?: PowerAction[]; // Optional list of specific moves
 
     // Energy and cooldown overrides
     energyCost?: number;
     cooldown?: number;
+
+    statusEffects?: PowerStatusEffect[];
 };
 
 export interface FallbackItem {

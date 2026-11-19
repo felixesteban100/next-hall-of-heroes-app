@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ActionEvent } from "@/lib/matchup/combat/adapters";
-import type { Side } from "@/lib/matchup/combat/types";
+import type { ActionEvent } from "@/lib/matchup/combat/adapters/adapters";
+import type { Side } from "@/lib/matchup/combat/types/types";
 
 export function useCombatDialog(
     currentActionEvent: ActionEvent | null,

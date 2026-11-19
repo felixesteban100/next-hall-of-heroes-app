@@ -10,12 +10,15 @@ import {
 import type {
     CombatState,
     CombatAction,
-} from "@/lib/matchup/combat/types";
+} from "@/lib/matchup/combat/types/types";
 
 export type TargetMode = {
     active: boolean;
     validIds: number[];
+    selectionMode?: "single" | "multiple";
+    selectedIds?: number[];
     onConfirm: (targetId: number) => void;
+    onConfirmMultiple?: (targetIds: number[]) => void;
 };
 
 export type CombatContextValue = {

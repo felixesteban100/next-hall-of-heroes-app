@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type ElementRefs = {
     current: Map<number, HTMLDivElement>;
@@ -37,9 +37,12 @@ export function useCommandDropdown({
         left: number;
     } | null>(null);
 
+    const [positionedActorId, setPositionedActorId] =
+        useState<number | null>(null);
+
     const previousOpenActorIdRef = useRef<number | null>(null);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (openCommandActorId === null) {
             setDropdownPosition(null);
 
@@ -56,7 +59,11 @@ export function useCommandDropdown({
 
         const updatePosition = () => {
             const avatar = avatarRefsMap.current.get(openCommandActorId);
-            if (!avatar) return;
+            if (!avatar) {
+                setDropdownPosition(null);
+                setPositionedActorId(null);
+                return;
+            }
 
             const rect = avatar.getBoundingClientRect();
             const width = Math.min(340, window.innerWidth - 24);
@@ -69,6 +76,7 @@ export function useCommandDropdown({
                 )
             );
 
+            setPositionedActorId(openCommandActorId);
             setDropdownPosition({
                 top: rect.bottom + 8,
                 left: viewportLeft,
@@ -111,6 +119,6 @@ export function useCommandDropdown({
     return {
         openCommandActorId,
         setOpenCommandActorId,
-        dropdownPosition,
+        dropdownPosition: positionedActorId === openCommandActorId ? dropdownPosition : null,
     };
 }

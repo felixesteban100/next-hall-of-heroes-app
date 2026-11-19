@@ -18,7 +18,7 @@ import {
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Log } from "@/lib/matchup/combat/adapters";
+import { Log } from "@/lib/matchup/combat/adapters/adapters";
 
 type LogStyle = {
     Icon: LucideIcon;

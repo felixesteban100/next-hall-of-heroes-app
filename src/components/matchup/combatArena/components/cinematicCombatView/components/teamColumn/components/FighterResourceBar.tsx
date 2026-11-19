@@ -8,9 +8,9 @@ type Props = {
     current: number;
     previous?: number;
     max: number;
-    label: "HP" | "EN";
+    label: "HP" | "EN" | "FAT";
     variant: "primary" | "secondary";
-    colorMode?: "health" | "energy";
+    colorMode?: "health" | "energy" | "fatigue";
     hold?: boolean;
     ready?: boolean;
     colorValue?: string;
@@ -58,9 +58,17 @@ export default function FighterResourceBar({
                 : percent > 20
                     ? "bg-yellow-400"
                     : "bg-red-500"
-            : variant === "primary"
-                ? "bg-primary"
-                : "bg-secondary";
+            : colorMode === "fatigue"
+                ? percent < 30
+                    ? "bg-emerald-400"
+                    : percent < 60
+                        ? "bg-yellow-400"
+                        : percent < 80
+                            ? "bg-orange-500"
+                            : "bg-red-500"
+                : variant === "primary"
+                    ? "bg-primary"
+                    : "bg-secondary";
 
     return (
         <div style={{ width: size }} className="flex flex-col gap-0.5">

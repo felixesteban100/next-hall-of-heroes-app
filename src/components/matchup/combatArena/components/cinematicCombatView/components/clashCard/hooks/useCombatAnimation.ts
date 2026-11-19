@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { ActionEvent } from "@/lib/matchup/combat/adapters";
+import type { ActionEvent } from "@/lib/matchup/combat/adapters/adapters";
 import type { CombatPhase } from "../types";
 
 import { KO_VISUAL_DELAY } from "../../teamColumn/TeamColumn";

@@ -55,21 +55,32 @@ export default function ClashCard(props: ClashCardProps) {
             );
         }
 
+        // case "defend": {
+        //     const isShieldActivation = !log.defenderName || attacker?.id === defender?.id;
+
+        //     if (isShieldActivation) {
+        //         return (
+        //             <EventCard
+        //                 event={event}
+        //                 allChars={allChars}
+        //                 teamAChars={teamAChars}
+        //                 onImpact={props.onImpact}
+        //             />
+        //         );
+        //     }
+
+        //     return <FighterClash {...props} />;
+        // }
+
         case "defend": {
-            const isShieldActivation = !log.defenderName || attacker?.id === defender?.id;
-
-            if (isShieldActivation) {
-                return (
-                    <EventCard
-                        event={event}
-                        allChars={allChars}
-                        teamAChars={teamAChars}
-                        onImpact={props.onImpact}
-                    />
-                );
-            }
-
-            return <FighterClash {...props} />;
+            return (
+                <EventCard
+                    event={event}
+                    allChars={allChars}
+                    teamAChars={teamAChars}
+                    onImpact={props.onImpact}
+                />
+            );
         }
 
         default:

@@ -353,3 +353,15 @@ export async function seedPowersCollectionCombatRole(data: { [key: string]: any,
         }))
     )
 }
+
+export async function seedPowersCollectionStatusEffect(data: { [key: string]: any, name: string, id: number }[]) {
+    return seedPowers(
+        data.map(({ name, id, statusEffects }) => ({
+            name,
+            id,
+            data: {
+                statusEffects
+            }
+        }))
+    )
+}

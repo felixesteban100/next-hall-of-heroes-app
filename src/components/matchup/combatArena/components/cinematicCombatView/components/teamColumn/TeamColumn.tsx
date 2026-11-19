@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import type {
     ActionEvent,
     EnrichedFighter,
-} from "@/lib/matchup/combat/adapters";
+} from "@/lib/matchup/combat/adapters/adapters";
 import CommandPanelPortal from "./components/commandPanelPortal/CommandPanelPortal";
 import { useCombatContext } from "../../context/CombatContext";
 import { useCombatTiming } from "./hooks/useCombatTiming";
@@ -212,6 +212,8 @@ export default function TeamColumn({
                             !isDialogOpen &&
                             isTargetSelectionActive &&
                             validTargetIds.includes(fighter.id);
+                        const selectedTargetIds = targetMode?.selectedIds ?? [];
+                        const isMultiTargetSelected = selectedTargetIds.includes(fighter.id);
 
                         const canSelectActor =
                             !isDialogOpen &&
@@ -226,6 +228,13 @@ export default function TeamColumn({
 
                         const isSelectedTarget =
                             selectedTargetId === fighter.id;
+
+                        const isProtected = state.teamOrders.some(
+                            (order) =>
+                                order.type === "protect" &&
+                                order.targetId === fighter.id &&
+                                order.duration > 0
+                        );
 
                         return (
                             <FighterCard
@@ -244,6 +253,8 @@ export default function TeamColumn({
                                 isSelectedTarget={isSelectedTarget}
                                 isValidTarget={isValidTarget}
                                 canSelectActor={canSelectActor}
+                                isProtected={isProtected}
+                                isMultiTargetSelected={isMultiTargetSelected}
                                 eventType={
                                     involvedIds.has(fighter.id)
                                         ? eventType
@@ -262,7 +273,12 @@ export default function TeamColumn({
 
                                     if (isValidTarget) {
                                         onSelectTarget(fighter.id);
-                                        setOpenCommandActorId(null);
+
+                                        // Keep the panel open while selecting multiple targets.
+                                        if (targetMode?.selectionMode !== "multiple") {
+                                            setOpenCommandActorId(null);
+                                        }
+
                                         return;
                                     }
 

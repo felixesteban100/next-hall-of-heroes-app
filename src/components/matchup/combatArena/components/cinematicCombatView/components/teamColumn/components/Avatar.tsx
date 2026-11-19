@@ -16,10 +16,10 @@ import {
     Swords,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { EnrichedFighter } from "@/lib/matchup/combat/adapters";
+import type { EnrichedFighter } from "@/lib/matchup/combat/adapters/adapters";
 import { PowerRole } from "@/types";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
-import { MAX_SHIELDS_PER_FIGHTER } from "@/lib/matchup/combat/CombatEngine";
+import { MAX_SHIELDS_PER_FIGHTER } from "@/lib/matchup/combat/engine/CombatEngine";
 
 function getEventVisual(
     eventType?: string,
@@ -153,6 +153,7 @@ export default function Avatar({
     isInvolved,
     eventType,
     eventRole,
+    isProtected = false,
 }: {
     fighter: EnrichedFighter;
     size: number;
@@ -167,6 +168,7 @@ export default function Avatar({
     isInvolved?: boolean;
     eventType?: string;
     eventRole?: PowerRole;
+    isProtected?: boolean;
 }) {
     const dead = !fighter.isAlive;
 
@@ -300,8 +302,6 @@ export default function Avatar({
                     />
                 )}
 
-
-
                 {/* Healing animation */}
                 {isHealing && (
                     <motion.div
@@ -327,6 +327,17 @@ export default function Avatar({
                         <span className="text-[7px] font-bold text-white leading-none">
                             {shieldCount}/{MAX_SHIELDS_PER_FIGHTER}
                         </span>
+                    </motion.div>
+                )}
+
+                {isProtected && !dead && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute bottom-2 -right-1.5 z-20 bg-amber-500 px-1 py-0.5 rounded-full border border-background flex items-center gap-0.5 shadow-md"
+                        title="Protected by an ally"
+                    >
+                        <ShieldCheck className="size-2.5 text-white" />
                     </motion.div>
                 )}
 

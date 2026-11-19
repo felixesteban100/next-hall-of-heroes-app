@@ -1,6 +1,6 @@
 "use client";
 
-import type { CombatState } from "@/lib/matchup/combat/types";
+import type { CombatState } from "@/lib/matchup/combat/types/types";
 
 type Props = {
     state: CombatState;

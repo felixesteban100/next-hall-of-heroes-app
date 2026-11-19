@@ -1,5 +1,5 @@
 import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
-import { EnrichedFighter, Log } from "./combat/adapters";
+import { EnrichedFighter, Log } from "./combat/adapters/adapters";
 
 export function isRealPower(power: any): power is Power {
     return (
