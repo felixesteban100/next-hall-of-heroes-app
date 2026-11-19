@@ -7,7 +7,7 @@ export default function CompareWithButton({ ids }: { ids: number[] }) {
 
     return (
         <LoadingLink href={href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-            Match up with {`(random ${MAX_TEAM_SIZE} max)`}
+            Match up {ids.length < 2 ? "" : `with (random ${MAX_TEAM_SIZE} max)`}
         </LoadingLink>
     )
 }

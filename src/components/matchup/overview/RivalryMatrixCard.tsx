@@ -62,15 +62,15 @@ export const RivalryMatrixCard: React.FC<RivalryMatrixCardProps> = ({
     }
 
     return (
-        <div className="relative my-4 overflow-hidden rounded-xl border border-red-500/20 bg-gradient-to-r from-red-950/15 via-red-900/5 to-red-950/15 p-4 backdrop-blur-md">
+        <div className="relative my-4 overflow-hidden rounded-xl border p-4 backdrop-blur-md">
             <div className="relative flex flex-col gap-3">
                 {/* Header Banner & Side Switcher */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-red-500/20 pb-2">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b  pb-2">
                     <div className="flex items-center gap-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/40 bg-red-500/10 text-red-400 text-xs font-black tracking-widest uppercase">
-                            <Zap className="h-3.5 w-3.5 fill-red-500 animate-bounce" />
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border  text-xs font-black tracking-widest uppercase">
+                            <Zap className="h-3.5 w-3.5 text-primary animate-bounce" />
                             <span>Rival Matchups ({activeTeamName}&apos;s Perspective)</span>
-                            <Zap className="h-3.5 w-3.5 fill-red-500 animate-bounce" />
+                            <Zap className="h-3.5 w-3.5 text-secondary animate-bounce" />
                         </div>
                     </div>
 
@@ -80,7 +80,7 @@ export const RivalryMatrixCard: React.FC<RivalryMatrixCardProps> = ({
                         onClick={() => setRivalPerspective((prev) => (prev === "A" ? "B" : "A"))}
                         className="px-3 py-1 rounded-lg border border-border/60 bg-background/60 hover:bg-background text-xs font-bold text-foreground transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                     >
-                        <ArrowLeftRight className="w-3.5 h-3.5 text-red-400" />
+                        <ArrowLeftRight className="w-3.5 h-3.5 " />
                         <span>View as:</span>
                         <span className={rivalPerspective === "A" ? "text-secondary font-extrabold" : "text-primary font-extrabold"}>
                             {rivalPerspective === "A" ? entityBName : entityAName}
@@ -109,7 +109,7 @@ export const RivalryMatrixCard: React.FC<RivalryMatrixCardProps> = ({
                                 {opponents.map((opp) => (
                                     <span
                                         key={opp}
-                                        className="px-2 py-0.5 rounded-md bg-red-500/10 border border-red-500/30 text-[10px] font-semibold text-foreground truncate"
+                                        className={`px-2 py-0.5 rounded-md ${rivalPerspective === "A" ? `bg-secondary/10 border border-secondary/30` : `bg-primary/10 border border-primary/30`} text-[10px] font-semibold text-foreground truncate`}
                                     >
                                         vs {opp}
                                     </span>

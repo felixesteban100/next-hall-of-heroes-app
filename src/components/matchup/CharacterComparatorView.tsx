@@ -183,15 +183,13 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
 
                     {/* COMBAT TAB */}
                     {activeTab === "combat" && (
-                        <div className="mb-4">
-                            <CombatArena
-                                teamAChars={entitiesA}
-                                teamBChars={entitiesB}
-                                nameA={entityAName}
-                                nameB={entityBName}
-                                playerSide="A"
-                            />
-                        </div>
+                        <CombatArena
+                            teamAChars={entitiesA}
+                            teamBChars={entitiesB}
+                            nameA={entityAName}
+                            nameB={entityBName}
+                            playerSide="A"
+                        />
                     )}
 
                     {/* STATS TAB */}
@@ -226,14 +224,14 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     { label: "Overall", key: "overall" },
                                 ]}
                             />
-                            <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-b-md">
+                            {/* <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-b-md">
                                 <div>
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
                                         Stats radar
                                     </h3>
                                     <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} visible={hasBothSides} />
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     )}
 

@@ -112,7 +112,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
                 </>
             ) : (
                 <>
-                    <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center mb-4 overflow-visible">
+                    <section className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center  overflow-visible">
                         <TeamSelectorCard
                             title={entityAName}
                             selected={entitiesA.map((c) => getInfoForSelector(c))}

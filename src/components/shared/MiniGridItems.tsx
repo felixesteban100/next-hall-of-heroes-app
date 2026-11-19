@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { Shield, ShieldAlert, ShieldCheck, Globe, User, Zap, LucideIcon } from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Globe, User, Zap, LucideIcon, Swords } from "lucide-react";
 import { ViewTransition } from "react";
 import { LoadingLink } from "./LoadingLink";
 import { CharacterImage } from "./CharacterImage";
+import { Button } from "../ui/button";
 
 export type MiniGridItem = {
     id: number | string;
@@ -147,7 +148,7 @@ export function MiniEntityGrid({
                 return (
                     <ViewTransition key={item.id} name={`${entityType}-${item.id}`}>
                         <div
-                            className={`group relative flex flex-col items-center justify-between h-28 p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
+                            className={`group relative flex flex-col gap-2 items-center justify-between h-28 p-3 rounded-xl border transition-all duration-200 text-center ${entityType === "power" && !item.alignment
                                 ? "border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/40"
                                 : theme.border
                                 }`}
@@ -208,12 +209,16 @@ export function MiniEntityGrid({
                                 </div>
                             </LoadingLink>
                             {compareWithId && entityType === "character" && (
-                                <LoadingLink
-                                    href={`/matchup?a=${compareWithId}&b=${item.id}`}   // ← adjust path to whatever you use
-                                    className={`mt-0.5 text-xs font-medium text-muted-foreground ${theme.text} hover:underline transition-colors`}
+                                <Button
+                                    title={`Matchup #${compareWithId} with #${item.id}`}
+                                    className={`absolute top-0 -left-1.5 mt-0.5 text-xs font-medium ${theme.text} rounded-full transition-colors`}
                                 >
-                                    Match
-                                </LoadingLink>
+                                    <LoadingLink
+                                        href={`/matchup?a=${compareWithId}&b=${item.id}`}   // ← adjust path to whatever you use
+                                    >
+                                        <Swords className="text-primary-foreground" />
+                                    </LoadingLink>
+                                </Button>
                             )}
                         </div>
                     </ViewTransition>

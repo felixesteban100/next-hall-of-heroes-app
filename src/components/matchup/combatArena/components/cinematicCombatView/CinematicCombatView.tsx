@@ -183,7 +183,7 @@ export default function CinematicCombatView({
     }, [isDialogOpen]);
 
     return (
-        <div className="flex w-full max-w-full flex-col  overflow-hidden p-1 space-y-3">
+        <div className="flex w-full max-w-full flex-col overflow-hidden p-1 space-y-3">
             <div style={{ height: 300 }} className="flex w-full">
                 <TeamColumn
                     className="flex-1 min-w-0 h-full"
@@ -294,7 +294,7 @@ export default function CinematicCombatView({
                     )}
                 </div>
             ) : (
-                canReopen && (
+                /* canReopen && */ (
                     <Button
                         style={{ width: 230 }}
                         className="mx-auto"
@@ -317,7 +317,7 @@ export default function CinematicCombatView({
                     >
                         {/* Backdrop */}
                         <motion.div
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            className="absolute inset-0 bg-background/10 backdrop-blur-sm"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -327,7 +327,7 @@ export default function CinematicCombatView({
 
                         {/* Dialog Panel */}
                         <motion.div
-                            className="relative z-10 flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-background/20 shadow-2xl sm:rounded-2xl"
+                            className="relative z-10 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-background shadow-2xl sm:rounded-2xl"
                             style={{
                                 width: "min(calc(90vw - 16px), 900px)",
                                 height: "min(calc(70dvh - 16px), 800px)",

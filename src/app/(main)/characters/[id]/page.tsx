@@ -177,8 +177,6 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-
-
             {/* Biography */}
             <div id="biography" className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Biography</p>
@@ -191,8 +189,6 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                     ))}
                 </div>
             </div>
-
-
 
             {/* Powerstats */}
             <div id="powerstats" className="space-y-2">
@@ -243,7 +239,7 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
                         id: p.id,
                         name: p.name,
                         image: p.img,
-                        category: POWER_TIER[p.tier as keyof typeof POWER_TIER],             // e.g. "Elemental"
+                        // category: POWER_TIER[p.tier as keyof typeof POWER_TIER],             // e.g. "Elemental"
                         // characterCount: p.usersCount, // e.g. Renders subtext: "14 Users"
                     }))}
                     externalNames={externalPowers.map(c => c.name)}
