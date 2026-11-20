@@ -10,6 +10,7 @@ import PowerOverlay, {
     type CombatActionType,
 } from "@/components/shared/powerOverlay/PowerOverlay";
 import SyncedHealthBar from "./SyncedHealthBar";
+import FighterResourceBar from "@/components/matchup/combatArena/components/cinematicCombatView/components/teamColumn/components/FighterResourceBar";
 
 function ImpactOverlay({ visible }: { visible: boolean }) {
     if (!visible) return null;
@@ -88,7 +89,7 @@ export default function FighterSlot({
         : "border-secondary shadow-secondary/40";
 
     const impactVisible = isDefender && phase === 2;
-    const showDamageFlash = isDefender && phase >= 2;
+    const showDamageFlash = isDefender && phase >= 2 && (damagePopup ?? 0) > 0;
     const showKO = isKO && phase >= 3;
 
     const showDamagePopup = phase >= 2 && !isShielded;
@@ -308,13 +309,16 @@ export default function FighterSlot({
 
             {/* Health Bar */}
             <div className="w-full min-w-0">
-                <SyncedHealthBar
-                    currentHp={fighter.currentHp}
-                    maxHp={fighter.maxHp}
-                    isTeamA={isTeamA}
-                    phase={phase}
-                    isAlive={!showKO}
-                    prevHp={prevHp}
+                <FighterResourceBar
+                    size={128}
+                    current={fighter.currentHp}
+                    previous={prevHp ?? fighter.prevHp}
+                    max={fighter.maxHp}
+                    label="HP"
+                    variant={isTeamA ? "primary" : "secondary"}
+                    colorMode="health"
+                    hold={isDefender}
+                    ready={phase >= 2}
                 />
             </div>
         </div>

@@ -7,6 +7,7 @@ import EventCard from "./components/EventCard";
 import FighterClash from "./components/FighterClash";
 
 import { BattleEndScreen } from "./components/BattleEndScreen";
+import { CombatEventType } from "@/lib/matchup/combat/types/types";
 
 export default function ClashCard(props: ClashCardProps) {
     const {
@@ -21,7 +22,7 @@ export default function ClashCard(props: ClashCardProps) {
     }
 
     const { log, attacker, defender } = event;
-    const eventType = log.type as string;
+    const eventType = log.type as CombatEventType;
 
     switch (eventType) {
         case "battle_end": {

@@ -150,6 +150,14 @@ export default function EventCard({
     const badgeColor =
         presentation.badgeColor ?? eventStyle.text;
 
+    const hpDifference = character
+        ? (character.prevHp ?? character.currentHp) - character.currentHp
+        : 0;
+
+    const statusDamage = eventType === "status_tick" ? Math.max(0, hpDifference) : 0;
+    const statusHealing = eventType === "status_tick" ? Math.max(0, -hpDifference) : 0;
+    const isStatusHpChange = statusDamage > 0 || statusHealing > 0;
+
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col items-center justify-center gap-3 overflow-y-auto px-3 py-4 sm:gap-4 sm:px-5">
@@ -202,7 +210,7 @@ export default function EventCard({
                         }}
                         transition={{
                             duration: 0.55,
-                            delay: 0.5,
+                            // delay: 0.5,
                             ease: [0.22, 1, 0.36, 1],
                         }}
                     >
@@ -214,14 +222,16 @@ export default function EventCard({
                             showOverlay={true}
                             badgeColorClass={badgeColor}
                             activePower={activePower}
+                            damagePopup={statusDamage > 0 ? statusDamage : null}
                             healPopup={
                                 presentation.popupType === "heal"
                                     ? log.healing ?? null
-                                    : null
+                                    : statusHealing > 0 ? statusHealing : null
                             }
                             prevHp={character.prevHp}
                             phase={phase}
-                            isDefender={false}
+                            isDefender={isStatusHpChange}
+                            isShielded={character.isShielded}
                         />
                     </motion.div>
                 )}

@@ -72,9 +72,7 @@ export default function FighterClash({
 
     const isPower = eventType === "power";
 
-    const isShieldAbsorption =
-        eventType === "defend" &&
-        !!log.defenderName;
+    const isShieldAbsorption = defender?.isShielded //eventType === "defend" && !!log.defenderName;
 
     const isDefend = isShieldAbsorption;
 
@@ -95,22 +93,13 @@ export default function FighterClash({
         teamAChars
     );
 
-    // Position fighters from Team A on the left.
     const leftFighter = isDefend
-        ? isDefenderInTeamA
-            ? defenderChar
-            : attackerChar
-        : isAttackerInTeamA
-            ? attacker
-            : defender;
+        ? isDefenderInTeamA ? defenderChar : attackerChar
+        : isAttackerInTeamA ? attackerChar : defenderChar;
 
     const rightFighter = isDefend
-        ? isDefenderInTeamA
-            ? attackerChar
-            : defenderChar
-        : isAttackerInTeamA
-            ? defender
-            : attacker;
+        ? isDefenderInTeamA ? attackerChar : defenderChar
+        : isAttackerInTeamA ? defenderChar : attackerChar;
 
     const leftIsAttacker = isDefend
         ? !isDefenderInTeamA
@@ -162,7 +151,7 @@ export default function FighterClash({
     ) => {
         if (!isAttacker) return;
 
-        const currentX = Math.abs(Number(latest.x ?? 0));
+        const currentX = Math.abs(parseFloat(String(latest.x ?? 0)) || 0);
 
         const impactDistance = getImpactDistance(powerRole);
 
@@ -260,6 +249,7 @@ export default function FighterClash({
                                 className="flex min-w-0 justify-center"
                             >
                                 <motion.div
+                                    key={`${event.key}-${leftFighter.id}`}
                                     animate={getFighterMotionProfile(
                                         powerRole,
                                         leftIsAttacker,
@@ -321,6 +311,7 @@ export default function FighterClash({
                                 className="flex min-w-0 justify-center"
                             >
                                 <motion.div
+                                    key={`${event.key}-${rightFighter.id}`}
                                     animate={getFighterMotionProfile(
                                         powerRole,
                                         rightIsAttacker,

@@ -114,12 +114,14 @@ export type PowerStatusEffect = {
     value: number;
 };
 
+type PowerTargetType = "Self" | "Single Target" | "Area of Effect (AoE)" | "Single Target / AoE" | "Self / AoE"
+
 export type PowerAction = {
     name: string;
     description: string;
     activationType?: "Instant" | "Action" | "Passive" | "Channeled";
     range?: "Self" | "Touch" | "Melee" | "Ranged" | "Global";
-    targetType?: "Self" | "Single Target" | "Area of Effect (AoE)" | "Self / AoE";
+    targetType?: PowerTargetType;
 };
 
 export type PowerRole =
@@ -141,7 +143,7 @@ export type Power = {
     logo: string;
     activationType: "Instant" | "Action" | "Passive" | "Channeled";
     range: "Self" | "Touch" | "Melee" | "Ranged" | "Melee / Ranged" | "Global";
-    targetType: "Self" | "Single Target" | "Area of Effect (AoE)" | "Single Target / AoE" | "Self / AoE";
+    targetType: PowerTargetType;
     duration: "Instantaneous" | "Timed" | "Persistent";
     combatRole: PowerRole
     actions?: PowerAction[]; // Optional list of specific moves

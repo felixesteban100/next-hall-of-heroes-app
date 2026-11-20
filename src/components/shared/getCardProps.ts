@@ -61,7 +61,7 @@ export const getCardProps = (item: any, type: EntityType) => {
             const backData: BackData = {
                 kind: "character",
                 entityName: item.name,
-                logo: item.biography.publisher.logo,
+                logo: item.biography.publisher?.logo ?? "https://imgs.search.brave.com/EsDXrYuUra-x-56koRAS-0fDjT9Xz8H73vlql2BHifI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9lcnJv/ci1ub3QtZm91bmQt/c3ltYm9sLWxvZ28t/ZGVzaWduLXZlY3Rv/ci0yMzIwMjMwMDAu/anBn",
             };
 
             return {
@@ -75,7 +75,7 @@ export const getCardProps = (item: any, type: EntityType) => {
                 transitionKey: `character-${item.id}`,
                 publisherLogo: item.biography?.publisher?.logo,
                 alignment: item.biography?.alignment,
-                universeLogo: item.biography?.publisher.logo,
+                universeLogo: item.biography?.publisher?.logo ?? "https://imgs.search.brave.com/EsDXrYuUra-x-56koRAS-0fDjT9Xz8H73vlql2BHifI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9lcnJv/ci1ub3QtZm91bmQt/c3ltYm9sLWxvZ28t/ZGVzaWduLXZlY3Rv/ci0yMzIwMjMwMDAu/anBn",
                 stats,
                 backData,
                 randomPower: item.powers[Math.floor(Math.random() * item.powers.length)].name

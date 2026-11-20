@@ -351,20 +351,7 @@ export type CombatAction = {
     chosenRole?: PowerRole;
 };
 
-export type CombatEventType =
-    | "attack"
-    | "power"
-    | "defend"
-    | "heal"
-    | "status_applied"
-    | "status_tick"
-    | "ko"
-    | "revive"
-    | "swap_row"
-    | "team_order"
-    | "turn_start"
-    | "round_start"
-    | "battle_end"
+
 
 export type FighterTelemetry = {
     name: string;
@@ -421,6 +408,21 @@ export type BattleMetadata = {
     mostKOB: { name: string; kos: number };
 };
 
+export type CombatEventType =
+    | "attack"
+    | "power"
+    | "defend"
+    | "heal"
+    | "status_applied"
+    | "status_tick"
+    | "ko"
+    | "revive"
+    | "swap_row"
+    | "team_order"
+    | "turn_start"
+    | "round_start"
+    | "battle_end"
+
 export type CombatEvent = {
     id: number;
     type: CombatEventType;
@@ -430,6 +432,8 @@ export type CombatEvent = {
     damage?: number;
     damageBlocked?: number;
     healing?: number;
+    hpBefore?: number;
+    hpAfter?: number;
     status?: StatusEffect;
     text: string;
     side: Side;

@@ -120,62 +120,20 @@ export function CommandPanel({
         );
     }, []);
 
-    const getValidTargets = useCallback(
-        (power: Power | null, role?: PowerRole | null) => {
-            if (!actor) return [];
+    const getValidTargets = useCallback((power: Power | null, role?: PowerRole | null) => {
+        if (!actor) return [];
 
-            const isStunPower =
-                role === "Control" || power?.combatRole === "Control";
+        if (isHealingPower(power)) return healingTargets;
 
-            const isDefensivePower =
-                role === "Defensive" || power?.combatRole === "Defensive";
+        const effectiveRole = role ?? power?.combatRole;
+        if (effectiveRole === "Defensive") return allies.filter(hasShieldCapacity);
+        if (effectiveRole === "Utility") return allies;
+        if (effectiveRole === "Control") {
+            return enemies.filter(f => !(power?.statusEffects?.length ? power.statusEffects.every(e => e.type === "stun") : true) || !f.status.some(s => s.type === "stun_immune" && s.duration > 0));
+        }
 
-            if (isDefensivePower) {
-                const eligibleAllies = allies.filter(hasShieldCapacity);
-
-                if (power?.targetType === "Self") {
-                    return eligibleAllies.filter(
-                        (fighter) => fighter.id === actor.id
-                    );
-                }
-
-                return eligibleAllies;
-            }
-
-            if (isUtilityPower(power, role)) {
-                if (power?.targetType === "Self") {
-                    return allies.filter((fighter) => fighter.id === actor.id);
-                }
-
-                return allies;
-            }
-
-            if (isHealingPower(power)) {
-                return healingTargets;
-            }
-
-            if (isStunPower) {
-                return enemies.filter((fighter) =>
-                    !fighter.status.some(
-                        (status) =>
-                            status.type === "stun_immune" &&
-                            status.duration > 0
-                    )
-                );
-            }
-
-            return enemies;
-        },
-        [
-            actor,
-            allies,
-            enemies,
-            healingTargets,
-            isUtilityPower,
-            isHealingPower,
-        ]
-    );
-
+        return enemies;
+    }, [actor, allies, enemies, healingTargets, isHealingPower]);
 
 
     const isSupportPower =
@@ -373,63 +331,15 @@ export function CommandPanel({
             return;
         }
 
-        // Utility Self powers automatically target the acting fighter.
-        if (
-            isUtilityPower(power) &&
-            power.targetType === "Self"
-        ) {
-            onAction({
-                type: "use_power",
-                actorId: actor.id,
-                powerId: power.id,
-                targetIds: [actor.id],
-            });
+        if (power.targetType === "Self" || power.targetType === "Area of Effect (AoE)" || power.targetType === "Self / AoE") {
+            const role = power.combatRole;
 
-            setStep("action");
-            setSelectedPowerId(null);
-            return;
-        }
+            const targets = getValidTargets(power, role);
+            const targetIds = power.targetType === "Self" ? targets.filter(f => f.id === actor.id).map(f => f.id) : power.targetType === "Self / AoE" ? [...new Set([actor.id, ...targets.map(f => f.id)])] : targets.map(f => f.id);
 
-        // Defensive Self powers automatically target the acting fighter.
-        if (
-            power.combatRole === "Defensive" &&
-            power.targetType === "Self"
-        ) {
-            onAction({
-                type: "use_power",
-                actorId: actor.id,
-                powerId: power.id,
-                targetIds: [actor.id],
-            });
+            if (targetIds.length === 0) return;
 
-            setStep("action");
-            setSelectedPowerId(null);
-            return;
-        }
-
-        // AoE powers automatically target every valid fighter.
-        if (
-            power.targetType === "Area of Effect (AoE)" ||
-            (
-                isUtilityPower(power) &&
-                power.targetType === "Self / AoE"
-            ) ||
-            (
-                power.combatRole === "Defensive" &&
-                power.targetType === "Self / AoE"
-            )
-        ) {
-            const targets = getValidTargets(power);
-
-            if (targets.length === 0) return;
-
-            onAction({
-                type: "use_power",
-                actorId: actor.id,
-                powerId: power.id,
-                targetIds: targets.map((fighter) => fighter.id),
-            });
-
+            onAction({ type: "use_power", actorId: actor.id, powerId: power.id, targetIds });
             setStep("action");
             setSelectedPowerId(null);
             return;
@@ -483,31 +393,13 @@ export function CommandPanel({
             return;
         }
 
-        // Hybrid AoE powers automatically target every valid fighter
-        // after the player chooses their combat role.
-        if (
-            selectedPower.targetType === "Area of Effect (AoE)" ||
-            (
-                role === "Utility" &&
-                selectedPower.targetType === "Self / AoE"
-            ) ||
-            (
-                role === "Defensive" &&
-                selectedPower.targetType === "Self / AoE"
-            )
-        ) {
+        if (selectedPower.targetType === "Self" || selectedPower.targetType === "Area of Effect (AoE)" || selectedPower.targetType === "Self / AoE") {
             const targets = getValidTargets(selectedPower, role);
+            const targetIds = selectedPower.targetType === "Self" ? targets.filter(f => f.id === actor.id).map(f => f.id) : selectedPower.targetType === "Self / AoE" ? [...new Set([actor.id, ...targets.map(f => f.id)])] : targets.map(f => f.id);
 
-            if (targets.length === 0) return;
+            if (targetIds.length === 0) return;
 
-            onAction({
-                type: "use_power",
-                actorId: actor.id,
-                powerId: selectedPowerId,
-                targetIds: targets.map((fighter) => fighter.id),
-                chosenRole: role,
-            });
-
+            onAction({ type: "use_power", actorId: actor.id, powerId: selectedPowerId, targetIds, chosenRole: role });
             setStep("action");
             setSelectedPowerId(null);
             setChosenRole(null);
@@ -833,11 +725,17 @@ export function CommandPanel({
                                                         </div>
 
                                                         <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                                            <span>{power.combatRole}</span>
+                                                            {power.statusEffects && power.statusEffects?.length > 0 ? power.statusEffects?.map(c => (
+                                                                <span key={`${c.type}-${c.duration}-${c.value}`}>{c.type}</span>
+                                                            )) :
+                                                                <span>{power.combatRole}</span>
+                                                            }
                                                             <span>·</span>
-                                                            <span>Tier {power.tier ?? 1}</span>
+                                                            <span>T-{power.tier ?? 1}</span>
                                                             <span>·</span>
                                                             <span>Target {power.targetType ?? 1}</span>
+                                                            <span>·</span>
+
                                                         </div>
                                                     </div>
 

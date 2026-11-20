@@ -71,7 +71,6 @@ export type ActionEvent = {
     targets?: EnrichedFighter[];
     activePower?: Power | { name: string, combatRole: PowerRole };
 };
-
 // OLD TYPES 
 
 const EVENT_META: Record<CombatEventType, { colorClass?: string; actionName: string }> = {
@@ -171,12 +170,28 @@ export function buildActionEvent(
         return all.find((fighter) => fighter.name === name);
     };
 
-    // Always enrich fighters with their pre-action HP snapshot.
-    const enrichFighter = (fighter: CombatFighter) =>
-        toEnrichedFighter(
+    // Use event-specific HP snapshots for the affected target.
+    const enrichFighter = (fighter: CombatFighter) => {
+        const hasEventSnapshot =
+            (event.targetIds ?? []).includes(fighter.id) &&
+            event.hpBefore !== undefined &&
+            event.hpAfter !== undefined;
+
+        if (hasEventSnapshot) {
+            const eventFighter = {
+                ...fighter,
+                currentHp: event.hpAfter!,
+                isAlive: event.hpAfter! > 0,
+            };
+
+            return toEnrichedFighter(eventFighter, event.hpBefore);
+        }
+
+        return toEnrichedFighter(
             fighter,
             previousHpById[fighter.id] ?? fighter.currentHp
         );
+    };
 
     // Resolve the actor.
     const attackerFighter =
