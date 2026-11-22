@@ -6,7 +6,7 @@
 import { SwipeGrid, useIsMobile } from "@/components/shared/SwipeGrid";
 import { LoadingLink } from "@/components/shared/LoadingLink";
 import { Button } from "@/components/ui/button";
-import { Scale } from "lucide-react";
+import { Swords } from "lucide-react";
 import { RefreshRandomPageButton } from "@/components/random/RefreshRandomPageButton";
 // import { cn } from "@/lib/utils";
 import { ExtremeBanner, BannerItem } from "@/components/shared/ExtremeBanner";
@@ -149,7 +149,7 @@ export function RandomPageClient({ sanitizedCharacters, characterIdsString, extr
                     <RefreshRandomPageButton path="/random" />
                     <Button size="sm" variant="outline" asChild>
                         <LoadingLink href={`/matchup?mode=bracket&size=8&p=${characterIdsString}`}>
-                            <Scale />
+                            <Swords />
                             <span className="hidden md:inline">Match up in bracket</span>
                         </LoadingLink>
                     </Button>

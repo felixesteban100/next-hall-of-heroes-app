@@ -1,7 +1,11 @@
-import { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
-import { EnrichedFighter, Log } from "./combat/adapters/adapters";
 
-export function isRealPower(power: any): power is Power {
+import type { CharacterWithJoinTeamUniversePowerEnemies, Power } from "@/types";
+import type {
+    CombatEvent,
+    CombatFighter,
+} from "./combat/types/types";
+
+export function isRealPower(power: unknown): power is Power {
     return (
         power !== null &&
         typeof power === "object" &&
@@ -11,28 +15,31 @@ export function isRealPower(power: any): power is Power {
 }
 
 export function resolveActivePower(
-    log: Log,
-    attacker?: EnrichedFighter,
+    event: CombatEvent,
+    attacker?: CombatFighter,
     chars?: CharacterWithJoinTeamUniversePowerEnemies[]
 ): Power | undefined {
     if (!attacker) return undefined;
 
-    // 🚀 If the log is a basic physical move, don't fall back to passive powers!
-    if (log.powerName === "Hand-to-Hand Combat" || log.powerName === "Direct Strike") {
-        return undefined; // PowerOverlay will cleanly default to "combat" (physical impact)
+    // Basic physical moves must not fall back to passive powers.
+    if (
+        event.powerName === "Hand-to-Hand Combat" ||
+        event.powerName === "Direct Strike"
+    ) {
+        return undefined;
     }
 
-    // 1. Try to find exact power match by name
-    if (chars) {
-        const char = chars.find((c) => c.name === attacker.name);
-        if (char) {
-            const powers = (char.powers ?? []).filter(isRealPower);
-            if (log.powerName) {
-                const exact = powers.find((p) => p.name === log.powerName);
-                if (exact) return exact;
-            }
-        }
-    }
+    if (!chars || !event.powerName) return undefined;
 
-    return undefined;
+    const character = chars.find(
+        (char) => char.name === attacker.name
+    );
+
+    if (!character) return undefined;
+
+    const powers = (character.powers ?? []).filter(isRealPower);
+
+    return powers.find(
+        (power) => power.name === event.powerName
+    );
 }

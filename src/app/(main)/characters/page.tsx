@@ -101,8 +101,6 @@ export default async function CharactersPage({ searchParams }: { searchParams: S
     // seedCharactersDescription(charactersToUpdate)
     // };
 
-    console.log(charactersPerPage)
-
     return (
         <div className="">
             <EntityFilterBar

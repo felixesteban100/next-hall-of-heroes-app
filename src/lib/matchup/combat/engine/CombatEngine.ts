@@ -365,7 +365,7 @@ export class CombatEngine {
         events = [
           {
             id: this.nextEventId(),
-            type: "turn_start",
+            type: `turn_start-${actor.side}`,
             actorId: actor.id,
             text: `${actor.name} holds position.`,
             side: actor.side,
@@ -1205,7 +1205,7 @@ export class CombatEngine {
     this.state.selectedTargetId = null;
 
     this.pushEvent({
-      type: "turn_start",
+      type: `turn_start-${side}`,
       text: isPlayerSide
         ? "Player Phase – select a character"
         : "Enemy Phase",

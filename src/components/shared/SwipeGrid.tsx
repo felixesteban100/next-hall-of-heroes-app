@@ -244,7 +244,7 @@ export function SwipeGrid({
                             key={item.id}
                             className="snap-card snap-center snap-always shrink-0 w-full h-full flex flex-col items-center justify-center relative py-1"
                         >
-                            <div className="w-[90%] h-[90%] flex items-center justify-center max-w-md mx-auto">
+                            <div className="w-[90%] h-[90%] max-h-[650px] flex items-center justify-center max-w-md mx-auto">
                                 <EntityCard
                                     {...getCardProps(item, type)}
                                     onTiltChange={handleTiltChange}

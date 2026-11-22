@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useParamLoading } from "@/components/layout/ParamLoadingContext";
-import { Users, Loader2, Search } from "lucide-react";
+import { Users, Loader2, Search, Shuffle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +24,6 @@ type TeamOption = {
 type Props = {
     paramKey: "a" | "b";
     excludeIds: number[];
-    // Pass a server-fetched list or fetch on open
     fetchTeamsAction: () => Promise<TeamOption[]>;
 };
 
@@ -36,7 +35,6 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, startTransition] = useTransition();
 
-    // Lazy load teams only when the user opens the menu for maximum speed
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
         if (open && teams.length === 0) {
@@ -67,6 +65,28 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
         pushParams(params);
     };
 
+    const handleRandomTeam = () => {
+        startTransition(async () => {
+            let pool = teams;
+            if (pool.length === 0) {
+                pool = await fetchTeamsAction();
+                setTeams(pool);
+            }
+
+            // Keep teams with >1 member and at least 1 character not already on the other side
+            const candidates = pool.filter(
+                t => t.totalCount > 1 && t.ids.some(id => !excludeIds.includes(id))
+            );
+
+            if (candidates.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * candidates.length);
+            const chosen = candidates[randomIndex];
+            handleSelectTeam(chosen.name, chosen.ids);
+            setIsOpen(false);
+        });
+    };
+
     const filteredTeams = teams.filter(t =>
         t.name.toLowerCase().includes(searchQuery.toLowerCase())
         && t.totalCount > 1
@@ -80,7 +100,6 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted/30 hover:bg-muted text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-all"
                 >
                     <Users className="size-3.5" />
-                    {/* <span>Load Team...</span> */}
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto p-2">
@@ -99,10 +118,25 @@ export function LoadAllTeamsDropdown({ paramKey, excludeIds, fetchTeamsAction }:
                             placeholder="Search teams..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.stopPropagation()} // Prevents Radix dropdown from stealing keys like Space/Arrow keys
                             className="w-full bg-transparent text-xs outline-none text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
                 </div>
+
+                {/* Random team option */}
+                <DropdownMenuItem
+                    onSelect={(e) => {
+                        e.preventDefault();
+                        handleRandomTeam();
+                    }}
+                    disabled={isLoading}
+                    className={`flex items-center gap-2 cursor-pointer py-1.5 px-2 text-xs font-medium ${paramKey === "a" ? "text-primary" : "text-secondary"}`}
+                >
+                    <Shuffle className="size-3.5 shrink-0" />
+                    <span>Random Team</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
 
                 {filteredTeams.length === 0 && !isLoading ? (
                     <div className="py-4 text-center text-xs text-muted-foreground">

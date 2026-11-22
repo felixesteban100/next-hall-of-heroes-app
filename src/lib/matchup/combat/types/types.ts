@@ -132,154 +132,6 @@ export type StatusEffectType =
     | "wet";
 
 
-export const STATUS_EFFECT_CATALOG = {
-    "offensive_buffs": [
-        "strength_up",
-        "damage_up",
-        "power_up",
-        "speed_up",
-        "critical_up",
-        "critical_damage_up",
-        "accuracy_up",
-        "penetration_up",
-        "focus",
-        "combo_up",
-        "evasion_up",
-        "lifesteal"
-    ],
-    "defensive_buffs": [
-        "shield",
-        "defense_up",
-        "damage_reduction",
-        "physical_resistance",
-        "energy_resistance",
-        "magic_resistance",
-        "elemental_resistance",
-        "damage_immunity",
-        "invulnerable",
-        "reflect",
-        "thorns",
-        "stun_immune",
-        "status_resistance",
-        "untargetable",
-        "barrier"
-    ], "healing_recovery": [
-        "regen",
-        "healing_up",
-        "healing_down",
-        "healing_amplification",
-        "energy_regen",
-        "energy_restore",
-        "fatigue_reduction",
-        "fatigue_resistance"
-    ],
-    "damage_over_time": [
-        "burn",
-        "poison",
-        "bleed",
-        "toxic",
-        "corrosion",
-        "curse",
-        "soul_drain",
-        "life_drain",
-        "frostbite",
-        "radiation"
-    ],
-    "offensive_debuffs": [
-        "weaken",
-        "strength_down",
-        "damage_down",
-        "power_down",
-        "speed_down",
-        "critical_down",
-        "accuracy_down",
-        "blind",
-        "confuse",
-        "silence",
-        "energy_drain",
-        "energy_block"
-    ],
-    "defensive_debuffs": [
-        "defense_down",
-        "armor_break",
-        "resistance_down",
-        "physical_vulnerability",
-        "energy_vulnerability",
-        "magic_vulnerability",
-        "elemental_vulnerability",
-        "marked",
-        "exposed",
-        "healing_block",
-        "shield_break"
-    ],
-    "crowd_control": [
-        "stun",
-        "freeze",
-        "root",
-        "slow",
-        "sleep",
-        "paralyze",
-        "petrify",
-        "fear",
-        "charm",
-        "taunt",
-        "disarm",
-        "knockdown",
-        "banish",
-        "interrupt"
-    ],
-    "targeting_stealth": [
-        "stealth",
-        "invisibility",
-        "target_lock",
-        "protection",
-        "decoy",
-        "revealed",
-        "distraction"
-    ],
-    "elemental_environmental": [
-        "wet",
-        "electrified",
-        "shocked",
-        "frozen",
-        "chilled",
-        "overheated",
-        "soaked",
-        "conductive",
-        "grounded",
-        "entangled",
-        "gravity_up",
-        "gravity_down"
-    ],
-    "special": [
-        "time_stop",
-        "time_slow",
-        "time_acceleration",
-        "phase",
-        "possession",
-        "transformation",
-        "berserk",
-        "rage",
-        "overcharge",
-        "power_seal",
-        "power_copy",
-        "power_reflection",
-        "damage_share",
-        "last_stand",
-        "second_wind",
-        "revival_protection",
-        "status_immune",
-        "death_mark",
-        "delayed_damage",
-        "delayed_healing",
-        "size_change",
-        "adaptation",
-        "death_prevention",
-        "reality_distortion",
-        "water_breathing"
-    ]
-}
-
 export type StatusEffect = {
     id: string;
     type: StatusEffectType;
@@ -419,9 +271,10 @@ export type CombatEventType =
     | "revive"
     | "swap_row"
     | "team_order"
-    | "turn_start"
+    | "turn_start-A"
+    | "turn_start-B"
     | "round_start"
-    | "battle_end"
+    | "battle_end";
 
 export type CombatEvent = {
     id: number;
