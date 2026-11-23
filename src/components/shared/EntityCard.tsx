@@ -420,7 +420,7 @@ export function EntityCard({
 
                         {/* Footer stats */}
                         <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-2 bg-muted">
-                            <div className={`grid grid-cols-${stats.length} w-full divide-x divide-foreground/50 text-center text-xs`}>
+                            <div className={`grid grid-cols-${stats.length}! w-full divide-x divide-foreground/50 text-center text-xs`}>
                                 {stats.map((stat, idx) => {
                                     const Icon = stat.icon;
                                     return (
