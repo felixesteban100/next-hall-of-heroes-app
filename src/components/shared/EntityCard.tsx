@@ -420,7 +420,11 @@ export function EntityCard({
 
                         {/* Footer stats */}
                         <CardFooter className="border border-foreground/10 rounded-b-xl overflow-hidden shrink-0 p-2 bg-muted">
-                            <div className={`grid grid-cols-${stats.length}! w-full divide-x divide-foreground/50 text-center text-xs`}>
+                            <div
+                                style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}
+                                /* grid-cols-${stats.length}  */
+                                className={`grid w-full divide-x divide-foreground/50 text-center text-xs`}
+                            >
                                 {stats.map((stat, idx) => {
                                     const Icon = stat.icon;
                                     return (

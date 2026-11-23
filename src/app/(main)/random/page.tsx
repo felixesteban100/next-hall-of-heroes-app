@@ -5,7 +5,7 @@ import { UrlParamSyncer } from "@/components/random/UrlParamSyncer";
 import { RandomPageClient, BatchExtreme } from "@/components/random/RandomPageClient";
 import { CHARACTER_TIER } from "@/lib/constants";
 import { buildEnemiesLookup, buildPowersLookup, buildTeamsLookup, buildUniverseLookup } from "@/lib/character_utilsAggregationPipelines";
-import { MAX_TEAM_SIZE } from "../matchup/page";
+// import { MAX_TEAM_SIZE } from "../matchup/page";
 
 export const instant = false;
 
@@ -124,7 +124,7 @@ export default async function Random({ searchParams }: PageProps) {
             ? resolvedParams.pinned.split(",").map(Number).filter(Boolean)
             : [];
 
-        const BATCH_SIZE = MAX_TEAM_SIZE;
+        const BATCH_SIZE = 12/* MAX_TEAM_SIZE */;
         const randomSize = Math.max(0, BATCH_SIZE - pinnedIds.length);
 
         const [/* pinnedChars,  */randomChars] = await Promise.all([
