@@ -65,6 +65,10 @@ export function CommandPanel({
         );
     }
 
+    const activeStatuses = actor.status.filter(
+        (status) => status.duration > 0
+    );
+
     // ── Render ──────────────────────────────────────────────────
 
     return (
@@ -92,6 +96,37 @@ export function CommandPanel({
                         hpPercent={hpPercent}
                         energyPercent={energyPercent}
                     />
+                )}
+
+                {/* ACTIVE STATUS EFFECTS */}
+                {compact && (
+                    <div className="mb-2 rounded-lg border border-white/10 bg-background/50 p-2">
+                        <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            Active Status Effects
+                        </p>
+
+                        {activeStatuses.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {activeStatuses.map((status) => (
+                                    <span
+                                        key={status.id}
+                                        className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[10px] font-medium"
+                                        title={`${status.name} — ${status.duration} turns remaining`}
+                                    >
+                                        {status.name}
+
+                                        <span className="text-muted-foreground">
+                                            {status.duration}T
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-[10px] text-muted-foreground">
+                                No active status effects
+                            </p>
+                        )}
+                    </div>
                 )}
 
                 {/* Command content */}
