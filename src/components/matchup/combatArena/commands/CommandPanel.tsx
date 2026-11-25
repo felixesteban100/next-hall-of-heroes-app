@@ -78,7 +78,7 @@ export function CommandPanel({
                 compact ? "max-w-none" : "mt-2 max-w-4xl"
             )}
             style={
-                compact && availableHeight
+                compact && availableHeight && step === "power"
                     ? {
                         height: availableHeight,
                         maxHeight: availableHeight,
