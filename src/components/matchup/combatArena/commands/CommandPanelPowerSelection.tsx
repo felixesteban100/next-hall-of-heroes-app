@@ -12,7 +12,7 @@ type Props = {
     availablePowers: Power[];
     compact: boolean;
     availableHeight?: number;
-    hasHealingTargets: boolean;
+    // hasHealingTargets: boolean;
     getPowerCost: (power: Power) => number;
     isHealingPower: (power: Power | null) => boolean;
     getValidTargets: (
@@ -28,7 +28,7 @@ export function CommandPanelPowerSelection({
     availablePowers,
     compact,
     availableHeight,
-    hasHealingTargets,
+    // hasHealingTargets,
     getPowerCost,
     isHealingPower,
     getValidTargets,
@@ -70,12 +70,13 @@ export function CommandPanelPowerSelection({
             {/* Power list */}
             <div
                 data-command-panel-scroll
-                className="hide-scrollbar min-h-0 overflow-y-auto overflow-x-hidden"
+                className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y"
                 style={{
                     maxHeight: compact
-                        ? `max(0px, ${availableHeight ?? 400}px - 110px)`
+                        ? `max(0px, calc(${availableHeight ?? 400}px - 110px))`
                         : 260,
-                    overscrollBehavior: "contain",
+                    WebkitOverflowScrolling: "touch",
+                    overscrollBehaviorY: "contain",
                 }}
             >
                 {availablePowers.length === 0 ? (
@@ -101,16 +102,15 @@ export function CommandPanelPowerSelection({
                             const hasStatusEffects =
                                 (power.statusEffects?.length ?? 0) > 0;
 
-                            const hasDefensiveTarget =
-                                !isDefensive || getValidTargets(power).length > 0;
+                            const validTargets = getValidTargets(power);
+                            const hasValidTarget = validTargets.length > 0;
 
                             const missingUtilityEffects =
                                 isUtility && !hasStatusEffects;
 
                             const disabled =
                                 (!actor.isAlive && !isHeal) ||
-                                (isHeal && !hasHealingTargets) ||
-                                !hasDefensiveTarget ||
+                                ((isHeal || isDefensive) && !hasValidTarget) ||
                                 missingUtilityEffects ||
                                 cooldown > 0 ||
                                 !canAfford;
@@ -128,10 +128,10 @@ export function CommandPanelPowerSelection({
                                 disabledReason = "No status effects configured";
                             } else if (!actor.isAlive && !isHeal) {
                                 disabledReason = "Fighter is unable to act";
-                            } else if (isHeal && !hasHealingTargets) {
-                                disabledReason = "No valid healing targets";
-                            } else if (!hasDefensiveTarget) {
-                                disabledReason = "No valid defensive targets";
+                            } else if ((isHeal || isDefensive) && !hasValidTarget) {
+                                disabledReason = isHeal
+                                    ? "No valid healing targets"
+                                    : "No valid defensive targets";
                             } else if (cooldown > 0) {
                                 disabledReason = `Cooldown: ${cooldown} turns`;
                             } else if (!canAfford) {

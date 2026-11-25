@@ -157,7 +157,7 @@ export function CommandPanel({
                             availablePowers={availablePowers}
                             compact={compact}
                             availableHeight={availableHeight}
-                            hasHealingTargets={healingTargets.length > 0}
+                            // hasHealingTargets={healingTargets.length > 0}
                             getPowerCost={getPowerCost}
                             isHealingPower={isHealingPower}
                             getValidTargets={getValidTargets}

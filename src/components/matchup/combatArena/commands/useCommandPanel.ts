@@ -130,26 +130,41 @@ export function useCommandPanel({ onClose }: UseCommandPanelOptions = {}) {
         );
     }, []);
 
+
     const getValidTargets = useCallback(
         (power: Power | null, role?: PowerRole | null) => {
             if (!actor) return [];
 
-            if (isHealingPower(power)) return healingTargets;
+            if (isHealingPower(power)) {
+                if (power?.targetType === "Self") {
+                    return healingTargets.filter(
+                        (fighter) => fighter.id === actor.id
+                    );
+                }
+
+                return healingTargets;
+            }
 
             const effectiveRole = role ?? power?.combatRole;
+
             if (effectiveRole === "Defensive") {
                 return allies.filter(hasShieldCapacity);
             }
+
             if (effectiveRole === "Utility") return allies;
+
             if (effectiveRole === "Control") {
                 return enemies.filter(
                     (fighter) =>
                         !(power?.statusEffects?.length
-                            ? power.statusEffects.every((effect) => effect.type === "stun")
+                            ? power.statusEffects.every(
+                                (effect) => effect.type === "stun"
+                            )
                             : true) ||
                         !fighter.status.some(
                             (status) =>
-                                status.type === "stun_immune" && status.duration > 0
+                                status.type === "stun_immune" &&
+                                status.duration > 0
                         )
                 );
             }
