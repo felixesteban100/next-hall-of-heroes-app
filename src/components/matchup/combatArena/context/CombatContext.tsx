@@ -24,11 +24,15 @@ export type CombatContextValue = {
     state: CombatState | null;
     targetMode: TargetMode | null;
 
+    inspectedCharacterId: number | null;
+    onInspectCharacter: (id: number | null) => void;
+
     onAction: (action: CombatAction) => void;
     onSelectActor: (id: number) => void;
     onSelectTarget: (id: number) => void;
     onDeselectActor: () => void;
     onTargetModeChange: (mode: TargetMode | null) => void;
+
 };
 
 const CombatContext = createContext<CombatContextValue | null>(null);

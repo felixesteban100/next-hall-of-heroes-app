@@ -194,7 +194,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                     )}
 
                     {/* COMBAT TAB */}
-                    {activeTab === "combat" && (
+                    <div className={activeTab === "combat" ? "block" : "hidden"}>
                         <CombatArena
                             teamAChars={entitiesA}
                             teamBChars={entitiesB}
@@ -202,7 +202,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                             nameB={entityBName}
                             playerSide="A"
                         />
-                    )}
+                    </div>
 
                     {/* STATS TAB */}
                     {activeTab === "stats" && (

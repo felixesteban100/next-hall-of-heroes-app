@@ -103,7 +103,8 @@ export function CommandPanel({
 
                 {/* ACTIVE STATUS EFFECTS */}
                 {/* make this scrollable with a limited height */}
-                {compact && (
+                {/* show all the quialities of the character here not just the applied statuses but for example if it can revive and everything else */}
+                {/* {compact && (
                     <div className="mb-2 rounded-lg border border-white/10 bg-background/50 p-2">
                         <p className="mb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Active Status Effects
@@ -119,9 +120,9 @@ export function CommandPanel({
                                     >
                                         {status.name}
 
-                                        {/* <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground">
                                             {status.duration}T
-                                        </span> */}
+                                        </span>
                                     </span>
                                 ))}
                             </div>
@@ -131,7 +132,7 @@ export function CommandPanel({
                             </p>
                         )}
                     </div>
-                )}
+                )} */}
 
                 {/* Command content */}
                 <div

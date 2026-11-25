@@ -1,6 +1,6 @@
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crosshair, Lock, Shield, ShieldCheck, Skull, type LucideIcon } from "lucide-react";
+import { Crosshair, Info, Lock, Shield, ShieldCheck, Skull, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
@@ -17,9 +17,10 @@ type AvatarProps = {
     isDefending?: boolean;
     isInvolved?: boolean;
     isProtected?: boolean;
+    onInspect?: () => void;
 }
 
-export default function Avatar({ fighter, size, variant, isAttacking, isKO, isHealing, isReviving, isDefending, isInvolved, isProtected = false, }: AvatarProps) {
+export default function Avatar({ fighter, size, variant, isAttacking, isKO, isHealing, isReviving, isDefending, isInvolved, isProtected = false, onInspect }: AvatarProps) {
     const dead = !fighter.isAlive;
 
     const shieldCount = (fighter.status ?? []).filter((s) => s.type === "shield" && s.duration > 0).length;
@@ -175,9 +176,27 @@ export default function Avatar({ fighter, size, variant, isAttacking, isKO, isHe
                 </AnimatePresence>
             </div>
 
-            <span className={cn("text-center text-foreground/85 leading-tight truncate font-medium text-[9px] sm:text-[10px] transition-all max-w-[48px] sm:max-w-[64px]")}>
-                {fighter.name}
-            </span>
+            <div className={`flex max-w-full items-center justify-center gap-0.5 transition-colors hover:bg-${variant}/15 text-${variant} rounded-md px-2`}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    onInspect?.();
+                }}
+            >
+                {/* text-foreground/85 */}
+                <span className="max-w-[48px] truncate text-center text-[12px] font-bold  sm:max-w-[100px] sm:text-[15px]">
+                    {fighter.name}
+                </span>
+
+                <button
+                    type="button"
+                    title={`Inspect ${fighter.name}`}
+                    aria-label={`Inspect ${fighter.name}`}
+
+                    className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground `}
+                >
+                    <Info className="size-3" />
+                </button>
+            </div>
         </motion.div>
     );
 }

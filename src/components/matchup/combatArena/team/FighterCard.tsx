@@ -7,6 +7,7 @@ import FighterResourceBar from "./FighterResourceBar";
 import { useIsMobile } from "@/components/shared/SwipeGrid";
 import { motion, useAnimationControls } from "framer-motion";
 import { getCharacterThematicMix } from "@/lib/character_utils";
+import { Info } from "lucide-react";
 
 type DisplayFighter = CombatFighter & { prevHp?: number };
 
@@ -30,9 +31,10 @@ type Props = {
     setAvatarRef: (node: HTMLDivElement | null) => void;
     size?: number;
     isMultiTargetSelected?: boolean;
+    onInspect: () => void;
 };
 
-export default function FighterCard({ size, fighter, variant, attackerId, targetIds, latestKO, latestHeal, latestRevive, latestDefend, hpReady, koReady, isSelectedActor, isSelectedTarget, isValidTarget, isProtected = false, canSelectActor, onClick, setAvatarRef, isMultiTargetSelected = false, }: Props) {
+export default function FighterCard({ size, fighter, variant, attackerId, targetIds, latestKO, latestHeal, latestRevive, latestDefend, hpReady, koReady, isSelectedActor, isSelectedTarget, isValidTarget, isProtected = false, canSelectActor, onClick, setAvatarRef, isMultiTargetSelected = false, onInspect }: Props) {
     const shakeControls = useAnimationControls();
 
     const handleCardClick = () => {
@@ -174,6 +176,7 @@ export default function FighterCard({ size, fighter, variant, attackerId, target
                     isDefending={latestDefend === fighter.id}
                     isProtected={isProtected}
                     isInvolved={isSelectedActor || isSelectedTarget}
+                    onInspect={onInspect}
                 />
             </motion.div>
 

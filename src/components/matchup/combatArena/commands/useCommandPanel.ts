@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Power, PowerRole } from "@/types";
 import { useCombatContext } from "../context/CombatContext";
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
+import { isItHealingPower } from "@/lib/matchup/combat/utils/isItHealingPower";
 
 type Step = "action" | "power" | "hybrid-role" | "target";
 
@@ -118,16 +119,16 @@ export function useCommandPanel({ onClose }: UseCommandPanelOptions = {}) {
 
     const isHealingPower = useCallback((power: Power | null) => {
         if (!power) return false;
+        return isItHealingPower(power.name)
+        // const name = power.name.toLowerCase();
 
-        const name = power.name.toLowerCase();
-
-        return (
-            name.includes("heal") ||
-            name.includes("regen") ||
-            name.includes("healing factor") ||
-            name.includes("recovery") ||
-            name.includes("immort")
-        );
+        // return (
+        //     name.includes("heal") ||
+        //     name.includes("regen") ||
+        //     name.includes("healing factor") ||
+        //     name.includes("recovery") ||
+        //     name.includes("immort")
+        // );
     }, []);
 
 

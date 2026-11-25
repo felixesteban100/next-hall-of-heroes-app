@@ -3,6 +3,7 @@ import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
 import { resolveStatusEffectRecipient } from "../helpers/statusEffectRecipients";
 import { STATUS_EFFECT_RECIPIENTS } from "@/lib/matchup/combat/helpers/statusEffectRecipients";
+import { isItHealingPower } from "../utils/isItHealingPower";
 
 export const MAX_SHIELDS_PER_FIGHTER = 4
 
@@ -162,10 +163,11 @@ export class CombatEngine {
 
       const powerName = power?.name.toLowerCase() ?? "";
 
-      const isHealingPower =
-        powerName.includes("heal") ||
-        powerName.includes("regene") ||
-        powerName.includes("recovery");
+      // const isHealingPower =
+      //   powerName.includes("heal") ||
+      //   powerName.includes("regene") ||
+      //   powerName.includes("recovery");
+      const isHealingPower = isItHealingPower(powerName)
 
       const isSelfRevive =
         isHealingPower &&
@@ -556,7 +558,8 @@ export class CombatEngine {
 
     const powerName = power.name.toLowerCase();
 
-    const isHealingPower = powerName.includes("heal") || powerName.includes("regene") || powerName.includes("recovery");
+    // const isHealingPower = powerName.includes("heal") || powerName.includes("regene") || powerName.includes("recovery") || powerName.includes("immo");
+    const isHealingPower = isItHealingPower(powerName)
 
     // Only spend resources after the action has passed target validation.
     const spendPower = () => {
@@ -1367,8 +1370,9 @@ export class CombatEngine {
   }
 
   private isHealingPower(power: Power) {
-    const name = power.name.toLowerCase();
-    return name.includes("heal") || name.includes("regene") || name.includes("recovery");
+    return isItHealingPower(power.name)
+    // const name = power.name.toLowerCase();
+    // return name.includes("heal") || name.includes("regene") || name.includes("recovery");
   }
 
   private getPowerEligibleTargets(actor: CombatFighter, power: Power, role: PowerRole): CombatFighter[] {
@@ -2081,10 +2085,11 @@ export class CombatEngine {
     return fighter.powers.some((power) => {
       const name = power.name.toLowerCase();
 
-      const isHealingPower =
-        name.includes("heal") ||
-        name.includes("regene") ||
-        name.includes("recovery");
+      // const isHealingPower =
+      //   name.includes("heal") ||
+      //   name.includes("regene") ||
+      //   name.includes("recovery");
+      const isHealingPower = isItHealingPower(name)
 
       const cooldown = fighter.cooldowns[power.id] ?? 0;
       const { energy } = this.getPowerCost(power);

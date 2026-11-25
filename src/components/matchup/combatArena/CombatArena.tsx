@@ -34,9 +34,15 @@ export function CombatArena({
     const [state, setState] = useState<CombatState | null>(null);
     const [visibleEvents, setVisibleEvents] = useState<CombatEvent[]>([]);
     const [previousHpById, setPreviousHpById] = useState<Record<number, number>>({});
+    const [animationSpeed, setAnimationSpeed] = useState<1 | 2>(1);
+    const [inspectedCharacterId, setInspectedCharacterId] = useState<number | null>(null);
 
-    const { enqueueEvents, isPresentingRef, resetQueue, skipCurrentPresentation } =
-        useCombatPresentationQueue(setVisibleEvents);
+    const {
+        enqueueEvents,
+        isPresentingRef,
+        resetQueue,
+        skipCurrentPresentation,
+    } = useCombatPresentationQueue(setVisibleEvents, animationSpeed);
 
     const {
         targetMode,
@@ -110,6 +116,8 @@ export function CombatArena({
                     onSelectTarget: handleSelectTarget,
                     onDeselectActor: handleDeselectActor,
                     onTargetModeChange: handleTargetModeChange,
+                    inspectedCharacterId,
+                    onInspectCharacter: setInspectedCharacterId,
                 }}
             >
                 <CinematicCombatView
@@ -123,6 +131,8 @@ export function CombatArena({
                     battleStarted={state.battleStarted}
                     onStartBattle={handleStartBattle}
                     onSkipPresentation={skipCurrentPresentation}
+                    animationSpeed={animationSpeed}
+                    onAnimationSpeedChange={setAnimationSpeed}
                 />
             </CombatProvider>
         </div>

@@ -45,7 +45,14 @@ export default function TeamColumn({ fighters, variant, actionEvent, eventKey, i
     }, [fighters]);
 
 
-    const { state, targetMode, onSelectActor, onSelectTarget, onDeselectActor } = useCombatContext();
+    const {
+        state,
+        targetMode,
+        onSelectActor,
+        onSelectTarget,
+        onDeselectActor,
+        onInspectCharacter,
+    } = useCombatContext();
 
     const event = actionEvent;
     const attackerId = actionEvent?.actorId;
@@ -179,10 +186,13 @@ export default function TeamColumn({ fighters, variant, actionEvent, eventKey, i
                                 onClick={() => {
                                     if (isDialogOpen) return;
 
+                                    // Always open character inspection.
+                                    onInspectCharacter(fighter.id);
+
+                                    // Preserve existing combat target selection.
                                     if (isValidTarget) {
                                         onSelectTarget(fighter.id);
 
-                                        // Keep the panel open while selecting multiple targets.
                                         if (targetMode?.selectionMode !== "multiple") {
                                             setOpenCommandActorId(null);
                                         }
@@ -190,16 +200,16 @@ export default function TeamColumn({ fighters, variant, actionEvent, eventKey, i
                                         return;
                                     }
 
+                                    // Preserve existing combat actor selection.
                                     if (canSelectActor) {
                                         onSelectActor(fighter.id);
 
                                         setOpenCommandActorId((current) =>
-                                            current === fighter.id
-                                                ? null
-                                                : fighter.id
+                                            current === fighter.id ? null : fighter.id
                                         );
                                     }
                                 }}
+                                onInspect={() => onInspectCharacter(fighter.id)}
                             />
                         );
                     })}
