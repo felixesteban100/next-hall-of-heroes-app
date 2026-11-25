@@ -104,9 +104,19 @@ export function useCombatPresentationQueue(
         isPresentingRef.current = false;
     }, []);
 
+    const skipCurrentPresentation = useCallback(() => {
+        if (!presentationTimerRef.current) return;
+
+        clearTimeout(presentationTimerRef.current);
+        presentationTimerRef.current = null;
+
+        processQueueRef.current();
+    }, []);
+
     return {
         enqueueEvents,
         isPresentingRef,
         resetQueue,
+        skipCurrentPresentation
     };
 }

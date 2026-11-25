@@ -2,6 +2,7 @@ import type { CombatState, CombatFighter, CombatAction, CombatEvent, Side, Row, 
 import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
 import { resolveStatusEffectRecipient } from "../helpers/statusEffectRecipients";
+import { STATUS_EFFECT_RECIPIENTS } from "@/lib/matchup/combat/helpers/statusEffectRecipients";
 
 export const MAX_SHIELDS_PER_FIGHTER = 4
 
@@ -649,8 +650,6 @@ export class CombatEngine {
           continue;
         }
 
-        const hpBefore = target.currentHp;
-
         const appliedEffects =
           power.statusEffects !== undefined
             ? this.applyPowerStatusEffects(actor, target, power)
@@ -673,7 +672,7 @@ export class CombatEngine {
             id: this.nextEventId(),
             type: "status_applied",
             power,
-            hpBefore: fighter.currentHp,
+            hpBefore: target.currentHp,
             hpAfter: fighter.currentHp,
             actorId: actor.id,
             targetIds: [fighter.id],
@@ -831,6 +830,42 @@ export class CombatEngine {
       // Resolve protection independently for each selected enemy.
       const { target, protectedTarget } = this.resolveProtectionTarget(selectedTarget);
 
+      // Apply status effects to the originally selected target.
+      // Self-directed effects are applied only once per power activation.
+      const effectsForTarget =
+        index === 0
+          ? power
+          : {
+            ...power,
+            statusEffects: power.statusEffects?.filter(
+              (effect) => STATUS_EFFECT_RECIPIENTS[effect.type] !== "self"
+            ),
+          };
+
+      const appliedEffects = this.applyPowerStatusEffects(
+        actor,
+        selectedTarget,
+        effectsForTarget
+      );
+
+      for (const { fighter, status } of appliedEffects) {
+        events.push({
+          id: this.nextEventId(),
+          type: "status_applied",
+          actorId: actor.id,
+          targetIds: [fighter.id],
+          power,
+          status,
+          hpBefore: fighter.currentHp,
+          hpAfter: fighter.currentHp,
+          text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: fighter.name,
+          powerName: power.name,
+        });
+      }
+
       const hpBefore = target.currentHp;
 
       // Apply the target's shields after interception.
@@ -879,9 +914,6 @@ export class CombatEngine {
         0,
         target.currentHp - actualDamage
       );
-
-      // Apply the power's status effects (Burn, etc.).
-      this.applyPowerStatusEffects(actor, target, power);
 
       focusWasConsumed = true;
 

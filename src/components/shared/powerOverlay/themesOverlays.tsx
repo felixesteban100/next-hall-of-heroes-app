@@ -17,16 +17,29 @@ import {
 import { ThemeKey } from "./PowerOverlay";
 import { Ninjutsu } from "./Ninjutsu";
 
-const iconFx = (IconComponent: React.ElementType, colorClass: string, anim: any) => (
+const iconFx = (
+    IconComponent: React.ElementType,
+    colorClass: string,
+    anim: any,
+    isSkipped = false
+) => (
     <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={anim}
-        transition={{
-            duration: 1.8,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-        }}
+        animate={
+            isSkipped
+                ? { opacity: 1, scale: 1, rotate: 0, x: 0, y: 0 }
+                : anim
+        }
+        transition={
+            isSkipped
+                ? { duration: 0 }
+                : {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut",
+                }
+        }
         className="absolute inset-0 pointer-events-none overflow-visible z-99 flex items-center justify-center"
     >
         <IconComponent className={`w-36 h-36 sm:w-44 sm:h-44 filter drop-shadow-[0_0_25px_currentColor] ${colorClass}`} />
@@ -44,8 +57,11 @@ const rainbowAnimation = {
     }
 };
 
-export const getThemeOverlay = (key: ThemeKey): React.ReactNode => {
-    return getThemeDetails(key).node;
+export const getThemeOverlay = (
+    key: ThemeKey,
+    isSkipped = false
+): React.ReactNode => {
+    return getThemeDetails(key, isSkipped).node;
 };
 
 type ThemeConfigEntry = {
@@ -55,7 +71,10 @@ type ThemeConfigEntry = {
 };
 
 
-export const getThemeDetails = (key: ThemeKey) => {
+export const getThemeDetails = (
+    key: ThemeKey,
+    isSkipped = false
+) => {
     const config = THEME_CONFIGS[key] || THEME_CONFIGS.none;
     const resolvedColor = typeof config.color === "function" ? config.color() : config.color;
 
@@ -63,7 +82,7 @@ export const getThemeDetails = (key: ThemeKey) => {
         icon: config.icon,
         color: resolvedColor,
         animation: config.animation,
-        node: iconFx(config.icon, resolvedColor, config.animation)
+        node: iconFx(config.icon, resolvedColor, config.animation, isSkipped)
     };
 };
 

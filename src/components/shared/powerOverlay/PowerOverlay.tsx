@@ -201,22 +201,23 @@ interface PowerOverlayProps {
     powerName?: string;
     side?: "left" | "right";
     visible?: boolean;
-    playSound?: boolean
+    playSound?: boolean;
+    isSkipped?: boolean;
 }
 
-export default function PowerOverlay({ action, powerName, visible = true, side, playSound = true }: PowerOverlayProps) {
+export default function PowerOverlay({ action, powerName, visible = true, side, playSound = true, isSkipped = false, }: PowerOverlayProps) {
     // const key = "fire" as ThemeKey;
     const key = getThemeKey(action, powerName) as ThemeKey;
     const t = useMemo(() => {
-        return getThemeOverlay(key);
-    }, [action, powerName, key]);
+        return getThemeOverlay(key, isSkipped);
+    }, [action, powerName, key, isSkipped]);
 
     // 🚀 Restored audio playback trigger on visibility change
     useEffect(() => {
-        if (visible && playSound) {
+        if (visible && playSound && !isSkipped) {
             playOverlaySound(key, action);
         }
-    }, [visible, key]);
+    }, [visible, key, action, playSound, isSkipped]);
 
     if (key == "none") return null;
 

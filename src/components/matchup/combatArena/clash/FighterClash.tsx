@@ -24,17 +24,21 @@ import {
 } from "./constants/roleStyles";
 
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
-
+import { useEffect } from "react";
 
 export default function FighterClash({
     event,
     fighters,
     allChars,
     onImpact,
+    animationSpeed = 1,
+    skipSignal = 0,
 }: ClashCardProps) {
-    const { phase, triggerImpact } = useCombatAnimation({
+    const { phase, triggerImpact, isSkipped } = useCombatAnimation({
         event,
         onImpact,
+        speed: animationSpeed,
+        skipSignal,
     });
 
     if (!event) return null;
@@ -163,8 +167,8 @@ export default function FighterClash({
 
     // Shared fighter animation settings
     const fighterTransition = {
-        delay: 0.3,
-        duration: 1,
+        delay: isSkipped ? 0 : 0.3 / animationSpeed,
+        duration: isSkipped ? 0 : 1 / animationSpeed,
         times: [0, 0.4, 0.75, 1],
         ease: [0.175, 0.885, 0.32, 1.275] as [
             number,
@@ -177,6 +181,27 @@ export default function FighterClash({
     const accentColorClass = leftIsAttacker
         ? "bg-primary"
         : "bg-secondary";
+
+    const skippedMotion = {
+        x: 0,
+        y: 0,
+        scale: 1,
+        rotate: 0,
+    };
+
+    const leftMotionProfile = getFighterMotionProfile(
+        powerRole,
+        leftIsAttacker,
+        leftIsTeamA,
+        isDefend
+    );
+
+    const rightMotionProfile = getFighterMotionProfile(
+        powerRole,
+        rightIsAttacker,
+        rightIsTeamA,
+        isDefend
+    );
 
 
     return (
@@ -244,19 +269,14 @@ export default function FighterClash({
                                     scale: 0.85,
                                 }}
                                 transition={{
-                                    duration: 0.3,
+                                    duration: isSkipped ? 0 : 0.3 / animationSpeed,
                                     ease: "easeInOut",
                                 }}
                                 className="flex min-w-0 justify-center"
                             >
                                 <motion.div
                                     key={`${event.id}-${leftFighter.id}`}
-                                    animate={getFighterMotionProfile(
-                                        powerRole,
-                                        leftIsAttacker,
-                                        leftIsTeamA,
-                                        isDefend
-                                    )}
+                                    animate={isSkipped ? skippedMotion : leftMotionProfile}
                                     onUpdate={(latest) =>
                                         handleAnimationUpdate(latest, leftIsAttacker)
                                     }
@@ -276,6 +296,7 @@ export default function FighterClash({
                                         phase={phase}
                                         isDefender={!leftIsAttacker && !isDefend}
                                         prevHp={leftHp?.previous}
+                                        isSkipped={isSkipped}
                                         isShielded={
                                             isShielded(leftFighter) ||
                                             (isEventTarget(leftFighter) && (event.damageBlocked ?? 0) > 0)
@@ -309,19 +330,14 @@ export default function FighterClash({
                                     scale: 0.85,
                                 }}
                                 transition={{
-                                    duration: 0.3,
+                                    duration: isSkipped ? 0 : 0.3 / animationSpeed,
                                     ease: "easeInOut",
                                 }}
                                 className="flex min-w-0 justify-center"
                             >
                                 <motion.div
                                     key={`${event.id}-${rightFighter.id}`}
-                                    animate={getFighterMotionProfile(
-                                        powerRole,
-                                        rightIsAttacker,
-                                        rightIsTeamA,
-                                        isDefend
-                                    )}
+                                    animate={isSkipped ? skippedMotion : rightMotionProfile}
                                     onUpdate={(latest) =>
                                         handleAnimationUpdate(latest, rightIsAttacker)
                                     }
@@ -341,6 +357,7 @@ export default function FighterClash({
                                         phase={phase}
                                         isDefender={!rightIsAttacker && !isDefend}
                                         prevHp={rightHp?.previous}
+                                        isSkipped={isSkipped}
                                         isShielded={
                                             isShielded(rightFighter) ||
                                             (isEventTarget(rightFighter) && (event.damageBlocked ?? 0) > 0)
@@ -355,9 +372,14 @@ export default function FighterClash({
                 {/* Center Hub */}
                 <motion.div
                     initial={{ scale: 0.5, opacity: 0, y: 12 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    animate={
+                        isSkipped
+                            ? { scale: 1, opacity: 1, y: 0 }
+                            : { scale: 1, opacity: 1, y: 0 }
+                    }
                     transition={{
-                        delay: 0.08,
+                        delay: isSkipped ? 0 : 0.08 / animationSpeed,
+                        duration: isSkipped ? 0 : undefined,
                         type: "spring",
                         stiffness: 400,
                         damping: 20,
@@ -369,7 +391,10 @@ export default function FighterClash({
                         <motion.div
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.15, duration: 0.25 }}
+                            transition={{
+                                delay: isSkipped ? 0 : 0.15 / animationSpeed,
+                                duration: isSkipped ? 0 : 0.25,
+                            }}
                             /* max-w-5xl w-[80%]  */
                             className={cn(
                                 "relative flex min-w-0 items-center justify-center",
@@ -400,7 +425,10 @@ export default function FighterClash({
                         <motion.div
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.22, duration: 0.3 }}
+                            transition={{
+                                delay: isSkipped ? 0 : 0.22 / animationSpeed,
+                                duration: isSkipped ? 0 : 0.3,
+                            }}
                             /* rounded-xl border border-white/10 bg-gradient-to-b from-background/95 to-background/70 shadow-lg backdrop-blur-md */
                             /* max-w-5xl w-[80%] */
                             className=" relative min-w-0 overflow-hidden "

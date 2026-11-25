@@ -35,7 +35,7 @@ export function CombatArena({
     const [visibleEvents, setVisibleEvents] = useState<CombatEvent[]>([]);
     const [previousHpById, setPreviousHpById] = useState<Record<number, number>>({});
 
-    const { enqueueEvents, isPresentingRef, resetQueue } =
+    const { enqueueEvents, isPresentingRef, resetQueue, skipCurrentPresentation } =
         useCombatPresentationQueue(setVisibleEvents);
 
     const {
@@ -122,6 +122,7 @@ export function CombatArena({
                     previousHpById={previousHpById}
                     battleStarted={state.battleStarted}
                     onStartBattle={handleStartBattle}
+                    onSkipPresentation={skipCurrentPresentation}
                 />
             </CombatProvider>
         </div>

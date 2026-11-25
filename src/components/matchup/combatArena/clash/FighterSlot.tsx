@@ -9,10 +9,9 @@ import type { CombatFighter } from "@/lib/matchup/combat/types/types";
 import PowerOverlay, {
     type CombatActionType,
 } from "@/components/shared/powerOverlay/PowerOverlay";
-import SyncedHealthBar from "./SyncedHealthBar";
 import FighterResourceBar from "@/components/matchup/combatArena/team/FighterResourceBar";
 
-function ImpactOverlay({ visible }: { visible: boolean }) {
+function ImpactOverlay({ visible, isSkipped }: { visible: boolean, isSkipped: boolean }) {
     if (!visible) return null;
 
     return (
@@ -21,7 +20,7 @@ function ImpactOverlay({ visible }: { visible: boolean }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0.7, 0] }}
             transition={{
-                duration: 0.55,
+                duration: isSkipped ? 0 : 0.55,
                 times: [0, 0.12, 0.45, 1],
                 ease: "easeOut",
             }}
@@ -34,7 +33,10 @@ function ImpactOverlay({ visible }: { visible: boolean }) {
                 className="absolute inset-x-0 top-0 h-full rounded-lg bg-gradient-to-b from-white/40 via-transparent to-transparent"
                 initial={{ y: "-100%" }}
                 animate={{ y: "200%" }}
-                transition={{ duration: 0.3, ease: "easeIn" }}
+                transition={{
+                    duration: isSkipped ? 0 : 0.3,
+                    ease: "easeIn",
+                }}
             />
         </motion.div>
     );
@@ -56,6 +58,7 @@ interface FighterSlotProps {
     prevHp?: number;
     phase: CombatPhase;
     isShielded?: boolean;
+    isSkipped?: boolean;
 }
 
 export default function FighterSlot({
@@ -74,6 +77,7 @@ export default function FighterSlot({
     prevHp,
     phase,
     isShielded = false,
+    isSkipped = false,
 }: FighterSlotProps) {
     if (!fighter) return <div className="w-full max-w-36" />;
 
@@ -107,7 +111,7 @@ export default function FighterSlot({
                         initial={{ opacity: 0, y: 10, scale: 0.5 }}
                         animate={{ opacity: 1, y: -10, scale: 1 }}
                         exit={{ opacity: 0, y: -35, scale: 0.8 }}
-                        transition={{ duration: 1 }}
+                        transition={{ duration: isSkipped ? 0 : 1 }}
                         className="pointer-events-none absolute left-1/2  z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-red-500 drop-shadow-md sm:text-xs"
                     >
                         (-{damagePopup} HP)
@@ -120,7 +124,7 @@ export default function FighterSlot({
                         initial={{ opacity: 0, y: 10, scale: 0.5 }}
                         animate={{ opacity: 1, y: -10, scale: 1 }}
                         exit={{ opacity: 0, y: -35, scale: 0.8 }}
-                        transition={{ duration: 1 }}
+                        transition={{ duration: isSkipped ? 0 : 1 }}
                         className="pointer-events-none absolute left-1/2  z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-emerald-400 drop-shadow-md sm:text-xs"
                     >
                         (+{healPopup} HP)
@@ -135,7 +139,7 @@ export default function FighterSlot({
                             initial={{ opacity: 0, y: 10, scale: 0.5 }}
                             animate={{ opacity: 1, y: -10, scale: 1 }}
                             exit={{ opacity: 0, y: -35, scale: 0.8 }}
-                            transition={{ duration: 1 }}
+                            transition={{ duration: isSkipped ? 0 : 1 }}
                             className="pointer-events-none absolute left-1/2 z-[40] -translate-x-1/2 whitespace-nowrap text-[9px] font-black text-orange-400 drop-shadow-md sm:text-xs"
                         >
                             (+{fatiguePopup} FAT)
@@ -176,7 +180,7 @@ export default function FighterSlot({
                                 ? {
                                     filter: "grayscale(100%) contrast(125%)",
                                 }
-                                : isStunned
+                                : isStunned && !isSkipped
                                     ? {
                                         filter: [
                                             "saturate(100%)",
@@ -191,13 +195,15 @@ export default function FighterSlot({
                                     }
                         }
                         transition={
-                            isStunned && !showKO
-                                ? {
-                                    duration: 1.8,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                }
-                                : { duration: 0.35 }
+                            isSkipped
+                                ? { duration: 0 }
+                                : isStunned && !showKO
+                                    ? {
+                                        duration: 1.8,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }
+                                    : { duration: 0.35 }
                         }
                     >
                         <CharacterImage
@@ -221,7 +227,7 @@ export default function FighterSlot({
                                 animate={{ opacity: [0, 1, 0.6, 0] }}
                                 exit={{ opacity: 0 }}
                                 transition={{
-                                    duration: 0.55,
+                                    duration: isSkipped ? 0 : 0.55,
                                     times: [0, 0.15, 0.5, 1],
                                 }}
                             />
@@ -237,12 +243,13 @@ export default function FighterSlot({
                             powerName={activePower?.name}
                             side={isTeamA ? "left" : "right"}
                             visible={true}
+                            isSkipped={isSkipped}
                         />
                     </div>
                 )}
 
                 {/* Impact Effect */}
-                <ImpactOverlay visible={impactVisible} />
+                <ImpactOverlay visible={impactVisible} isSkipped={isSkipped} />
 
                 {/* Knockout Overlay */}
                 <AnimatePresence>
@@ -260,11 +267,15 @@ export default function FighterSlot({
                                 rotate: 0,
                             }}
                             exit={{ opacity: 0 }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 20,
-                            }}
+                            transition={
+                                isSkipped
+                                    ? { duration: 0 }
+                                    : {
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 20,
+                                    }
+                            }
                             className="absolute inset-0 z-[30] flex flex-col items-center justify-center rounded-lg bg-black/75 backdrop-blur-[2px]"
                         >
                             <Skull className="size-8 text-white/80 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)] sm:size-10" />
@@ -278,11 +289,13 @@ export default function FighterSlot({
                         <motion.div
                             key="stun-overlay"
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: [0.8, 1, 0.8] }}
                             exit={{ opacity: 0 }}
+                            animate={{
+                                opacity: isSkipped ? 0.8 : [0.8, 1, 0.8],
+                            }}
                             transition={{
                                 duration: 1.8,
-                                repeat: Infinity,
+                                repeat: isSkipped ? 0 : Infinity,
                                 ease: "easeInOut",
                             }}
                             className="pointer-events-none absolute inset-0 z-[20] rounded-lg bg-purple-500"

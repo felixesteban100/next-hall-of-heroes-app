@@ -21,6 +21,8 @@ type Props = {
     allChars: CharacterWithJoinTeamUniversePowerEnemies[];
     teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
     onImpact?: () => void;
+    animationSpeed?: 1 | 2;
+    skipSignal?: number;
 };
 
 type EventPresentation = {
@@ -101,8 +103,16 @@ export default function EventCard({
     fighters,
     allChars,
     onImpact,
+    animationSpeed = 1,
+    skipSignal = 0,
+
 }: Props) {
-    const { phase } = useCombatAnimation({ event, onImpact });
+    const { phase, isSkipped } = useCombatAnimation({
+        event,
+        onImpact,
+        speed: animationSpeed,
+        skipSignal,
+    });
 
     const eventType = event.type;
     const presentation = getEventPresentation(eventType);
@@ -194,7 +204,7 @@ export default function EventCard({
                             filter: "blur(6px)",
                         }}
                         transition={{
-                            duration: 0.55,
+                            duration: isSkipped ? 0 : 0.55 / animationSpeed,
                             ease: [0.22, 1, 0.36, 1],
                         }}
                     >
@@ -221,6 +231,7 @@ export default function EventCard({
                             }
                             phase={phase}
                             isDefender={isStatusHpChange}
+                            isSkipped={isSkipped}
                         />
                     </motion.div>
                 )}

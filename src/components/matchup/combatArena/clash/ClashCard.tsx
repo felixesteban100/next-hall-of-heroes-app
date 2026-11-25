@@ -51,6 +51,8 @@ export default function ClashCard(props: ClashCardProps) {
                     allChars={allChars}
                     teamAChars={teamAChars}
                     onImpact={props.onImpact}
+                    animationSpeed={props.animationSpeed}
+                    skipSignal={props.skipSignal}
                 />
             );
 

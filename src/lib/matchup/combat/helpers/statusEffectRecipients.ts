@@ -17,7 +17,7 @@ export type StatusEffectRecipient =
  * offensive powers can buff their user, and defensive powers
  * can apply effects to allies.
  */
-const STATUS_EFFECT_RECIPIENTS: Record<
+export const STATUS_EFFECT_RECIPIENTS: Record<
     StatusEffectType,
     StatusEffectRecipient
 > = {

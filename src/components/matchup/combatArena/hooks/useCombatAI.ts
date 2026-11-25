@@ -36,11 +36,11 @@ export function useCombatAI({
         const timers: ReturnType<typeof setTimeout>[] = [];
 
         const runAI = () => {
-            console.log("[AI DEBUG] runAI started", {
-                phase: engineRef.current?.getState().phase,
-                isPresenting: isPresentingRef.current,
-                availableAIIds: engineRef.current?.getState().availableAIIds,
-            });
+            // console.log("[AI DEBUG] runAI started", {
+            //     phase: engineRef.current?.getState().phase,
+            //     isPresenting: isPresentingRef.current,
+            //     availableAIIds: engineRef.current?.getState().availableAIIds,
+            // });
 
             // Don't let the AI act while previous events are being presented.
             if (isPresentingRef.current) {
@@ -55,7 +55,7 @@ export function useCombatAI({
             const prevEventCount = engine.getState().events.length;
             const action = engine.chooseAIAction();
 
-            console.log("[AI DEBUG] chosen action:", action);
+            // console.log("[AI DEBUG] chosen action:", action);
 
             if (action) {
                 // Capture HP before the AI action.
@@ -70,7 +70,7 @@ export function useCombatAI({
                 setPreviousHpById(previousHp);
 
                 const actionEvents = engine.performAction(action, true);
-                console.log("[AI DEBUG] action events:", actionEvents);
+                // console.log("[AI DEBUG] action events:", actionEvents);
 
                 if (actionEvents.length === 0) {
                     engine.finishAIPhase();

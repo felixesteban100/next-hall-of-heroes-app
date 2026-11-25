@@ -43,12 +43,19 @@ type Props = {
     previousHpById: Record<number, number>;
     battleStarted: boolean;
     onStartBattle: (firstSide: Side) => void;
+    onSkipPresentation: () => void;
 };
 
-export default function CinematicCombatView({ fightersA, fightersB, events, teamAChars, teamBChars, playerSide, previousHpById, battleStarted, onStartBattle, }: Props) {
+export default function CinematicCombatView({ fightersA, fightersB, events, teamAChars, teamBChars, playerSide, previousHpById, battleStarted, onStartBattle, onSkipPresentation }: Props) {
     const [isRolling, setIsRolling] = useState(false);
     const [diceResult, setDiceResult] = useState<{ a: number; b: number; winner: Side; } | null>(null);
+    const [animationSpeed, setAnimationSpeed] = useState<1 | 2>(1);
+    const [skipSignal, setSkipSignal] = useState(0);
 
+    const handleSkip = () => {
+        setSkipSignal((previous) => previous + 1);
+        onSkipPresentation();
+    };
     const diceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -230,6 +237,32 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                         </div>
 
                         <div className="flex items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    setAnimationSpeed((previous) =>
+                                        previous === 1 ? 2 : 1
+                                    )
+                                }
+                                className="h-8 min-w-12 px-2 text-xs"
+                                title="Toggle animation speed"
+                            >
+                                {animationSpeed}×
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={!isViewingLatest}
+                                onClick={handleSkip}
+                                className="h-8 gap-1 px-2 text-xs"
+                                title="Skip current animation"
+                            >
+                                <SkipForward className="size-3.5" />
+                                <span className="hidden sm:inline">Skip</span>
+                            </Button>
+
                             {!isViewingLatest && (
                                 <Button
                                     variant="ghost"
@@ -266,6 +299,8 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                                 teamAChars={teamAChars}
                                 playerSide={playerSide}
                                 onImpact={handleImpact}
+                                animationSpeed={animationSpeed}
+                                skipSignal={skipSignal}
                             />
                         )}
                     </div>

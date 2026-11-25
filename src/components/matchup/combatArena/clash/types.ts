@@ -24,6 +24,8 @@ export type ClashCardProps = {
     teamAChars: CharacterWithJoinTeamUniversePowerEnemies[];
     playerSide: Side;
     onImpact?: () => void;
+    animationSpeed?: 1 | 2;
+    skipSignal?: number;
 };
 
 export type EventStyle = {
