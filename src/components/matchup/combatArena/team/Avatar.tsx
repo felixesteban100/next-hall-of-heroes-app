@@ -1,6 +1,6 @@
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crosshair, Info, Lock, Shield, ShieldCheck, Skull, type LucideIcon } from "lucide-react";
+import { Crosshair, Ellipsis, Expand, Info, Lock, Maximize2, Shield, ShieldCheck, Skull, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
 import ScoreBadgeOnCard from "@/components/shared/ScoreBadgeOnCard";
@@ -191,10 +191,10 @@ export default function Avatar({ fighter, size, variant, isAttacking, isKO, isHe
                     type="button"
                     title={`Inspect ${fighter.name}`}
                     aria-label={`Inspect ${fighter.name}`}
-
-                    className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground `}
+                    /* border border-${variant} */
+                    className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground  `}
                 >
-                    <Info className="size-3" />
+                    <Maximize2 className={`size-3 text-${variant}`} />
                 </button>
             </div>
         </motion.div>

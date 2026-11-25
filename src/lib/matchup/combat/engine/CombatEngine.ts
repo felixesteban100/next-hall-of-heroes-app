@@ -754,9 +754,9 @@ export class CombatEngine {
 
         const hpBefore = target.currentHp;
 
+        // 1. Every Defensive power attempts to grant two shields.
         let shieldsAdded = 0;
 
-        // Attempt to apply two shields to this target.
         for (let i = 0; i < 2; i++) {
           const applied = this.applyStatus(target, {
             id: `shield-${target.id}-${power.id}-${this.nextEventId()}-${i}`,
@@ -770,32 +770,57 @@ export class CombatEngine {
           if (applied) shieldsAdded++;
         }
 
-        if (shieldsAdded === 0) continue;
+        // Record the Defensive combat-role effect.
+        if (shieldsAdded > 0) {
+          const totalShields = target.status.filter(
+            (status) => status.type === "shield" && status.duration > 0
+          ).length;
 
-        const totalShields = target.status.filter(
-          (status) =>
-            status.type === "shield" &&
-            status.duration > 0
-        ).length;
+          events.push({
+            id: this.nextEventId(),
+            type: "defend",
+            hpBefore,
+            hpAfter: target.currentHp,
+            actorId: actor.id,
+            targetIds: [target.id],
+            power,
+            text:
+              `${actor.name} activates [${power.name}] and grants ` +
+              `${target.name} ${shieldsAdded} protective shield` +
+              `${shieldsAdded > 1 ? "s" : ""}! ` +
+              `(${totalShields}/4 shields)`,
+            side: actor.side,
+            attackerName: actor.name,
+            defenderName: target.name,
+            powerName: power.name,
+          });
+        }
 
-        events.push({
-          id: this.nextEventId(),
-          type: "defend",
-          hpBefore,
-          hpAfter: target.currentHp,
-          actorId: actor.id,
-          targetIds: [target.id],
-          power,
-          text:
-            `${actor.name} activates [${power.name}] and grants ` +
-            `${target.name} ${shieldsAdded} protective shield` +
-            `${shieldsAdded > 1 ? "s" : ""}! ` +
-            `(${totalShields}/4 shields)`,
-          side: actor.side,
-          attackerName: actor.name,
-          defenderName: target.name,
-          powerName: power.name,
-        });
+        // 2. Apply any additional status effects defined by the power.
+        // resolveStatusEffectRecipient determines the correct recipient.
+        const appliedEffects = this.applyPowerStatusEffects(
+          actor,
+          target,
+          power
+        );
+
+        for (const { fighter, status } of appliedEffects) {
+          events.push({
+            id: this.nextEventId(),
+            type: "status_applied",
+            actorId: actor.id,
+            targetIds: [fighter.id],
+            power,
+            status,
+            hpBefore: fighter.currentHp,
+            hpAfter: fighter.currentHp,
+            text: `${fighter.name} gained ${status.name}!`,
+            side: actor.side,
+            attackerName: actor.name,
+            defenderName: fighter.name,
+            powerName: power.name,
+          });
+        }
       }
 
       if (events.length === 0) return [];
@@ -833,9 +858,9 @@ export class CombatEngine {
       // Resolve protection independently for each selected enemy.
       const { target, protectedTarget } = this.resolveProtectionTarget(selectedTarget);
 
-      // Apply status effects to the originally selected target.
-      // Self-directed effects are applied only once per power activation.
-      const effectsForTarget =
+      // Prepare effects now, but apply them only after the attack.
+      // Self-directed effects are included only for the first target.
+      const effectsForTarget: Power =
         index === 0
           ? power
           : {
@@ -844,30 +869,6 @@ export class CombatEngine {
               (effect) => STATUS_EFFECT_RECIPIENTS[effect.type] !== "self"
             ),
           };
-
-      const appliedEffects = this.applyPowerStatusEffects(
-        actor,
-        selectedTarget,
-        effectsForTarget
-      );
-
-      for (const { fighter, status } of appliedEffects) {
-        events.push({
-          id: this.nextEventId(),
-          type: "status_applied",
-          actorId: actor.id,
-          targetIds: [fighter.id],
-          power,
-          status,
-          hpBefore: fighter.currentHp,
-          hpAfter: fighter.currentHp,
-          text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
-          side: actor.side,
-          attackerName: actor.name,
-          defenderName: fighter.name,
-          powerName: power.name,
-        });
-      }
 
       const hpBefore = target.currentHp;
 
@@ -908,6 +909,31 @@ export class CombatEngine {
           defenderName: target.name,
           powerName: power.name,
         });
+
+        // Apply status effects after the attack, even when shields absorb all damage.
+        const appliedEffects = this.applyPowerStatusEffects(
+          actor,
+          selectedTarget,
+          effectsForTarget
+        );
+
+        for (const { fighter, status } of appliedEffects) {
+          events.push({
+            id: this.nextEventId(),
+            type: "status_applied",
+            actorId: actor.id,
+            targetIds: [fighter.id],
+            power,
+            status,
+            hpBefore: fighter.currentHp,
+            hpAfter: fighter.currentHp,
+            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
+            side: actor.side,
+            attackerName: actor.name,
+            defenderName: fighter.name,
+            powerName: power.name,
+          });
+        }
 
         continue;
       }
@@ -960,6 +986,31 @@ export class CombatEngine {
         defenderName: target.name,
         powerName: power.name,
       });
+
+      // Apply status effects after the attack and damage resolution.
+      const appliedEffects = this.applyPowerStatusEffects(
+        actor,
+        selectedTarget,
+        effectsForTarget
+      );
+
+      for (const { fighter, status } of appliedEffects) {
+        events.push({
+          id: this.nextEventId(),
+          type: "status_applied",
+          actorId: actor.id,
+          targetIds: [fighter.id],
+          power,
+          status,
+          hpBefore: fighter.currentHp,
+          hpAfter: fighter.currentHp,
+          text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
+          side: actor.side,
+          attackerName: actor.name,
+          defenderName: fighter.name,
+          powerName: power.name,
+        });
+      }
     }
 
     if (events.length === 0) return [];

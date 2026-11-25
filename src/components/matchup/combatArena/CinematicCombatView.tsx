@@ -28,6 +28,7 @@ import type {
     CombatEvent,
     Side,
 } from "@/lib/matchup/combat/types/types";
+
 import type {
     CharacterWithJoinTeamUniversePowerEnemies,
 } from "@/types";
@@ -40,12 +41,7 @@ import CombatFeed from "./feed/CombatFeed";
 import { useCombatContext } from "./context/CombatContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { CharacterImage } from "@/components/shared/CharacterImage";
 import { isItHealingPower } from "@/lib/matchup/combat/utils/isItHealingPower";
@@ -355,276 +351,359 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
             </Dialog>
 
             {/* CHARACTER DETAILS */}
-
-            {/* CHARACTER DETAILS */}
             <Dialog
                 open={!!inspectedFighter}
                 onOpenChange={(open) => {
                     if (!open) onInspectCharacter(null);
                 }}
             >
-                <DialogContent
-                    className=" !w-[96vw] !max-w-[96vw] lg:!max-w-[90rem] h-[88dvh] max-h-[88dvh] flex flex-col overflow-hidden gap-0 p-0 rounded-xl"
-                >
-                    <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain p-3 sm:p-6 lg:p-8">
+                <DialogContent className="!w-[96vw] !max-w-[96vw] lg:!max-w-[90rem] h-[88dvh] max-h-[88dvh] flex flex-col overflow-hidden gap-0 p-0 rounded-xl">
+                    <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain p-3 sm:p-6 lg:p-7">
                         {inspectedFighter && (() => {
                             const fighter = inspectedFighter;
-                            // const character = fighter.original;
-                            // const stats = fighter.powerstats;
 
                             const hpPercent = fighter.maxHp > 0
-                                ? (fighter.currentHp / fighter.maxHp) * 100
+                                ? Math.min(100, Math.max(0, (fighter.currentHp / fighter.maxHp) * 100))
                                 : 0;
 
                             const energyPercent = fighter.maxEnergy > 0
-                                ? (fighter.energy / fighter.maxEnergy) * 100
+                                ? Math.min(100, Math.max(0, (fighter.energy / fighter.maxEnergy) * 100))
                                 : 0;
 
+                            const fatiguePercent = Math.min(100, Math.max(0, fighter.fatigue));
+
                             const activeEffects = fighter.status.filter(
-                                effect => effect.duration > 0
+                                (effect) => effect.duration > 0
                             );
 
-                            const variant = fighter.side == "A" ? "default" : "secondary"
-                            const colorVariant = fighter.side == "A" ? "primary" : "secondary"
+                            const isTeamA = fighter.side === "A";
+                            const badgeVariant = isTeamA ? "default" : "secondary";
+                            const accentClasses = isTeamA
+                                ? { icon: "text-primary", bar: "bg-primary" }
+                                : { icon: "text-secondary-foreground", bar: "bg-secondary" };
 
                             const canRevive =
                                 !fighter.hasRevived &&
-                                fighter.powers.some(power => isItHealingPower(power.name));
+                                fighter.powers.some((power) => isItHealingPower(power.name));
 
-                            // const originalEntries = Object.entries(character).filter(
-                            //     ([key]) => ![
-                            //         "powerstats",
-                            //         "powers",
-                            //         "id",
-                            //         "name",
-                            //         "images",
-                            //     ].includes(key)
-                            // );
+                            const vitals = [
+                                {
+                                    label: "Health",
+                                    value: `${fighter.currentHp} / ${fighter.maxHp} (${Math.round(hpPercent)}%)`,
+                                    percent: hpPercent,
+                                    Icon: Heart,
+                                },
+                                {
+                                    label: "Energy",
+                                    value: `${fighter.energy} / ${fighter.maxEnergy} (${Math.round(energyPercent)}%)`,
+                                    percent: energyPercent,
+                                    Icon: Zap,
+                                },
+                                {
+                                    label: "Fatigue",
+                                    value: `${fighter.fatigue}%`,
+                                    percent: fatiguePercent,
+                                    Icon: Gauge,
+                                },
+                            ];
 
-                            // const statEntries = stats
-                            //     ? Object.entries(stats)
-                            //     : [];
+                            const summaryStats = [
+                                { label: "Overall", value: fighter.overall },
+                                { label: "Has Revived", value: fighter.hasRevived ? "Yes" : "No" },
+                                { label: "Can Revive", value: canRevive ? "Yes" : "No" },
+                                { label: "Active Effects", value: activeEffects.length },
+                            ];
 
                             return (
-                                <div className="space-y-4 sm:space-y-6">
-                                    {/* HEADER */}
-                                    <div className="flex min-w-0 flex-col sm:flex-row gap-3 justify-center items-center  sm:gap-5">
-                                        <div className="size-60 sm:size-60 shrink-0 overflow-hidden rounded-xl border bg-muted ">
-                                            {fighter.image ? (
-                                                <CharacterImage
-                                                    src={fighter.image}
-                                                    alt={fighter.name}
-                                                    className="size-full object-cover"
-                                                    imageFocus={fighter.imageFocus}
-                                                />
-                                            ) : (
-                                                <User className="size-full p-6 text-muted-foreground" />
-                                            )}
-                                        </div>
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+                                    {/* LEFT COLUMN: IDENTITY, VITALS & ACTIVE EFFECTS */}
+                                    <div className="min-w-0 space-y-5 lg:col-span-5 xl:col-span-4 lg:sticky lg:top-0">
+                                        {/* HEADER */}
+                                        <div className="flex min-w-0 flex-col items-center gap-3.5 text-center sm:flex-row sm:items-center sm:justify-start sm:gap-4 sm:text-left">
+                                            <div className="size-32 sm:size-36 shrink-0 overflow-hidden rounded-xl border bg-muted">
+                                                {fighter.image ? (
+                                                    <CharacterImage
+                                                        src={fighter.image}
+                                                        alt={fighter.name}
+                                                        className="size-full object-cover"
+                                                        imageFocus={fighter.imageFocus}
+                                                    />
+                                                ) : (
+                                                    <User className="size-full p-6 text-muted-foreground" />
+                                                )}
+                                            </div>
 
-                                        <div className="min-w-0 flex-1">
-                                            <DialogTitle className="text-xl font-bold sm:text-2xl lg:text-3xl">
-                                                {fighter.name}
-                                            </DialogTitle>
+                                            <div className="min-w-0 flex-1 space-y-1">
+                                                <DialogTitle className="truncate text-xl font-bold sm:text-2xl">
+                                                    {fighter.name}
+                                                </DialogTitle>
 
-                                            <p className="text-sm text-muted-foreground">
-                                                Character ID: {fighter.id}
-                                            </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Character ID: {fighter.id}
+                                                </p>
 
-                                            <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
-                                                <Badge variant={variant}>
-                                                    {fighter.side == "A" ? state?.teamAName : state?.teamBName}
-                                                </Badge>
-
-                                                <Badge
-                                                    variant={"outline"}
-                                                >
-                                                    {fighter.isAlive ? "Alive" : "KO"}
-                                                </Badge>
-
-                                                <Badge variant="outline">
-                                                    {fighter.row.toUpperCase()} ROW
-                                                </Badge>
+                                                <div className="pt-1 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+                                                    <Badge variant={badgeVariant}>
+                                                        {isTeamA ? state?.teamAName : state?.teamBName}
+                                                    </Badge>
+                                                    <Badge variant="outline">
+                                                        {fighter.isAlive ? "Alive" : "KO"}
+                                                    </Badge>
+                                                    <Badge variant="outline">
+                                                        {fighter.row.toUpperCase()} ROW
+                                                    </Badge>
+                                                    {summaryStats.map((stat) => (
+                                                        <Badge variant="outline" className="bg-accent text-accent-foreground">
+                                                            {stat.label}: <span className="font-bold">{stat.value}</span>
+                                                        </Badge>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
+
+                                        <Separator />
+
+                                        {/* COMBAT VITALS */}
+                                        <section className="space-y-3.5">
+                                            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                                                <Activity className="size-4" />
+                                                Combat Condition
+                                            </h3>
+
+                                            <div className="space-y-3">
+                                                {vitals.map(({ label, value, percent, Icon }) => (
+                                                    <div key={label} className="space-y-1">
+                                                        <div className="flex items-center justify-between gap-2 text-sm">
+                                                            <span className="flex items-center gap-2 font-medium">
+                                                                <Icon className={`size-4 shrink-0 ${accentClasses.icon}`} />
+                                                                {label}
+                                                            </span>
+                                                            <span className="font-bold tabular-nums text-xs sm:text-sm">
+                                                                {value}
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-300 ${accentClasses.bar}`}
+                                                                style={{ width: `${percent}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4 lg:grid-cols-2">
+                                                {summaryStats.map((stat) => (
+                                                    <div
+                                                        key={stat.label}
+                                                        className="min-w-0 rounded-lg border bg-card p-2.5"
+                                                    >
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {stat.label}
+                                                        </p>
+                                                        <p className="mt-0.5 text-lg font-bold tabular-nums">
+                                                            {stat.value}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div> */}
+                                        </section>
+
+                                        <Separator />
+
+                                        {/* ACTIVE STATUS EFFECTS */}
+                                        <section className="space-y-3">
+                                            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                                                <Shield className="size-4" />
+                                                Active Status Effects ({activeEffects.length})
+                                            </h3>
+
+                                            {activeEffects.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {activeEffects.map((effect) => {
+                                                        const source = effect.sourceId != null
+                                                            ? state?.fighters.find((f) => f.id === effect.sourceId)
+                                                            : undefined;
+
+                                                        return (
+                                                            <div
+                                                                key={effect.id}
+                                                                className="min-w-0 rounded-lg border p-2.5 sm:p-3"
+                                                            >
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <p className="truncate font-semibold text-sm">
+                                                                        {effect.name}
+                                                                    </p>
+                                                                    {/* this is needs more explanation because some effects get added twice and also have the duration as twice */}
+                                                                    <Badge variant={badgeVariant} className="shrink-0">
+                                                                        {effect.duration} duration
+                                                                    </Badge>
+                                                                </div>
+
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {formatDetailLabel(effect.type)}
+                                                                </p>
+
+                                                                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                                                                    <span>Value: <strong className="text-foreground">{effect.value}</strong></span>
+                                                                    <span className="truncate">
+                                                                        Source:{" "}
+                                                                        <strong className="text-foreground">
+                                                                            {source?.name ?? (
+                                                                                effect.sourceId != null
+                                                                                    ? `ID ${effect.sourceId}`
+                                                                                    : "Unknown"
+                                                                            )}
+                                                                        </strong>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                                                    No active status effects.
+                                                </p>
+                                            )}
+                                        </section>
                                     </div>
 
-                                    <Separator />
-
-                                    {/* COMBAT VITALS */}
-                                    <section className="space-y-3">
-                                        <h3 className="flex items-center gap-2 font-bold">
-                                            <Activity className="size-4" />
-                                            Combat Condition
-                                        </h3>
-
-                                        {/* HP */}
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="flex items-center gap-2">
-                                                    <Heart className={`size-4 text-${colorVariant}`} />
-                                                    Health
-                                                </span>
-
-                                                <span className="font-bold tabular-nums">
-                                                    {fighter.currentHp} / {fighter.maxHp}
-                                                    {" "}({Math.round(hpPercent)}%)
-                                                </span>
-                                            </div>
-
-                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
-                                                <div
-                                                    className={`h-full rounded-full bg-${colorVariant} transition-all`}
-                                                    style={{
-                                                        width: `${Math.min(100, Math.max(0, hpPercent))}%`,
-                                                    }}
-                                                />
-                                            </div>
+                                    {/* RIGHT COLUMN: POWERS & ABILITIES */}
+                                    <section className="min-w-0 space-y-3 lg:col-span-7 xl:col-span-8">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                                                <Sparkles className="size-4" />
+                                                Powers & Abilities ({fighter.powers.length})
+                                            </h3>
                                         </div>
 
-                                        {/* ENERGY */}
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="flex items-center gap-2">
-                                                    <Zap className={`size-4 text-${colorVariant}`} />
-                                                    Energy
-                                                </span>
+                                        {fighter.powers.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                                {fighter.powers.map((power) => {
+                                                    const cooldown = fighter.cooldowns[power.id] ?? 0;
 
-                                                <span className="font-bold tabular-nums">
-                                                    {fighter.energy} / {fighter.maxEnergy}
-                                                    {" "}({Math.round(energyPercent)}%)
-                                                </span>
-                                            </div>
-
-                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
-                                                <div
-                                                    className={`h-full rounded-full bg-${colorVariant} transition-all`}
-                                                    style={{
-                                                        width: `${Math.min(100, Math.max(0, energyPercent))}%`,
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* FATIGUE */}
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="flex items-center gap-2">
-                                                    <Gauge className={`size-4 text-${colorVariant}`} />
-                                                    Fatigue
-                                                </span>
-
-                                                <span className="font-bold tabular-nums">
-                                                    {fighter.fatigue}%
-                                                </span>
-                                            </div>
-
-                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
-                                                <div
-                                                    className={`h-full rounded-full bg-${colorVariant}`}
-                                                    style={{
-                                                        width: `${Math.min(100, Math.max(0, fighter.fatigue))}%`,
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-2 pt-2 text-sm sm:grid-cols-3 lg:gap-3">
-                                            <div className="min-w-0 rounded-lg border p-2.5 sm:p-3">
-                                                <p className="text-muted-foreground">Overall</p>
-                                                <p className="text-xl font-bold">
-                                                    {fighter.overall}
-                                                </p>
-                                            </div>
-
-                                            <div className="min-w-0 rounded-lg border p-2.5 sm:p-3">
-                                                <p className="text-muted-foreground">Has Revived</p>
-                                                <p className="text-xl font-bold">
-                                                    {fighter.hasRevived ? "Yes" : "No"}
-                                                </p>
-                                            </div>
-
-                                            <div className="rounded-lg border p-3">
-                                                <p className="text-muted-foreground">Can Revive</p>
-                                                <p className="text-xl font-bold">
-                                                    {canRevive ? "Yes" : "No"}
-                                                </p>
-                                            </div>
-
-                                            <div className="min-w-0 rounded-lg border p-2.5 sm:p-3">
-                                                <p className="text-muted-foreground">Active Effects</p>
-                                                <p className="text-xl font-bold">
-                                                    {activeEffects.length}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    <Separator />
-
-                                    {/* ACTIVE STATUS EFFECTS */}
-                                    <section className="space-y-3">
-                                        <h3 className="flex items-center gap-2 font-bold">
-                                            <Shield className="size-4" />
-                                            Active Status Effects ({activeEffects.length})
-                                        </h3>
-
-                                        {activeEffects.length > 0 ? (
-                                            <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-                                                {activeEffects.map((effect) => {
-                                                    const source = effect.sourceId != null
-                                                        ? state?.fighters.find(
-                                                            fighter => fighter.id === effect.sourceId
-                                                        )
-                                                        : undefined;
+                                                    const specs = [
+                                                        ["Role", power.combatRole],
+                                                        ["Activation", power.activationType],
+                                                        ["Range", power.range],
+                                                        ["Target", power.targetType],
+                                                        ["Tier", power.tier],
+                                                        ["Score", power.score],
+                                                        ["Duration", power.duration],
+                                                    ];
 
                                                     return (
                                                         <div
-                                                            key={effect.id}
-                                                            className="min-w-0 rounded-lg border p-3"
+                                                            key={power.id}
+                                                            className="flex min-w-0 flex-col justify-between space-y-3 rounded-xl border bg-card p-3.5 sm:p-4"
                                                         >
-                                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                                <p className="font-semibold">
-                                                                    {effect.name}
-                                                                </p>
+                                                            <div className="space-y-2">
+                                                                <div className="flex items-start justify-between gap-2">
+                                                                    <div className="min-w-0">
+                                                                        <h4 className="truncate font-bold">
+                                                                            {power.name}
+                                                                        </h4>
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            Power ID: {power.id}
+                                                                        </p>
+                                                                    </div>
 
-                                                                <Badge variant={variant}>
-                                                                    {effect.duration} turns
-                                                                </Badge>
+                                                                    <Badge
+                                                                        variant={cooldown > 0 ? "destructive" : badgeVariant}
+                                                                        className="shrink-0"
+                                                                    >
+                                                                        {cooldown > 0
+                                                                            ? `${cooldown} Turn CD`
+                                                                            : "Ready"}
+                                                                    </Badge>
+                                                                </div>
+
+                                                                {power.description && (
+                                                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                                                        {power.description}
+                                                                    </p>
+                                                                )}
+
+                                                                <div className="grid grid-cols-2 gap-1.5 pt-1 sm:grid-cols-3">
+                                                                    {specs.map(([label, value]) => (
+                                                                        <div
+                                                                            key={label}
+                                                                            className="min-w-0 rounded-md bg-muted/60 px-2 py-1.5"
+                                                                        >
+                                                                            <p className="truncate text-[11px] text-muted-foreground">
+                                                                                {label}
+                                                                            </p>
+                                                                            <p className="truncate text-xs font-semibold">
+                                                                                {formatDetailValue(value)}
+                                                                            </p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
                                                             </div>
 
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {formatDetailLabel(effect.type)}
-                                                            </p>
-
-                                                            <div className="mt-2 flex justify-between text-xs">
-                                                                <span>
-                                                                    Value: {effect.value}
-                                                                </span>
-
-                                                                <span>
-                                                                    Source: {source?.name ?? (
-                                                                        effect.sourceId != null
-                                                                            ? `ID ${effect.sourceId}`
-                                                                            : "Unknown"
-                                                                    )}
-                                                                </span>
-                                                            </div>
+                                                            {power.statusEffects && power.statusEffects.length > 0 && (
+                                                                <div className="space-y-1.5 border-t pt-2.5">
+                                                                    <p className="text-xs font-semibold text-muted-foreground">
+                                                                        Effects Applied
+                                                                    </p>
+                                                                    <div className="flex flex-wrap gap-1.5">
+                                                                        {power.statusEffects.map((effect, index) => (
+                                                                            <Badge
+                                                                                key={`${power.id}-effect-${index}`}
+                                                                                variant={badgeVariant}
+                                                                                className="text-xs"
+                                                                            >
+                                                                                {formatDetailLabel(effect.type)} · {effect.duration}t · {effect.value}%
+                                                                            </Badge>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-muted-foreground">
-                                                No active status effects.
+                                            <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                                                No combat powers available.
                                             </p>
                                         )}
                                     </section>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+        </div>
+    );
+}
 
 
-                                    {/* POWERSTATS */}
-                                    {/* <Separator /> */}
-                                    {/* <section className="space-y-3">
+// const character = fighter.original;
+// const stats = fighter.powerstats;
+
+// const originalEntries = Object.entries(character).filter(
+//     ([key]) => ![
+//         "powerstats",
+//         "powers",
+//         "id",
+//         "name",
+//         "images",
+//     ].includes(key)
+// );
+
+// const statEntries = stats
+//     ? Object.entries(stats)
+//     : [];
+
+
+
+{/* POWERSTATS */ }
+{/* <Separator /> */ }
+{/* <section className="space-y-3">
                                         <h3 className="flex items-center gap-2 font-bold">
                                             <Swords className="size-4" />
                                             Powerstats
@@ -670,79 +749,8 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                                         )}
                                     </section> */}
 
-                                    <Separator />
-
-                                    {/* POWERS */}
-                                    <section className="space-y-3">
-                                        <h3 className="flex items-center gap-2 font-bold">
-                                            <Sparkles className="size-4" />
-                                            Powers & Abilities ({fighter.powers.length})
-                                        </h3>
-
-                                        {fighter.powers.length > 0 ? (
-                                            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                                                {fighter.powers.map((power) => {
-                                                    const cooldown =
-                                                        fighter.cooldowns[power.id] ?? 0;
-
-                                                    return (
-                                                        <div
-                                                            key={power.id}
-                                                            className="min-w-0 space-y-3 rounded-xl border p-3 sm:p-4"
-                                                        >
-                                                            <div className="flex items-start justify-between gap-3">
-                                                                <div className="min-w-0">
-                                                                    <h4 className="font-bold">
-                                                                        {power.name}
-                                                                    </h4>
-
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        Power ID: {power.id}
-                                                                    </p>
-                                                                </div>
-
-                                                                <Badge
-                                                                    variant={cooldown > 0 ? "destructive" : variant}
-                                                                >
-                                                                    {cooldown > 0
-                                                                        ? `${cooldown} Turn Cooldown`
-                                                                        : "Ready"}
-                                                                </Badge>
-                                                            </div>
-
-                                                            {power.description && (
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {power.description}
-                                                                </p>
-                                                            )}
-
-                                                            <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-                                                                {[
-                                                                    ["Combat Role", power.combatRole],
-                                                                    ["Activation", power.activationType],
-                                                                    ["Range", power.range],
-                                                                    ["Target Type", power.targetType],
-                                                                    ["Tier", power.tier],
-                                                                    ["Score", power.score],
-                                                                    ["Duration", power.duration],
-                                                                    // ["Stamina Cost", power.staminaCost],
-                                                                ].map(([label, value]) => (
-                                                                    <div
-                                                                        key={label}
-                                                                        className="rounded-md bg-muted/50 p-2"
-                                                                    >
-                                                                        <p className="text-xs text-muted-foreground">
-                                                                            {label}
-                                                                        </p>
-                                                                        <p className="font-medium">
-                                                                            {formatDetailValue(value)}
-                                                                        </p>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-
-                                                            {/* POWER ACTIONS */}
-                                                            {/* {power.actions && power.actions.length > 0 && (
+{/* POWER ACTIONS */ }
+{/* {power.actions && power.actions.length > 0 && (
                                                                 <div className="space-y-2">
                                                                     <p className="text-sm font-semibold">
                                                                         Available Actions
@@ -787,43 +795,10 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                                                                 </div>
                                                             )} */}
 
-                                                            {/* POWER STATUS EFFECTS */}
-                                                            {power.statusEffects && power.statusEffects.length > 0 && (
-                                                                <div className="space-y-2">
-                                                                    <p className="text-sm font-semibold">
-                                                                        Effects Applied
-                                                                    </p>
 
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {power.statusEffects.map((effect, index) => (
-                                                                            <Badge
-                                                                                key={`${power.id}-effect-${index}`}
-                                                                                variant={variant}
-                                                                            >
-                                                                                {formatDetailLabel(effect.type)}
-                                                                                {" · "}
-                                                                                {effect.duration} turns
-                                                                                {" · "}
-                                                                                {effect.value}%
-                                                                            </Badge>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">
-                                                No combat powers available.
-                                            </p>
-                                        )}
-                                    </section>
-
-                                    {/* ORIGINAL CHARACTER INFORMATION */}
-                                    {/* <Separator /> */}
-                                    {/* <section className="space-y-3">
+{/* ORIGINAL CHARACTER INFORMATION */ }
+{/* <Separator /> */ }
+{/* <section className="space-y-3">
                                         <h3 className="flex items-center gap-2 font-bold">
                                             <BookOpen className="size-4" />
                                             Character Information
@@ -852,14 +827,3 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                                             ))}
                                         </div>
                                     </section> */}
-
-                                </div>
-                            );
-                        })()}
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-        </div>
-    );
-}

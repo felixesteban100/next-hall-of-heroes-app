@@ -186,9 +186,6 @@ export default function TeamColumn({ fighters, variant, actionEvent, eventKey, i
                                 onClick={() => {
                                     if (isDialogOpen) return;
 
-                                    // Always open character inspection.
-                                    onInspectCharacter(fighter.id);
-
                                     // Preserve existing combat target selection.
                                     if (isValidTarget) {
                                         onSelectTarget(fighter.id);

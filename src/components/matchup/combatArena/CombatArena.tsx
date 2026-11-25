@@ -121,6 +121,7 @@ export function CombatArena({
                 }}
             >
                 <CinematicCombatView
+                    key={`${teamAChars.map((c) => c.id).join(",")}|${teamBChars.map((c) => c.id).join(",")}|${playerSide}|${nameA}|${nameB}`}
                     fightersA={rosterA}
                     fightersB={rosterB}
                     events={visibleEvents}

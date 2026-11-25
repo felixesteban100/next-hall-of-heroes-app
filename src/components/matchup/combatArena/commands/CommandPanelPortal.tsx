@@ -38,7 +38,7 @@ export default function CommandPanelPortal({
                     stiffness: 500,
                     damping: 22,
                 }}
-                className="fixed z-[100] w-[340px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-xl bg-background shadow-2xl ring-1 ring-border isolate"
+                className="fixed z-[30] w-[340px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-xl bg-background shadow-2xl ring-1 ring-border isolate"
                 style={{
                     top: position.top,
                     left: position.left,

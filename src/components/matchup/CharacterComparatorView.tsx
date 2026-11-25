@@ -79,8 +79,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
         return validA.some((a) => validB.some((b) => hasNemesisLink(a, b)));
     }, [mode, entitiesA, entitiesB]);
 
-    const radar = radarDataFromStats(avgTeamPowerstats(entitiesA), avgTeamPowerstats(entitiesB))
-
     const hasA = entitiesA.length > 0;
     const hasB = entitiesB.length > 0;
 
@@ -112,7 +110,7 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
     //     />
     // )
 
-    // for now let's comment this, idk if use it tbh
+    // for now let's comment this, idk if use it like that tbh
 
     return (
         <>
@@ -236,14 +234,6 @@ export default function CharacterComparatorView({ mode, teamA, teamB, entitiesA,
                                     { label: "Overall", key: "overall" },
                                 ]}
                             />
-                            {/* <div className="border border-muted-foreground/20 p-4 flex flex-col gap-3 justify-between rounded-b-md">
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                                        Stats radar
-                                    </h3>
-                                    <StatsRadar data={radar} nameA={entityAName} nameB={entityBName} visible={hasBothSides} />
-                                </div>
-                            </div> */}
                         </div>
                     )}
 
