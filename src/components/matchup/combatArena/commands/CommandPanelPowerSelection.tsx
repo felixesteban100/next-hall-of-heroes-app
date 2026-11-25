@@ -1,6 +1,7 @@
+
 "use client";
 
-import { HeartPulse, Zap } from "lucide-react";
+import { HeartPulse, Zap, ShieldAlert } from "lucide-react";
 import type { Power, PowerRole } from "@/types";
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
 import { combatRoleConfig } from "@/lib/matchup/combat/utils/combatRole";
@@ -35,11 +36,11 @@ export function CommandPanelPowerSelection({
     onBack,
 }: Props) {
     return (
-        <div className="flex min-h-0 flex-col">
+        <div className="flex min-h-0 flex-col gap-2">
             {/* Header */}
             <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                         Ability Selection
                     </p>
                     <h3 className="text-xs font-bold">Choose a power</h3>
@@ -48,24 +49,25 @@ export function CommandPanelPowerSelection({
                 <button
                     type="button"
                     onClick={onBack}
-                    className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    className="rounded-md border border-white/10 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                     Back
                 </button>
             </div>
 
             {/* Energy */}
-            <div className="flex items-center justify-between px-2 py-1">
-                <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center justify-between rounded-md border border-white/5 bg-muted/20 px-2.5 py-1.5">
+                <span className="text-[10px] font-medium text-muted-foreground">
                     Available energy
                 </span>
-                <span className="text-xs font-bold tabular-nums text-sky-400">
-                    <Zap className="mr-1 inline size-3" />
+
+                <span className="flex items-center text-xs font-bold tabular-nums text-sky-400">
+                    <Zap className="mr-1 size-3" />
                     {actor.energy}/{actor.maxEnergy}
                 </span>
             </div>
 
-            {/* Scrollable power list */}
+            {/* Power list */}
             <div
                 data-command-panel-scroll
                 className="hide-scrollbar min-h-0 overflow-y-auto overflow-x-hidden"
@@ -76,31 +78,41 @@ export function CommandPanelPowerSelection({
                     overscrollBehavior: "contain",
                 }}
             >
-                <div className="flex flex-col gap-1">
-                    {availablePowers.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-white/10 p-3 text-center">
-                            <Zap className="mx-auto mb-1 size-4 text-muted-foreground/50" />
-                            <p className="text-xs font-semibold">
-                                No powers available
-                            </p>
-                        </div>
-                    ) : (
-                        availablePowers.map((power) => {
+                {availablePowers.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-white/10 p-4 text-center">
+                        <Zap className="mx-auto mb-1.5 size-5 text-muted-foreground/50" />
+                        <p className="text-xs font-semibold">
+                            No powers available
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">
+                            There are no powers to select.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-1.5">
+                        {availablePowers.map((power) => {
                             const cost = getPowerCost(power);
                             const canAfford = actor.energy >= cost;
-                            const cd = actor.cooldowns[power.id] ?? 0;
+                            const cooldown = actor.cooldowns[power.id] ?? 0;
                             const isHeal = isHealingPower(power);
-                            const hasHealingTarget = hasHealingTargets;
-
+                            const isUtility = power.combatRole === "Utility";
                             const isDefensive = power.combatRole === "Defensive";
+
+                            const hasStatusEffects =
+                                (power.statusEffects?.length ?? 0) > 0;
+
                             const hasDefensiveTarget =
-                                getValidTargets(power).length > 0;
+                                !isDefensive || getValidTargets(power).length > 0;
+
+                            const missingUtilityEffects =
+                                isUtility && !hasStatusEffects;
 
                             const disabled =
                                 (!actor.isAlive && !isHeal) ||
-                                (isHeal && !hasHealingTarget) ||
-                                (isDefensive && !hasDefensiveTarget) ||
-                                cd > 0 ||
+                                (isHeal && !hasHealingTargets) ||
+                                !hasDefensiveTarget ||
+                                missingUtilityEffects ||
+                                cooldown > 0 ||
                                 !canAfford;
 
                             const roleConfig = combatRoleConfig[power.combatRole];
@@ -108,70 +120,115 @@ export function CommandPanelPowerSelection({
                                 ? HeartPulse
                                 : roleConfig.Icon;
 
+                            const statusEffects = power.statusEffects ?? [];
+
+                            let disabledReason = "";
+
+                            if (missingUtilityEffects) {
+                                disabledReason = "No status effects configured";
+                            } else if (!actor.isAlive && !isHeal) {
+                                disabledReason = "Fighter is unable to act";
+                            } else if (isHeal && !hasHealingTargets) {
+                                disabledReason = "No valid healing targets";
+                            } else if (!hasDefensiveTarget) {
+                                disabledReason = "No valid defensive targets";
+                            } else if (cooldown > 0) {
+                                disabledReason = `Cooldown: ${cooldown} turns`;
+                            } else if (!canAfford) {
+                                disabledReason = "Not enough energy";
+                            }
+
                             return (
                                 <button
                                     key={power.id}
                                     type="button"
                                     disabled={disabled}
+                                    title={disabled ? disabledReason : power.description}
                                     onClick={() => onSelectPower(power)}
                                     className={cn(
-                                        "group relative flex min-w-0 shrink-0 items-center gap-2 overflow-hidden rounded-lg border px-2 py-1.5 text-left transition-all duration-200",
+                                        "group relative flex min-w-0 shrink-0 items-center gap-2.5 overflow-hidden rounded-lg border px-2.5 py-2 text-left transition-all duration-200",
                                         disabled
-                                            ? "cursor-not-allowed border-white/5 bg-muted/20 opacity-40"
-                                            : "border-white/10 bg-muted/30 hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98]"
+                                            ? "cursor-not-allowed border-white/5 bg-muted/10 opacity-45"
+                                            : "border-white/10 bg-muted/30 hover:border-primary/50 hover:bg-primary/5 active:scale-[0.99]"
                                     )}
                                 >
-                                    {/* Power icon */}
+                                    {/* Role icon */}
                                     <div
                                         className={cn(
-                                            "flex size-6 shrink-0 items-center justify-center rounded-md border",
+                                            "flex size-8 shrink-0 items-center justify-center rounded-lg border",
                                             isHeal
                                                 ? combatRoleConfig.Utility.className
                                                 : roleConfig.className
                                         )}
                                     >
-                                        <RoleIcon className="size-3.5" />
+                                        <RoleIcon className="size-4" />
                                     </div>
 
-                                    {/* Power information */}
+                                    {/* Power details */}
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex min-w-0 items-center gap-1.5">
                                             <span className="truncate text-[11px] font-bold">
                                                 {power.name}
                                             </span>
 
-                                            {cd > 0 && (
-                                                <span className="shrink-0 rounded bg-amber-500/10 px-1 py-0.5 text-[8px] font-bold text-amber-400">
-                                                    CD {cd}
+                                            {cooldown > 0 && (
+                                                <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-bold text-amber-400">
+                                                    CD {cooldown}
+                                                </span>
+                                            )}
+
+                                            {missingUtilityEffects && (
+                                                <span className="shrink-0 rounded bg-rose-500/10 px-1.5 py-0.5 text-[8px] font-bold text-rose-400">
+                                                    Unavailable
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                                            {power.statusEffects && power.statusEffects.length > 0 ? (
-                                                power.statusEffects.map((effect) => (
+                                        <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] text-muted-foreground">
+                                            {hasStatusEffects ? (
+                                                statusEffects.map((effect, index) => (
                                                     <span
-                                                        key={`${effect.type}-${effect.duration}-${effect.value}`}
+                                                        key={`${effect.type}-${index}`}
+                                                        className="capitalize"
                                                     >
-                                                        {effect.type}
+                                                        {effect.type.replaceAll("_", " ")}
                                                     </span>
                                                 ))
                                             ) : (
-                                                <span>{power.combatRole}</span>
+                                                <span>
+                                                    {missingUtilityEffects
+                                                        ? "No status effects"
+                                                        : power.combatRole}
+                                                </span>
                                             )}
-                                            <span>·</span>
+
+                                            <span className="text-muted-foreground/40">·</span>
                                             <span>T-{power.tier ?? 1}</span>
-                                            <span>·</span>
-                                            <span>Target {power.targetType ?? "Single Target"}</span>
-                                            <span>·</span>
+
+                                            <span className="text-muted-foreground/40">·</span>
+                                            <span>
+                                                {power.targetType ?? "Single Target"}
+                                            </span>
                                         </div>
+
+                                        {missingUtilityEffects && (
+                                            <p className="mt-1 text-[9px] font-medium text-rose-400/80">
+                                                This Utility power has no effects to apply.
+                                            </p>
+                                        )}
+
+                                        {!missingUtilityEffects && disabledReason && (
+                                            <p className="mt-1 text-[9px] text-amber-400/80">
+                                                {disabledReason}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Energy cost */}
                                     <div className="shrink-0 text-right">
                                         <div
                                             className={cn(
-                                                "text-[11px] font-black tabular-nums",
+                                                "text-xs font-black tabular-nums",
                                                 canAfford
                                                     ? "text-sky-400"
                                                     : "text-rose-400"
@@ -179,15 +236,15 @@ export function CommandPanelPowerSelection({
                                         >
                                             {cost}
                                         </div>
-                                        <div className="text-[8px] font-semibold text-muted-foreground">
+                                        <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
                                             EN
                                         </div>
                                     </div>
                                 </button>
                             );
-                        })
-                    )}
-                </div>
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -105,7 +105,7 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
 
     return (
         <div className="flex w-full max-w-full flex-col space-y-3 overflow-hidden p-1">
-            <div className="flex h-[300px] w-full">
+            <div className="flex h-[400px] w-full">
                 <TeamColumn
                     fighters={enrichedA}
                     variant="primary"

@@ -99,7 +99,7 @@ export function CombatArena({
     const rosterB = state.fighters.filter((f) => f.side === "B");
 
     return (
-        <div className="flex flex-col gap-3 relative border border-muted-foreground/20 rounded-xl p-3">
+        <div className="flex flex-col gap-3 relative border border-muted-foreground/20 rounded-xl p-3 mb-3">
             <CombatHeader state={state} nameA={nameA} nameB={nameB} />
             <CombatProvider
                 value={{

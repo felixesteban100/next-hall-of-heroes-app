@@ -151,6 +151,7 @@ export default function TeamColumn({ fighters, variant, actionEvent, eventKey, i
 
                         return (
                             <FighterCard
+                                size={100}
                                 key={fighter.id}
                                 fighter={fighter}
                                 variant={variant}

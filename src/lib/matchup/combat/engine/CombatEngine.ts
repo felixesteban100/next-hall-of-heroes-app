@@ -1,6 +1,7 @@
 import type { CombatState, CombatFighter, CombatAction, CombatEvent, Side, Row, StatusEffect, BattleMetadata, FighterTelemetry, StatusEffectType, TeamOrderType } from "../types/types";
 import type { CharacterWithJoinTeamUniversePowerEnemies, Power, PowerRole } from "@/types";
 import { isRealPower } from "@/lib/matchup/cinematicCombatView";
+import { resolveStatusEffectRecipient } from "../helpers/statusEffectRecipients";
 
 export const MAX_SHIELDS_PER_FIGHTER = 4
 
@@ -639,6 +640,8 @@ export class CombatEngine {
 
       const events: CombatEvent[] = [];
 
+      let selfEffectsApplied = false;
+
       for (const targetId of selectedTargets) {
         const target = this.state.fighters.find((fighter) => fighter.id === targetId);
 
@@ -656,17 +659,26 @@ export class CombatEngine {
               statusEffects: [{ type: "focus", duration: 2, value: 0.4 }],
             });
 
-        for (const status of appliedEffects) {
+        const filteredEffects = appliedEffects.filter(({ fighter, status }) => {
+          if (fighter.id !== actor.id) return true;
+
+          if (selfEffectsApplied) return false;
+
+          selfEffectsApplied = true;
+          return true;
+        });
+
+        for (const { fighter, status } of filteredEffects) {
           events.push({
             id: this.nextEventId(),
             type: "status_applied",
             power,
-            hpBefore,
-            hpAfter: target.currentHp,
+            hpBefore: fighter.currentHp,
+            hpAfter: fighter.currentHp,
             actorId: actor.id,
-            targetIds: [target.id],
+            targetIds: [fighter.id],
             status,
-            text: `${target.name} gained ${status.name}!`,
+            text: `${fighter.name} gained ${status.name}!`,
             side: actor.side,
           });
         }
@@ -696,20 +708,20 @@ export class CombatEngine {
 
         const appliedEffects = this.applyPowerStatusEffects(actor, target, powerWithEffects);
 
-        for (const status of appliedEffects) {
+        for (const { fighter, status } of appliedEffects) {
           events.push({
             id: this.nextEventId(),
             type: "power",
             actorId: actor.id,
-            targetIds: [target.id],
+            targetIds: [fighter.id],
             power,
-            hpBefore,
-            hpAfter: target.currentHp,
+            hpBefore: fighter.currentHp,
+            hpAfter: fighter.currentHp,
             status,
-            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${target.name} for ${status.duration} turns!`,
+            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name} for ${status.duration} turns!`,
             side: actor.side,
             attackerName: actor.name,
-            defenderName: target.name,
+            defenderName: fighter.name,
             powerName: power.name,
           });
         }
@@ -1406,14 +1418,25 @@ export class CombatEngine {
     actor: CombatFighter,
     target: CombatFighter,
     power: Power
-  ): StatusEffect[] {
+  ): { fighter: CombatFighter; status: StatusEffect }[] {
     const definitions = power.statusEffects ?? [];
 
-    const appliedEffects: StatusEffect[] = [];
+    const appliedEffects: {
+      fighter: CombatFighter;
+      status: StatusEffect;
+    }[] = [];
 
     for (const definition of definitions) {
+      const recipient = resolveStatusEffectRecipient(
+        definition.type,
+        actor,
+        target
+      );
+
+      if (!recipient) continue;
+
       const status: StatusEffect = {
-        id: `${definition.type}-${target.id}-${power.id}-${this.nextEventId()}`,
+        id: `${definition.type}-${recipient.id}-${power.id}-${this.nextEventId()}`,
         type: definition.type,
         name: definition.type
           .split("_")
@@ -1424,8 +1447,11 @@ export class CombatEngine {
         sourceId: actor.id,
       };
 
-      if (this.applyStatus(target, status)) {
-        appliedEffects.push(status);
+      if (this.applyStatus(recipient, status)) {
+        appliedEffects.push({
+          fighter: recipient,
+          status,
+        });
       }
     }
 
