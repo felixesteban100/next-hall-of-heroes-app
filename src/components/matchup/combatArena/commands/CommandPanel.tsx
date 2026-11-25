@@ -79,13 +79,16 @@ export function CommandPanel({
             )}
             style={
                 compact && availableHeight
-                    ? { maxHeight: availableHeight }
+                    ? {
+                        height: availableHeight,
+                        maxHeight: availableHeight,
+                    }
                     : undefined
             }
         >
             <div
                 className={cn(
-                    "flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-card/95",
+                    "flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-white/10 bg-card/95",
                     compact ? "px-2 py-2" : "px-2.5 py-2"
                 )}
             >
@@ -132,7 +135,7 @@ export function CommandPanel({
                 {/* Command content */}
                 <div
                     className={cn(
-                        "min-h-0",
+                        "flex min-h-0 flex-1 flex-col overflow-hidden",
                         compact ? "p-2" : "p-3 sm:p-4"
                     )}
                 >

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { HeartPulse, Zap, ShieldAlert } from "lucide-react";
+import { HeartPulse, Zap } from "lucide-react";
 import type { Power, PowerRole } from "@/types";
 import type { CombatFighter } from "@/lib/matchup/combat/types/types";
 import { combatRoleConfig } from "@/lib/matchup/combat/utils/combatRole";
@@ -36,7 +36,7 @@ export function CommandPanelPowerSelection({
     onBack,
 }: Props) {
     return (
-        <div className="flex min-h-0 flex-col gap-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -72,9 +72,7 @@ export function CommandPanelPowerSelection({
                 data-command-panel-scroll
                 className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y"
                 style={{
-                    maxHeight: compact
-                        ? `max(0px, calc(${availableHeight ?? 400}px - 110px))`
-                        : 260,
+                    maxHeight: compact ? undefined : 260,
                     WebkitOverflowScrolling: "touch",
                     overscrollBehaviorY: "contain",
                 }}
