@@ -126,7 +126,7 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
             <CombatFeed logs={visibleLogs} />
 
             {/* Reserve a fixed height so dice, start button, and history button never resize the layout */}
-            <div className="relative flex h-16 w-full shrink-0 items-center justify-center overflow-visible">
+            <div className="relative flex h-12  w-full shrink-0 items-center justify-center overflow-visible">
                 {!battleStarted ? (
                     <AnimatePresence mode="wait">
                         {isRolling ? (
