@@ -357,7 +357,7 @@ export default function CinematicCombatView({ fightersA, fightersB, events, team
                     if (!open) onInspectCharacter(null);
                 }}
             >
-                <DialogContent className="!w-[96vw] !max-w-[96vw] lg:!max-w-[90rem] h-[88dvh] max-h-[88dvh] flex flex-col overflow-hidden gap-0 p-0 rounded-xl border border-foreground/10">
+                <DialogContent className="!w-[70vw] !max-w-[60vw] lg:!max-w-[90rem] h-[88dvh] max-h-[88dvh] flex flex-col overflow-hidden gap-0 p-0 rounded-xl border border-foreground/10">
                     <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain p-3 sm:p-6 lg:p-7">
                         {inspectedFighter && (() => {
                             const fighter = inspectedFighter;
