@@ -671,18 +671,20 @@ export class CombatEngine {
         });
 
         for (const { fighter, status } of filteredEffects) {
-          events.push({
-            id: this.nextEventId(),
-            type: "status_applied",
-            power,
-            hpBefore: target.currentHp,
-            hpAfter: fighter.currentHp,
-            actorId: actor.id,
-            targetIds: [fighter.id],
-            status,
-            text: `${fighter.name} gained ${status.name}!`,
-            side: actor.side,
-          });
+          if (fighter.isAlive) {
+            events.push({
+              id: this.nextEventId(),
+              type: "status_applied",
+              power,
+              hpBefore: target.currentHp,
+              hpAfter: fighter.currentHp,
+              actorId: actor.id,
+              targetIds: [fighter.id],
+              status,
+              text: `${fighter.name} gained ${status.name}!`,
+              side: actor.side,
+            });
+          }
         }
       }
 
@@ -703,7 +705,7 @@ export class CombatEngine {
 
         if (!target) continue;
 
-        const hpBefore = target.currentHp;
+        // const hpBefore = target.currentHp;
 
         // Preserve the original Stun behavior for older powers that don't have statusEffects metadata.
         const powerWithEffects: Power = power.statusEffects?.length ? power : { ...power, statusEffects: [{ type: "stun", duration: 2, value: 1 }] };
@@ -711,21 +713,23 @@ export class CombatEngine {
         const appliedEffects = this.applyPowerStatusEffects(actor, target, powerWithEffects);
 
         for (const { fighter, status } of appliedEffects) {
-          events.push({
-            id: this.nextEventId(),
-            type: "power",
-            actorId: actor.id,
-            targetIds: [fighter.id],
-            power,
-            hpBefore: fighter.currentHp,
-            hpAfter: fighter.currentHp,
-            status,
-            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name} for ${status.duration} turns!`,
-            side: actor.side,
-            attackerName: actor.name,
-            defenderName: fighter.name,
-            powerName: power.name,
-          });
+          if (fighter.isAlive) {
+            events.push({
+              id: this.nextEventId(),
+              type: actor.name === fighter.name ? "status_applied" : "power",
+              actorId: actor.id,
+              targetIds: [fighter.id],
+              power,
+              hpBefore: fighter.currentHp,
+              hpAfter: fighter.currentHp,
+              status,
+              text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name} for ${status.duration} turns!`,
+              side: actor.side,
+              attackerName: actor.name,
+              defenderName: fighter.name,
+              powerName: power.name,
+            });
+          }
         }
       }
 
@@ -805,21 +809,23 @@ export class CombatEngine {
         );
 
         for (const { fighter, status } of appliedEffects) {
-          events.push({
-            id: this.nextEventId(),
-            type: "status_applied",
-            actorId: actor.id,
-            targetIds: [fighter.id],
-            power,
-            status,
-            hpBefore: fighter.currentHp,
-            hpAfter: fighter.currentHp,
-            text: `${fighter.name} gained ${status.name}!`,
-            side: actor.side,
-            attackerName: actor.name,
-            defenderName: fighter.name,
-            powerName: power.name,
-          });
+          if (fighter.isAlive) {
+            events.push({
+              id: this.nextEventId(),
+              type: "status_applied",
+              actorId: actor.id,
+              targetIds: [fighter.id],
+              power,
+              status,
+              hpBefore: fighter.currentHp,
+              hpAfter: fighter.currentHp,
+              text: `${fighter.name} gained ${status.name}!`,
+              side: actor.side,
+              attackerName: actor.name,
+              defenderName: fighter.name,
+              powerName: power.name,
+            });
+          }
         }
       }
 
@@ -918,21 +924,23 @@ export class CombatEngine {
         );
 
         for (const { fighter, status } of appliedEffects) {
-          events.push({
-            id: this.nextEventId(),
-            type: "status_applied",
-            actorId: actor.id,
-            targetIds: [fighter.id],
-            power,
-            status,
-            hpBefore: fighter.currentHp,
-            hpAfter: fighter.currentHp,
-            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
-            side: actor.side,
-            attackerName: actor.name,
-            defenderName: fighter.name,
-            powerName: power.name,
-          });
+          if (fighter.isAlive) {
+            events.push({
+              id: this.nextEventId(),
+              type: "status_applied",
+              actorId: actor.id,
+              targetIds: [fighter.id],
+              power,
+              status,
+              hpBefore: fighter.currentHp,
+              hpAfter: fighter.currentHp,
+              text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
+              side: actor.side,
+              attackerName: actor.name,
+              defenderName: fighter.name,
+              powerName: power.name,
+            });
+          }
         }
 
         continue;
@@ -995,21 +1003,23 @@ export class CombatEngine {
       );
 
       for (const { fighter, status } of appliedEffects) {
-        events.push({
-          id: this.nextEventId(),
-          type: "status_applied",
-          actorId: actor.id,
-          targetIds: [fighter.id],
-          power,
-          status,
-          hpBefore: fighter.currentHp,
-          hpAfter: fighter.currentHp,
-          text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
-          side: actor.side,
-          attackerName: actor.name,
-          defenderName: fighter.name,
-          powerName: power.name,
-        });
+        if (fighter.isAlive) {
+          events.push({
+            id: this.nextEventId(),
+            type: "status_applied",
+            actorId: actor.id,
+            targetIds: [fighter.id],
+            power,
+            status,
+            hpBefore: fighter.currentHp,
+            hpAfter: fighter.currentHp,
+            text: `${actor.name} uses [${power.name}] and applies ${status.name} to ${fighter.name}!`,
+            side: actor.side,
+            attackerName: actor.name,
+            defenderName: fighter.name,
+            powerName: power.name,
+          });
+        }
       }
     }
 
